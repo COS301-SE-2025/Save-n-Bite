@@ -1,7 +1,6 @@
 # Save n Bite - Reducing Food Waste Through Technology 🍎♻️
 
 **Secure Web & Mobile Guild (SWMG)** in collaboration with **GENDAC**
-**University of Pretoria | COS 301 - Software Engineering Capstone (2025)**  
 
 <div style="text-align: center;">
    <img src="assets/logo.png" width="200" />
