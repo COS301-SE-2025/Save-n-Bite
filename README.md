@@ -8,7 +8,7 @@
 ---
 
 ## 📌 Project Description
-**Save n Bite** is a digital platform connecting commercial food providers with individuals and organizations in need to reduce food waste and hunger in South Africa 🇿🇦.  
+**Save n Bite** is a digital platform connecting commercial food providers with individuals and organizations in need to reduce food waste and hunger in South Africa.
 Key features:  
 - **AI-driven surplus prediction** for optimal food redistribution.  
 - **Real-time inventory** and **secure verification** for users/businesses.  
@@ -22,18 +22,17 @@ Key features:
 ## 🛠️ Tech Stack
 | Category       | Technologies                                                                 |
 |----------------|-----------------------------------------------------------------------------|
-| **Frontend**   | ![React](https://img.shields.io/badge/React-20232A?style=flat&logo=react) ![React Native](https://img.shields.io/badge/React_Native-20232A?style=flat&logo=react) ![Google Maps](https://img.shields.io/badge/Google%20Maps-4285F4?style=flat&logo=googlemaps) ![Material UI](https://img.shields.io/badge/Material_UI-0081CB?style=flat&logo=mui) |
-| **Backend**    | ![Django](https://img.shields.io/badge/Django-092E20?style=flat&logo=django) ![Django REST](https://img.shields.io/badge/Django_REST-ff1709?style=flat&logo=django) ![JWT](https://img.shields.io/badge/JWT-000000?style=flat&logo=jsonwebtokens) |
-| **Database**   | ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-316192?style=flat&logo=postgresql) ![Redis](https://img.shields.io/badge/Redis-DC382D?style=flat&logo=redis) |
-| **Cloud**      | ![Microsoft Azure](https://img.shields.io/badge/Microsoft_Azure-0089D6?style=flat&logo=microsoft-azure) |
-| **DevOps**     | ![Docker](https://img.shields.io/badge/Docker-2496ED?style=flat&logo=docker) ![GitHub Actions](https://img.shields.io/badge/GitHub_Actions-2088FF?style=flat&logo=githubactions) ![Prometheus](https://img.shields.io/badge/Prometheus-E6522C?style=flat&logo=prometheus) ![Grafana](https://img.shields.io/badge/Grafana-F46800?style=flat&logo=grafana) |
-| **AI/ML**      | ![Python](https://img.shields.io/badge/Python-3776AB?style=flat&logo=python) ![Scikit-learn](https://img.shields.io/badge/Scikit_learn-F7931E?style=flat&logo=scikitlearn) ![Pandas](https://img.shields.io/badge/Pandas-150458?style=flat&logo=pandas) |
+| **Frontend**   | React, Material UI |
+| **Backend**    | Django, Django REST, JWT|
+| **Database**   | PostgreSQL, Redis|
+| **Cloud**      | Microsoft Azure |
+| **DevOps**     | Docker, GitHub Actions |
+| **AI/ML**      | Python, Scikit-learn, Pandas |
 
 ---
 
 ## 📂 Repository Structure
     TBC
-
 
 ---
 
@@ -45,21 +44,24 @@ Key features:
 ---
 
 ## 👥 Team Members
-| Name                  | Role                | LinkedIn                                      | GitHub                                   |
-|-----------------------|---------------------|-----------------------------------------------|------------------------------------------|
-| Sabrina-Gabriel Freeman | Project Manager, System Architect, Data Engineer | [![LinkedIn](https://img.shields.io/badge/LinkedIn-0077B5?style=flat&logo=linkedin)](https://www.linkedin.com/in/sabrina-gabriel-freeman-a57281346) | [![GitHub](https://img.shields.io/badge/GitHub-181717?style=flat&logo=github)](https://github.com/SaberF24) |
-| Marco Geral           | Lead Services/Testing Engineer, DevOps | [![LinkedIn](https://img.shields.io/badge/LinkedIn-0077B5?style=flat&logo=linkedin)](https://www.linkedin.com/in/marco-geral-820b7a355/) | [![GitHub](https://img.shields.io/badge/GitHub-181717?style=flat&logo=github)](https://github.com/Marco-Geral) |
-| Chisom Emekpo         | Integration & Testing Engineer | [![LinkedIn](https://img.shields.io/badge/LinkedIn-0077B5?style=flat&logo=linkedin)](https://www.linkedin.com/in/chisom-emekpo-39b89827l/) | [![GitHub](https://img.shields.io/badge/GitHub-181717?style=flat&logo=github)](https://github.com/somworld6) |
-| Vané Abrams           | Business Analyst, UI Engineer | [![LinkedIn](https://img.shields.io/badge/LinkedIn-0077B5?style=flat&logo=linkedin)](http://www.linkedin.com/in/vane-abrams–40569b305) | [![GitHub](https://img.shields.io/badge/GitHub-181717?style=flat&logo=github)](https://github.com/vdenise20) |
-| Capleton Chapfika     | Lead Integration Engineer, DevOps | [![LinkedIn](https://img.shields.io/badge/LinkedIn-0077B5?style=flat&logo=linkedin)](https://www.linkedin.com/in/capletonchapfika/) | [![GitHub](https://img.shields.io/badge/GitHub-181717?style=flat&logo=github)](https://github.com/Capleton11) |
+| Profile               | Name                  | Role                | LinkedIn                                      | GitHub                                   |
+|-----------------------|-----------------------|---------------------|-----------------------------------------------|------------------------------------------|
+| <img src="assets/Saber.jpg" width="100" /> | Sabrina-Gabriel Freeman | Project Manager, System Architect, Data Engineer | [![LinkedIn](https://img.shields.io/badge/LinkedIn-0077B5?style=flat&logo=linkedin)](https://www.linkedin.com/in/sabrina-gabriel-freeman-a57281346) | [![GitHub](https://img.shields.io/badge/GitHub-181717?style=flat&logo=github)](https://github.com/SaberF24) |
+| <img src="assets/Marco.jpg" width="100" /> | Marco Geral | Lead Services/Testing Engineer, DevOps | [![LinkedIn](https://img.shields.io/badge/LinkedIn-0077B5?style=flat&logo=linkedin)](https://www.linkedin.com/in/marco-geral-820b7a355/) | [![GitHub](https://img.shields.io/badge/GitHub-181717?style=flat&logo=github)](https://github.com/Marco-Geral) |
+| <img src="assets/Chisom.jpg" width="100" /> | Chisom Emekpo | Integration & Testing Engineer | [![LinkedIn](https://img.shields.io/badge/LinkedIn-0077B5?style=flat&logo=linkedin)](https://www.linkedin.com/in/chisom-emekpo-39b89827l/) | [![GitHub](https://img.shields.io/badge/GitHub-181717?style=flat&logo=github)](https://github.com/somworld6) |
+| <img src="assets/Vane.jpg" width="100" /> | Vané Abrams | Business Analyst, UI Engineer | [![LinkedIn](https://img.shields.io/badge/LinkedIn-0077B5?style=flat&logo=linkedin)](http://www.linkedin.com/in/vane-abrams–40569b305) | [![GitHub](https://img.shields.io/badge/GitHub-181717?style=flat&logo=github)](https://github.com/vdenise20) |
+| <img src="assets/Capleton.jpg" width="100" /> | Capleton Chapfika | Lead Integration Engineer, DevOps | [![LinkedIn](https://img.shields.io/badge/LinkedIn-0077B5?style=flat&logo=linkedin)](https://www.linkedin.com/in/capletonchapfika/) | [![GitHub](https://img.shields.io/badge/GitHub-181717?style=flat&logo=github)](https://github.com/Capleton11) |
 
 ---
 
 ## ✅ Demo 1 Deliverables (28 May 2025)
-1. **Implemented Use Cases** (3+):  
-   - User registration/login (JWT/OAuth2).  
-   - Food listing by businesses (Django API + React form).  
-   - Basic purchase/donation flow (mock payments).  
+1. **Implemented Use Cases:**
+   - User registration/login (JWT/OAuth2).    
+   - User themes and profile preferences (React + PostgreSQL).
+   - Validation of user input (React + Django validators).
+   - Food listing by businesses (React, Django + Redis).
+   - Browsing food listings (React + Django API, Redis).
+   - Purchase/Request food (React + Django REST, PostgreSQL).
 
 2. **SRS Document**:  
    - Domain model (UML class diagram).  
@@ -71,5 +73,9 @@ Key features:
 
 ---
 
+## 📫 Contact Us
+- [![Email](https://img.shields.io/badge/Email-swmguild@gmail.com-D14836?logo=gmail)](mailto:swmguild@gmail.com)
+
 ## 🚀 Getting Started
 [TBC](assets/construction.png)
+
