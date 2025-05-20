@@ -4,14 +4,15 @@
 **University of Pretoria | COS 301 - Software Engineering Capstone (2025)**  
 
 <div style="text-align: center;">
-  <img src="assets/gendac.png" width="200" />
    <img src="assets/logo.png" width="200" />
+   <img src="assets/gendac.png" width="200" />
 </div>
 
 ---
 
 ## 📌 Project Description
 **Save n Bite** is a digital platform connecting commercial food providers with individuals and organizations in need with the goal of combating food waste and hunger in South Africa using technology-driven solutions and community collaboration.✊
+
 Key features:  
 - **AI-driven surplus prediction** for optimal food redistribution.  
 - **Real-time inventory** and **secure verification** for users/businesses.  
