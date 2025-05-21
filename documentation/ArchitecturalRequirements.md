@@ -1,28 +1,19 @@
 ### Requirements Classification
 
-| **Category**               | **Requirement**                                                                 | **Type** | **Explanation**                                                                 |
-|----------------------------|---------------------------------------------------------------------------------|----------|---------------------------------------------------------------------------------|
-| **Food Listing & Availability** | Businesses list surplus food with details (name, description, etc.)              | F        | Core user-facing feature                                                        |
-|                            | AI model predicts surplus trends                                                | F        | Specific system behavior                                                        |
-|                            | Real-time inventory updates                                                     | F        | Functional capability                                                           |
-| **Purchase & Donations**    | Users browse/search/filter/purchase food                                        | F        | User interaction flow                                                           |
-|                            | Organizations request donations                                                 | F        | User action                                                                     |
-|                            | Secure verification to prevent misuse                                           | NF       | Security constraint                                                             |
-| **Pickup & Delivery**       | Schedule pickups/deliveries                                                     | F        | System feature                                                                  |
-|                            | Real-time tracking                                                              | F        | Functional capability                                                           |
-| **User Access**             | Role-based access (Provider/Organization/Consumer)                              | NF       | Security model                                                                  |
-|                            | Secure login for all users                                                      | NF       | Security standard                                                               |
-| **Security & Compliance**   | Fraud prevention (bulk purchase limits, etc.)                                   | NF       | Security policy                                                                 |
-|                            | Compliance with food safety regulations                                         | NF       | Legal/regulatory constraint                                                    |
-| **Platform UX**             | Responsive mobile/web app                                                       | NF       | Usability standard                                                              |
-|                            | Notifications for listings/expirations                                          | NF       | Performance/reliability                                                         |
-|                            | Only verified users access core features                                        | NF       | Security constraint                                                             |
-| **Reviews**                 | Users rate food/businesses                                                      | F        | User interaction                                                                |
-|                            | Moderation system                                                               | F        | Content control feature                                                         |
-| **Optional (Logistics)**    | Route optimization for bulk donations                                           | NF       | Performance optimization                                                        |
-| **Optional (Community)**    | Impact reporting (meals saved, CO₂ reduced)                                     | NF       | Analytics/scalability                                                           |
-| **Architecture**            | Cloud-hosted deployment (Azure)                                                 | NF       | Infrastructure constraint                                                       |
-|                            | Modular system design                                                           | NF       | Maintainability                                                                 |
-|                            | Secure authentication                                                           | NF       | Security                                                                        |
-| **Design**                  | UI/UX best practices                                                            | NF       | Usability                                                                       |
-|                            | First-launch tutorial                                                           | NF       | User onboarding                                                                 |
+| **Category**               | **Requirement**                                                                 | **Associated Quality Attribute**                                                                 |
+|----------------------------|---------------------------------------------------------------------------------|-------------------------------------------------------------------------------------------|
+|                            | Secure verification to prevent misuse                                           |  Security constraint                                                             |
+| **User Access**             | Role-based access (Provider/Organization/Consumer)                             |  Security model                                                                  |
+|                            | Secure login for all users                                                      |  Security standard                                                               |
+| **Security & Compliance**   | Fraud prevention (bulk purchase limits, etc.)                                  |  Security policy                                                                 |
+|                            | Compliance with food safety regulations                                         |  Legal/regulatory constraint                                                     |
+| **Platform UX**             | Responsive web app                                                             |  Usability standard/interoperability                                             |
+|                            | Notifications for popular/upcoming listings                                     |  Performance/usability                                                           |
+|                            | Only verified users access core features                                        |  Security constraint                                                             |
+| **Logistics (Optional)**    | Route optimization for bulk donations                                          |  Performance optimization                                                        |
+| **Analytics (Optional)**    | Impact reporting (meals saved, CO₂ reduced)                                    |  Analytics/scalability                                                           |
+| **Architecture**            | Cloud-hosted deployment (Azure)                                                |  Infrastructure constraint                                                       |
+|                            | Modular system design                                                           |  Maintainability                                                                 |
+|                            | Secure authentication                                                           |  Security                                                                        |
+| **Design**                  | UI/UX best practices                                                           |  Usability                                                                       |
+|                            | First-launch tutorial                                                           |  User onboarding                                                                 |
