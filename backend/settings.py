@@ -84,7 +84,7 @@ import dj_database_url
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'saved_n_bite_db',
+        'NAME': 'save_n_bite_db',
         'USER': 'postgres',
         'PASSWORD': '12SWMGuild!34',  # The one you set during initdb
         'HOST': 'localhost',
