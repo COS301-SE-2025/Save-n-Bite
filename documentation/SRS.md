@@ -114,7 +114,7 @@ The project will be piloted with **University of Pretoria food outlets** in coll
 
 ## 3. Use Case Diagrams  
 
-![Use Case Diagram](./assets/UseCase_Diagram.png)
+![Use Case Diagram](../assets/UseCase_Diagram.png)
 
 ---
 
