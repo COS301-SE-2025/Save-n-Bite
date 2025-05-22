@@ -10,3 +10,4 @@ ENV/
 poetry.lock
 db.sqlite3
 .DS_Store
+.vscode/settings.json
