@@ -56,7 +56,7 @@ Key features:
 ---
 
 ## 🔗 Documentation
-- **📄 [Software Requirements Specification (SRS)](assets/construction.png)**
+- **📄 [Software Requirements Specification (SRS)](documentation/SRS.md)**
 - **📊 [GitHub Project Board](https://https://github.com/orgs/COS301-SE-2025/projects/177)**  
 - **🤖 [API Documentation](assets/construction.png)**  
 
