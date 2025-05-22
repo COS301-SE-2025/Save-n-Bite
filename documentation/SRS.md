@@ -1,5 +1,5 @@
 # Software Requirements Specification (SRS)  
-**Project Name:** Save ‘n’ Bite  
+**Project Name:** Save n Bite  
 **Version:** 1.0  
 **Date:** [22/05/2025]  
 **Team:** [Secure Web & Mobile Guild]  
@@ -15,7 +15,7 @@ Food waste is a major global concern, with tons of surplus food being discarded 
 Simultaneously, many individuals—especially students and low-income groups—face food insecurity. There is a need for a structured, secure, and accessible platform that facilitates the redistribution of surplus food in a way that is efficient, compliant with safety regulations, and scalable across communities.  
 
 ### Project Scope  
-Save ‘n’ Bite will develop a web and mobile platform that connects food suppliers with individuals and organisations in need. The system will allow verified users to list, browse, request, purchase, or request a donation of surplus food. It includes:  
+Save n Bite will develop a web and mobile platform that connects food suppliers with individuals and organisations in need. The system will allow verified users to list, browse, request, purchase, or request a donation of surplus food. It includes:  
 - Role-based dashboards  
 - Scheduling tools for pickups  
 - AI-driven listing suggestions  
@@ -178,7 +178,7 @@ R6: **Feedback & Review**
 &nbsp;&nbsp;&nbsp;&nbsp;R6.3 A moderation system must exist to prevent false or abusive reviews.  
 &nbsp;&nbsp;&nbsp;&nbsp;R6.4 Reviews should be linked to specific listings or transactions.  
 
-R7: **Analytics**  
+R7: **Analytics**
 &nbsp;&nbsp;&nbsp;&nbsp;R7.1 Businesses must be able to view analytics on food waste reduction (e.g., items saved).  
 &nbsp;&nbsp;&nbsp;&nbsp;R7.2 The system should present user-friendly dashboards for performance metrics (e.g., total meals donated).  
 &nbsp;&nbsp;&nbsp;&nbsp;R7.3 Metrics may include total donations, frequent users, and overall impact.  
@@ -224,17 +224,75 @@ R11: **Gamification**
 
 ## 7. Architectural Requirements  
 
-### 7.1 Quality Requirements  
-*(E.g., Performance, Scalability, Security – To be filled later.)*  
+### 7.1 Quality Requirements and Constraints  
 
-### 7.2 Architectural Patterns  
-*(E.g., MVC, Microservices – To be filled later.)*  
+| **Category**               | **Requirement**                                                                 | **Associated Quality Attribute/Constraint**                                                                 |
+|----------------------------|---------------------------------------------------------------------------------|-------------------------------------------------------------------------------------------|
+|                            | Secure verification to prevent misuse                                           |  Security constraint                                                             |
+| **User Access**             | Role-based access (Provider/Organization/Consumer)                             |  Security model                                                                  |
+|                            | Secure login for all users                                                      |  Security standard                                                               |
+| **Security & Compliance**   | Fraud prevention (bulk purchase limits, etc.)                                  |  Security policy                                                                 |
+|                            | Compliance with food safety regulations                                         |  Legal/regulatory constraint                                                     |
+| **Platform UX**             | Responsive web app                                                             |  Usability standard/interoperability                                             |
+|                            | Notifications for popular/upcoming listings                                     |  Performance/usability                                                           |
+|                            | Only verified users access core features                                        |  Security constraint                                                             |
+| **Logistics (Optional)**    | Route optimization for bulk donations                                          |  Performance optimization                                                        |
+| **Analytics (Optional)**    | Impact reporting (meals saved, CO₂ reduced)                                    |  Analytics/scalability                                                           |
+| **Architecture**            | Cloud-hosted deployment (Azure)                                                |  Infrastructure constraint                                                       |
+|                            | Modular system design                                                           |  Maintainability                                                                 |
+|                            | Secure authentication                                                           |  Security                                                                        |
+| **Design**                  | UI/UX best practices                                                           |  Usability                                                                       |
+|                            | First-launch tutorial                                                           |  User onboarding                                                                 | 
+ 
+### 7.2 Architectural Patterns: Event-Driven Architecture
+ 
+#### **Overview**
+We adopt an **event-driven architecture (EDA)** to handle real-time data flows between food providers, consumers, and AI-driven analytics. This pattern decouples system components by treating actions (e.g., new food listings, orders) as **events** that trigger independent processes.
+
+#### **Key Components**
+| Component          | Role                                                                 | Example Events                          |
+|--------------------|----------------------------------------------------------------------|-----------------------------------------|
+| **Producers**      | Emit events when state changes (e.g., new listing, order placement). | `FoodListingCreated`, `OrderPlaced`     |
+| **Broker**         | Routes events to subscribed consumers (Redis Pub/Sub).               | Manages `food_listings` channel         |
+| **Consumers**      | React to events (AI, UI, notifications).                             | `AI_PredictionService`, `UserInterface` |
+
+#### **Reasons for EDA:**
+1. **Real-Time Updates**  
+   - Users instantly see new listings/donations via WebSocket pushes (no page refresh).  
+   - Example: When a restaurant lists surplus food, the UI updates in <500ms.
+
+2. **Decoupled AI/ML**  
+   - The AI model consumes inventory update events to predict surplus trends **asynchronously**, avoiding UI latency.  
+   - Scales independently during demand spikes (e.g., meal rush hours).
+
+3. **Modularity**  
+   - New features (e.g., fraud detection) can subscribe to events without modifying producers.  
+   - Example: A `DonationRequested` event triggers both logistics and impact analytics.
+
+4. **Fault Tolerance**  
+   - If the AI service crashes, orders/listings continue uninterrupted (events persist in Redis).
+
+#### **Tech Stack Alignment**
+Broker: Redis Pub/Sub (lightweight, supports WebSocket via Django Channels).
+
+Frontend: React listens to WebSocket events for real-time UI updates.
+
+Backend: Django emits events on CRUD operations (e.g., post_save signals).
+
 
 ### 7.3 Design Patterns  
-*(E.g., Singleton, Observer – To be filled later.)*  
 
-### 7.4 Constraints  
-*(E.g., Compliance with food safety laws, limited to web/mobile – To be filled later.)*  
+#### 1. Singleton
+- The **verification system** will be created as a singleton class to ensure a single point of control for security-critical operations (e.g., document validation, fraud checks).
+- The **AI model** will be a singleton class to avoid memory watse and guarantees consistent predictions.
+
+#### 2. Observer
+- The observer pattern is essential for an event-driven architecture and will be used for decoupling event emitters from subscribers.
+- Producers include events that add food listings to the database while consumers include the AI service, the UI and user notifications subscribing to events.
+
+#### 3. Command 
+- The use of the command pattern will allow us to encapsulate actions as objects that can be queued or undone.
+- Such actions include the ordering of food or sending a donation request.
 
 ---
 
@@ -247,4 +305,4 @@ R11: **Gamification**
 **Notes:**  
 - Replace placeholder images with actual files.  
 - Update sections marked "Coming Soon" as progress is made.  
-- Ensure consistency with your team’s GitHub documentation standards.  
+- Ensure consistency with team’s GitHub documentation standards.  
