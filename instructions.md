@@ -3,8 +3,9 @@
 
 🚀 Step-by-Step Installation Instructions
 ### 1. Install Prerequisites
-✅ Python 3.10+
-Download and install from: https://www.python.org/downloads/
+✅ Python 3.10 (Python 3.10 is generally more compatible)
+- Download and install from: https://www.python.org/downloads/
+- Add python to your system path
 
 Ensure it's installed properly:
 ```
@@ -27,6 +28,8 @@ psql -U postgres
 ✅ Poetry (Python dependency manager)
 ```
 pip install poetry
+OR (Invoke-WebRequest -Uri https://install.python-poetry.org -UseBasicParsing).Content | python -
+(The second option is more reliable)
 ```
 ### 2. Clone the Repository
 ```
@@ -36,7 +39,7 @@ cd <repo-folder>
 ### 3. Create and Activate the Virtual Environment
 ```
 poetry install
-poetry shell
+poetry env activate
 ```
 ### 4. Set Up the Database
 **Note I have already created a db with a password and all so we just need to get it onto Azure and then we can all share the db (the password for postgreSQL db is in backend/settings.py -> in the DATABASES section**
