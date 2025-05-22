@@ -1,0 +1,13 @@
+__pycache__/
+*.py[cod]
+*$py.class
+.env
+.venv
+env/
+venv/
+ENV/
+.poetry/
+poetry.lock
+db.sqlite3
+.DS_Store
+.vscode/settings.json
