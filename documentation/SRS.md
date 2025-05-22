@@ -120,92 +120,93 @@ The project will be piloted with **University of Pretoria food outlets** in coll
 
 ## 4. Functional Requirements  
 
-R1: **User Management**<br>
-    R1.1 The system must support registration for individuals. organisations, and businesses.<br>
-    R1.2 Users must be verified during registration.<br>
-    R1.3 The system must support role-based access (e.g. individuals, organisations, businesses, admin).<br>
-    R1.4 Secure login/logout functionality must be provided.<br>
-    R1.5 The system must limit functionality based on user role and verification status.<br>
-    R1.6 The system should allow the user to update their profile.<br>
-    R1.7 The system should allow the user to reset their password.<br>
-    R1.8 The admin should be able to manage roles and permissions. <br>
+R1: **User Management**  
+&nbsp;&nbsp;&nbsp;&nbsp;R1.1 The system must support registration for individuals, organisations, and businesses.  
+&nbsp;&nbsp;&nbsp;&nbsp;R1.2 Users must be verified during registration.  
+&nbsp;&nbsp;&nbsp;&nbsp;R1.3 The system must support role-based access (e.g. individuals, organisations, businesses, admin).  
+&nbsp;&nbsp;&nbsp;&nbsp;R1.4 Secure login/logout functionality must be provided.  
+&nbsp;&nbsp;&nbsp;&nbsp;R1.5 The system must limit functionality based on user role and verification status.  
+&nbsp;&nbsp;&nbsp;&nbsp;R1.6 The system should allow the user to update their profile.  
+&nbsp;&nbsp;&nbsp;&nbsp;R1.7 The system should allow the user to reset their password.  
+&nbsp;&nbsp;&nbsp;&nbsp;R1.8 The admin should be able to manage roles and permissions.  
 
-R2: **Make Listings**<br>
-    R2.1 Only verified business users should be able to create new surplus food listings.<br>
-    R2.2 Each listing must include the following details:<br>
-        -Name of the item<br>
-        -Description<br>
-        -Expiry date<br>
-        -Photos (optional)<br>
-        -Quantity available<br>
-        -Price (or mark as donation)<br>
-        -Pickup Options<br>
-    R2.3 Business users should be able to indicate whether the listing is for sale at a discounted price or available as a donation.<br>
-    R2.4 Listings should update real-time availability as items are reserved or claimed.<br>
-    R2.5 Businesses should be able to update food listings.<br>
-    R2.6 Businesses should be able to view their own listings.<br>
+R2: **Make Listings**  
+&nbsp;&nbsp;&nbsp;&nbsp;R2.1 Only verified business users should be able to create new surplus food listings.  
+&nbsp;&nbsp;&nbsp;&nbsp;R2.2 Each listing must include the following details:  
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- Name of the item  
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- Description  
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- Expiry date  
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- Photos (optional)  
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- Quantity available  
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- Price (or mark as donation)  
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- Pickup Options  
+&nbsp;&nbsp;&nbsp;&nbsp;R2.3 Business users should be able to indicate whether the listing is for sale at a discounted price or available as a donation.  
+&nbsp;&nbsp;&nbsp;&nbsp;R2.4 Listings should update real-time availability as items are reserved or claimed.  
+&nbsp;&nbsp;&nbsp;&nbsp;R2.5 Businesses should be able to update food listings.  
+&nbsp;&nbsp;&nbsp;&nbsp;R2.6 Businesses should be able to view their own listings.  
 
-R3: **Browse Listings**<br>
-    R3.1 Verified users (individuals and organizations) should be able to view active food listings.<br>
-    R3.2 Users should be able to search for listings by keyword (e.g., name, category).<br>
-    R3.3 Users should be able to filter listings by:<br>
-        -Availability (in stock)<br>
-        -Type (donation or discounted sale)<br>
-        -Expiry date<br>
-        -Business location<br>
-    R3.4 Listings should display clearly formatted information (e.g., name, expiry, image, availability).<br>
-    R3.5 Users should be able to sort the listings.<br>
-    R3.6 Users should be able to receive notifications whenever new listings are added for food products they’re interested in.<br>
+R3: **Browse Listings**  
+&nbsp;&nbsp;&nbsp;&nbsp;R3.1 Verified users (individuals and organizations) should be able to view active food listings.  
+&nbsp;&nbsp;&nbsp;&nbsp;R3.2 Users should be able to search for listings by keyword (e.g., name, category).  
+&nbsp;&nbsp;&nbsp;&nbsp;R3.3 Users should be able to filter listings by:  
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- Availability (in stock)  
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- Type (donation or discounted sale)  
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- Expiry date  
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- Business location  
+&nbsp;&nbsp;&nbsp;&nbsp;R3.4 Listings should display clearly formatted information (e.g., name, expiry, image, availability).  
+&nbsp;&nbsp;&nbsp;&nbsp;R3.5 Users should be able to sort the listings.  
+&nbsp;&nbsp;&nbsp;&nbsp;R3.6 Users should be able to receive notifications whenever new listings are added for food products they’re interested in.  
 
-R4: **Purchase / Request Food Items**<br>
-    R4.1 Verified individual users should be able to purchase discounted food items.<br>
-    R4.2 Verified organization users should be able to request food items listed as donations.<br>
-    R4.3 The system should enforce limits to prevent bulk purchasing or hoarding (based on user role and verification status).<br>
-    R4.4 Upon purchase or request, the listing should be updated to reflect new availability.<br>
-    R4.5 A confirmation screen should summarize the transaction (e.g., pickup time, location, item details).<br>
-    R4.6 Users should be able to cancel purchases if they haven’t paid for them yet.<br>
-    R4.7 Users should be able to view their transaction history.<br>
+R4: **Purchase / Request Food Items**  
+&nbsp;&nbsp;&nbsp;&nbsp;R4.1 Verified individual users should be able to purchase discounted food items.  
+&nbsp;&nbsp;&nbsp;&nbsp;R4.2 Verified organization users should be able to request food items listed as donations.  
+&nbsp;&nbsp;&nbsp;&nbsp;R4.3 The system should enforce limits to prevent bulk purchasing or hoarding (based on user role and verification status).  
+&nbsp;&nbsp;&nbsp;&nbsp;R4.4 Upon purchase or request, the listing should be updated to reflect new availability.  
+&nbsp;&nbsp;&nbsp;&nbsp;R4.5 A confirmation screen should summarize the transaction (e.g., pickup time, location, item details).  
+&nbsp;&nbsp;&nbsp;&nbsp;R4.6 Users should be able to cancel purchases if they haven’t paid for them yet.  
+&nbsp;&nbsp;&nbsp;&nbsp;R4.7 Users should be able to view their transaction history.  
 
-R5: **Logistics**<br>
-    R5.1 Businesses must be able to set available pickup times for each listing.<br>
-    R5.2 Organizations must be able to coordinate logistics for food pickups.<br>
-    R5.3 Real-time tracking and status updates must be available for scheduled pickups.<br>
-    R5.4 The system should allow users to receive notifications about pickup schedules and updates.<br>
+R5: **Logistics**  
+&nbsp;&nbsp;&nbsp;&nbsp;R5.1 Businesses must be able to set available pickup times for each listing.  
+&nbsp;&nbsp;&nbsp;&nbsp;R5.2 Organizations must be able to coordinate logistics for food pickups.  
+&nbsp;&nbsp;&nbsp;&nbsp;R5.3 Real-time tracking and status updates must be available for scheduled pickups.  
+&nbsp;&nbsp;&nbsp;&nbsp;R5.4 The system should allow users to receive notifications about pickup schedules and updates.  
 
-R6: **Feedback & Review**<br>
-    R6.1 Verified users must be able to rate their food purchase or donation experiences.<br>
-    R6.2 Businesses must be able to view feedback received.<br>
-    R6.3 A moderation system must exist to prevent false or abusive reviews.<br>
-    R6.4 Reviews should be linked to specific listings or transactions.<br>
+R6: **Feedback & Review**  
+&nbsp;&nbsp;&nbsp;&nbsp;R6.1 Verified users must be able to rate their food purchase or donation experiences.  
+&nbsp;&nbsp;&nbsp;&nbsp;R6.2 Businesses must be able to view feedback received.  
+&nbsp;&nbsp;&nbsp;&nbsp;R6.3 A moderation system must exist to prevent false or abusive reviews.  
+&nbsp;&nbsp;&nbsp;&nbsp;R6.4 Reviews should be linked to specific listings or transactions.  
 
-R7: **Analytics**<br>
-    R7.1 Businesses must be able to view analytics on food waste reduction (e.g., items saved).<br>
-    R7.2 The system should present user-friendly dashboards for performance metrics (e.g., total meals donated).<br>
-    R7.3 Metrics may include total donations, frequent users, and overall impact.<br>
+R7: **Analytics**  
+&nbsp;&nbsp;&nbsp;&nbsp;R7.1 Businesses must be able to view analytics on food waste reduction (e.g., items saved).  
+&nbsp;&nbsp;&nbsp;&nbsp;R7.2 The system should present user-friendly dashboards for performance metrics (e.g., total meals donated).  
+&nbsp;&nbsp;&nbsp;&nbsp;R7.3 Metrics may include total donations, frequent users, and overall impact.  
 
-R8: **AI Prediction**<br>
-    R8.1 The system must use historical data to predict surplus food trends (e.g., "Fridays have 20% more leftovers").<br>
-    R8.2 AI must suggest optimal listing times or donation windows to maximize redistribution.<br>
-    R8.3 Predictions must be visible to business users during listing creation.<br>
-    R8.4 The system must generate smart recommendations to organisations and individuals.<br>
+R8: **AI Prediction**  
+&nbsp;&nbsp;&nbsp;&nbsp;R8.1 The system must use historical data to predict surplus food trends (e.g., "Fridays have 20% more leftovers").  
+&nbsp;&nbsp;&nbsp;&nbsp;R8.2 AI must suggest optimal listing times or donation windows to maximize redistribution.  
+&nbsp;&nbsp;&nbsp;&nbsp;R8.3 Predictions must be visible to business users during listing creation.  
+&nbsp;&nbsp;&nbsp;&nbsp;R8.4 The system must generate smart recommendations to organisations and individuals.  
 
-R9. **Blockchain & Rewards**<br>
-    R9.1 The platform must include a blockchain-based wallet system for secure transactions.<br>
-    R9.2 Users should be able to earn rewards for actions like donations, purchases, or community engagement.<br>
-    R9.3 Rewards and transactions must be logged securely and transparently on the blockchain.<br>
-    R9.4 Users may redeem rewards for discounts or other incentives.<br>
-    R9.5 Individuals and organisations should be able to share their impact achievements.<br>
+R9. **Blockchain & Rewards**  
+&nbsp;&nbsp;&nbsp;&nbsp;R9.1 The platform must include a blockchain-based wallet system for secure transactions.  
+&nbsp;&nbsp;&nbsp;&nbsp;R9.2 Users should be able to earn rewards for actions like donations, purchases, or community engagement.  
+&nbsp;&nbsp;&nbsp;&nbsp;R9.3 Rewards and transactions must be logged securely and transparently on the blockchain.  
+&nbsp;&nbsp;&nbsp;&nbsp;R9.4 Users may redeem rewards for discounts or other incentives.  
+&nbsp;&nbsp;&nbsp;&nbsp;R9.5 Individuals and organisations should be able to share their impact achievements.  
 
-R10: **Educational & Community**<br>
-    R10.1 The platform must include educational content on reducing food waste.<br>
-    R10.2 The platform should allow users to participate in sustainability challenges.<br>
-    R10.3 Users must be able to access community updates, initiatives, or campaigns.<br>
+R10: **Educational & Community**  
+&nbsp;&nbsp;&nbsp;&nbsp;R10.1 The platform must include educational content on reducing food waste.  
+&nbsp;&nbsp;&nbsp;&nbsp;R10.2 The platform should allow users to participate in sustainability challenges.  
+&nbsp;&nbsp;&nbsp;&nbsp;R10.3 Users must be able to access community updates, initiatives, or campaigns.  
 
-R11: **Gamification**<br>
-    R11.1 Users must be able to earn badges based on activity (e.g., “5 meals saved this week”).<br>
-    R11.2 The platform must support social sharing of achievements (e.g., on X/Twitter or Instagram).<br>
-    R11.3 Badges should be linked to real impact data (e.g., CO₂ reduction, meals saved).<br>
-    R11.4 A leaderboard or achievement dashboard should be available for user motivation.<br>
+R11: **Gamification**  
+&nbsp;&nbsp;&nbsp;&nbsp;R11.1 Users must be able to earn badges based on activity (e.g., “5 meals saved this week”).  
+&nbsp;&nbsp;&nbsp;&nbsp;R11.2 The platform must support social sharing of achievements (e.g., on X/Twitter or Instagram).  
+&nbsp;&nbsp;&nbsp;&nbsp;R11.3 Badges should be linked to real impact data (e.g., CO₂ reduction, meals saved).  
+&nbsp;&nbsp;&nbsp;&nbsp;R11.4 A leaderboard or achievement dashboard should be available for user motivation.  
+
 
 ---
 
