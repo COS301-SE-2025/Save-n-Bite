@@ -27,7 +27,9 @@ const RegisterForm = ({ userType = USER_TYPES.CUSTOMER, onSuccess, onError}) => 
     representativeEmail: '',
     organisationAddress: '',
     npoDocument: null,
-    organisationLogo: null
+    organisationLogo: null,
+
+    province: '',
 
     });
 
@@ -75,6 +77,21 @@ const RegisterForm = ({ userType = USER_TYPES.CUSTOMER, onSuccess, onError}) => 
     }
   };
 
+     const handleSubmit = async (e) => {
+        e.preventDefault();
+        if (!validateForm()) return;
+
+        setIsLoading(true);
+        try {
+          const response = await authAPI.register({ ...formData, userType });
+          onSuccess(response);
+        } catch (error) {
+          onError(error?.response?.data?.message || 'Registration failed');
+        } finally {
+          setIsLoading(false);
+        }
+    };
+
   return(
     <form className="register-form" onSubmit={handleSubmit}>
       <h2>
@@ -118,7 +135,11 @@ const RegisterForm = ({ userType = USER_TYPES.CUSTOMER, onSuccess, onError}) => 
       </>
       )}
 
-      
+       <button type="submit" disabled={isLoading}>
+      {isLoading ? 'Registering...' : 'Register'}
+      </button>
+
+
 
     </form>
 
