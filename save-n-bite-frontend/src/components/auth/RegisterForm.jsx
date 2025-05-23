@@ -1,0 +1,66 @@
+import React, { useState } from 'react';
+import { authAPI } from '@/services/authAPI';
+import { validateEmail, validatePassword, validateRequired, validatePhone } from '@/utils/validators';
+import { USER_TYPES } from '@/utils/constants';
+import './RegisterForm.css';
+
+const RegisterForm = ({ userType = USER_TYPES.CUSTOMER, onSuccess, onError}) => {
+    const [formData,setFormData] = useState({
+    fullName: '',
+    email: '',
+    password: '',
+    confirmPassword: '',
+    profileImage: null,
+
+    // Provider fields
+    businessName: '',
+    businessAddress: '',
+    businessContact: '',
+    businessEmail: '',
+    cipcDocument: null,
+    logo: null,
+
+    // NGO fields
+    organisationName: '',
+    organisationContact: '',
+    representativeName: '',
+    representativeEmail: '',
+    organisationAddress: '',
+    npoDocument: null,
+    organisationLogo: null
+
+    });
+
+  const [errors, setErrors] = useState({});
+  const [isLoading, setIsLoading] = useState(false);
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+    if (errors[name]) {
+      setErrors(prev => ({
+        ...prev,
+        [name]: ''
+      }));
+    }
+  };
+
+  const handleFileChange = (e) => {
+    const { name, files } = e.target;
+    if (files && files[0]) {
+      const file = files[0];
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setFormData(prev => ({
+          ...prev,
+          [name]: reader.result
+        }));
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+}
