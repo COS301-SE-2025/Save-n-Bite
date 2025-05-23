@@ -77,6 +77,48 @@ const RegisterForm = ({ userType = USER_TYPES.CUSTOMER, onSuccess, onError}) => 
     }
   };
 
+   const validateForm = () => {
+    const newErrors = {};
+
+    if (!validateRequired(formData.fullName)) {
+      newErrors.fullName = 'Full name is required';
+    }
+
+    if (!validateEmail(formData.email)) {
+      newErrors.email = 'Valid email is required';
+    }
+
+    if (!validatePassword(formData.password)) {
+      newErrors.password = 'Password must be at least 6 characters';
+    }
+
+    if (formData.password !== formData.confirmPassword) {
+      newErrors.confirmPassword = 'Passwords do not match';
+    }
+
+    if (!formData.province) {
+      newErrors.province = 'Province is required';
+    }
+
+    if (userType === USER_TYPES.PROVIDER) {
+      if (!validateRequired(formData.businessName)) newErrors.businessName = 'Business name is required';
+      if (!validateRequired(formData.businessAddress)) newErrors.businessAddress = 'Business address is required';
+      if (!validatePhone(formData.businessContact)) newErrors.businessContact = 'Valid contact number is required';
+      if (!validateEmail(formData.businessEmail)) newErrors.businessEmail = 'Valid business email is required';
+    }
+
+    if (userType === USER_TYPES.NGO) {
+      if (!validateRequired(formData.organisationName)) newErrors.organisationName = 'Organisation name is required';
+      if (!validatePhone(formData.organisationContact)) newErrors.organisationContact = 'Valid contact number is required';
+      if (!validateRequired(formData.representativeName)) newErrors.representativeName = 'Representative name is required';
+      if (!validateEmail(formData.representativeEmail)) newErrors.representativeEmail = 'Valid representative email is required';
+      if (!validateRequired(formData.organisationAddress)) newErrors.organisationAddress = 'Address is required';
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
      const handleSubmit = async (e) => {
         e.preventDefault();
         if (!validateForm()) return;
