@@ -83,11 +83,27 @@ const RegisterForm = ({ userType = USER_TYPES.CUSTOMER, onSuccess, onError}) => 
       </h2>
 
       {/* Customer fields */}
+      {userType === USER_TYPES.CUSTOMER && (
+        <>
       <input type="text" name="fullName" value={formData.fullName} onChange={handleInputChange} placeholder="Full Name" />
       <input type="email" name="email" value={formData.email} onChange={handleInputChange} placeholder="Email" />
       <input type="password" name="password" value={formData.password} onChange={handleInputChange} placeholder="Password" />
       <input type="password" name="confirmPassword" value={formData.confirmPassword} onChange={handleInputChange} placeholder="Confirm Password" />
       <input type="file" name="profileImage" onChange={handleFileChange} />
+      </>
+      )}
+
+      {/* Food Provider Fields */}
+      {userType === USER_TYPES.PROVIDER && (
+      <>
+        <input type="text" name="businessName" value={formData.businessName} onChange={handleInputChange} placeholder="Business Name" />
+        <input type="text" name="businessAddress" value={formData.businessAddress} onChange={handleInputChange} placeholder="Business Address" />
+        <input type="text" name="businessContact" value={formData.businessContact} onChange={handleInputChange} placeholder="Business Contact Number" />
+        <input type="email" name="businessEmail" value={formData.businessEmail} onChange={handleInputChange} placeholder="Business Email" />
+        <input type="file" name="cipcDocument" onChange={handleFileChange} />
+        <input type="file" name="logo" onChange={handleFileChange} />
+      </>
+      )}
 
     </form>
 
