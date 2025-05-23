@@ -105,6 +105,21 @@ const RegisterForm = ({ userType = USER_TYPES.CUSTOMER, onSuccess, onError}) => 
       </>
       )}
 
+      {/* NGO Fields */}
+      {userType === USER_TYPES.NGO && (
+      <>
+        <input type="text" name="organisationName" value={formData.organisationName} onChange={handleInputChange} placeholder="Organisation Name" />
+        <input type="text" name="organisationAddress" value={formData.organisationAddress} onChange={handleInputChange} placeholder="Organisation Address" />
+        <input type="text" name="organisationContact" value={formData.organisationContact} onChange={handleInputChange} placeholder="Organisation Contact" />
+        <input type="text" name="representativeName" value={formData.representativeName} onChange={handleInputChange} placeholder="Representative Name" />
+        <input type="email" name="representativeEmail" value={formData.representativeEmail} onChange={handleInputChange} placeholder="Representative Email" />
+        <input type="file" name="npoDocument" onChange={handleFileChange} />
+        <input type="file" name="organisationLogo" onChange={handleFileChange} />
+      </>
+      )}
+
+      
+
     </form>
 
   );
