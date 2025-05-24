@@ -29,7 +29,12 @@ const RegisterForm = ({ userType = USER_TYPES.CUSTOMER, onSuccess, onError}) => 
     npoDocument: null,
     organisationLogo: null,
 
+    addressLine1: '',
+    addressLine2: '',
+    city: '',
     province: '',
+    zipCode: '',
+    country: '',
 
     });
 
@@ -137,6 +142,8 @@ const RegisterForm = ({ userType = USER_TYPES.CUSTOMER, onSuccess, onError}) => 
   return(
      <form className="register-form" onSubmit={handleSubmit}>
     
+     {userType === USER_TYPES.CUSTOMER && (
+        <>
       <label>Full Name</label>
       <input type="text" name="fullName" value={formData.fullName} onChange={handleInputChange} />
       {errors.fullName && <p className="error">{errors.fullName}</p>}
@@ -145,6 +152,16 @@ const RegisterForm = ({ userType = USER_TYPES.CUSTOMER, onSuccess, onError}) => 
       <input type="email" name="email" value={formData.email} onChange={handleInputChange} />
       {errors.email && <p className="error">{errors.email}</p>}
 
+      <label>City</label>
+          <input type="text" name="city" value={formData.city} onChange={handleInputChange} />
+          
+      <label>Province</label>
+      <select name="province" value={formData.province} onChange={handleInputChange}>
+        <option value="">-- Select Province --</option>
+        {provinces.map(p => <option key={p} value={p}>{p}</option>)}
+      </select>
+      {errors.province && <p className="error">{errors.province}</p>}
+
       <label>Password</label>
       <input type="password" name="password" value={formData.password} onChange={handleInputChange} />
       {errors.password && <p className="error">{errors.password}</p>}
@@ -152,13 +169,9 @@ const RegisterForm = ({ userType = USER_TYPES.CUSTOMER, onSuccess, onError}) => 
       <label>Confirm Password</label>
       <input type="password" name="confirmPassword" value={formData.confirmPassword} onChange={handleInputChange} />
       {errors.confirmPassword && <p className="error">{errors.confirmPassword}</p>}
-
-      <label>Province</label>
-      <select name="province" value={formData.province} onChange={handleInputChange}>
-        <option value="">-- Select Province --</option>
-        {provinces.map(p => <option key={p} value={p}>{p}</option>)}
-      </select>
-      {errors.province && <p className="error">{errors.province}</p>}
+      
+      </>
+      )};
 
 
       {userType === USER_TYPES.PROVIDER && (
@@ -167,9 +180,26 @@ const RegisterForm = ({ userType = USER_TYPES.CUSTOMER, onSuccess, onError}) => 
           <input type="text" name="businessName" value={formData.businessName} onChange={handleInputChange} />
           {errors.businessName && <p className="error">{errors.businessName}</p>}
 
-          <label>Business Address</label>
-          <input type="text" name="businessAddress" value={formData.businessAddress} onChange={handleInputChange} />
-          {errors.businessAddress && <p className="error">{errors.businessAddress}</p>}
+         <label>Business Address</label>
+          <input type="text" name="addressLine1" placeholder="Address Line 1" value={formData.addressLine1} onChange={handleInputChange} />
+          {errors.addressLine1 && <p className="error">{errors.addressLine1}</p>}
+
+        <input type="text" name="addressLine2" placeholder="Address Line 2" value={formData.addressLine2} onChange={handleInputChange} />
+
+        <input type="text" name="city" placeholder="City" value={formData.city} onChange={handleInputChange} />
+        {errors.city && <p className="error">{errors.city}</p>}
+
+        <select name="province" value={formData.province} onChange={handleInputChange}>
+          <option value="">Select Province</option>
+          {provinces.map(p => <option key={p} value={p}>{p}</option>)}
+        </select>
+        {errors.province && <p className="error">{errors.province}</p>}
+
+        <input type="text" name="zipCode" placeholder="Zip/Postal Code" value={formData.zipCode} onChange={handleInputChange} />
+        {errors.zipCode && <p className="error">{errors.zipCode}</p>}
+
+        <input type="text" name="country" placeholder="Country" value={formData.country} onChange={handleInputChange} />
+        {errors.country && <p className="error">{errors.country}</p>}
 
           <label>Business Contact</label>
           <input type="text" name="businessContact" value={formData.businessContact} onChange={handleInputChange} />
@@ -178,6 +208,33 @@ const RegisterForm = ({ userType = USER_TYPES.CUSTOMER, onSuccess, onError}) => 
           <label>Business Email</label>
           <input type="email" name="businessEmail" value={formData.businessEmail} onChange={handleInputChange} />
           {errors.businessEmail && <p className="error">{errors.businessEmail}</p>}
+
+          <label>Password</label>
+          <input type="password" name="password" value={formData.password} onChange={handleInputChange} />
+          {errors.password && <p className="error">{errors.password}</p>}
+
+          <label>Confirm Password</label>
+          <input type="password" name="confirmPassword" value={formData.confirmPassword} onChange={handleInputChange} />
+          {errors.confirmPassword && <p className="error">{errors.confirmPassword}</p>}
+          
+
+          <label>CIPC Document</label>
+          <input 
+            type="file" 
+            name="cipcDocument" 
+            onChange={handleFileChange} 
+            accept=".pdf,.jpg,.png" 
+          />
+          {errors.cipcDocument && <p className="error">{errors.cipcDocument}</p>}
+
+          <label>Business Logo</label>
+          <input 
+            type="file" 
+            name="logo" 
+            onChange={handleFileChange} 
+            accept=".jpg,.png" 
+          />
+          {errors.logo && <p className="error">{errors.logo}</p>}
         </>
       )}
 
