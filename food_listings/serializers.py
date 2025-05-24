@@ -35,11 +35,6 @@ class FoodListingCreateSerializer(serializers.ModelSerializer):
             'discounted_price', 'quantity', 'expiry_date', 
             'pickup_window', 'imageUrl', 'allergens', 'dietary_info'
         ]
-        extra_kwargs = {
-            'food_type': {'source': 'food_type'},
-            'original_price': {'source': 'original_price'},
-            'discounted_price': {'write_only': False}
-        }
     
     def create(self, validated_data):
         # Get the authenticated user (provider)
