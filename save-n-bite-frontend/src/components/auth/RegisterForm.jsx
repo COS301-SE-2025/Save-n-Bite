@@ -144,9 +144,13 @@ const RegisterForm = ({ userType = USER_TYPES.CUSTOMER, onSuccess, onError}) => 
     
      {userType === USER_TYPES.CUSTOMER && (
         <>
-      <label>Full Name</label>
-      <input type="text" name="fullName" value={formData.fullName} onChange={handleInputChange} />
-      {errors.fullName && <p className="error">{errors.fullName}</p>}
+      <label>First Name</label>
+      <input type="text" name="firstName" value={formData.firstName} onChange={handleInputChange} />
+      {errors.firstName && <p className="error">{errors.firstName}</p>}
+
+      <label>Last Name</label>
+      <input type="text" name="lastName" value={formData.lastName} onChange={handleInputChange} />
+      {errors.lastName && <p className="error">{errors.lastName}</p>}
 
       <label>Email</label>
       <input type="email" name="email" value={formData.email} onChange={handleInputChange} />
@@ -248,19 +252,75 @@ const RegisterForm = ({ userType = USER_TYPES.CUSTOMER, onSuccess, onError}) => 
           <input type="text" name="organisationContact" value={formData.organisationContact} onChange={handleInputChange} />
           {errors.organisationContact && <p className="error">{errors.organisationContact}</p>}
 
-          <label>Representative Name</label>
+          <label>Organisation Email</label>
+          <input type="text" name="organisationEmail" value={formData.organisationEmail} onChange={handleInputChange} />
+          {errors.organisationEmail && <p className="error">{errors.organisationEmail}</p>}
+
+          <label>Representative First Name</label>
           <input type="text" name="representativeName" value={formData.representativeName} onChange={handleInputChange} />
           {errors.representativeName && <p className="error">{errors.representativeName}</p>}
+
+          <label>Representative Surname</label>
+          <input type="text" name="representativeSurname" value={formData.representativeName} onChange={handleInputChange} />
+          {errors.representativeSurname && <p className="error">{errors.representativeSurname}</p>}
 
           <label>Representative Email</label>
           <input type="email" name="representativeEmail" value={formData.representativeEmail} onChange={handleInputChange} />
           {errors.representativeEmail && <p className="error">{errors.representativeEmail}</p>}
 
           <label>Organisation Address</label>
-          <input type="text" name="organisationAddress" value={formData.organisationAddress} onChange={handleInputChange} />
-          {errors.organisationAddress && <p className="error">{errors.organisationAddress}</p>}
+          <input type="text" name="addressLine1" placeholder="Address Line 1" value={formData.addressLine1} onChange={handleInputChange} />
+          {errors.addressLine1 && <p className="error">{errors.addressLine1}</p>}
+
+        <input type="text" name="addressLine2" placeholder="Address Line 2" value={formData.addressLine2} onChange={handleInputChange} />
+
+        <input type="text" name="city" placeholder="City" value={formData.city} onChange={handleInputChange} />
+        {errors.city && <p className="error">{errors.city}</p>}
+
+        <select name="province" value={formData.province} onChange={handleInputChange}>
+          <option value="">Select Province</option>
+          {provinces.map(p => <option key={p} value={p}>{p}</option>)}
+        </select>
+        {errors.province && <p className="error">{errors.province}</p>}
+
+        <input type="text" name="zipCode" placeholder="Zip/Postal Code" value={formData.zipCode} onChange={handleInputChange} />
+        {errors.zipCode && <p className="error">{errors.zipCode}</p>}
+
+        <input type="text" name="country" placeholder="Country" value={formData.country} onChange={handleInputChange} />
+        {errors.country && <p className="error">{errors.country}</p>}
+
+        <label>Password</label>
+          <input type="password" name="password" value={formData.password} onChange={handleInputChange} />
+          {errors.password && <p className="error">{errors.password}</p>}
+
+          <label>Confirm Password</label>
+          <input type="password" name="confirmPassword" value={formData.confirmPassword} onChange={handleInputChange} />
+          {errors.confirmPassword && <p className="error">{errors.confirmPassword}</p>}
+       
+
+        <label>NPO Document</label>
+          <input 
+            type="file" 
+            name="npoDocument" 
+            onChange={handleFileChange} 
+            accept=".pdf,.jpg,.png" 
+          />
+          {errors.npoDocument && <p className="error">{errors.npoDocument}</p>}
+
+          <label>Business Logo</label>
+          <input 
+            type="file" 
+            name="logo" 
+            onChange={handleFileChange} 
+            accept=".jpg,.png" 
+          />
+          {errors.logo && <p className="error">{errors.logo}</p>}
+
+
         </>
       )}
+
+      
 
       <button type="submit" disabled={isLoading}>
         {isLoading ? 'Registering...' : 'Register'}
