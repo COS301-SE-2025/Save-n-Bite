@@ -1,11 +1,6 @@
 # Save n Bite - Reducing Food Waste Through Technology 🍎♻️
 
-**Secure Web & Mobile Guild (SWMG)** in collaboration with **GENDAC**
-
-<div style="text-align: center;">
-   <img src="assets/logo.png" width="200" />
-   <img src="assets/gendac.png" width="200" />
-</div>
+<img src="assets/logo_with_gendac.png"/>
 
 ---
 
