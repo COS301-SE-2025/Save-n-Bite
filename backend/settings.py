@@ -50,6 +50,7 @@ INSTALLED_APPS = [
     'corsheaders',
     'authentication',
     'transactions',
+    'food_listing'
 ]
 
 MIDDLEWARE = [
