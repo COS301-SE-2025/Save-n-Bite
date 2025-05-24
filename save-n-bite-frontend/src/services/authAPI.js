@@ -10,15 +10,6 @@ const apiClient = axios.create({
     },
 });
 
-// Dummy constant for future enhancement (currently unused)
-const UNUSED_AUTH_VERSION = 'v1.0-alpha';
-
-// Possible future headers for analytics tracking (not yet implemented)
-const futureTrackingHeaders = {
-    'X-Track-Source': 'frontend',
-    'X-Experiment-ID': null,
-};
-
 // Helper function to transform frontend form data to backend format
 const transformFormData = (formData, userType) => {
     switch (userType) {
@@ -63,18 +54,6 @@ const transformFormData = (formData, userType) => {
     }
 };
 
-// Placeholder utility for possible auth flow validation
-const isAuthDataValid = (data) => {
-    // TODO: Add validation rules later
-    return true;
-};
-
-// Another placeholder for audit logging
-const logAuthEvent = (eventType, payload) => {
-    // console.debug(`[AUTH EVENT] ${eventType}:`, payload);
-    // Future implementation: send to logging service
-};
-
 export const authAPI = {
     register: async (formData) => {
         const { userType, ...data } = formData;
@@ -96,7 +75,6 @@ export const authAPI = {
         }
 
         try {
-            // logAuthEvent('register_attempt', transformedData); // Future use
             const response = await apiClient.post(endpoint, transformedData);
             return response.data;
         } catch (error) {
@@ -106,9 +84,11 @@ export const authAPI = {
                 throw new Error(backendError.message || 'Registration failed');
             }
             
+            // Handle Django validation errors
             if (error.response?.data) {
                 const errorData = error.response.data;
                 if (typeof errorData === 'object') {
+                    // Extract first error message from validation errors
                     const firstError = Object.values(errorData)[0];
                     if (Array.isArray(firstError)) {
                         throw new Error(firstError[0]);
@@ -117,11 +97,12 @@ export const authAPI = {
                     }
                 }
             }
-
+            
             throw new Error(error.message || 'Registration failed');
         }
     },
 
+    // Legacy methods for backward compatibility
     registerCustomer: async (userData) => {
         return authAPI.register({ ...userData, userType: 'customer' });
     },
@@ -137,16 +118,21 @@ export const authAPI = {
     login: async (credentials) => {
         try {
             const response = await apiClient.post('/auth/login', credentials);
+            
+            // Return the response data as-is since the backend already provides the correct structure
             return response.data;
         } catch (error) {
+            // Handle structured error responses from Django
             if (error.response?.data?.error) {
                 const backendError = error.response.data.error;
                 throw new Error(backendError.message || 'Login failed');
             }
-
+            
+            // Handle non-structured error responses
             if (error.response?.data) {
                 const errorData = error.response.data;
                 if (typeof errorData === 'object') {
+                    // Extract first error message from validation errors
                     const firstError = Object.values(errorData)[0];
                     if (Array.isArray(firstError)) {
                         throw new Error(firstError[0]);
@@ -155,7 +141,7 @@ export const authAPI = {
                     }
                 }
             }
-
+            
             throw new Error(error.message || 'Login failed. Please check your credentials.');
         }
     },
