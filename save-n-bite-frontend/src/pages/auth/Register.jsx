@@ -1,16 +1,12 @@
 import React, { useState } from 'react';
-import { authAPI } from '@/services/authAPI';
-import { validateEmail, validatePassword, validateRequired, validatePhone } from '@/utils/validators';
-import { USER_TYPES } from '@/utils/constants';
-import './RegisterForm.css';
-
-
-// src/pages/auth/Register.jsx
-import React, { useState } from 'react';
+import { authAPI } from '../../services/authAPI';
+// import { validateEmail, validatePassword, validateRequired, validatePhone } from '@/utils/validators';
+import { USER_TYPES } from '../../utils/constants';
+// import './RegisterForm.css';
 import { useNavigate, Link } from 'react-router-dom';
-import RegisterForm from '@/components/auth/RegisterForm';
-import { USER_TYPES } from '@/utils/constants';
-import './Register.css';
+import RegisterForm from '../../components/auth/RegisterForm';
+import '../../styles/Register.css';
+
 
 const Register = () => {
   const [selectedUserType, setSelectedUserType] = useState(USER_TYPES.CUSTOMER);

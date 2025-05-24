@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import { authAPI } from '@/services/authAPI';
-import { validateEmail, validatePassword, validateRequired, validatePhone } from '@/utils/validators';
-import { USER_TYPES } from '@/utils/constants';
+import { authAPI } from '../../services/authAPI';
+import { validateEmail, validatePassword, validateRequired, validatePhone } from '../../utils/validators';
+import { USER_TYPES } from '../../utils/constants';
 import './RegisterForm.css';
 
 const RegisterForm = ({ userType = USER_TYPES.CUSTOMER, onSuccess, onError}) => {
@@ -416,5 +416,6 @@ const RegisterForm = ({ userType = USER_TYPES.CUSTOMER, onSuccess, onError}) => 
     </form>
 
   );
+};
 
-}
+export default RegisterForm;
