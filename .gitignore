@@ -11,3 +11,4 @@ poetry.lock
 db.sqlite3
 .DS_Store
 .vscode/settings.json
+/save-n-bite-frontend/node_modules/@esbuild/win32-x64
