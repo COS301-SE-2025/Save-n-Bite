@@ -27,21 +27,7 @@ Key features:
 | **DevOps**     | Docker, GitHub Actions |
 | **AI/ML**      | Python, Scikit-learn, Pandas |
 
-<div style="display: flex; flex-wrap: wrap; gap: 10px; align-items: center;">
-  <img src="assets/ReactLogo.png" width="80" />
-  <img src="assets/Django logo.png" width="80" />
-  <img src="assets/PostgreSQLLogo.png" width="80" />
-  <img src="assets/RedisLogo.png" width="80" />
-  <img src="assets/Azure logo.png" width="80" />
-  <img src="assets/github-logo.jpg" width="80" />
-  <img src="assets/Docker logo.png" width="80" />
-  <img src="assets/Python logo.png" width="80" />
-  <img src="assets/Scikit learn logo.png" width="80" />
-  <img src="assets/Pandas logo.png" width="80" />
-  <img src="assets/MaterialUILogo.png" width="80" />
-  <img src="assets/JWTLogo.png" width="80" />
-  <img src="assets/DjangoREST.png" width="80" />
-</div>
+<img src="assets/TechStack.png"/>
 
 ---
 
