@@ -55,6 +55,24 @@ const LoginForm = ({ onSuccess, onError }) => {
         return Object.keys(newErrors).length === 0;
     };
 
+    const createWelcomeMessage = (user) => {
+        let welcomeMessage = 'Welcome back! ';
+        
+        // Handle different user types and their profile data
+        if (user.user_type === 'customer' && user.profile?.full_name) {
+            welcomeMessage += `${user.profile.full_name}! `;
+        } else if (user.user_type === 'provider' && user.profile?.business_name) {
+            welcomeMessage += `${user.profile.business_name}! `;
+        } else if (user.user_type === 'ngo' && user.profile?.organisation_name) {
+            welcomeMessage += `${user.profile.organisation_name}! `;
+        } else {
+            welcomeMessage += 'Great to see you again! ';
+        }
+        
+        welcomeMessage += getRandomEnvironmentalFact();
+        return welcomeMessage;
+    };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
         if (!validateForm()) return;
@@ -63,25 +81,14 @@ const LoginForm = ({ onSuccess, onError }) => {
         try {
             const response = await authAPI.login(formData);
             
-            // Create welcome message based on user type and available data
-            let welcomeMessage = 'Welcome back! ';
-            const user = response.user || response.data?.user || response;
+            // Create welcome message using the user data from response
+            const welcomeMessage = createWelcomeMessage(response.user);
             
-            if (user) {
-                if (user.firstName && user.lastName) {
-                    welcomeMessage += `${user.firstName} ${user.lastName}! `;
-                } else if (user.businessName) {
-                    welcomeMessage += `${user.businessName}! `;
-                } else if (user.organisationName) {
-                    welcomeMessage += `${user.organisationName}! `;
-                } else {
-                    welcomeMessage += 'Great to see you again! ';
-                }
-            }
-            
-            welcomeMessage += getRandomEnvironmentalFact();
-            
-            onSuccess({ ...response, welcomeMessage });
+            // Pass the complete response with welcome message
+            onSuccess({ 
+                ...response, 
+                welcomeMessage 
+            });
         } catch (error) {
             onError(error?.message || 'Login failed. Please check your credentials.');
         } finally {

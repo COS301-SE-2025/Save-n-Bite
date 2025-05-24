@@ -1,4 +1,3 @@
-
 // src/services/authAPI.js
 import axios from 'axios';
 
@@ -103,7 +102,6 @@ export const authAPI = {
         }
     },
 
-
     // Legacy methods for backward compatibility
     registerCustomer: async (userData) => {
         return authAPI.register({ ...userData, userType: 'customer' });
@@ -120,26 +118,33 @@ export const authAPI = {
     login: async (credentials) => {
         try {
             const response = await apiClient.post('/auth/login', credentials);
+            
+            // Return the response data as-is since the backend already provides the correct structure
             return response.data;
         } catch (error) {
+            // Handle structured error responses from Django
             if (error.response?.data?.error) {
                 const backendError = error.response.data.error;
                 throw new Error(backendError.message || 'Login failed');
             }
-            throw error;
+            
+            // Handle non-structured error responses
+            if (error.response?.data) {
+                const errorData = error.response.data;
+                if (typeof errorData === 'object') {
+                    // Extract first error message from validation errors
+                    const firstError = Object.values(errorData)[0];
+                    if (Array.isArray(firstError)) {
+                        throw new Error(firstError[0]);
+                    } else if (typeof firstError === 'string') {
+                        throw new Error(firstError);
+                    }
+                }
+            }
+            
+            throw new Error(error.message || 'Login failed. Please check your credentials.');
         }
     },
 
-    googleSignin: async (token) => {
-        try {
-            const response = await apiClient.post('/auth/google-signin', { token });
-            return response.data;
-        } catch (error) {
-            if (error.response?.data?.error) {
-                const backendError = error.response.data.error;
-                throw new Error(backendError.message || 'Google sign-in failed');
-            }
-            throw error;
-        }
-    }
+   
 };
