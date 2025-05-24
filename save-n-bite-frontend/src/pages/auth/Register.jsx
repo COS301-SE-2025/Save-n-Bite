@@ -1,12 +1,8 @@
 import React, { useState } from 'react';
 import { authAPI } from '../../services/authAPI';
-// import { validateEmail, validatePassword, validateRequired, validatePhone } from '@/utils/validators';
 import { USER_TYPES } from '../../utils/constants';
-// import './RegisterForm.css';
 import { useNavigate, Link } from 'react-router-dom';
 import RegisterForm from '../../components/auth/RegisterForm';
-import '../../styles/Register.css';
-
 
 const Register = () => {
   const [selectedUserType, setSelectedUserType] = useState(USER_TYPES.CUSTOMER);
@@ -18,7 +14,6 @@ const Register = () => {
     setMessage('Account created successfully! Please check your email for verification.');
     setMessageType('success');
     
-    // Redirect to login after 3 seconds
     setTimeout(() => {
       navigate('/login');
     }, 3000);
@@ -28,7 +23,6 @@ const Register = () => {
     setMessage(errorMessage);
     setMessageType('error');
     
-    // Clear error message after 5 seconds
     setTimeout(() => {
       setMessage('');
       setMessageType('');
@@ -49,36 +43,43 @@ const Register = () => {
   };
 
   return (
-    <div className="register-page">
-      <div className="register-container">
-        {/* Left Side - Branding */}
-        <div className="register-brand">
-          <div className="brand-content">
-            <div className="logo-container">
-              <div className="logo">
-                <div className="logo-icon">🍽️</div>
+    <div className="min-h-[80vh] flex items-center justify-center px-4 py-12">
+      <div className="max-w-6xl w-full bg-white rounded-lg shadow-sm overflow-hidden">
+        <div className="md:flex">
+          {/* Left Side - Branding */}
+          <div className="md:w-1/2 bg-emerald-600 text-white p-8 md:p-12 flex flex-col justify-between">
+            <div>
+              <div className="flex items-center mb-8">
+                <div className="bg-white p-2 rounded-full mr-4">
+                  <div className="text-3xl">🍽️</div>
+                </div>
+                <h1 className="text-3xl font-bold">Save n Bite</h1>
               </div>
+              <h2 className="text-2xl font-bold mb-4">Welcome</h2>
+              <p className="text-emerald-100">
+                Create an account to start your journey with us.
+              </p>
             </div>
-            <h1>Welcome To<br />Save n Bite</h1>
-            <p>Create an account to start your journey with us.</p>
-            <div className="brand-footer">
+            <div className="text-emerald-100 text-sm">
               © 2025 Save n Bite. All rights reserved.
             </div>
           </div>
-        </div>
 
-        {/* Right Side - Registration Form */}
-        <div className="register-form-section">
-          <div className="form-container">
+          {/* Right Side - Registration Form */}
+          <div className="md:w-1/2 p-8 md:p-12">
             {/* User Type Selection */}
-            <div className="user-type-selector">
-              <h3>I want to register as:</h3>
-              <div className="user-type-options">
+            <div className="mb-8">
+              <h3 className="text-lg font-medium text-gray-700 mb-3">I want to register as:</h3>
+              <div className="flex flex-wrap gap-2">
                 {Object.values(USER_TYPES).map((type) => (
                   <button
                     key={type}
                     type="button"
-                    className={`user-type-option ${selectedUserType === type ? 'active' : ''}`}
+                    className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                      selectedUserType === type 
+                        ? 'bg-emerald-600 text-white' 
+                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                    }`}
                     onClick={() => setSelectedUserType(type)}
                   >
                     {getUserTypeLabel(type)}
@@ -89,7 +90,11 @@ const Register = () => {
 
             {/* Message Display */}
             {message && (
-              <div className={`message ${messageType}`}>
+              <div className={`mb-6 p-3 rounded-md ${
+                messageType === 'success' 
+                  ? 'bg-emerald-100 text-emerald-700' 
+                  : 'bg-red-100 text-red-700'
+              }`}>
                 {message}
               </div>
             )}
@@ -102,8 +107,11 @@ const Register = () => {
             />
 
             {/* Login Link */}
-            <div className="auth-link">
-              Already have an account? <Link to="/login">Log in</Link>
+            <div className="mt-6 text-center text-gray-600">
+              Already have an account?{' '}
+              <Link to="/login" className="text-emerald-600 hover:text-emerald-700">
+                Log in
+              </Link>
             </div>
           </div>
         </div>
@@ -113,6 +121,3 @@ const Register = () => {
 };
 
 export default Register;
-
-// src/pages/auth/Register.css
-/* Add this to src/pages/auth/Register.css */
