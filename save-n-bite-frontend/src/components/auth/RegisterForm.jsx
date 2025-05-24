@@ -135,54 +135,79 @@ const RegisterForm = ({ userType = USER_TYPES.CUSTOMER, onSuccess, onError}) => 
     };
 
   return(
-    <form className="register-form" onSubmit={handleSubmit}>
-      <h2>
-        {userType === USER_TYPES.CUSTOMER ? 'Customer': userType === USER_TYPES.PROVIDER ? 'Food Provider' : 'NGO'}
-        Registration
-      </h2>
+     <form className="register-form" onSubmit={handleSubmit}>
+    
+      <label>Full Name</label>
+      <input type="text" name="fullName" value={formData.fullName} onChange={handleInputChange} />
+      {errors.fullName && <p className="error">{errors.fullName}</p>}
 
-      {/* Customer fields */}
-      {userType === USER_TYPES.CUSTOMER && (
-        <>
-      <input type="text" name="fullName" value={formData.fullName} onChange={handleInputChange} placeholder="Full Name" />
-      <input type="email" name="email" value={formData.email} onChange={handleInputChange} placeholder="Email" />
-      <input type="password" name="password" value={formData.password} onChange={handleInputChange} placeholder="Password" />
-      <input type="password" name="confirmPassword" value={formData.confirmPassword} onChange={handleInputChange} placeholder="Confirm Password" />
-      <input type="file" name="profileImage" onChange={handleFileChange} />
-      </>
-      )}
+      <label>Email</label>
+      <input type="email" name="email" value={formData.email} onChange={handleInputChange} />
+      {errors.email && <p className="error">{errors.email}</p>}
 
-      {/* Food Provider Fields */}
+      <label>Password</label>
+      <input type="password" name="password" value={formData.password} onChange={handleInputChange} />
+      {errors.password && <p className="error">{errors.password}</p>}
+
+      <label>Confirm Password</label>
+      <input type="password" name="confirmPassword" value={formData.confirmPassword} onChange={handleInputChange} />
+      {errors.confirmPassword && <p className="error">{errors.confirmPassword}</p>}
+
+      <label>Province</label>
+      <select name="province" value={formData.province} onChange={handleInputChange}>
+        <option value="">-- Select Province --</option>
+        {provinces.map(p => <option key={p} value={p}>{p}</option>)}
+      </select>
+      {errors.province && <p className="error">{errors.province}</p>}
+
+
       {userType === USER_TYPES.PROVIDER && (
-      <>
-        <input type="text" name="businessName" value={formData.businessName} onChange={handleInputChange} placeholder="Business Name" />
-        <input type="text" name="businessAddress" value={formData.businessAddress} onChange={handleInputChange} placeholder="Business Address" />
-        <input type="text" name="businessContact" value={formData.businessContact} onChange={handleInputChange} placeholder="Business Contact Number" />
-        <input type="email" name="businessEmail" value={formData.businessEmail} onChange={handleInputChange} placeholder="Business Email" />
-        <input type="file" name="cipcDocument" onChange={handleFileChange} />
-        <input type="file" name="logo" onChange={handleFileChange} />
-      </>
+        <>
+          <label>Business Name</label>
+          <input type="text" name="businessName" value={formData.businessName} onChange={handleInputChange} />
+          {errors.businessName && <p className="error">{errors.businessName}</p>}
+
+          <label>Business Address</label>
+          <input type="text" name="businessAddress" value={formData.businessAddress} onChange={handleInputChange} />
+          {errors.businessAddress && <p className="error">{errors.businessAddress}</p>}
+
+          <label>Business Contact</label>
+          <input type="text" name="businessContact" value={formData.businessContact} onChange={handleInputChange} />
+          {errors.businessContact && <p className="error">{errors.businessContact}</p>}
+
+          <label>Business Email</label>
+          <input type="email" name="businessEmail" value={formData.businessEmail} onChange={handleInputChange} />
+          {errors.businessEmail && <p className="error">{errors.businessEmail}</p>}
+        </>
       )}
 
-      {/* NGO Fields */}
       {userType === USER_TYPES.NGO && (
-      <>
-        <input type="text" name="organisationName" value={formData.organisationName} onChange={handleInputChange} placeholder="Organisation Name" />
-        <input type="text" name="organisationAddress" value={formData.organisationAddress} onChange={handleInputChange} placeholder="Organisation Address" />
-        <input type="text" name="organisationContact" value={formData.organisationContact} onChange={handleInputChange} placeholder="Organisation Contact" />
-        <input type="text" name="representativeName" value={formData.representativeName} onChange={handleInputChange} placeholder="Representative Name" />
-        <input type="email" name="representativeEmail" value={formData.representativeEmail} onChange={handleInputChange} placeholder="Representative Email" />
-        <input type="file" name="npoDocument" onChange={handleFileChange} />
-        <input type="file" name="organisationLogo" onChange={handleFileChange} />
-      </>
+        <>
+          <label>Organisation Name</label>
+          <input type="text" name="organisationName" value={formData.organisationName} onChange={handleInputChange} />
+          {errors.organisationName && <p className="error">{errors.organisationName}</p>}
+
+          <label>Organisation Contact</label>
+          <input type="text" name="organisationContact" value={formData.organisationContact} onChange={handleInputChange} />
+          {errors.organisationContact && <p className="error">{errors.organisationContact}</p>}
+
+          <label>Representative Name</label>
+          <input type="text" name="representativeName" value={formData.representativeName} onChange={handleInputChange} />
+          {errors.representativeName && <p className="error">{errors.representativeName}</p>}
+
+          <label>Representative Email</label>
+          <input type="email" name="representativeEmail" value={formData.representativeEmail} onChange={handleInputChange} />
+          {errors.representativeEmail && <p className="error">{errors.representativeEmail}</p>}
+
+          <label>Organisation Address</label>
+          <input type="text" name="organisationAddress" value={formData.organisationAddress} onChange={handleInputChange} />
+          {errors.organisationAddress && <p className="error">{errors.organisationAddress}</p>}
+        </>
       )}
 
-       <button type="submit" disabled={isLoading}>
-      {isLoading ? 'Registering...' : 'Register'}
+      <button type="submit" disabled={isLoading}>
+        {isLoading ? 'Registering...' : 'Register'}
       </button>
-
-
-
     </form>
 
   );
