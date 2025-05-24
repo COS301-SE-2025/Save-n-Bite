@@ -1,0 +1,66 @@
+import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
+import { MenuIcon, XIcon } from 'lucide-react';
+import logo from '../../assets/images/SnB_leaf_icon.png';
+
+const Navigation = () => {
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  return <nav className="bg-white dark:bg-gray-800 shadow-sm py-4 px-6 md:px-12 transition-colors duration-200">
+      <div className="max-w-7xl mx-auto flex justify-between items-center">
+
+        <Link to="/" className="flex items-baseline gap-2"> {/* items-baseline aligns text baseline */}
+        <img 
+            src={logo} 
+            alt="Logo"
+            className="w-15 h-9 self-center"  
+        />
+        <span className="text-2xl font-bold text-emerald-600 dark:text-emerald-500">
+            Save n Bite
+        </span>
+        </Link>
+        {/* Mobile menu button */}
+        <div className="md:hidden">
+          <button onClick={() => setIsMenuOpen(!isMenuOpen)} className="text-gray-500 dark:text-gray-400 hover:text-emerald-600 dark:hover:text-emerald-500 focus:outline-none">
+            {isMenuOpen ? <XIcon size={24} /> : <MenuIcon size={24} />}
+          </button>
+        </div>
+        <div className="hidden md:flex items-center space-x-8">
+          <Link to="/about" className="text-gray-600 dark:text-gray-300 hover:text-emerald-600 dark:hover:text-emerald-500">
+            About
+          </Link>
+          <Link to="/browse" className="text-gray-600 dark:text-gray-300 hover:text-emerald-600 dark:hover:text-emerald-500">
+            Browse Food
+          </Link>
+          <Link to="/how-it-works" className="text-gray-600 dark:text-gray-300 hover:text-emerald-600 dark:hover:text-emerald-500">
+            How It Works
+          </Link>
+          <Link to="/register" className="text-gray-600 dark:text-gray-300 hover:text-emerald-600 dark:hover:text-emerald-500">
+            Sign Up
+          </Link>
+          <Link to="/login" className="px-4 py-2 bg-emerald-600 text-white dark:bg-emerald-500 rounded-md hover:bg-emerald-700 dark:hover:bg-emerald-600">
+            Login
+          </Link>
+        </div>
+      </div>
+      {isMenuOpen && <div className="md:hidden mt-4 pb-4 px-4">
+          <div className="flex flex-col space-y-4">
+            <Link to="/about" className="text-gray-600 dark:text-gray-300 hover:text-emerald-600 dark:hover:text-emerald-500 py-2">
+              About
+            </Link>
+            <Link to="/browse" className="text-gray-600 dark:text-gray-300 hover:text-emerald-600 dark:hover:text-emerald-500 py-2">
+              Browse Food
+            </Link>
+            <Link to="/how-it-works" className="text-gray-600 dark:text-gray-300 hover:text-emerald-600 dark:hover:text-emerald-500 py-2">
+              How It Works
+            </Link>
+            <Link to="/register" className="text-gray-600 dark:text-gray-300 hover:text-emerald-600 dark:hover:text-emerald-500 py-2">
+              Sign Up
+            </Link>
+            <Link to="/login" className="text-center py-2 bg-emerald-600 text-white dark:bg-emerald-500 rounded-md hover:bg-emerald-700 dark:hover:bg-emerald-600">
+              Login
+            </Link>
+          </div>
+        </div>}
+    </nav>;
+};
+export default Navigation;
