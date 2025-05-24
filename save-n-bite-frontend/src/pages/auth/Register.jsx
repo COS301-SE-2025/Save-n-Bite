@@ -95,7 +95,7 @@ const Register = () => {
           <div className="md:w-1/2 p-8 md:p-12">
             {/* User Type Selection */}
             <div className="mb-8">
-              <h3 className="text-lg font-medium text-gray-700 mb-3">I want to register as a:</h3>
+              <h3 className="text-lg font-medium text-gray-700 mb-3">I want to sign up as a:</h3>
               <div className="flex flex-wrap gap-2">
                 {Object.values(USER_TYPES).map((type) => (
                   <button
@@ -140,7 +140,7 @@ const Register = () => {
             {/* Login Link */}
             <div className="mt-6 text-center text-gray-600">
               Already have an account?{' '}
-              <Link to="/login" className="text-emerald-600 hover:text-emerald-700">
+             <Link to="/login" className="text-emerald-600 hover:text-emerald-700">
                 Log in
               </Link>
             </div>

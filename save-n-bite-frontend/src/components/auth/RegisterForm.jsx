@@ -638,7 +638,7 @@ const RegisterForm = ({ userType = USER_TYPES.CUSTOMER, onSuccess, onError }) =>
                     background: 'linear-gradient(135deg, #62BD38 0%, #1E64D5 100%)'
                 }}
             >
-                {isLoading ? 'Registering...' : 'Register'}
+                {isLoading ? 'Signing up...' : 'Sign Up'}
             </button>
         </form>
     );
