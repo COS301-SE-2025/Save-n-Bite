@@ -16,6 +16,9 @@ pandas = "^2.2.3"
 scikit-learn = "^1.6.1"
 python-dotenv = "^1.1.0"
 dj-database-url = "^2.3.0"
+djangorestframework-simplejwt = "^5.5.0"
+django-cors-headers = "^4.7.0"
+pillow = "^11.2.1"
 
 [tool.poetry.group.dev.dependencies]
 # Add development dependencies here if needed
