@@ -146,5 +146,16 @@ export const authAPI = {
         }
     },
 
-   
+    googleSignin: async (token) => {
+        try {
+            const response = await apiClient.post('/auth/google-signin', { token });
+            return response.data;
+        } catch (error) {
+            if (error.response?.data?.error) {
+                const backendError = error.response.data.error;
+                throw new Error(backendError.message || 'Google sign-in failed');
+            }
+            throw new Error(error.message || 'Google sign-in failed');
+        }
+    }
 };
