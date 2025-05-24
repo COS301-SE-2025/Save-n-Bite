@@ -739,9 +739,12 @@ const RegisterForm = ({ userType = USER_TYPES.CUSTOMER, onSuccess, onError }) =>
             )}
 
             <button
-                type="submit"
-                disabled={isLoading}
-                className="w-full px-4 py-3 bg-emerald-600 text-white font-medium rounded-md hover:bg-emerald-700 transition-colors disabled:opacity-50"
+            type="submit"
+            disabled={isLoading}
+            className="w-full py-2 px-4 rounded-md text-white font-medium"
+            style={{
+                background: 'linear-gradient(135deg, #62BD38 0%, #1E64D5 100%)'
+            }}
             >
                 {isLoading ? 'Registering...' : 'Register'}
             </button>

@@ -95,7 +95,7 @@ const Register = () => {
           <div className="md:w-1/2 p-8 md:p-12">
             {/* User Type Selection */}
             <div className="mb-8">
-              <h3 className="text-lg font-medium text-gray-700 mb-3">I want to register as:</h3>
+              <h3 className="text-lg font-medium text-gray-700 mb-3">I want to register as a:</h3>
               <div className="flex flex-wrap gap-2">
                 {Object.values(USER_TYPES).map((type) => (
                   <button
@@ -103,9 +103,12 @@ const Register = () => {
                     type="button"
                     className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
                       selectedUserType === type 
-                        ? 'bg-emerald-600 text-white' 
+                        ? 'text-white' 
                         : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                     }`}
+                    style={selectedUserType === type ? {
+                      background: 'linear-gradient(135deg, #62BD38 0%, #1E64D5 100%)'
+                    } : {}}
                     onClick={() => setSelectedUserType(type)}
                   >
                     {getUserTypeLabel(type)}
@@ -116,11 +119,13 @@ const Register = () => {
 
             {/* Message Display */}
             {message && (
-              <div className={`mb-6 p-3 rounded-md ${
+              <div className={`mb-6 p-3 rounded-md
+                   ${
                 messageType === 'success' 
                   ? 'bg-emerald-100 text-emerald-700' 
                   : 'bg-red-100 text-red-700'
-              }`}>
+              }
+              `}>
                 {message}
               </div>
             )}
