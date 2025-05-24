@@ -3,6 +3,8 @@ import { authAPI } from '../../services/authAPI';
 import { USER_TYPES } from '../../utils/constants';
 import { useNavigate, Link } from 'react-router-dom';
 import RegisterForm from '../../components/auth/RegisterForm';
+import logo from '../../assets/images/SnB_leaf_icon.png';
+
 
 const Register = () => {
   const [selectedUserType, setSelectedUserType] = useState(USER_TYPES.CUSTOMER);
@@ -47,20 +49,44 @@ const Register = () => {
       <div className="max-w-6xl w-full bg-white rounded-lg shadow-sm overflow-hidden">
         <div className="md:flex">
           {/* Left Side - Branding */}
-          <div className="md:w-1/2 bg-emerald-600 text-white p-8 md:p-12 flex flex-col justify-between">
-            <div>
-              <div className="flex items-center mb-8">
-                <div className="bg-white p-2 rounded-full mr-4">
-                  <div className="text-3xl">🍽️</div>
-                </div>
-                <h1 className="text-3xl font-bold">Save n Bite</h1>
+          <div 
+            className="md:w-1/2 text-white p-8 md:p-12 flex flex-col justify-between relative"
+            style={{
+              background: 'linear-gradient(135deg, #62BD38 0%, #1E64D5 100%)'
+            }}
+          >
+            <div className="flex flex-col items-center text-center">
+              {/* Logo */}
+              <div className="mb-8">
+                <img 
+                  src={logo} 
+                  alt="Save n Bite Logo" 
+                  className="w-100 h-100 object-contain"
+                />
               </div>
-              <h2 className="text-2xl font-bold mb-4">Welcome</h2>
-              <p className="text-emerald-100">
+              
+              {/* Welcome Text */}
+              <h1 
+                className="text-white mb-4"
+                style={{ 
+                  fontFamily: 'Inter, sans-serif',
+                  fontWeight: 'bold',
+                  fontSize: '40.8px',
+                  lineHeight: '1.2'
+                }}
+              >
+                Welcome To<br />
+                Save n Bite
+              </h1>
+              
+              {/* Subtitle */}
+              <p className="text-white text-lg opacity-90 max-w-sm">
                 Create an account to start your journey with us.
               </p>
             </div>
-            <div className="text-emerald-100 text-sm">
+            
+            {/* Copyright */}
+            <div className="text-white text-sm opacity-75 text-center">
               © 2025 Save n Bite. All rights reserved.
             </div>
           </div>
