@@ -9,9 +9,9 @@ const FoodListingsGrid = ({ listings }) => {
         <h2 className="text-xl font-semibold text-gray-800">
           Available Food ({listings.length})
         </h2>
-        <div className="text-sm text-gray-600">
+        {/* <div className="text-sm text-gray-600">
           Sorted by expiration time
-        </div>
+        </div> */}
       </div>
       
       {/* Grid */}

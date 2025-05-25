@@ -5,6 +5,7 @@ import Register from './pages/auth/Register';
 import Login from './pages/auth/Login';
 import Home from './pages/auth/Home';
 import FoodListing from './pages/auth/FoodListings';
+import FoodItem from './pages/auth/FoodItem';
 
 function App() {
   return (
@@ -15,6 +16,8 @@ function App() {
          <Route path="/register" element={<Register />} />
           <Route path="/" element={<Home />} />
           <Route path="/food-listing" element = {<FoodListing/>}/>
+          {/* <Route path = "/" element = {<FoodListing/>}/> */}
+          <Route path="/food-item" element={<FoodItem />} />
 
       </Routes>
     </Router>
