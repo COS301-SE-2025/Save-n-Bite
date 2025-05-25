@@ -1,16 +1,8 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 import { Clock, MapPin } from 'lucide-react';
-import { useNavigate, Link } from 'react-router-dom'; 
 
 const FoodCard = ({ item }) => {
-    const navigate = useNavigate();
-
-  const handleViewMore = (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    navigate('/food-item');
-  };
-
   return (
     <Link 
       to={`/item/${item.id}`} 
@@ -78,18 +70,12 @@ const FoodCard = ({ item }) => {
             <Clock size={12} className="mr-1" />
             Expires: {item.expirationTime}
           </span>
-          {/* <button className={`px-3 py-1 text-sm rounded-full font-medium transition-all duration-200 ${
+          <button className={`px-3 py-1 text-sm rounded-full font-medium transition-all duration-200 ${
             item.type === 'Donation' 
               ? 'bg-blue-600 text-white hover:bg-blue-700 hover:shadow-md' 
               : 'bg-emerald-600 text-white hover:bg-emerald-700 hover:shadow-md'
           }`}>
             {item.type === 'Donation' ? 'Request' : 'Order'}
-          </button> */}
-          <button 
-            onClick={handleViewMore}
-            className="px-3 py-1 text-sm rounded-full font-medium bg-gray-100 text-gray-800 hover:bg-gray-200 hover:shadow-md transition-all duration-200"
-          >
-            View more
           </button>
         </div>
       </div>
