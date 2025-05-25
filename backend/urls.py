@@ -7,9 +7,12 @@ from django.conf.urls.static import static
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('v1/', include('authentication.urls')),  # API v1 endpoints
-]
+    path('', include('authentication.urls')),
+    path('api/', include('food_listings.urls')),
+    path('cart/',include('transactions.urls')),
+]+ static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
 
 # Serve media files during development
 if settings.DEBUG:
+    urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
