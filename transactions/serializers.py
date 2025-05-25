@@ -32,7 +32,7 @@ class CartItemSerializer(serializers.ModelSerializer):
     listingId = serializers.UUIDField(source='food_listing.id')
     name = serializers.CharField(source='food_listing.name')
     pricePerItem = serializers.DecimalField(source='food_listing.discounted_price', max_digits=10, decimal_places=2)
-    imageUrl = serializers.URLField(source='food_listing.image_url')
+    imageUrl = serializers.URLField(source='food_listing.images')
     provider = serializers.CharField(source='food_listing.provider.business_name')
     pickupWindow = serializers.CharField(source='food_listing.pickup_window')
     expiryDate = serializers.DateField(source='food_listing.expiry_date')

@@ -52,7 +52,7 @@ class Cart(models.Model):
     @property
     def subtotal(self):
         return self.items.aggregate(
-            total=models.Sum(models.F('quantity') * models.F('food_listings__discounted_price'))
+            total=models.Sum(models.F('quantity') * models.F('food_listing__discounted_price'))
         )['total'] or 0
     
     def __str__(self):

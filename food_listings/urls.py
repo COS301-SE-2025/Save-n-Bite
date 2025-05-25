@@ -11,9 +11,9 @@ urlpatterns = [
     path('provider/listings/create/', views.create_food_listing, name='create_listing'),
     path('provider/listings/<uuid:listing_id>/', views.update_food_listing, name='update_listing'),
     
-    # # Customer browsing endpoints
-    # path('food-listings/', views.browse_food_listings, name='browse_listings'),
-    # path('food-listings/<uuid:listing_id>/', views.get_food_listing_details, name='listing_details'),
+    # Customer browsing endpoints
+    path('food-listings/', views.browse_food_listings, name='browse_listings'),
+    path('food-listings/<uuid:listing_id>/', views.get_food_listing_details, name='listing_details'),
     
     # # Cart endpoints
     # path('cart/', views.get_cart_items, name='get_cart'),
