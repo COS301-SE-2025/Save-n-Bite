@@ -106,12 +106,16 @@ class CheckoutView(APIView):
                 status=status.HTTP_400_BAD_REQUEST
             )
 
+        # Get the provider profile from the first item in cart
+        first_item = cart.items.first()
+        provider_profile = first_item.food_listing.provider.provider_profile
+
         # Create transaction
         with db_transaction.atomic():
             # 1. Create Transaction
             transaction = Transaction.objects.create(
                 user=request.user,
-                business=cart.items.first().food_listing.provider,
+                business=provider_profile,  # Use provider_profile instead of user
                 transaction_type='Purchase',
                 quantity=cart.total_items,
                 total_amount=cart.subtotal,
@@ -126,9 +130,9 @@ class CheckoutView(APIView):
                     name=cart_item.food_listing.name,
                     quantity=cart_item.quantity,
                     price_per_item=cart_item.food_listing.discounted_price,
-                    total_price=cart_item.total_price,
+                    total_price=cart_item.quantity * cart_item.food_listing.discounted_price,
                     expiry_date=cart_item.food_listing.expiry_date,
-                    image_url=cart_item.food_listing.image_url
+                    image_url=cart_item.food_listing.images
                 )
 
             # 3. Create Payment
@@ -142,7 +146,7 @@ class CheckoutView(APIView):
             # 4. Create Order
             order = Order.objects.create(
                 transaction=transaction,
-                pickup_window=cart.items.first().food_listing.pickup_window,
+                pickup_window=first_item.food_listing.pickup_window,
                 pickup_code=str(uuid.uuid4())[:6].upper()
             )
 
