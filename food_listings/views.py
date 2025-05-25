@@ -2,7 +2,7 @@
 
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
 from django.core.paginator import Paginator
 from django.db.models import Q, Min, Max
@@ -154,6 +154,7 @@ def update_food_listing(request, listing_id):
 # =============== CUSTOMER VIEWS ===============
 
 @api_view(['GET'])
+@permission_classes([AllowAny])
 def browse_food_listings(request):
     """Browse available food listings with filtering and sorting"""
     # Base queryset - only active listings

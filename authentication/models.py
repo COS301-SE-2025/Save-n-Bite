@@ -11,9 +11,15 @@ class User(AbstractUser):
         ('ngo', 'NGO'),
     ]
     
+    ROLE_CHOICES = [
+        ('normal', 'Normal User'),
+        ('admin', 'Administrator'),
+    ]
+    
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     email = models.EmailField(unique=True)
     user_type = models.CharField(max_length=10, choices=USER_TYPE_CHOICES)
+    role = models.CharField(max_length=10, choices=ROLE_CHOICES, default='normal')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     
