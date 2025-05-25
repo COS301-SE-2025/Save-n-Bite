@@ -1,12 +1,15 @@
 import React, { useState } from 'react';
 import { authAPI } from '../../services/authAPI';
 import { validateEmail, validateRequired } from '../../utils/validators';
+import { useNavigate, Link } from 'react-router-dom';
 
 const LoginForm = ({ onSuccess, onError }) => {
     const [formData, setFormData] = useState({
         email: '',
         password: ''
     });
+
+    const navigate = useNavigate();
 
     const [errors, setErrors] = useState({});
     const [isLoading, setIsLoading] = useState(false);
@@ -89,6 +92,7 @@ const LoginForm = ({ onSuccess, onError }) => {
                 ...response, 
                 welcomeMessage 
             });
+            navigate('/food-listing')
         } catch (error) {
             onError(error?.message || 'Login failed. Please check your credentials.');
         } finally {

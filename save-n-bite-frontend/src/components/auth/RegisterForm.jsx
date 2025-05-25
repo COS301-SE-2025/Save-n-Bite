@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { authAPI } from '../../services/authAPI';
 import { validateEmail, validatePassword, validateRequired, validatePhone } from '../../utils/validators';
 import { USER_TYPES } from '../../utils/constants';
+import { useNavigate, Link } from 'react-router-dom';
+
 
 const RegisterForm = ({ userType = USER_TYPES.CUSTOMER, onSuccess, onError }) => {
     const [formData, setFormData] = useState({
@@ -37,6 +39,8 @@ const RegisterForm = ({ userType = USER_TYPES.CUSTOMER, onSuccess, onError }) =>
         zipCode: '',
         country: 'South Africa', // Default for all forms
     });
+
+    const navigate = useNavigate();
 
     const provinces = [
         "Eastern Cape",
@@ -210,6 +214,8 @@ const RegisterForm = ({ userType = USER_TYPES.CUSTOMER, onSuccess, onError }) =>
         try {
             const response = await authAPI.register({ ...formData, userType });
             onSuccess(response);
+            navigate('/food-listing');
+
         } catch (error) {
             onError(error?.message || 'Registration failed');
         } finally {
