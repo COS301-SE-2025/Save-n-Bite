@@ -1,6 +1,7 @@
 from django.db import models
 from django.conf import settings
 from authentication.models import FoodProviderProfile
+from food_listings.models import FoodListing
 from django.contrib.postgres.fields import ArrayField
 import uuid
 from django.contrib.auth import get_user_model
@@ -51,7 +52,7 @@ class Cart(models.Model):
     @property
     def subtotal(self):
         return self.items.aggregate(
-            total=models.Sum(models.F('quantity') * models.F('food_listing__discounted_price'))
+            total=models.Sum(models.F('quantity') * models.F('food_listings__discounted_price'))
         )['total'] or 0
     
     def __str__(self):
@@ -60,7 +61,7 @@ class Cart(models.Model):
 class CartItem(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     cart = models.ForeignKey(Cart, on_delete=models.CASCADE, related_name='items')
-    food_listing = models.ForeignKey('inventory.FoodListing', on_delete=models.CASCADE)  # Changed from 'food_listing'
+    food_listing = models.ForeignKey('food_listings.FoodListing', on_delete=models.CASCADE)  
     quantity = models.PositiveIntegerField(default=1)
     added_at = models.DateTimeField(auto_now_add=True)
 
@@ -125,7 +126,7 @@ class Payment(models.Model):
 class TransactionItem(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     transaction = models.ForeignKey(Transaction, on_delete=models.CASCADE, related_name='items')
-    food_listing = models.ForeignKey('inventory.FoodListing', on_delete=models.PROTECT)  # Changed from 'food_listing'
+    food_listing = models.ForeignKey('food_listings.FoodListing', on_delete=models.PROTECT)  
     name = models.CharField(max_length=100)
     quantity = models.PositiveIntegerField()
     price_per_item = models.DecimalField(max_digits=10, decimal_places=2)

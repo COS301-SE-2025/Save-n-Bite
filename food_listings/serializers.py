@@ -2,7 +2,7 @@
 
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
-from .models import FoodListing, CartItem, Order, OrderItem
+from .models import FoodListing#, CartItem, Order, OrderItem
 import base64
 from django.core.files.base import ContentFile
 
@@ -129,85 +129,85 @@ class FoodListingUpdateSerializer(serializers.ModelSerializer):
         return instance
 
 
-class CartItemSerializer(serializers.ModelSerializer):
-    """Serializer for cart items"""
-    listing_name = serializers.CharField(source='listing.name', read_only=True)
-    price_per_item = serializers.DecimalField(source='listing.discounted_price', max_digits=10, decimal_places=2, read_only=True)
-    total_price = serializers.ReadOnlyField()
-    image_url = serializers.SerializerMethodField()
-    provider_name = serializers.CharField(source='listing.provider.provider_profile.business_name', read_only=True)
-    pickup_window = serializers.CharField(source='listing.pickup_window', read_only=True)
-    expiry_date = serializers.CharField(source='listing.expiry_date', read_only=True)
+# class CartItemSerializer(serializers.ModelSerializer):
+#     """Serializer for cart items"""
+#     listing_name = serializers.CharField(source='listing.name', read_only=True)
+#     price_per_item = serializers.DecimalField(source='listing.discounted_price', max_digits=10, decimal_places=2, read_only=True)
+#     total_price = serializers.ReadOnlyField()
+#     image_url = serializers.SerializerMethodField()
+#     provider_name = serializers.CharField(source='listing.provider.provider_profile.business_name', read_only=True)
+#     pickup_window = serializers.CharField(source='listing.pickup_window', read_only=True)
+#     expiry_date = serializers.CharField(source='listing.expiry_date', read_only=True)
     
-    class Meta:
-        model = CartItem
-        fields = [
-            'id', 'listing', 'listing_name', 'quantity', 'price_per_item',
-            'total_price', 'image_url', 'provider_name', 'pickup_window',
-            'expiry_date', 'added_at'
-        ]
-        read_only_fields = ['id', 'added_at']
+#     class Meta:
+#         model = CartItem
+#         fields = [
+#             'id', 'listing', 'listing_name', 'quantity', 'price_per_item',
+#             'total_price', 'image_url', 'provider_name', 'pickup_window',
+#             'expiry_date', 'added_at'
+#         ]
+#         read_only_fields = ['id', 'added_at']
     
-    def get_image_url(self, obj):
-        if obj.listing.images and len(obj.listing.images) > 0:
-            return obj.listing.images[0]
-        return None
+#     def get_image_url(self, obj):
+#         if obj.listing.images and len(obj.listing.images) > 0:
+#             return obj.listing.images[0]
+#         return None
 
 
-class AddToCartSerializer(serializers.Serializer):
-    """Serializer for adding items to cart"""
-    listingId = serializers.UUIDField()
-    quantity = serializers.IntegerField(min_value=1, default=1)
+# class AddToCartSerializer(serializers.Serializer):
+#     """Serializer for adding items to cart"""
+#     listingId = serializers.UUIDField()
+#     quantity = serializers.IntegerField(min_value=1, default=1)
     
-    def validate_listingId(self, value):
-        try:
-            listing = FoodListing.objects.get(id=value)
-            if not listing.is_available:
-                raise serializers.ValidationError("This listing is not available")
-            return value
-        except FoodListing.DoesNotExist:
-            raise serializers.ValidationError("Listing not found")
+#     def validate_listingId(self, value):
+#         try:
+#             listing = FoodListing.objects.get(id=value)
+#             if not listing.is_available:
+#                 raise serializers.ValidationError("This listing is not available")
+#             return value
+#         except FoodListing.DoesNotExist:
+#             raise serializers.ValidationError("Listing not found")
 
 
-class RemoveFromCartSerializer(serializers.Serializer):
-    """Serializer for removing items from cart"""
-    cartItemId = serializers.UUIDField()
+# class RemoveFromCartSerializer(serializers.Serializer):
+#     """Serializer for removing items from cart"""
+#     cartItemId = serializers.UUIDField()
     
-    def validate_cartItemId(self, value):
-        user = self.context['request'].user
-        try:
-            cart_item = CartItem.objects.get(id=value, user=user)
-            return value
-        except CartItem.DoesNotExist:
-            raise serializers.ValidationError("Cart item not found")
+#     def validate_cartItemId(self, value):
+#         user = self.context['request'].user
+#         try:
+#             cart_item = CartItem.objects.get(id=value, user=user)
+#             return value
+#         except CartItem.DoesNotExist:
+#             raise serializers.ValidationError("Cart item not found")
 
 
-class OrderItemSerializer(serializers.ModelSerializer):
-    """Serializer for order items"""
-    name = serializers.CharField(source='listing.name', read_only=True)
-    total_price = serializers.ReadOnlyField()
+# class OrderItemSerializer(serializers.ModelSerializer):
+#     """Serializer for order items"""
+#     name = serializers.CharField(source='listing.name', read_only=True)
+#     total_price = serializers.ReadOnlyField()
     
-    class Meta:
-        model = OrderItem
-        fields = ['name', 'quantity', 'price_per_item', 'total_price']
+#     class Meta:
+#         model = OrderItem
+#         fields = ['name', 'quantity', 'price_per_item', 'total_price']
 
 
-class OrderSerializer(serializers.ModelSerializer):
-    """Serializer for orders"""
-    items = OrderItemSerializer(many=True, read_only=True)
-    provider_name = serializers.CharField(source='provider.provider_profile.business_name', read_only=True)
+# class OrderSerializer(serializers.ModelSerializer):
+#     """Serializer for orders"""
+#     items = OrderItemSerializer(many=True, read_only=True)
+#     provider_name = serializers.CharField(source='provider.provider_profile.business_name', read_only=True)
     
-    class Meta:
-        model = Order
-        fields = [
-            'id', 'provider_name', 'items', 'total_amount', 'status',
-            'pickup_code', 'payment_method', 'payment_status',
-            'special_instructions', 'created_at'
-        ]
+#     class Meta:
+#         model = Order
+#         fields = [
+#             'id', 'provider_name', 'items', 'total_amount', 'status',
+#             'pickup_code', 'payment_method', 'payment_status',
+#             'special_instructions', 'created_at'
+#         ]
 
 
-class CheckoutSerializer(serializers.Serializer):
-    """Serializer for checkout process"""
-    paymentMethod = serializers.ChoiceField(choices=Order.PAYMENT_METHOD_CHOICES)
-    paymentDetails = serializers.JSONField(required=False)
-    specialInstructions = serializers.CharField(required=False, allow_blank=True)
+# class CheckoutSerializer(serializers.Serializer):
+#     """Serializer for checkout process"""
+#     paymentMethod = serializers.ChoiceField(choices=Order.PAYMENT_METHOD_CHOICES)
+#     paymentDetails = serializers.JSONField(required=False)
+#     specialInstructions = serializers.CharField(required=False, allow_blank=True)
