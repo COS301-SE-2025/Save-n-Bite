@@ -97,7 +97,7 @@ const FoodListings = () => {
   if (loading && foodListings.length === 0) {
     return (
       <div className="bg-gray-50 min-h-screen w-full">
-        <NavBar />
+        <CustomerNavBar />
         <div className="flex items-center justify-center min-h-[60vh]">
           <div className="text-center">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-600 mx-auto mb-4"></div>
