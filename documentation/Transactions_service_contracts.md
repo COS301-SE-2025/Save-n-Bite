@@ -3,8 +3,6 @@
 ## Overview
 API for managing customer shopping cart operations, checkout process, and order management. All endpoints require customer authentication.
 
-**Base URL:** `https://api.example.com`
-
 ---
 
 ## Cart Management
