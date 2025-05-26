@@ -13,7 +13,7 @@ const apiClient = axios.create({
 // Add request interceptor to include auth token
 apiClient.interceptors.request.use(
     (config) => {
-        const token = localStorage.getItem('access_token');
+        const token = localStorage.getItem('authToken');
         if (token) {
             config.headers.Authorization = `Bearer ${token}`;
         }
@@ -35,7 +35,7 @@ apiClient.interceptors.response.use(
             originalRequest._retry = true;
             
             try {
-                const refreshToken = localStorage.getItem('refresh_token');
+                const refreshToken = localStorage.getItem('refreshToken');
                 if (!refreshToken) {
                     // If no refresh token, just return the error
                     return Promise.reject(error);
@@ -46,7 +46,7 @@ apiClient.interceptors.response.use(
                 });
                 
                 const { access } = response.data;
-                localStorage.setItem('access_token', access);
+                localStorage.setItem('authToken', access);
                 
                 // Update the authorization header
                 originalRequest.headers.Authorization = `Bearer ${access}`;
@@ -56,8 +56,8 @@ apiClient.interceptors.response.use(
             } catch (refreshError) {
                 // Only redirect to login if it's a token error
                 if (refreshError.response?.status === 401) {
-                    localStorage.removeItem('access_token');
-                    localStorage.removeItem('refresh_token');
+                    localStorage.removeItem('authToken');
+                    localStorage.removeItem('refreshToken');
                     // Use a more graceful redirect
                     setTimeout(() => {
                         window.location.href = '/login';
@@ -238,18 +238,27 @@ const foodListingsAPI = {
     async getProviderListings() {
         try {
             const response = await apiClient.get('/api/provider/listings/');
+            console.log('Provider listings response:', response.data); // Debug log
             
-            const transformedListings = response.data.map(transformListingData);
+            // Handle different response structures
+            let listings = [];
+            if (response.data.listings) {
+                listings = response.data.listings;
+            } else if (Array.isArray(response.data)) {
+                listings = response.data;
+            } else if (response.data.results) {
+                listings = response.data.results;
+            }
             
             return {
                 success: true,
-                data: transformedListings
+                data: listings.map(transformListingData)
             };
         } catch (error) {
             console.error('Error fetching provider listings:', error);
             return {
                 success: false,
-                error: error.response?.data?.message || 'Failed to fetch your listings'
+                error: error.response?.data?.message || 'Failed to fetch listings'
             };
         }
     },
@@ -345,7 +354,45 @@ const foodListingsAPI = {
                 error: 'Failed to fetch categories'
             };
         }
-    }
+    },
+
+    async createListing(listingData) {
+        try {
+            // If listingData is FormData, don't set Content-Type header
+            const config = listingData instanceof FormData ? {
+                headers: {
+                    'Content-Type': 'multipart/form-data'
+                }
+            } : {};
+
+            const response = await apiClient.post('/api/provider/listings/create/', listingData, config);
+            return {
+                success: true,
+                data: transformListingData(response.data)
+            };
+        } catch (error) {
+            console.error('Error creating food listing:', error);
+            return {
+                success: false,
+                error: error.response?.data?.message || 'Failed to create listing'
+            };
+        }
+    },
+
+    async deleteListing(id) {
+        try {
+            const response = await apiClient.delete(`/food-listings/${id}/`);
+            return {
+                success: true,
+                data: response.data
+            };
+        } catch (error) {
+            return {
+                success: false,
+                error: error.response?.data?.message || 'Failed to delete listing'
+            };
+        }
+    },
 };
 
 export default foodListingsAPI;

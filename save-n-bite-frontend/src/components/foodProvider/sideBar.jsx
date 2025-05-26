@@ -22,7 +22,7 @@ const navigationItems = [
     name: 'Create Listing',
     icon: PlusCircleIcon,
     route: 'CreateListing',
-    path: '/createListing'
+    path: '/create-listing'
   },
   {
     name: 'My Listings',
