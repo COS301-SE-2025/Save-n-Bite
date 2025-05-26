@@ -1,4 +1,4 @@
-# Food Listings API Documentation
+# Food Listings Service Contract
 
 ## Overview
 API for managing food listings, allowing providers to create, update, and manage their food offerings, and customers to browse available listings.
