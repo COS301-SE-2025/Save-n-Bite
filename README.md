@@ -80,7 +80,9 @@ Key features:
 
 3. **GitHub Hygiene**:  
    - Branching strategy: GitFlow (`main` ↔ `dev` ↔ `subsystem/` ↔ `feature/` branches).  
-   <img src="assets/code quality.png"/>  
+   [![Build Status](https://github.com/COS301-SE-2025/Save-n-Bite/actions/workflows/build.yml/badge.svg)](https://github.com/COS301-SE-2025/Save-n-Bite/actions)
+   [![Coverage Status](https://coveralls.io/repos/github/COS301-SE-2025/Save-n-Bite/badge.svg?branch=main)](https://coveralls.io/github/COS301-SE-2025/Save-n-Bite?branch=main)
+   [![GitHub issues](https://img.shields.io/github/issues/COS301-SE-2025/Save-n-Bite)](https://github.com/COS301-SE-2025/Save-n-Bite/issues)
 
 ---
 
