@@ -3,8 +3,6 @@
 ## Overview
 API for managing food listings, allowing providers to create, update, and manage their food offerings, and customers to browse available listings.
 
-**Base URL:** `https://api.example.com`
-
 ---
 
 ## Provider Endpoints
