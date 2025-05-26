@@ -1,4 +1,4 @@
-# Transactions API Documentation
+# Transactions Service Contract
 
 ## Overview
 API for managing customer shopping cart operations, checkout process, and order management. All endpoints require customer authentication.
