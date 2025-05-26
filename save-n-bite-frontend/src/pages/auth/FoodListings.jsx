@@ -4,7 +4,7 @@ import SearchBar from '../../components/auth/SearchBar';
 import FilterSidebar from '../../components/auth/FilterSidebar';
 import FoodListingsGrid from '../../components/auth/FoodListingsGrid';
 import FoodProviderCarousel from '../../components/auth/FoodProviderCarousel';
-import NavBar from '../../components/auth/NavBar';
+import CustomerNavBar from '../../components/auth/CustomerNavBar';
 import Sort from '../../components/auth/Sort';
 import foodListingsAPI from '../../services/foodListingsAPI';
 
@@ -110,9 +110,8 @@ const FoodListings = () => {
 
   return (
     <div className="bg-gray-50 min-h-screen w-full">
-      <NavBar />
-      <br />
-      
+      <CustomerNavBar/>
+      <br/>
       <SearchBar 
         searchQuery={searchQuery}
         setSearchQuery={setSearchQuery}

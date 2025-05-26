@@ -25,8 +25,10 @@ const Login = () => {
     setTimeout(() => {
       // Navigate based on user type
       const user = response.user || response.data?.user;
-      if (user?.user_type === 'provider') {
-        navigate('/create-listing');
+      if (user?.userType === 'PROVIDER') {
+        navigate('/provider-dashboard');
+      } else if (user?.userType === 'NGO') {
+        navigate('/food-listing');
       } else {
         navigate('/food-listing');
       }
