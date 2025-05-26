@@ -3,7 +3,7 @@
 **Version:** 1.0  
 **Date:** [22/05/2025]  
 **Team:** [Secure Web & Mobile Guild]  
-**GitHub Repository:** [Link to Repo]  
+**GitHub Repository:** [Link to Repo](https://github.com/COS301-SE-2025/Save-n-Bite)
 
 ---
 
@@ -178,7 +178,7 @@ R6: **Feedback & Review**
 &nbsp;&nbsp;&nbsp;&nbsp;R6.3 A moderation system must exist to prevent false or abusive reviews.  
 &nbsp;&nbsp;&nbsp;&nbsp;R6.4 Reviews should be linked to specific listings or transactions.  
 
-R7: **Analytics**
+R7: **Analytics**  
 &nbsp;&nbsp;&nbsp;&nbsp;R7.1 Businesses must be able to view analytics on food waste reduction (e.g., items saved).  
 &nbsp;&nbsp;&nbsp;&nbsp;R7.2 The system should present user-friendly dashboards for performance metrics (e.g., total meals donated).  
 &nbsp;&nbsp;&nbsp;&nbsp;R7.3 Metrics may include total donations, frequent users, and overall impact.  
@@ -298,11 +298,13 @@ Backend: Django emits events on CRUD operations (e.g., post_save signals).
 
 ## 8. Technology Requirements  
 
-*(Coming Soon – List programming languages, frameworks, databases, etc.)*  
+| Category       | Technologies                                                                 |
+|----------------|-----------------------------------------------------------------------------|
+| **Frontend**   | React, Material UI |
+| **Backend**    | Django, Django REST, JWT|
+| **Database**   | PostgreSQL, Redis|
+| **Cloud**      | Microsoft Azure |
+| **DevOps**     | Docker, GitHub Actions |
+| **AI/ML**      | Python, Scikit-learn, Pandas |
 
 ---
-
-**Notes:**  
-- Replace placeholder images with actual files.  
-- Update sections marked "Coming Soon" as progress is made.  
-- Ensure consistency with team’s GitHub documentation standards.  

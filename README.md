@@ -32,13 +32,18 @@ Key features:
 ---
 
 ## 📂 Repository Structure
-    TBC
+    main
+    |_dev
+      |_frontend
+         |_frontend features
+      |_backend
+         |_backend features
 
 ---
 
 ## 🔗 Documentation
 - **📄 [Software Requirements Specification (SRS)](documentation/SRS.md)**
-- **📊 [GitHub Project Board](https://https://github.com/orgs/COS301-SE-2025/projects/177)**  
+- **📊 [GitHub Project Board](https://github.com/orgs/COS301-SE-2025/projects/177/views/2)**  
 - **🤖 [API Documentation](assets/construction.png)**  
 
 ---
@@ -64,10 +69,14 @@ Key features:
    - Purchase/Request food (React + Django REST, PostgreSQL).
 
 2. **SRS Document**:  
-   - Domain model (UML class diagram).  
-   - Use case diagrams + functional requirements.  
-   - Architectural design + non-functional requirements.
-   - User stories.
+   - Introduction
+   - User stories
+   - Use Case Diagrams
+   - Functional Requirements
+   - Service Contracts
+   - Domain Model
+   - Architectural Requirements
+   - Technology Requirements
 
 
 3. **GitHub Hygiene**:  
@@ -78,7 +87,4 @@ Key features:
 
 ## 📫 Contact Us
  [![Email](https://img.shields.io/badge/Email-swmguild@gmail.com-D14836?logo=gmail)](mailto:swmguild@gmail.com)
-
-## 🚀 Getting Started
-[TBC](assets/construction.png)
 
