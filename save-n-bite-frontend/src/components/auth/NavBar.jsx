@@ -21,11 +21,10 @@ const Navigation = () => {
 
   const handleLogout = () => {
     localStorage.removeItem('authToken');
-    localStorage.removeItem('refreshToken');
     localStorage.removeItem('userData');
     setIsAuthenticated(false);
     setUserData(null);
-    navigate('/');
+    navigate('/login');
   };
 
   return <nav className="bg-white dark:bg-gray-800 shadow-sm py-4 px-6 md:px-12 transition-colors duration-200">
@@ -67,7 +66,7 @@ const Navigation = () => {
               )}
               <button
                 onClick={handleLogout}
-                className="px-4 py-2 bg-emerald-600 text-white dark:bg-emerald-500 rounded-md hover:bg-emerald-700 dark:hover:bg-emerald-600"
+                className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700"
               >
                 Logout
               </button>
@@ -77,7 +76,7 @@ const Navigation = () => {
               <Link to="/register" className="text-gray-600 dark:text-gray-300 hover:text-emerald-600 dark:hover:text-emerald-500">
                 Sign Up
               </Link>
-              <Link to="/login" className="px-4 py-2 bg-emerald-600 text-white dark:bg-emerald-500 rounded-md hover:bg-emerald-700 dark:hover:bg-emerald-600">
+              <Link to="/login" className="px-4 py-2 bg-emerald-600 text-white rounded-md hover:bg-emerald-700">
                 Login
               </Link>
             </>
@@ -105,7 +104,7 @@ const Navigation = () => {
                 )}
                 <button
                   onClick={handleLogout}
-                  className="text-center py-2 bg-emerald-600 text-white dark:bg-emerald-500 rounded-md hover:bg-emerald-700 dark:hover:bg-emerald-600"
+                  className="text-center py-2 bg-red-600 text-white rounded-md hover:bg-red-700"
                 >
                   Logout
                 </button>
@@ -115,7 +114,7 @@ const Navigation = () => {
                 <Link to="/register" className="text-gray-600 dark:text-gray-300 hover:text-emerald-600 dark:hover:text-emerald-500 py-2">
                   Sign Up
                 </Link>
-                <Link to="/login" className="text-center py-2 bg-emerald-600 text-white dark:bg-emerald-500 rounded-md hover:bg-emerald-700 dark:hover:bg-emerald-600">
+                <Link to="/login" className="text-center py-2 bg-emerald-600 text-white rounded-md hover:bg-emerald-700">
                   Login
                 </Link>
               </>
