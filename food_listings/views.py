@@ -243,6 +243,7 @@ def browse_food_listings(request):
 
 
 @api_view(['GET'])
+@permission_classes([AllowAny])
 def get_food_listing_details(request, listing_id):
     """Get detailed information about a specific food listing"""
     try:
