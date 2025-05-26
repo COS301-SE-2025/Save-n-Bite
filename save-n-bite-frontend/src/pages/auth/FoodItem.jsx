@@ -5,6 +5,7 @@ import FoodItemDetails from '../../components/auth/FoodItemDetails';
 import PriceDisplay from '../../components/auth/PriceDisplay';
 import RelatedItems from '../../components/auth/RelatedItems';
 import StoreLocation from '../../components/auth/StoreLocation';
+import CustomerNavBar from '../../components/auth/CustomerNavBar';
 import { ShoppingCartIcon } from 'lucide-react';
 
 const FoodItem = () => {
@@ -79,6 +80,7 @@ const FoodItem = () => {
 
   return (
     <div className="bg-gray-50 min-h-screen w-full">
+      <CustomerNavBar/>
       <div className="max-w-6xl mx-auto p-4 md:p-6">
         <div className="mb-6">
           <Link to="/FoodListing" className="text-emerald-600 hover:text-emerald-700">

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ShoppingCartIcon, TrashIcon, CreditCardIcon } from 'lucide-react';
+import CustomerNavBar from '../../components/auth/CustomerNavBar';
 // Mock cart items
 const initialCartItems = [{
   id: 1,
@@ -32,6 +33,7 @@ const YourCart = () => {
     setCartItems(cartItems.filter(item => item.id !== id));
   };
   return <div className="min-h-screen bg-gray-50 w-full py-8">
+    <CustomerNavBar/>
       <div className="max-w-4xl mx-auto px-4">
         <h1 className="text-2xl font-bold mb-8 text-gray-800">Your Cart</h1>
         {cartItems.length === 0 ? <div className="text-center py-12">
