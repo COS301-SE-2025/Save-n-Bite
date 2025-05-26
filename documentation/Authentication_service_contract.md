@@ -1,4 +1,4 @@
-# Authentication API Documentation
+# Authentication Service Contract
 
 ## Overview
 API for user authentication and registration supporting three user types: customers, NGOs, and business providers.
