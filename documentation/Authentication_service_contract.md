@@ -49,20 +49,22 @@ Registers a new NGO/organization account.
 
 **Content-Type:** `multipart/form-data`
 
-**Request Parameters:**
-| Field | Type | Required | Description |
-|-------|------|----------|-------------|
-| email | string | Yes | Organization email |
-| password | string | Yes | Account password |
-| representative_email | string | Yes | Representative's email |
-| organisation_name | string | Yes | Organization name |
-| organisation_contact | string | Yes | Contact number |
-| representative_name | string | Yes | Representative's name |
-| organisation_street | string | Yes | Street address |
-| organisation_city | string | Yes | City |
-| organisation_province | string | Yes | Province |
-| organisation_postal_code | string | Yes | Postal code |
-| npo_document | file | Yes | NPO registration document (PDF) |
+**Request Body:**
+```json
+{
+  "email": "organization@example.com",
+  "password": "12organization34",
+  "representative_email": "karen@org.com",
+  "organisation_name": "Helpful Org",
+  "organisation_contact": "0123456789",
+  "representative_name": "Karen",
+  "organisation_street": "Help Street",
+  "organisation_city": "Help City",
+  "organisation_province": "Gauteng",
+  "organisation_postal_code": "1541",
+  "npo_document": "npo.pdf"
+}
+```
 
 **Response (201 - Success):**
 ```json
