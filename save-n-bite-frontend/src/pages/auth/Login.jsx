@@ -28,9 +28,9 @@ const Login = () => {
       if (user?.userType === 'PROVIDER') {
         navigate('/provider-dashboard');
       } else if (user?.userType === 'NGO') {
-        navigate('/ngo-dashboard');
+        navigate('/food-listing');
       } else {
-        navigate('/dashboard');
+        navigate('/food-listing');
       }
     }, 3000);
   };

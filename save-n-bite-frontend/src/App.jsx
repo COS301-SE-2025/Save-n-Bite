@@ -6,18 +6,19 @@ import Login from './pages/auth/Login';
 import Home from './pages/auth/Home';
 import FoodListing from './pages/auth/FoodListings';
 import FoodItem from './pages/auth/FoodItem';
+import Cart from './pages/auth/YourCart';
 
 function App() {
   return (
     <Router>
       <Routes>
-        {/* <Route path="/" element={<Register />} /> */}
         <Route path="/login" element={<Login />} />
          <Route path="/register" element={<Register />} />
           <Route path="/" element={<Home />} />
           <Route path="/food-listing" element = {<FoodListing/>}/>
           {/* <Route path = "/" element = {<FoodListing/>}/> */}
           <Route path="/food-item" element={<FoodItem />} />
+          <Route path="/cart" element={<Cart />} />
 
       </Routes>
     </Router>

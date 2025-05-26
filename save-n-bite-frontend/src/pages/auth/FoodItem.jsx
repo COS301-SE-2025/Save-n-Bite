@@ -1,5 +1,5 @@
-import React from 'react';
-import { useParams, Link } from 'react-router-dom';
+import React, { useState } from 'react';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import FoodItemHeader from '../../components/auth/FoodItemHeader';
 import FoodItemDetails from '../../components/auth/FoodItemDetails';
 import PriceDisplay from '../../components/auth/PriceDisplay';
@@ -9,7 +9,25 @@ import { ShoppingCartIcon } from 'lucide-react';
 
 const FoodItem = () => {
   const { id } = useParams();
+  const navigate = useNavigate();
+  const [buttonStatus, setButtonStatus] = useState("idle");
 
+  
+   const handleAddToCart = async (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    if (buttonStatus === "added") {
+      navigate('/cart');
+      return;
+    }
+
+    setButtonStatus("loading");
+
+    setTimeout(() => {
+      setButtonStatus("added");
+    }, 1500);
+  };
 
   const foodItem = {
     listing: {
@@ -100,9 +118,17 @@ const FoodItem = () => {
                 discountedPrice={foodItem.listing.discountedPrice} 
               />
 
-              <button className="w-full py-3 bg-emerald-600 text-white font-medium rounded-md hover:bg-emerald-700 transition-colors flex items-center justify-center">
+              <button
+                onClick={handleAddToCart}
+                disabled={buttonStatus === "loading"}
+                className={`w-full py-3 ${
+                  buttonStatus === "added" ? "bg-emerald-800" : "bg-emerald-600"
+                } text-white font-medium rounded-md hover:bg-emerald-700 transition-colors flex items-center justify-center`}
+              >
                 <ShoppingCartIcon size={20} className="mr-2" />
-                Add to Cart
+                {buttonStatus === "idle" && "Add to Cart"}
+                {buttonStatus === "loading" && "Adding..."}
+                {buttonStatus === "added" && "View Cart"}
               </button>
             </div>
           </div>
@@ -114,6 +140,6 @@ const FoodItem = () => {
       </div>
     </div>
   );
-};
 
+}
 export default FoodItem;
