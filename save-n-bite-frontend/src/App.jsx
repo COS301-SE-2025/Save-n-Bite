@@ -5,7 +5,7 @@ import Register from './pages/auth/Register';
 import Login from './pages/auth/Login';
 import Home from './pages/auth/Home';
 import FoodListing from './pages/auth/FoodListings';
-// import CreateListing from './pages/auth/CreateListing';
+import CreateListing from './pages/foodProvider/CreateListing';
 import Cart from './pages/auth/YourCart';
 import OrderHistory from './pages/auth/OrderHistory';
 import FoodItem from './pages/auth/FoodItem';
@@ -21,6 +21,7 @@ function App() {
           <Route path="/food-item" element={<FoodItem />} />
           <Route path="/orders" element={<OrderHistory />} />
           <Route path="/cart" element={<Cart />} />
+          <Route path="/createListing" element={<CreateListing />} />
 
 
 
