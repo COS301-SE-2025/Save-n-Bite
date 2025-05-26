@@ -44,7 +44,6 @@ Key features:
 ## 🔗 Documentation
 - **📄 [Software Requirements Specification (SRS)](documentation/SRS.md)**
 - **📊 [GitHub Project Board](https://github.com/orgs/COS301-SE-2025/projects/177/views/2)**  
-- **🤖 [API Documentation](assets/construction.png)**  
 
 ---
 
@@ -81,7 +80,7 @@ Key features:
 
 3. **GitHub Hygiene**:  
    - Branching strategy: GitFlow (`main` ↔ `dev` ↔ `subsystem/` ↔ `feature/` branches).  
-   - Code quality badges (Coveralls, GitHub Actions).  
+   <img src="assets/code quality.png"/>  
 
 ---
 
