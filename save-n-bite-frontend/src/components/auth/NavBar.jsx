@@ -31,7 +31,7 @@ const Navigation = () => {
   return <nav className="bg-white dark:bg-gray-800 shadow-sm py-4 px-6 md:px-12 transition-colors duration-200">
       <div className="max-w-7xl mx-auto flex justify-between items-center">
 
-        <Link to="/" className="flex items-baseline gap-2"> {/* items-baseline aligns text baseline */}
+        <Link to="/" className="flex items-baseline gap-2"> 
         <img 
             src={logo} 
             alt="Logo"

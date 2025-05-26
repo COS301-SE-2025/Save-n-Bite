@@ -5,10 +5,11 @@ import Register from './pages/auth/Register';
 import Login from './pages/auth/Login';
 import Home from './pages/auth/Home';
 import FoodListing from './pages/auth/FoodListings';
-import CreateListing from './pages/foodProvider/CreateListing';
 import Cart from './pages/auth/YourCart';
 import OrderHistory from './pages/auth/OrderHistory';
 import FoodItem from './pages/auth/FoodItem';
+import CreateListing from './pages/foodProvider/CreateListing';
+import ListingOverview from './pages/foodProvider/ListingsOverview';
 
 function App() {
   return (
@@ -22,7 +23,7 @@ function App() {
           <Route path="/orders" element={<OrderHistory />} />
           <Route path="/cart" element={<Cart />} />
           <Route path="/createListing" element={<CreateListing />} />
-
+          <Route path="/ListingOverview" element={<ListingOverview />} />
 
 
       </Routes>
