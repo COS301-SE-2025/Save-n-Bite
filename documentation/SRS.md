@@ -246,7 +246,7 @@ R11: **Gamification**
 
 ## 6. Domain Model  
 
-![Domain Model](Save-n-Bite_DomainModel.png)
+![Domain Model](Save-n-Bite_Domain_Model.png)
 
 ---
 
