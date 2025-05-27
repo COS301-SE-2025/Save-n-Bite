@@ -72,10 +72,10 @@ def register_ngo(request):
             return Response({
                 'message': 'NGO registered successfully - pending verification',
                 'organisation': {
-                    'id': str(user.id),
-                    'organisationName': user.ngo_profile.organisation_name,
-                    'representativeEmail': user.ngo_profile.representative_email,
-                    'status': user.ngo_profile.status,
+                    'id': str(user.UserID),
+                    'organisationName': user.organisation_profile.organisation_name,
+                    'representativeEmail': user.organisation_profile.representative_email,
+                    'status': user.organisation_profile.status,
                     'userType': 'ngo'
                 }
             }, status=status.HTTP_201_CREATED)
@@ -110,10 +110,10 @@ def register_provider(request):
             return Response({
                 'message': 'Food provider registered successfully - pending verification',
                 'provider': {
-                    'id': str(user.id),
-                    'businessName': user.provider_profile.business_name,
-                    'businessEmail': user.provider_profile.business_email,
-                    'status': user.provider_profile.status,
+                    'id': str(user.UserID),
+                    'businessName': user.business_profile.business_name,
+                    'businessEmail': user.email,
+                    'status': user.business_profile.status,
                     'userType': 'provider'
                 }
             }, status=status.HTTP_201_CREATED)

@@ -1,4 +1,4 @@
-# authentication/models.py
+# authentication/models.py - Complete Schema Implementation
 
 from django.contrib.auth.models import AbstractUser
 from django.db import models
@@ -6,19 +6,30 @@ import uuid
 
 class User(AbstractUser):
     USER_TYPE_CHOICES = [
-        ('customer', 'Customer'),
-        ('provider', 'Food Provider'),
-        ('ngo', 'NGO'),
+        ('Individual', 'Individual'),
+        ('Business', 'Business'),
+        ('Organisation', 'Organisation'),
+        ('Admin', 'Admin'),
     ]
     
     ROLE_CHOICES = [
         ('normal', 'Normal User'),
-        ('admin', 'Administrator'),
+        ('admin', 'Administrator')
     ]
     
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    # Primary key from schema
+    UserID = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    
+    # All fields from User table in schema
+    phone_number = models.CharField(max_length=20, null=True, blank=True)
     email = models.EmailField(unique=True)
-    user_type = models.CharField(max_length=10, choices=USER_TYPE_CHOICES)
+    profile_picture = models.ImageField(upload_to='profile_pictures/', null=True, blank=True)
+    username = models.CharField(max_length=150, unique=True)
+    password = models.CharField(max_length=128)  # Django handles this automatically but it's explicit
+    admin_rights = models.BooleanField(default=False)
+    user_type = models.CharField(max_length=20, choices=USER_TYPE_CHOICES)
+    
+    # Additional fields for functionality
     role = models.CharField(max_length=10, choices=ROLE_CHOICES, default='normal')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -29,59 +40,152 @@ class User(AbstractUser):
     def __str__(self):
         return self.email
 
-class CustomerProfile(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='customer_profile')
-    full_name = models.CharField(max_length=255)
-    profile_image = models.ImageField(upload_to='customer_profiles/', null=True, blank=True)
+
+class PaymentMethod(models.Model):
+    PAYMENT_METHOD_CHOICES = [
+        ('CreditCard', 'Credit Card'),
+        ('DebitCard', 'Debit Card'),
+        ('EFT', 'Electronic Fund Transfer'),
+        ('Cash', 'Cash'),
+        ('Cryptocurrency', 'Cryptocurrency'),
+    ]
+    
+    # Foreign key to User
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='payment_methods')
+    payment_method = models.CharField(max_length=20, choices=PAYMENT_METHOD_CHOICES)
+    billing_address = models.TextField()
     
     def __str__(self):
-        return f"Customer: {self.full_name}"
+        return f"{self.user.username} - {self.payment_method}"
 
-class NGOProfile(models.Model):
+
+class Individual(models.Model):
+    IndividualID = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='individual_profile')
+    date_of_birth = models.DateField(null=True, blank=True)
+    
+    def __str__(self):
+        return f"Individual: {self.user.username}"
+
+
+class Business(models.Model):
+    BUSINESS_TYPE_CHOICES = [
+        ('GroceryStore', 'Grocery Store'),
+        ('Restaurant', 'Restaurant'),
+        ('Other', 'Other'),
+    ]
+    
     STATUS_CHOICES = [
         ('pending_verification', 'Pending Verification'),
         ('verified', 'Verified'),
         ('rejected', 'Rejected'),
     ]
-
-    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='ngo_profile')
-    organisation_name = models.CharField(max_length=255)
-    organisation_contact = models.CharField(max_length=20)
-    organisation_email = models.EmailField()  # ✅ NEW FIELD
-    representative_name = models.CharField(max_length=255)
-    representative_email = models.EmailField()
-
-    # ✅ Split address fields
-    address_line1 = models.CharField(max_length=255)
-    address_line2 = models.CharField(max_length=255, blank=True, null=True)
+    
+    BusinessID = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='business_profile')
+    business_type = models.CharField(max_length=20, choices=BUSINESS_TYPE_CHOICES, default='Restaurant')
+    business_licence = models.FileField(upload_to='business_documents/')
+    
+    # Address fields from schema
+    street_number = models.CharField(max_length=10)
+    street = models.CharField(max_length=255)
+    suburb = models.CharField(max_length=100)
     city = models.CharField(max_length=100)
-    province_or_state = models.CharField(max_length=100)
-    postal_code = models.CharField(max_length=20)
-    country = models.CharField(max_length=100)
-
-    npo_document = models.FileField(upload_to='ngo_documents/')
-    organisation_logo = models.ImageField(upload_to='ngo_logos/', null=True, blank=True)
-    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending_verification')
-
-    def __str__(self):
-        return f"NGO: {self.organisation_name}"
-
-
-class FoodProviderProfile(models.Model):
-    STATUS_CHOICES = [
-        ('pending_verification', 'Pending Verification'),
-        ('verified', 'Verified'),
-        ('rejected', 'Rejected'),
-    ]
     
-    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='provider_profile')
+    # Additional fields for API compatibility (from your current implementation)
     business_name = models.CharField(max_length=255)
-    business_address = models.TextField()
     business_contact = models.CharField(max_length=20)
     business_email = models.EmailField()
-    cipc_document = models.FileField(upload_to='provider_documents/')
     logo = models.ImageField(upload_to='provider_logos/', null=True, blank=True)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending_verification')
     
     def __str__(self):
-        return f"Provider: {self.business_name}"
+        return f"Business: {self.business_name}"
+
+
+class AvailableHours(models.Model):
+    """Single table for business hours - stores as time range string"""
+    DAYS_OF_WEEK = [
+        ('Monday', 'Monday'),
+        ('Tuesday', 'Tuesday'),
+        ('Wednesday', 'Wednesday'),
+        ('Thursday', 'Thursday'),
+        ('Friday', 'Friday'),
+        ('Saturday', 'Saturday'),
+        ('Sunday', 'Sunday'),
+    ]
+    
+    business = models.ForeignKey(Business, on_delete=models.CASCADE, related_name='available_hours')
+    day_of_week = models.CharField(max_length=10, choices=DAYS_OF_WEEK)
+    hours = models.CharField(max_length=20, help_text="Format: '08:00 - 16:00'")
+    
+    class Meta:
+        unique_together = ['business', 'day_of_week']
+    
+    def __str__(self):
+        return f"{self.business.business_name} - {self.day_of_week}: {self.hours}"
+
+
+# Alternative: Separate Opening/Closing Hours (if you prefer separate fields)
+class OpeningHours(models.Model):
+    business = models.ForeignKey(Business, on_delete=models.CASCADE, related_name='opening_hours')
+    hours = models.TimeField()
+    
+    def __str__(self):
+        return f"{self.business.business_name} - Opens: {self.hours}"
+
+
+class ClosingHours(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='closing_hours')
+    hours = models.TimeField()
+    
+    def __str__(self):
+        return f"{self.user.username} - Closes: {self.hours}"
+
+
+class Organisation(models.Model):
+    ORGANISATION_TYPE_CHOICES = [
+        ('Charity', 'Charity'),
+        ('ReligiousOrg', 'Religious Organization'),
+        ('NonProfit', 'Non-Profit'),
+    ]
+    
+    STATUS_CHOICES = [
+        ('pending_verification', 'Pending Verification'),
+        ('verified', 'Verified'),
+        ('rejected', 'Rejected'),
+    ]
+    
+    OrganisationID = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='organisation_profile')
+    organisation_type = models.CharField(max_length=20, choices=ORGANISATION_TYPE_CHOICES, default='NonProfit')
+    verified_org = models.BooleanField(default=False)
+    ngo_registration = models.FileField(upload_to='ngo_documents/')
+    representative_name = models.CharField(max_length=255)
+    
+    # Address fields from schema
+    street_number = models.CharField(max_length=10)
+    street = models.CharField(max_length=255)
+    suburb = models.CharField(max_length=100)
+    city = models.CharField(max_length=100)
+    
+    # Additional fields for API compatibility
+    organisation_name = models.CharField(max_length=255)
+    organisation_contact = models.CharField(max_length=20)
+    representative_email = models.EmailField()
+    province_or_state = models.CharField(max_length=100)
+    postal_code = models.CharField(max_length=20)
+    country = models.CharField(max_length=100, default='South Africa')
+    organisation_logo = models.ImageField(upload_to='ngo_logos/', null=True, blank=True)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending_verification')
+    
+    def __str__(self):
+        return f"Organisation: {self.organisation_name}"
+
+
+class Admin(models.Model):
+    AdminID = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='admin_profile')
+    
+    def __str__(self):
+        return f"Admin: {self.user.username}"

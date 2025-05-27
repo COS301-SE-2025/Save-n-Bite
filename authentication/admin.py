@@ -2,35 +2,45 @@
 
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
-from .models import User, CustomerProfile, NGOProfile, FoodProviderProfile
+from .models import User, Individual, Business, Organisation, Admin, PaymentMethod, AvailableHours
 
 # Custom User Admin
 @admin.register(User)
 class CustomUserAdmin(UserAdmin):
     list_display = ['email', 'username', 'user_type', 'is_active', 'date_joined']
-    list_filter = ['user_type', 'is_active', 'date_joined']
+    list_filter = ['user_type', 'role', 'is_active', 'date_joined', 'admin_rights']
     search_fields = ['email', 'username']
-    
+    ordering = ['email']
+    #im not sure if i agree with this bc its for an admin but Claude insists
     fieldsets = UserAdmin.fieldsets + (
         ('Custom Fields', {
-            'fields': ('user_type',)
+            'fields': ('user_type', 'role', 'phone_number', 'profile_picture', 'admin_rights')  # ← Added new fields
         }),
     )
 
-@admin.register(CustomerProfile)
-class CustomerProfileAdmin(admin.ModelAdmin):
-    list_display = ['user', 'full_name']
-    search_fields = ['user__email', 'full_name']
 
-@admin.register(NGOProfile)
-class NGOProfileAdmin(admin.ModelAdmin):
-    list_display = ['organisation_name', 'representative_name', 'representative_email', 'status']
-    list_filter = ['status']
-    search_fields = ['organisation_name', 'representative_name', 'representative_email']
+@admin.register(Individual)
+class IndividualAdmin(admin.ModelAdmin):
+    list_display = ['get_username', 'get_email', 'date_of_birth']
+    search_fields = ['user__email', 'user__username']
+    
+    def get_username(self, obj):
+        return obj.user.username
+    get_username.short_description = 'Username'
+    
+    def get_email(self, obj):
+        return obj.user.email
+    get_email.short_description = 'Email'
+
+@admin.register(Organisation)
+class OrganisationAdmin(admin.ModelAdmin):
+    list_display = ['organisation_name', 'get_email', 'representative_name', 'status']
+    list_filter = ['status', 'verified_org', 'organisation_type']  # ← Updated filter fields
+    search_fields = ['organisation_name', 'user__email', 'representative_name']
     
     fieldsets = (
         ('Organization Info', {
-            'fields': ('user', 'organisation_name', 'organisation_contact', 'organisation_email')
+            'fields': ('user', 'organisation_name', 'organisation_contact', 'organisation_type')  # ← Removed organisation_email
         }),
         ('Representative', {
             'fields': ('representative_name', 'representative_email')
@@ -39,26 +49,65 @@ class NGOProfileAdmin(admin.ModelAdmin):
             'fields': ('address_line1', 'address_line2', 'city', 'province_or_state', 'postal_code', 'country')
         }),
         ('Documents & Status', {
-            'fields': ('npo_document', 'organisation_logo', 'status')
+            'fields': ('ngo_registration', 'organisation_logo', 'status', 'verified_org')  # ← Updated field names
         }),
     )
+    
+    def get_email(self, obj):
+        return obj.user.email  # ← Get email from linked User
+    get_email.short_description = 'Email'
 
-@admin.register(FoodProviderProfile)
-class FoodProviderProfileAdmin(admin.ModelAdmin):
-    list_display = ['business_name', 'business_email', 'business_contact', 'status']
-    list_filter = ['status']
-    search_fields = ['business_name', 'business_email']
+@admin.register(Business)
+class BusinessAdmin(admin.ModelAdmin):
+    list_display = ['business_name', 'get_email', 'business_contact', 'status']
+    list_filter = ['status', 'verified', 'business_type']  # ← Added new filter fields
+    search_fields = ['business_name', 'user__email', 'business_contact']
     
     fieldsets = (
         ('Business Info', {
-            'fields': ('user', 'business_name', 'business_email', 'business_contact')
+            'fields': ('user', 'business_name', 'business_contact', 'business_type')  
         }),
         ('Address', {
-            'fields': ('business_address',)
+            'fields': ('address_line1', 'address_line2', 'city', 'province_or_state', 'postal_code', 'country') 
         }),
         ('Documents & Status', {
-            'fields': ('cipc_document', 'logo', 'status')
+            'fields': ('business_licence', 'logo', 'status', 'verified')  
         }),
     )
+    
+    def get_email(self, obj):
+        return obj.user.email  
+    get_email.short_description = 'Email'
 
-# Register your models here.
+@admin.register(PaymentMethod)
+class PaymentMethodAdmin(admin.ModelAdmin):
+    list_display = ['get_username', 'payment_method', 'billing_address']
+    list_filter = ['payment_method']
+    search_fields = ['user__email', 'user__username']
+    
+    def get_username(self, obj):
+        return obj.user.username
+    get_username.short_description = 'Username'
+
+@admin.register(AvailableHours)
+class AvailableHoursAdmin(admin.ModelAdmin):
+    list_display = ['get_business_name', 'day_of_week', 'hours']
+    list_filter = ['day_of_week']
+    search_fields = ['business__business_name']
+    
+    def get_business_name(self, obj):
+        return obj.business.business_name
+    get_business_name.short_description = 'Business Name'
+
+@admin.register(Admin)
+class AdminProfileAdmin(admin.ModelAdmin):
+    list_display = ['get_username', 'get_email']
+    search_fields = ['user__email', 'user__username']
+    
+    def get_username(self, obj):
+        return obj.user.username
+    get_username.short_description = 'Username'
+    
+    def get_email(self, obj):
+        return obj.user.email
+    get_email.short_description = 'Email'

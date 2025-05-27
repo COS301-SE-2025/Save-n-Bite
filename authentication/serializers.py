@@ -1,9 +1,9 @@
-# authentication/serializers.py
+# authentication/serializers.py - Updated for clean models
 
 from rest_framework import serializers
 from django.contrib.auth import authenticate
 from django.contrib.auth.password_validation import validate_password
-from .models import User, CustomerProfile, NGOProfile, FoodProviderProfile
+from .models import User, Individual, Business, Organisation
 import base64
 from django.core.files.base import ContentFile
 
@@ -30,6 +30,7 @@ class BaseRegistrationSerializer(serializers.ModelSerializer):
         )
         return user
 
+
 class CustomerRegistrationSerializer(BaseRegistrationSerializer):
     full_name = serializers.CharField(max_length=255)
     profile_image = serializers.CharField(required=False, allow_blank=True)
@@ -40,33 +41,37 @@ class CustomerRegistrationSerializer(BaseRegistrationSerializer):
     def create(self, validated_data):
         full_name = validated_data.pop('full_name')
         profile_image_data = validated_data.pop('profile_image', None)
-        validated_data['user_type'] = 'customer'
+        validated_data['user_type'] = 'Individual'
 
         user = super().create(validated_data)
+        user.username = full_name
+        user.save()
 
-        customer_profile = CustomerProfile.objects.create(
+        # Create Individual profile
+        Individual.objects.create(
             user=user,
-            full_name=full_name
+            date_of_birth=None  # Can be updated later
         )
 
+        # Handle profile image
         if profile_image_data:
             try:
                 format, imgstr = profile_image_data.split(';base64,')
                 ext = format.split('/')[-1]
-                data = ContentFile(base64.b64decode(imgstr), name=f'profile_{user.id}.{ext}')
-                customer_profile.profile_image = data
-                customer_profile.save()
-            except Exception as e:
+                data = ContentFile(base64.b64decode(imgstr), name=f'profile_{user.UserID}.{ext}')
+                user.profile_picture = data
+                user.save()
+            except Exception:
                 pass
 
         return user
+
 
 class NGORegistrationSerializer(BaseRegistrationSerializer):
     organisation_name = serializers.CharField(max_length=255)
     organisation_contact = serializers.CharField(max_length=20)
     representative_name = serializers.CharField(max_length=255)
     representative_email = serializers.EmailField()
-    organisational_email = serializers.EmailField()
     organisation_street = serializers.CharField(max_length=255)
     organisation_city = serializers.CharField(max_length=255)
     organisation_province = serializers.CharField(max_length=255)
@@ -76,18 +81,18 @@ class NGORegistrationSerializer(BaseRegistrationSerializer):
 
     class Meta(BaseRegistrationSerializer.Meta):
         fields = BaseRegistrationSerializer.Meta.fields + [
-            'representative_email', 'organisational_email', 'organisation_name', 'organisation_contact',
-            'representative_name', 'organisation_street', 'organisation_city',
+            'organisation_name', 'organisation_contact',
+            'representative_name', 'representative_email', 'organisation_street', 'organisation_city',
             'organisation_province', 'organisation_postal_code', 'npo_document', 'organisation_logo'
         ]
 
     def create(self, validated_data):
-        organisation_data = {
+        organisation_info = {
             'organisation_name': validated_data.pop('organisation_name'),
             'organisation_contact': validated_data.pop('organisation_contact'),
             'representative_name': validated_data.pop('representative_name'),
-            'organisation_email': validated_data.pop('organisational_email'),
-            'address_line1': validated_data.pop('organisation_street'),
+            'representative_email': validated_data.pop('representative_email'),
+            'street': validated_data.pop('organisation_street'),
             'city': validated_data.pop('organisation_city'),
             'province_or_state': validated_data.pop('organisation_province'),
             'postal_code': validated_data.pop('organisation_postal_code'),
@@ -95,41 +100,45 @@ class NGORegistrationSerializer(BaseRegistrationSerializer):
         }
         npo_document_data = validated_data.pop('npo_document')
         logo_data = validated_data.pop('organisation_logo', None)
-        validated_data['user_type'] = 'ngo'
-
+        
+        validated_data['user_type'] = 'Organisation'
         user = super().create(validated_data)
+        user.username = organisation_info['organisation_name']
+        user.save()
 
-        ngo_profile = NGOProfile.objects.create(
+        # Create Organisation profile
+        organisation = Organisation.objects.create(
             user=user,
-            representative_email=validated_data['email'],
-            **organisation_data
+            **organisation_info
         )
 
+        # Handle NPO document
         if npo_document_data:
             try:
                 format, docstr = npo_document_data.split(';base64,')
                 ext = format.split('/')[-1] if '/' in format else 'pdf'
-                doc_data = ContentFile(base64.b64decode(docstr), name=f'npo_doc_{user.id}.{ext}')
-                ngo_profile.npo_document = doc_data
-            except Exception as e:
+                doc_data = ContentFile(base64.b64decode(docstr), name=f'npo_doc_{user.UserID}.{ext}')
+                organisation.ngo_registration = doc_data
+            except Exception:
                 pass
 
+        # Handle organization logo
         if logo_data:
             try:
                 format, imgstr = logo_data.split(';base64,')
                 ext = format.split('/')[-1]
-                img_data = ContentFile(base64.b64decode(imgstr), name=f'ngo_logo_{user.id}.{ext}')
-                ngo_profile.organisation_logo = img_data
-            except Exception as e:
+                img_data = ContentFile(base64.b64decode(imgstr), name=f'ngo_logo_{user.UserID}.{ext}')
+                organisation.organisation_logo = img_data
+            except Exception:
                 pass
 
-        ngo_profile.save()
+        organisation.save()
         return user
+
 
 class FoodProviderRegistrationSerializer(BaseRegistrationSerializer):
     business_name = serializers.CharField(max_length=255)
     business_contact = serializers.CharField(max_length=20)
-    business_email = serializers.EmailField()
     business_street = serializers.CharField(max_length=255)
     business_city = serializers.CharField(max_length=255)
     business_province = serializers.CharField(max_length=255)
@@ -139,67 +148,63 @@ class FoodProviderRegistrationSerializer(BaseRegistrationSerializer):
 
     class Meta(BaseRegistrationSerializer.Meta):
         fields = BaseRegistrationSerializer.Meta.fields + [
-            'business_email', 'business_name', 'business_contact',
+            'business_name', 'business_contact',
             'business_street', 'business_city', 'business_province',
             'business_postal_code', 'cipc_document', 'logo'
         ]
 
     def validate_cipc_document(self, value):
-        if not value:
-            raise serializers.ValidationError("CIPC document is required")
-        if not value.startswith('data:'):
-            raise serializers.ValidationError("Invalid file format")
+        if not value or not value.startswith('data:'):
+            raise serializers.ValidationError("Valid CIPC document is required")
         return value
 
     def create(self, validated_data):
-        try:
-            address_parts = [
-                validated_data.pop('business_street'),
-                validated_data.pop('business_city'),
-                validated_data.pop('business_province'),
-                validated_data.pop('business_postal_code')
-            ]
-            business_address = ', '.join(filter(None, address_parts))
+        business_info = {
+            'business_name': validated_data.pop('business_name'),
+            'business_contact': validated_data.pop('business_contact'),
+            'street': validated_data.pop('business_street'),
+            'city': validated_data.pop('business_city'),
+            'suburb': validated_data.pop('business_province'),
+            'street_number': '0',  # Default, can be updated
+        }
+        validated_data.pop('business_postal_code')  # Store separately if needed
+        cipc_document_data = validated_data.pop('cipc_document')
+        logo_data = validated_data.pop('logo', None)
+        
+        validated_data['user_type'] = 'Business'
+        user = super().create(validated_data)
+        user.username = business_info['business_name']
+        user.save()
 
-            provider_data = {
-                'business_name': validated_data.pop('business_name'),
-                'business_contact': validated_data.pop('business_contact'),
-                'business_address': business_address,
-                'business_email': validated_data.pop('business_email'),
-            }
-            cipc_document_data = validated_data.pop('cipc_document')
-            logo_data = validated_data.pop('logo', None)
-            validated_data['user_type'] = 'provider'
+        # Create Business profile
+        business = Business.objects.create(
+            user=user,
+            **business_info
+        )
 
-            user = super().create(validated_data)
+        # Handle CIPC document
+        if cipc_document_data:
+            try:
+                format, docstr = cipc_document_data.split(';base64,')
+                ext = format.split('/')[-1] if '/' in format else 'pdf'
+                doc_data = ContentFile(base64.b64decode(docstr), name=f'cipc_doc_{user.UserID}.{ext}')
+                business.business_licence = doc_data
+            except Exception:
+                raise serializers.ValidationError("Invalid CIPC document format")
 
-            provider_profile = FoodProviderProfile.objects.create(
-                user=user,
-                **provider_data
-            )
+        # Handle logo
+        if logo_data:
+            try:
+                format, imgstr = logo_data.split(';base64,')
+                ext = format.split('/')[-1]
+                img_data = ContentFile(base64.b64decode(imgstr), name=f'provider_logo_{user.UserID}.{ext}')
+                business.logo = img_data
+            except Exception:
+                pass
 
-            if cipc_document_data:
-                try:
-                    format, docstr = cipc_document_data.split(';base64,')
-                    ext = format.split('/')[-1] if '/' in format else 'pdf'
-                    doc_data = ContentFile(base64.b64decode(docstr), name=f'cipc_doc_{user.id}.{ext}')
-                    provider_profile.cipc_document = doc_data
-                except Exception as e:
-                    raise serializers.ValidationError("Invalid CIPC document format")
+        business.save()
+        return user
 
-            if logo_data:
-                try:
-                    format, imgstr = logo_data.split(';base64,')
-                    ext = format.split('/')[-1]
-                    img_data = ContentFile(base64.b64decode(imgstr), name=f'provider_logo_{user.id}.{ext}')
-                    provider_profile.logo = img_data
-                except Exception as e:
-                    pass
-
-            provider_profile.save()
-            return user
-        except Exception as e:
-            raise serializers.ValidationError(str(e))
 
 class LoginSerializer(serializers.Serializer):
     email = serializers.EmailField()
@@ -222,32 +227,48 @@ class LoginSerializer(serializers.Serializer):
 
         return attrs
 
+
 class UserProfileSerializer(serializers.ModelSerializer):
+    # Map to expected API field names
+    id = serializers.UUIDField(source='UserID', read_only=True)
+    user_type = serializers.SerializerMethodField()
     profile = serializers.SerializerMethodField()
 
     class Meta:
         model = User
         fields = ['id', 'email', 'user_type', 'role', 'profile']
 
+    def get_user_type(self, obj):
+        # Map schema user_type back to API format
+        mapping = {
+            'Individual': 'customer',
+            'Business': 'provider', 
+            'Organisation': 'ngo',
+            'Admin': 'admin'
+        }
+        return mapping.get(obj.user_type, obj.user_type.lower())
+
     def get_profile(self, obj):
-        if obj.user_type == 'customer' and hasattr(obj, 'customer_profile'):
+        if obj.user_type == 'Individual' and hasattr(obj, 'individual_profile'):
             return {
-                'full_name': obj.customer_profile.full_name,
-                'profile_image': obj.customer_profile.profile_image.url if obj.customer_profile.profile_image else None
+                'full_name': obj.username,
+                'profile_image': obj.profile_picture.url if obj.profile_picture else None
             }
-        elif obj.user_type == 'ngo' and hasattr(obj, 'ngo_profile'):
+        elif obj.user_type == 'Organisation' and hasattr(obj, 'organisation_profile'):
+            org = obj.organisation_profile
             return {
-                'organisation_name': obj.ngo_profile.organisation_name,
-                'representative_name': obj.ngo_profile.representative_name,
-                'organisation_email': obj.ngo_profile.organisation_email,
-                'status': obj.ngo_profile.status,
-                'organisation_logo': obj.ngo_profile.organisation_logo.url if obj.ngo_profile.organisation_logo else None
+                'organisation_name': org.organisation_name,
+                'representative_name': org.representative_name,
+                'organisation_email': obj.email,
+                'status': org.status,
+                'organisation_logo': org.organisation_logo.url if org.organisation_logo else None
             }
-        elif obj.user_type == 'provider' and hasattr(obj, 'provider_profile'):
+        elif obj.user_type == 'Business' and hasattr(obj, 'business_profile'):
+            business = obj.business_profile
             return {
-                'business_name': obj.provider_profile.business_name,
-                'business_email': obj.provider_profile.business_email,
-                'status': obj.provider_profile.status,
-                'logo': obj.provider_profile.logo.url if obj.provider_profile.logo else None
+                'business_name': business.business_name,
+                'business_email': obj.email,
+                'status': business.status,
+                'logo': business.logo.url if business.logo else None
             }
         return {}
