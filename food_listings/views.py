@@ -1,4 +1,4 @@
-# food_listings/views.py
+# food_listings/views.py - FIXED USER TYPE REFERENCES
 
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
@@ -22,11 +22,12 @@ from .serializers import (
 @permission_classes([IsAuthenticated])
 def get_provider_listings(request):
     """Get all listings for the authenticated provider"""
-    if request.user.user_type != 'provider':
+    # FIXED: 'provider' → 'Business'
+    if request.user.user_type != 'Business':
         return Response({
             'error': {
                 'code': 'FORBIDDEN',
-                'message': 'Only food providers can access this endpoint'
+                'message': 'Only businesses can access this endpoint'
             }
         }, status=status.HTTP_403_FORBIDDEN)
     
@@ -43,20 +44,21 @@ def get_provider_listings(request):
 @permission_classes([IsAuthenticated])
 def create_food_listing(request):
     """Create a new food listing"""
-    if request.user.user_type != 'provider':
+    # FIXED: Check for 'Business' user type
+    if request.user.user_type != 'Business':
         return Response({
             'error': {
                 'code': 'FORBIDDEN',
-                'message': 'Only food providers can create listings'
+                'message': 'Only food businesses can create listings'
             }
         }, status=status.HTTP_403_FORBIDDEN)
     
-    # Check if provider is verified
-    if not hasattr(request.user, 'provider_profile') or request.user.provider_profile.status != 'verified':
+    # FIXED: Check business_profile instead of provider_profile
+    if not hasattr(request.user, 'business_profile') or request.user.business_profile.status != 'verified':
         return Response({
             'error': {
                 'code': 'VERIFICATION_REQUIRED',
-                'message': 'Provider account must be verified to create listings'
+                'message': 'Business account must be verified to create listings'
             }
         }, status=status.HTTP_403_FORBIDDEN)
     
@@ -100,7 +102,8 @@ def create_food_listing(request):
 @permission_classes([IsAuthenticated])
 def update_food_listing(request, listing_id):
     """Update an existing food listing"""
-    if request.user.user_type != 'provider':
+    # FIXED: Check for 'Business' user type
+    if request.user.user_type != 'Business':
         return Response({
             'error': {
                 'code': 'FORBIDDEN',
@@ -167,8 +170,9 @@ def browse_food_listings(request):
     # Apply filters
     store = request.GET.get('store')
     if store:
+        # FIXED: business_profile instead of provider_profile
         queryset = queryset.filter(
-            provider__provider_profile__business_name__icontains=store
+            provider__business_profile__business_name__icontains=store
         )
     
     price_min = request.GET.get('priceMin')
@@ -191,8 +195,10 @@ def browse_food_listings(request):
     
     area = request.GET.get('area')
     if area:
+        # FIXED: business_profile and appropriate address field
         queryset = queryset.filter(
-            provider__provider_profile__business_address__icontains=area
+            Q(provider__business_profile__city__icontains=area) |
+            Q(provider__business_profile__suburb__icontains=area)
         )
     
     # Apply sorting

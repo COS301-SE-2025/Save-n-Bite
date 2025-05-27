@@ -108,7 +108,7 @@ class CheckoutView(APIView):
 
         # Get the provider profile from the first item in cart
         first_item = cart.items.first()
-        business_profile = first_item.food_listing.provider.provider_profile
+        business_profile = first_item.food_listing.business.provider_profile
 
         # Create transaction
         with db_transaction.atomic():
