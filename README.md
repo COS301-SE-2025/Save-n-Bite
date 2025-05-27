@@ -30,32 +30,52 @@ Key features:
   <tbody>
     <tr>
       <td style="text-align: center;"><strong>Frontend</strong></td>
-      <td style="text-align: center;">React, Material UI</td>
+      <td style="text-align: center;">
+        <img src="https://img.shields.io/badge/React-61DAFB?style=for-the-badge&logo=react&logoColor=black" />
+        <img src="https://img.shields.io/badge/Material--UI-007FFF?style=for-the-badge&logo=mui&logoColor=white" />
+      </td>
     </tr>
     <tr>
       <td style="text-align: center;"><strong>Backend</strong></td>
-      <td style="text-align: center;">Django, Django REST, JWT</td>
+      <td style="text-align: center;">
+        <img src="https://img.shields.io/badge/Django-092E20?style=for-the-badge&logo=django&logoColor=white" />
+        <img src="https://img.shields.io/badge/DRF-ff1709?style=for-the-badge&logo=django&logoColor=white" />
+        <img src="https://img.shields.io/badge/JWT-000000?style=for-the-badge&logo=jsonwebtokens&logoColor=white" />
+      </td>
     </tr>
     <tr>
       <td style="text-align: center;"><strong>Database</strong></td>
-      <td style="text-align: center;">PostgreSQL, Redis</td>
+      <td style="text-align: center;">
+        <img src="https://img.shields.io/badge/PostgreSQL-336791?style=for-the-badge&logo=postgresql&logoColor=white" />
+        <img src="https://img.shields.io/badge/Redis-DC382D?style=for-the-badge&logo=redis&logoColor=white" />
+      </td>
     </tr>
     <tr>
       <td style="text-align: center;"><strong>Cloud</strong></td>
-      <td style="text-align: center;">Microsoft Azure</td>
+      <td style="text-align: center;">
+        <img src="https://img.shields.io/badge/Azure-0078D4?style=for-the-badge&logo=microsoftazure&logoColor=white" />
+      </td>
     </tr>
     <tr>
       <td style="text-align: center;"><strong>DevOps</strong></td>
-      <td style="text-align: center;">Docker, GitHub Actions</td>
+      <td style="text-align: center;">
+        <img src="https://img.shields.io/badge/Docker-2496ED?style=for-the-badge&logo=docker&logoColor=white" />
+        <img src="https://img.shields.io/badge/GitHub%20Actions-2088FF?style=for-the-badge&logo=githubactions&logoColor=white" />
+      </td>
     </tr>
     <tr>
       <td style="text-align: center;"><strong>AI/ML</strong></td>
-      <td style="text-align: center;">Python, Scikit-learn, Pandas</td>
+      <td style="text-align: center;">
+        <img src="https://img.shields.io/badge/Python-3776AB?style=for-the-badge&logo=python&logoColor=white" />
+        <img src="https://img.shields.io/badge/Scikit--learn-F7931E?style=for-the-badge&logo=scikit-learn&logoColor=white" />
+        <img src="https://img.shields.io/badge/Pandas-150458?style=for-the-badge&logo=pandas&logoColor=white" />
+      </td>
     </tr>
   </tbody>
 </table>
 
 </div>
+
 
 
 <img src="assets/TechStack.png"/>
