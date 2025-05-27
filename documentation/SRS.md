@@ -310,11 +310,11 @@ We adopt an **event-driven architecture (EDA)** to handle real-time data flows b
    - If the AI service crashes, orders/listings continue uninterrupted (events persist in Redis).
 
 #### **Tech Stack Alignment**
-Broker: Redis Pub/Sub (lightweight, supports WebSocket via Django Channels).
+**Broker**: Redis Pub/Sub (lightweight, supports WebSocket via Django Channels).
 
-Frontend: React listens to WebSocket events for real-time UI updates.
+**Frontend**: React listens to WebSocket events for real-time UI updates.
 
-Backend: Django emits events on CRUD operations (e.g., post_save signals).
+**Backend**: Django emits events on CRUD operations (e.g., post_save signals).
 
 
 ### 7.3 Design Patterns  
