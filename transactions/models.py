@@ -1,6 +1,6 @@
 from django.db import models
 from django.conf import settings
-from authentication.models import FoodProviderProfile
+from authentication.models import Business # Changed 
 from food_listings.models import FoodListing
 from django.contrib.postgres.fields import ArrayField
 import uuid
@@ -31,7 +31,7 @@ class Transaction(models.Model):
     verification_code = models.CharField(max_length=20, blank=True)
     special_instructions = models.TextField(blank=True)
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='transactions')
-    business = models.ForeignKey(FoodProviderProfile, on_delete=models.CASCADE, related_name='transactions')
+    business = models.ForeignKey(Business, on_delete=models.CASCADE, related_name='transactions')
 
     class Meta:
         ordering = ['-created_at']

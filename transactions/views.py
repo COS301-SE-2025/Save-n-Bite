@@ -108,14 +108,14 @@ class CheckoutView(APIView):
 
         # Get the provider profile from the first item in cart
         first_item = cart.items.first()
-        provider_profile = first_item.food_listing.provider.provider_profile
+        business_profile = first_item.food_listing.provider.provider_profile
 
         # Create transaction
         with db_transaction.atomic():
             # 1. Create Transaction
             transaction = Transaction.objects.create(
                 user=request.user,
-                business=provider_profile,  # Use provider_profile instead of user
+                business=business_profile,  # Use business instead of provider
                 transaction_type='Purchase',
                 quantity=cart.total_items,
                 total_amount=cart.subtotal,

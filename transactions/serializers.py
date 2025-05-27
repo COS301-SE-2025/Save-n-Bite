@@ -1,12 +1,12 @@
 from rest_framework import serializers
 from food_listings.models import FoodListing
-from authentication.models import FoodProviderProfile
+from authentication.models import Business # was FoodProvider
 from transactions.models import Cart, CartItem, Order, Payment, Transaction, TransactionItem, TransactionStatusHistory
 
 class FoodProviderSerializer(serializers.ModelSerializer):
     class Meta:
-        model = FoodProviderProfile
-        fields = ['id', 'business_name', 'address', 'contact', 'business_hours', 'rating', 'total_reviews']
+        model = Business
+        fields = ['BussinessID', 'business_name', 'address', 'contact', 'business_hours', 'rating', 'total_reviews']
     
     def to_representation(self, instance):
         data = super.to_representation(instance)
