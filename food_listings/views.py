@@ -164,6 +164,16 @@ def browse_food_listings(request):
         expiry_date__gte=date.today()
     )
     
+    # Apply search query
+    search_query = request.GET.get('search', '').strip()
+    if search_query:
+        queryset = queryset.filter(
+            Q(name__icontains=search_query) |
+            Q(description__icontains=search_query) |
+            Q(provider__provider_profile__business_name__icontains=search_query) |
+            Q(food_type__icontains=search_query)
+        )
+    
     # Apply filters
     store = request.GET.get('store')
     if store:
@@ -187,7 +197,17 @@ def browse_food_listings(request):
     
     food_type = request.GET.get('type')
     if food_type:
-        queryset = queryset.filter(food_type=food_type)
+        if food_type == 'discount':
+            # Filter for items where original price is greater than discounted price
+            queryset = queryset.filter(
+                models.Q(original_price__gt=models.F('discounted_price')) &
+                models.Q(discounted_price__gt=0)
+            )
+        elif food_type == 'donation':
+            # Filter for items with no price (donations)
+            queryset = queryset.filter(discounted_price=0)
+        else:
+            queryset = queryset.filter(food_type=food_type)
     
     area = request.GET.get('area')
     if area:
@@ -196,16 +216,8 @@ def browse_food_listings(request):
         )
     
     # Apply sorting
-    sort_by = request.GET.get('sort', 'created_at')
-    sort_mapping = {
-        'price_asc': 'discounted_price',
-        'price_desc': '-discounted_price',
-        'expiry_asc': 'expiry_date',
-        'distance': 'created_at',  # Placeholder for distance sorting
-    }
-    
-    order_by = sort_mapping.get(sort_by, '-created_at')
-    queryset = queryset.order_by(order_by)
+    sort_by = request.GET.get('sort', '-created_at')
+    queryset = queryset.order_by(sort_by)
     
     # Pagination
     page = int(request.GET.get('page', 1))
