@@ -291,7 +291,7 @@ We adopt an **event-driven architecture (EDA)** to handle real-time data flows b
 | **Broker**         | Routes events to subscribed consumers (Redis Pub/Sub).               | Manages `food_listings` channel         |
 | **Consumers**      | React to events (AI, UI, notifications).                             | `AI_PredictionService`, `UserInterface` |
 
-<div>
+</div>
  
 #### **Reasons for EDA:**
 1. **Real-Time Updates**  
