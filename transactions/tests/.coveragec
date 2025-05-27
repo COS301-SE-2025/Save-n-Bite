@@ -1,0 +1,3 @@
+[run]
+source = transactions
+omit = */migrations/*,*/tests/*

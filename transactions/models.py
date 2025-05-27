@@ -1,5 +1,6 @@
 from django.db import models
 from django.conf import settings
+from django.core.exceptions import ValidationError
 from authentication.models import FoodProviderProfile
 from food_listings.models import FoodListing
 from django.contrib.postgres.fields import ArrayField
@@ -39,6 +40,19 @@ class Transaction(models.Model):
     def __str__(self):
         return f"{self.transaction_type} - {self.status} - {self.total_amount}"
     
+    def clean(self):
+        if self.pk and Transaction.objects.filter(pk=self.pk).exists():
+            original = Transaction.objects.get(pk=self.pk)
+            if original.status in ['completed', 'cancelled'] and self.status != original.status:
+                raise ValidationError(f"Cannot change status from {original.status}")
+            
+            # Add any other status transition rules here
+            if original.status == 'completed' and self.status != 'completed':
+                raise ValidationError("Cannot change status from completed")
+    
+    def save(self, *args, **kwargs):
+        self.full_clean()  # Ensure validation runs on save
+        super().save(*args, **kwargs)
 class Cart(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='cart')
