@@ -1,4 +1,4 @@
-<img src="assets/logo_with_gendac.png"/>
+<img src="assets/LOGO_WITH_SWMG_AND_GENDAC.png"/>
 
 ## *"Reducing Food Waste Through Technology"* 🍎♻️
 
