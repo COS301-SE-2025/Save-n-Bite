@@ -83,12 +83,16 @@ Key features:
 ---
 
 ## 📂 Repository Structure
-    main
-    |_dev
-      |_frontend
-         |_frontend features
-      |_backend
-         |_backend features
+main
+│
+├── dev
+│   ├── backend
+│   │   └── feature/...
+│   │   └── hotfix/...
+│   └── frontend
+│       └── feature/...
+│       └── hotfix/...
+
 
 ---
 
@@ -130,7 +134,8 @@ Key features:
 
 
 3. **GitHub Hygiene**:  
-   - Branching strategy: GitFlow (`main` ↔ `dev` ↔ `subsystem/` ↔ `feature/` branches).  
+We follow a GitFlow-inspired branching strategy to maintain clean and organized version control. The main branch holds production-ready code, while all active development takes place in the dev branch. From dev, we maintain separate long-lived backend and frontend branches to isolate concerns. Features are developed in feature/ branches branched off their respective areas, and urgent fixes are handled in hotfix/ branches. All changes are merged via pull requests with code reviews to ensure stability, consistency, and collaboration across the team.
+     
    [![Build Status](https://github.com/COS301-SE-2025/Save-n-Bite/actions/workflows/build.yml/badge.svg)](https://github.com/COS301-SE-2025/Save-n-Bite/actions)
    [![Coverage Status](https://coveralls.io/repos/github/COS301-SE-2025/Save-n-Bite/badge.svg?branch=main)](https://coveralls.io/github/COS301-SE-2025/Save-n-Bite?branch=main)
    [![GitHub issues](https://img.shields.io/github/issues/COS301-SE-2025/Save-n-Bite)](https://github.com/COS301-SE-2025/Save-n-Bite/issues)
