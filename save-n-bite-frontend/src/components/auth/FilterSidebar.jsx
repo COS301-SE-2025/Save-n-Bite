@@ -4,6 +4,14 @@ import { ChevronDownIcon } from 'lucide-react';
 const FilterSidebar = ({ showFilters, filters, setFilters, providerOptions, onResetFilters }) => {
   if (!showFilters) return null;
 
+  const handlePriceRangeChange = (e) => {
+    const value = parseInt(e.target.value);
+    setFilters({
+      ...filters,
+      priceRange: [0, value]
+    });
+  };
+
   return (
     <div className="w-full md:w-64 bg-white p-4 rounded-lg shadow-sm border border-gray-100">
       <h3 className="font-semibold text-lg mb-4 text-gray-800">
@@ -24,14 +32,16 @@ const FilterSidebar = ({ showFilters, filters, setFilters, providerOptions, onRe
         <input 
           type="range" 
           min="0" 
-          max="20" 
+          max="10000" 
+          step="100"
           value={filters.priceRange[1]} 
-          onChange={(e) => setFilters({
-            ...filters,
-            priceRange: [0, parseInt(e.target.value)]
-          })} 
+          onChange={handlePriceRangeChange}
           className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-emerald-600" 
         />
+        <div className="flex justify-between text-xs text-gray-500 mt-1">
+          <span>R0</span>
+          <span>R10,000</span>
+        </div>
       </div>
       
       {/* Expiration Filter */}
@@ -90,7 +100,7 @@ const FilterSidebar = ({ showFilters, filters, setFilters, providerOptions, onRe
               })} 
               className="mr-2 accent-emerald-600" 
             />
-            <span className="text-gray-700 group-hover:text-gray-900 transition-colors">Discount</span>
+            <span className="text-gray-700 group-hover:text-gray-900 transition-colors">Discounted Items</span>
           </label>
           <label className="flex items-center cursor-pointer group">
             <input 
@@ -104,7 +114,7 @@ const FilterSidebar = ({ showFilters, filters, setFilters, providerOptions, onRe
               })} 
               className="mr-2 accent-emerald-600" 
             />
-            <span className="text-gray-700 group-hover:text-gray-900 transition-colors">Donation</span>
+            <span className="text-gray-700 group-hover:text-gray-900 transition-colors">Donations</span>
           </label>
         </div>
       </div>
@@ -139,7 +149,7 @@ const FilterSidebar = ({ showFilters, filters, setFilters, providerOptions, onRe
       <button 
         className="w-full py-2 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors duration-200 font-medium text-gray-700" 
         onClick={onResetFilters || (() => setFilters({
-          priceRange: [0, 20],
+          priceRange: [0, 10000],
           expiration: 'all',
           type: 'all',
           provider: 'all'

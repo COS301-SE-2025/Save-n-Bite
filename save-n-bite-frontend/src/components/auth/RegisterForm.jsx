@@ -213,8 +213,6 @@ const RegisterForm = ({ userType = USER_TYPES.CUSTOMER, onSuccess, onError }) =>
         try {
             const response = await authAPI.register({ ...formData, userType });
             onSuccess(response);
-            navigate('/food-listing');
-
         } catch (error) {
             onError(error?.message || 'Registration failed');
         } finally {

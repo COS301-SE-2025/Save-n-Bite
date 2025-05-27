@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { FacebookIcon, InstagramIcon, TwitterIcon, MailIcon, PhoneIcon, MapPinIcon } from 'lucide-react';
+
 const Footer = () => {
   return <footer className="bg-gray-50 pt-12 pb-8 px-6 md:px-12">
       <div className="max-w-7xl mx-auto">
@@ -89,15 +90,15 @@ const Footer = () => {
             <ul className="space-y-2">
               <li className="flex items-center">
                 <MailIcon size={16} className="mr-2 text-emerald-600" />
-                <span className="text-gray-600">hello@savenbite.com</span>
+                <span className="text-gray-600">info@savenbite.co.za</span>
               </li>
               <li className="flex items-center">
                 <PhoneIcon size={16} className="mr-2 text-emerald-600" />
-                <span className="text-gray-600">+1 (555) 123-4567</span>
+                <span className="text-gray-600">+27 12 345 6789</span>
               </li>
               <li className="flex items-center">
                 <MapPinIcon size={16} className="mr-2 text-emerald-600" />
-                <span className="text-gray-600">123 Green St, Eco City</span>
+                <span className="text-gray-600">123 Hilda Street, Hatfield, Pretoria, 0083</span>
               </li>
             </ul>
           </div>
@@ -110,4 +111,5 @@ const Footer = () => {
       </div>
     </footer>;
 };
+
 export default Footer;
