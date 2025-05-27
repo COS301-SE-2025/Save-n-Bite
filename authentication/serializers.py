@@ -1,4 +1,4 @@
-# authentication/serializers.py - Updated for clean models
+# authentication/serializers.py - FIXED VERSION
 
 from rest_framework import serializers
 from django.contrib.auth import authenticate
@@ -58,7 +58,7 @@ class CustomerRegistrationSerializer(BaseRegistrationSerializer):
             try:
                 format, imgstr = profile_image_data.split(';base64,')
                 ext = format.split('/')[-1]
-                data = ContentFile(base64.b64decode(imgstr), name=f'profile_{user.UserID}.{ext}')
+                data = ContentFile(base64.b64decode(imgstr), name=f'profile_{user.id}.{ext}')  # FIXED: user.UserID → user.id
                 user.profile_picture = data
                 user.save()
             except Exception:
@@ -117,7 +117,7 @@ class NGORegistrationSerializer(BaseRegistrationSerializer):
             try:
                 format, docstr = npo_document_data.split(';base64,')
                 ext = format.split('/')[-1] if '/' in format else 'pdf'
-                doc_data = ContentFile(base64.b64decode(docstr), name=f'npo_doc_{user.UserID}.{ext}')
+                doc_data = ContentFile(base64.b64decode(docstr), name=f'npo_doc_{user.id}.{ext}')  # FIXED: user.UserID → user.id
                 organisation.ngo_registration = doc_data
             except Exception:
                 pass
@@ -127,7 +127,7 @@ class NGORegistrationSerializer(BaseRegistrationSerializer):
             try:
                 format, imgstr = logo_data.split(';base64,')
                 ext = format.split('/')[-1]
-                img_data = ContentFile(base64.b64decode(imgstr), name=f'ngo_logo_{user.UserID}.{ext}')
+                img_data = ContentFile(base64.b64decode(imgstr), name=f'ngo_logo_{user.id}.{ext}')  # FIXED: user.UserID → user.id
                 organisation.organisation_logo = img_data
             except Exception:
                 pass
@@ -159,19 +159,33 @@ class FoodProviderRegistrationSerializer(BaseRegistrationSerializer):
         return value
 
     def create(self, validated_data):
-        business_info = {
-            'business_name': validated_data.pop('business_name'),
-            'business_contact': validated_data.pop('business_contact'),
-            'business_email': validated_data['email'],  # Use the email from base serializer
-            'street': validated_data.pop('business_street'),
-            'city': validated_data.pop('business_city'),
-            'province_or_state': validated_data.pop('business_province'),  # NOW SUPPORTED!
-            'postal_code': validated_data.pop('business_postal_code'),     # NOW SUPPORTED!
-            'country': 'South Africa',  # NOW SUPPORTED!
-            'street_number': '0',  # Default value
-            'suburb': 'Unknown',   # Default value - you can make this an optional field
-        }
-        validated_data.pop('business_postal_code')  # Store separately if needed
+        # DEBUG: Print what we received
+        print(f"DEBUG: validated_data keys: {list(validated_data.keys())}")
+        print(f"DEBUG: business_postal_code in validated_data: {'business_postal_code' in validated_data}")
+        
+        try:
+            business_info = {
+                'business_name': validated_data.pop('business_name'),
+                'business_contact': validated_data.pop('business_contact'),
+                'business_email': validated_data['email'],  # Don't pop this, it's needed for user creation
+                
+                # Map form fields to model fields:
+                'street': validated_data.pop('business_street'),
+                'city': validated_data.pop('business_city'),
+                'province_or_state': validated_data.pop('business_province'),
+                'postal_code': validated_data.pop('business_postal_code'),
+                'country': 'South Africa',
+                'street_number': '0',  # Default value
+                'suburb': 'Unknown',   # Default value
+            }
+            
+            print(f"DEBUG: business_info created successfully: {business_info}")
+            
+        except KeyError as e:
+            print(f"DEBUG: KeyError when creating business_info: {e}")
+            print(f"DEBUG: Available keys: {list(validated_data.keys())}")
+            raise serializers.ValidationError(f"Missing required field: {str(e)}")
+        
         cipc_document_data = validated_data.pop('cipc_document')
         logo_data = validated_data.pop('logo', None)
         
@@ -191,7 +205,7 @@ class FoodProviderRegistrationSerializer(BaseRegistrationSerializer):
             try:
                 format, docstr = cipc_document_data.split(';base64,')
                 ext = format.split('/')[-1] if '/' in format else 'pdf'
-                doc_data = ContentFile(base64.b64decode(docstr), name=f'cipc_doc_{user.UserID}.{ext}')
+                doc_data = ContentFile(base64.b64decode(docstr), name=f'cipc_doc_{user.id}.{ext}')  # FIXED: user.UserID → user.id
                 business.business_licence = doc_data
             except Exception:
                 raise serializers.ValidationError("Invalid CIPC document format")
@@ -201,7 +215,7 @@ class FoodProviderRegistrationSerializer(BaseRegistrationSerializer):
             try:
                 format, imgstr = logo_data.split(';base64,')
                 ext = format.split('/')[-1]
-                img_data = ContentFile(base64.b64decode(imgstr), name=f'provider_logo_{user.UserID}.{ext}')
+                img_data = ContentFile(base64.b64decode(imgstr), name=f'provider_logo_{user.id}.{ext}')  # FIXED: user.UserID → user.id
                 business.logo = img_data
             except Exception:
                 pass
@@ -234,7 +248,7 @@ class LoginSerializer(serializers.Serializer):
 
 class UserProfileSerializer(serializers.ModelSerializer):
     # Map to expected API field names
-    id = serializers.UUIDField(source='UserID', read_only=True)
+    id = serializers.UUIDField(read_only=True)  # FIXED: Removed redundant source='id'
     user_type = serializers.SerializerMethodField()
     profile = serializers.SerializerMethodField()
 

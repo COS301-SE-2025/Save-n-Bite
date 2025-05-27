@@ -1,4 +1,4 @@
-# authentication/views.py
+# authentication/views.py - FIXED VERSION
 
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
@@ -33,7 +33,7 @@ def register_customer(request):
         try:
             print("DEBUG: Starting user creation...")
             user = serializer.save()
-            print(f"DEBUG: User created successfully with UserID: {user.UserID}")
+            print(f"DEBUG: User created successfully with ID: {user.id}")  # FIXED: user.UserID → user.id
             print(f"DEBUG: User has 'id' attribute: {hasattr(user, 'id')}")
             print(f"DEBUG: User has 'UserID' attribute: {hasattr(user, 'UserID')}")
             print(f"DEBUG: User pk: {user.pk}")
@@ -133,7 +133,7 @@ def register_ngo(request):
             return Response({
                 'message': 'NGO registered successfully - pending verification',
                 'organisation': {
-                    'id': str(user.UserID),
+                    'id': str(user.id),  # FIXED: user.UserID → user.id
                     'organisationName': user.organisation_profile.organisation_name,
                     'representativeEmail': user.organisation_profile.representative_email,
                     'status': user.organisation_profile.status,
@@ -171,7 +171,7 @@ def register_provider(request):
             return Response({
                 'message': 'Food provider registered successfully - pending verification',
                 'provider': {
-                    'id': str(user.UserID),
+                    'id': str(user.id),  # FIXED: user.UserID → user.id
                     'businessName': user.business_profile.business_name,
                     'businessEmail': user.email,
                     'status': user.business_profile.status,

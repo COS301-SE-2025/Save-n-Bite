@@ -17,8 +17,13 @@ class User(AbstractUser):
         ('admin', 'Administrator')
     ]
     
-    # Primary key from schema
-    UserID = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+     # This is the key change - use db_column to keep your naming
+    id = models.UUIDField(
+        primary_key=True, 
+        default=uuid.uuid4, 
+        editable=False,
+        db_column='UserID'  # This keeps "UserID" in the database
+    )
     
     # All fields from User table in schema
     phone_number = models.CharField(max_length=20, null=True, blank=True)
@@ -40,10 +45,11 @@ class User(AbstractUser):
     def __str__(self):
         return self.email
     
-    @property
-    def id(self):
-        """Compatibility property for JWT"""
-        return self.UserID
+    # Remove the @property id method - not needed anymore
+    # @property
+    # def id(self):
+    #     return self.UserID
+
 
 
 class PaymentMethod(models.Model):
@@ -65,7 +71,16 @@ class PaymentMethod(models.Model):
 
 
 class Individual(models.Model):
-    IndividualID = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    # Keep your IndividualID naming in the database
+    id = models.UUIDField(
+        primary_key=True, 
+        default=uuid.uuid4, 
+        editable=False,
+        db_column='IndividualID'
+    )
+    
+    # Remove the separate IndividualID field
+    # IndividualID = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='individual_profile')
     date_of_birth = models.DateField(null=True, blank=True)
     
@@ -86,7 +101,17 @@ class Business(models.Model):
         ('rejected', 'Rejected'),
     ]
     
-    BusinessID = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    # Keep your BusinessID naming in the database
+    id = models.UUIDField(
+        primary_key=True, 
+        default=uuid.uuid4, 
+        editable=False,
+        db_column='BusinessID'
+    )
+    
+    # Remove the separate BusinessID field
+    # BusinessID = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='business_profile')
     business_type = models.CharField(max_length=20, choices=BUSINESS_TYPE_CHOICES, default='Restaurant')
     business_licence = models.FileField(upload_to='business_documents/')
@@ -177,8 +202,18 @@ class Organisation(models.Model):
         ('verified', 'Verified'),
         ('rejected', 'Rejected'),
     ]
+
+    # Keep your OrganisationID naming in the database
+    id = models.UUIDField(
+        primary_key=True, 
+        default=uuid.uuid4, 
+        editable=False,
+        db_column='OrganisationID'
+    )
     
-    OrganisationID = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    # Remove the separate OrganisationID field
+    # OrganisationID = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='organisation_profile')
     organisation_type = models.CharField(max_length=20, choices=ORGANISATION_TYPE_CHOICES, default='NonProfit')
     verified_org = models.BooleanField(default=False)
