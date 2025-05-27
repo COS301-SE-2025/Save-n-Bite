@@ -1,6 +1,6 @@
 <img src="assets/logo_with_gendac.png"/>
 
-## Reducing Food Waste Through Technology 🍎♻️
+## *"Reducing Food Waste Through Technology"* 🍎♻️
 
 ---
 
