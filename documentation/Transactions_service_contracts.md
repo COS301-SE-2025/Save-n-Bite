@@ -4,6 +4,7 @@
 API for managing customer shopping cart operations, checkout process, and order management. All endpoints require customer authentication.
 
 **Base URL:** `https://127.0.0.1:8000`
+
 ---
 
 ## Cart Management
