@@ -18,16 +18,45 @@ Key features:
 ---
 
 ## 🛠️ Tech Stack
-<p align="center">
-| Category       | Technologies                                                                 |
-|----------------|-----------------------------------------------------------------------------|
-| **Frontend**   | React, Material UI |
-| **Backend**    | Django, Django REST, JWT|
-| **Database**   | PostgreSQL, Redis|
-| **Cloud**      | Microsoft Azure |
-| **DevOps**     | Docker, GitHub Actions |
-| **AI/ML**      | Python, Scikit-learn, Pandas |
-</p>
+<div align="center">
+
+<table>
+  <thead>
+    <tr>
+      <th style="text-align: center;">Category</th>
+      <th style="text-align: center;">Technologies</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td style="text-align: center;"><strong>Frontend</strong></td>
+      <td style="text-align: center;">React, Material UI</td>
+    </tr>
+    <tr>
+      <td style="text-align: center;"><strong>Backend</strong></td>
+      <td style="text-align: center;">Django, Django REST, JWT</td>
+    </tr>
+    <tr>
+      <td style="text-align: center;"><strong>Database</strong></td>
+      <td style="text-align: center;">PostgreSQL, Redis</td>
+    </tr>
+    <tr>
+      <td style="text-align: center;"><strong>Cloud</strong></td>
+      <td style="text-align: center;">Microsoft Azure</td>
+    </tr>
+    <tr>
+      <td style="text-align: center;"><strong>DevOps</strong></td>
+      <td style="text-align: center;">Docker, GitHub Actions</td>
+    </tr>
+    <tr>
+      <td style="text-align: center;"><strong>AI/ML</strong></td>
+      <td style="text-align: center;">Python, Scikit-learn, Pandas</td>
+    </tr>
+  </tbody>
+</table>
+
+</div>
+
 
 <img src="assets/TechStack.png"/>
 
