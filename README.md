@@ -94,7 +94,7 @@ main
 │   └── frontend
 │       ├── feature/...
 │       └── hotfix/...
-
+```
 
 ---
 
