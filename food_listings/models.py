@@ -52,7 +52,7 @@ class FoodListing(models.Model):
         User, 
         on_delete=models.CASCADE, 
         related_name='food_listings',
-        limit_choices_to={'user_type': 'provider'}
+        limit_choices_to={'user_type': 'Business'}
     )
     
     # Timestamps
@@ -69,7 +69,7 @@ class FoodListing(models.Model):
         ]
     
     def __str__(self):
-        return f"{self.name} - {self.provider.provider_profile.business_name}"
+        return f"{self.name} - {self.provider.business_profile.business_name}"
     
     @property
     def savings(self):

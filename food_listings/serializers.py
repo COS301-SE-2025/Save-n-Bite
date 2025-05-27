@@ -10,7 +10,7 @@ User = get_user_model()
 
 class ProviderInfoSerializer(serializers.ModelSerializer):
     """Serializer for provider information in listings"""
-    business_name = serializers.CharField(source='provider_profile.business_name', read_only=True)
+    business_name = serializers.CharField(source='business_profile.business_name', read_only=True)
     business_address = serializers.CharField(source='provider_profile.business_address', read_only=True)
     logo = serializers.SerializerMethodField()
     
@@ -19,8 +19,8 @@ class ProviderInfoSerializer(serializers.ModelSerializer):
         fields = ['id', 'business_name', 'business_address', 'logo']
     
     def get_logo(self, obj):
-        if hasattr(obj, 'provider_profile') and obj.provider_profile.logo:
-            return obj.provider_profile.logo.url
+        if hasattr(obj, 'business_profile') and obj.business_profile.logo:
+            return obj.business_profile.logo.url
         return None
 
 

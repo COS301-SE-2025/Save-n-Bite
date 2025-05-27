@@ -7,7 +7,7 @@ from .models import FoodListing
 class FoodListingAdmin(admin.ModelAdmin):
     list_display = ['name', 'provider', 'food_type', 'discounted_price', 'quantity_available', 'status', 'expiry_date', 'created_at']
     list_filter = ['food_type', 'status', 'created_at', 'expiry_date']
-    search_fields = ['name', 'provider__email', 'provider__provider_profile__business_name']
+    search_fields = ['name', 'provider__email', 'provider__business_profile__business_name']
     readonly_fields = ['id', 'created_at', 'updated_at', 'savings', 'discount_percentage']
     
     fieldsets = (
