@@ -129,7 +129,7 @@ The project will be piloted with **University of Pretoria food outlets** in coll
 
 ---
 
-### 3.4 Feedback, Analytics, and AI Subsystem
+### 3.4 Feedback/Reviews, Analytics, and AI Subsystem
 ![Use Case Diagram for Feedback, Analytics and AI](../assets/UseCase_Feedback_Analytics_AI.png)
 
 ---
