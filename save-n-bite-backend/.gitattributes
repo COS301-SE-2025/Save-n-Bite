@@ -1,0 +1,14 @@
+# Force proper language classification
+*.py linguist-language=Python
+*.js linguist-language=JavaScript
+*.jsx linguist-language=JavaScript  # Count JSX as JavaScript (for React)
+*.ts linguist-language=TypeScript   # If using TypeScript
+*.html linguist-language=HTML
+*.css linguist-language=CSS
+*.json linguist-language=JSON
+
+# Exclude generated/vendored files from language stats
+node_modules/** linguist-vendored
+dist/** linguist-generated
+*.sql linguist-documentation         # Exclude database files if needed
+*.md linguist-documentation         # Exclude markdown docs

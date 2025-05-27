@@ -1,13 +1,26 @@
-# Save n Bite - Reducing Food Waste Through Technology 🍎♻️
+<img src="assets/LOGO_WITH_SWMG_AND_GENDAC.png"/>
 
-**Secure Web & Mobile Guild (SWMG)** in collaboration with **GENDAC**
-
-<div style="text-align: center;">
-   <img src="assets/logo.png" width="200" />
-   <img src="assets/gendac.png" width="200" />
-</div>
+## *"Reducing Food Waste Through Technology"* 🍎♻️
 
 ---
+
+<div align="center">
+
+[![Build Status](https://img.shields.io/github/actions/workflow/status/COS301-SE-2025/Save-n-Bite/build.yml?style=for-the-badge&color=green&label=Build)](https://github.com/COS301-SE-2025/Save-n-Bite/actions)
+[![Coverage](https://img.shields.io/coveralls/github/COS301-SE-2025/Save-n-Bite/main?style=for-the-badge&color=9cf)](https://coveralls.io/github/COS301-SE-2025/Save-n-Bite?branch=main)
+[![Issues](https://img.shields.io/github/issues/COS301-SE-2025/Save-n-Bite?style=for-the-badge&color=red)](https://github.com/COS301-SE-2025/Save-n-Bite/issues)
+
+[![Last Commit](https://img.shields.io/github/last-commit/COS301-SE-2025/Save-n-Bite?style=for-the-badge&color=blue)](https://github.com/COS301-SE-2025/Save-n-Bite/commits)
+[![Repo Size](https://img.shields.io/github/repo-size/COS301-SE-2025/Save-n-Bite?style=for-the-badge&color=blueviolet)](https://github.com/COS301-SE-2025/Save-n-Bite)
+[![PRs](https://img.shields.io/github/issues-pr/COS301-SE-2025/Save-n-Bite?style=for-the-badge&color=ff69b4)](https://github.com/COS301-SE-2025/Save-n-Bite/pulls)
+
+[![Languages](https://img.shields.io/github/languages/count/COS301-SE-2025/Save-n-Bite?style=for-the-badge&color=orange)](https://github.com/COS301-SE-2025/Save-n-Bite)
+[![Top Language](https://img.shields.io/github/languages/top/COS301-SE-2025/Save-n-Bite?style=for-the-badge&logo=react&label=React&color=61DAFB)](https://github.com/COS301-SE-2025/Save-n-Bite)
+[![Contributors](https://img.shields.io/github/contributors/COS301-SE-2025/Save-n-Bite?style=for-the-badge&color=success)](https://github.com/COS301-SE-2025/Save-n-Bite/graphs/contributors)
+
+[![Commit Activity](https://img.shields.io/github/commit-activity/w/COS301-SE-2025/Save-n-Bite?style=for-the-badge&color=yellow)](https://github.com/COS301-SE-2025/Save-n-Bite/commits)
+
+</div>
 
 ## 📌 Project Description
 **Save n Bite** is a digital platform connecting commercial food providers with individuals and organizations in need with the goal of combating food waste and hunger in South Africa using technology-driven solutions and community collaboration.✊
@@ -23,42 +36,88 @@ Key features:
 ---
 
 ## 🛠️ Tech Stack
-| Category       | Technologies                                                                 |
-|----------------|-----------------------------------------------------------------------------|
-| **Frontend**   | React, Material UI |
-| **Backend**    | Django, Django REST, JWT|
-| **Database**   | PostgreSQL, Redis|
-| **Cloud**      | Microsoft Azure |
-| **DevOps**     | Docker, GitHub Actions |
-| **AI/ML**      | Python, Scikit-learn, Pandas |
+<div align="center">
 
-<div style="display: flex; flex-wrap: wrap; gap: 10px; align-items: center;">
-  <img src="assets/ReactLogo.png" width="80" />
-  <img src="assets/Django logo.png" width="80" />
-  <img src="assets/PostgreSQLLogo.png" width="80" />
-  <img src="assets/RedisLogo.png" width="80" />
-  <img src="assets/Azure logo.png" width="80" />
-  <img src="assets/github-logo.jpg" width="80" />
-  <img src="assets/Docker logo.png" width="80" />
-  <img src="assets/Python logo.png" width="80" />
-  <img src="assets/Scikit learn logo.png" width="80" />
-  <img src="assets/Pandas logo.png" width="80" />
-  <img src="assets/MaterialUILogo.png" width="80" />
-  <img src="assets/JWTLogo.png" width="80" />
-  <img src="assets/DjangoREST.png" width="80" />
+<table>
+  <thead>
+    <tr>
+      <th style="text-align: center;">Category</th>
+      <th style="text-align: center;">Technologies</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td style="text-align: center;"><strong>Frontend</strong></td>
+      <td style="text-align: center;">
+        <img src="https://img.shields.io/badge/React-61DAFB?style=for-the-badge&logo=react&logoColor=black" />
+        <img src="https://img.shields.io/badge/Material--UI-007FFF?style=for-the-badge&logo=mui&logoColor=white" />
+      </td>
+    </tr>
+    <tr>
+      <td style="text-align: center;"><strong>Backend</strong></td>
+      <td style="text-align: center;">
+        <img src="https://img.shields.io/badge/Django-092E20?style=for-the-badge&logo=django&logoColor=white" />
+        <img src="https://img.shields.io/badge/DRF-ff1709?style=for-the-badge&logo=django&logoColor=white" />
+        <img src="https://img.shields.io/badge/JWT-000000?style=for-the-badge&logo=jsonwebtokens&logoColor=white" />
+      </td>
+    </tr>
+    <tr>
+      <td style="text-align: center;"><strong>Database</strong></td>
+      <td style="text-align: center;">
+        <img src="https://img.shields.io/badge/PostgreSQL-336791?style=for-the-badge&logo=postgresql&logoColor=white" />
+        <img src="https://img.shields.io/badge/Redis-DC382D?style=for-the-badge&logo=redis&logoColor=white" />
+      </td>
+    </tr>
+    <tr>
+      <td style="text-align: center;"><strong>Cloud</strong></td>
+      <td style="text-align: center;">
+        <img src="https://img.shields.io/badge/Azure-0078D4?style=for-the-badge&logo=microsoftazure&logoColor=white" />
+      </td>
+    </tr>
+    <tr>
+      <td style="text-align: center;"><strong>DevOps</strong></td>
+      <td style="text-align: center;">
+        <img src="https://img.shields.io/badge/Docker-2496ED?style=for-the-badge&logo=docker&logoColor=white" />
+        <img src="https://img.shields.io/badge/GitHub%20Actions-2088FF?style=for-the-badge&logo=githubactions&logoColor=white" />
+      </td>
+    </tr>
+    <tr>
+      <td style="text-align: center;"><strong>AI/ML</strong></td>
+      <td style="text-align: center;">
+        <img src="https://img.shields.io/badge/Python-3776AB?style=for-the-badge&logo=python&logoColor=white" />
+        <img src="https://img.shields.io/badge/Scikit--learn-F7931E?style=for-the-badge&logo=scikit-learn&logoColor=white" />
+        <img src="https://img.shields.io/badge/Pandas-150458?style=for-the-badge&logo=pandas&logoColor=white" />
+      </td>
+    </tr>
+  </tbody>
+</table>
+
 </div>
+
+
+
+<img src="assets/TechStack.png"/>
 
 ---
 
 ## 📂 Repository Structure
-    TBC
 
+```text
+main
+│
+├── dev
+│   ├── backend
+│   │   ├── feature/...
+│   │   └── hotfix/...
+│   └── frontend
+│       ├── feature/...
+│       └── hotfix/...
+```
 ---
 
 ## 🔗 Documentation
-- **📄 [Software Requirements Specification (SRS)](assets/construction.png)**
-- **📊 [GitHub Project Board](https://https://github.com/orgs/COS301-SE-2025/projects/177)**  
-- **🤖 [API Documentation](assets/construction.png)**  
+- **📄 [Software Requirements Specification (SRS)](documentation/SRS.md)**
+- **📊 [GitHub Project Board](https://github.com/orgs/COS301-SE-2025/projects/177/views/2)**  
 
 ---
 
@@ -83,21 +142,21 @@ Key features:
    - Purchase/Request food (React + Django REST, PostgreSQL).
 
 2. **SRS Document**:  
-   - Domain model (UML class diagram).  
-   - Use case diagrams + functional requirements.  
-   - Architectural design + non-functional requirements.
-   - User stories.
+   - Introduction
+   - User stories
+   - Use Case Diagrams
+   - Functional Requirements
+   - Service Contracts
+   - Domain Model
+   - Architectural Requirements
+   - Technology Requirements
 
 
 3. **GitHub Hygiene**:  
-   - Branching strategy: GitFlow (`main` ↔ `dev` ↔ `subsystem/` ↔ `feature/` branches).  
-   - Code quality badges (Coveralls, GitHub Actions).  
+We follow a GitFlow-inspired branching strategy to maintain clean and organized version control. The *main* branch holds production-ready code, while all active development takes place in the *dev* branch. From dev, we maintain separate long-lived backend and frontend branches to isolate concerns. Features are developed in *feature/* branches branched off their respective areas, and urgent fixes are handled in *hotfix/* branches. All changes are merged via pull requests with code reviews to ensure stability, consistency, and collaboration across the team.
 
 ---
 
 ## 📫 Contact Us
  [![Email](https://img.shields.io/badge/Email-swmguild@gmail.com-D14836?logo=gmail)](mailto:swmguild@gmail.com)
-
-## 🚀 Getting Started
-[TBC](assets/construction.png)
 
