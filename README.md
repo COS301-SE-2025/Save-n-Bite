@@ -4,6 +4,17 @@
 
 ---
 
+[![Build Status](https://github.com/COS301-SE-2025/Save-n-Bite/actions/workflows/build.yml/badge.svg)](https://github.com/COS301-SE-2025/Save-n-Bite/actions)
+[![Coverage Status](https://coveralls.io/repos/github/COS301-SE-2025/Save-n-Bite/badge.svg?branch=main)](https://coveralls.io/github/COS301-SE-2025/Save-n-Bite?branch=main)
+[![GitHub issues](https://img.shields.io/github/issues/COS301-SE-2025/Save-n-Bite)](https://github.com/COS301-SE-2025/Save-n-Bite/issues)
+[![GitHub last commit](https://img.shields.io/github/last-commit/COS301-SE-2025/Save-n-Bite?style=flat-square&color=blue)](https://github.com/COS301-SE-2025/Save-n-Bite/commits/main)
+[![GitHub repo size](https://img.shields.io/github/repo-size/COS301-SE-2025/Save-n-Bite?style=flat-square)](https://github.com/COS301-SE-2025/Save-n-Bite)
+[![GitHub pull requests](https://img.shields.io/github/issues-pr/COS301-SE-2025/Save-n-Bite?style=flat-square)](https://github.com/COS301-SE-2025/Save-n-Bite/pulls)
+[![GitHub language count](https://img.shields.io/github/languages/count/COS301-SE-2025/Save-n-Bite?style=flat-square)](https://github.com/COS301-SE-2025/Save-n-Bite)
+[![Top Language](https://img.shields.io/github/languages/top/COS301-SE-2025/Save-n-Bite?style=flat-square&logo=typescript)](https://github.com/COS301-SE-2025/Save-n-Bite)
+[![GitHub contributors](https://img.shields.io/github/contributors/COS301-SE-2025/Save-n-Bite?style=flat-square)](https://github.com/COS301-SE-2025/Save-n-Bite/graphs/contributors)
+[![GitHub commit activity](https://img.shields.io/github/commit-activity/w/COS301-SE-2025/Save-n-Bite?style=flat-square)](https://github.com/COS301-SE-2025/Save-n-Bite/commits)
+
 ## 📌 Project Description
 **Save n Bite** is a digital platform connecting commercial food providers with individuals and organizations in need with the goal of combating food waste and hunger in South Africa using technology-driven solutions and community collaboration.✊
 
