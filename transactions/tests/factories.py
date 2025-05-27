@@ -2,7 +2,9 @@
 import uuid
 from decimal import Decimal
 from datetime import datetime, timedelta
+from uuid import uuid4
 import factory
+from factory import fuzzy
 from django.contrib.auth import get_user_model
 from authentication.models import CustomerProfile, FoodProviderProfile, NGOProfile
 from food_listings.models import FoodListing
@@ -37,7 +39,7 @@ class FoodProviderProfileFactory(factory.django.DjangoModelFactory):
     user = factory.SubFactory(UserFactory, user_type='provider')
     business_name = factory.Faker('company')
     business_address = factory.Faker('street_address')
-    business_contact = factory.Faker('phone_number')
+    business_contact = "0123456789"
     business_email = factory.LazyAttribute(lambda obj: f"{obj.user.username}@business.com")
     status = 'verified'
 
@@ -47,7 +49,7 @@ class NGOProfileFactory(factory.django.DjangoModelFactory):
 
     user = factory.SubFactory(UserFactory, user_type='ngo')
     organisation_name = factory.Faker('company')
-    organisation_contact = factory.Faker('phone_number')
+    organisation_contact = "0123456789"
     organisation_email = factory.LazyAttribute(lambda obj: f"{obj.user.username}@ngo.org")
     representative_name = factory.Faker('name')
     representative_email = factory.LazyAttribute(lambda obj: f"rep_{obj.user.username}@ngo.org")
@@ -81,9 +83,12 @@ class TransactionFactory(factory.django.DjangoModelFactory):
     transaction_type = 'Purchase'
     quantity = 2
     status = 'pending'
-    total_amount = Decimal('15.00')
+    total_amount = 15.0
+    verification_code = fuzzy.FuzzyText(length=6)
     user = factory.SubFactory(UserFactory, user_type='customer')
     business = factory.SubFactory(FoodProviderProfileFactory)
+
+    
 
 class TransactionItemFactory(factory.django.DjangoModelFactory):
     class Meta:
@@ -93,8 +98,8 @@ class TransactionItemFactory(factory.django.DjangoModelFactory):
     food_listing = factory.SubFactory(FoodListingFactory)
     name = factory.LazyAttribute(lambda obj: obj.food_listing.name)
     quantity = 2
-    price_per_item = factory.LazyAttribute(lambda obj: obj.food_listing.discounted_price)
-    total_price = factory.LazyAttribute(lambda obj: obj.quantity * obj.price_per_item)
+    price_per_item = 7.5
+    total_price = quantity * price_per_item
     expiry_date = factory.LazyAttribute(lambda obj: obj.food_listing.expiry_date)
 
 class CartFactory(factory.django.DjangoModelFactory):
@@ -115,10 +120,11 @@ class OrderFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = Order
 
+    id = factory.LazyFunction(uuid4)
     transaction = factory.SubFactory(TransactionFactory)
-    status = 'pending'
-    pickup_window = '15:00-17:00'
-    pickup_code = factory.LazyFunction(lambda: str(uuid.uuid4())[:6].upper())
+    status = "pending"
+    pickup_window = fuzzy.FuzzyText(length=11, chars='0123456789:- ')  # e.g. "12:00 - 13:00"
+    pickup_code = fuzzy.FuzzyText(length=10, chars='ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789')
 
 class PaymentFactory(factory.django.DjangoModelFactory):
     class Meta:
@@ -128,16 +134,6 @@ class PaymentFactory(factory.django.DjangoModelFactory):
     method = 'card'
     amount = factory.LazyAttribute(lambda obj: obj.transaction.total_amount)
     status = 'pending'
-
-class PickupDetailsFactory(factory.django.DjangoModelFactory):
-    class Meta:
-        model = PickupDetails
-
-    order = factory.SubFactory(OrderFactory)
-    scheduled_time = factory.LazyFunction(lambda: datetime.now() + timedelta(days=1))
-    location = factory.Faker('street_address')
-    contact_person = factory.Faker('name')
-    contact_number = factory.Faker('phone_number')
 
 class TransactionStatusHistoryFactory(factory.django.DjangoModelFactory):
     class Meta:
