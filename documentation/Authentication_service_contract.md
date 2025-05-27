@@ -3,7 +3,7 @@
 ## Overview
 API for user authentication and registration supporting three user types: customers, NGOs, and business providers.
 
-**Base URL:** `https://api.example.com`
+**Base URL:** `https://127.0.0.1:8000`
 
 ## Endpoints
 
