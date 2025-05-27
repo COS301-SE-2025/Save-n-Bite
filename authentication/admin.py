@@ -46,7 +46,7 @@ class OrganisationAdmin(admin.ModelAdmin):
             'fields': ('representative_name', 'representative_email')
         }),
         ('Address', {
-            'fields': ('address_line1', 'address_line2', 'city', 'province_or_state', 'postal_code', 'country')
+            'fields': ('street_number', 'street', 'suburb', 'city', 'province_or_state', 'postal_code', 'country')
         }),
         ('Documents & Status', {
             'fields': ('ngo_registration', 'organisation_logo', 'status', 'verified_org')  # ← Updated field names
@@ -68,7 +68,7 @@ class BusinessAdmin(admin.ModelAdmin):
             'fields': ('user', 'business_name', 'business_contact', 'business_type')  
         }),
         ('Address', {
-            'fields': ('address_line1', 'address_line2', 'city', 'province_or_state', 'postal_code', 'country') 
+            'fields': ('street_number', 'street', 'suburb', 'city', 'province_or_state', 'postal_code', 'country') 
         }),
         ('Documents & Status', {
             'fields': ('business_licence', 'logo', 'status', 'verified')  

@@ -26,23 +26,84 @@ def get_tokens_for_user(user):
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def register_customer(request):
-    """Register a new customer"""
+    """Register a new customer - DEBUG VERSION"""
     serializer = CustomerRegistrationSerializer(data=request.data)
     
     if serializer.is_valid():
         try:
+            print("DEBUG: Starting user creation...")
             user = serializer.save()
-            tokens = get_tokens_for_user(user)
-            user_serializer = UserProfileSerializer(user)
+            print(f"DEBUG: User created successfully with UserID: {user.UserID}")
+            print(f"DEBUG: User has 'id' attribute: {hasattr(user, 'id')}")
+            print(f"DEBUG: User has 'UserID' attribute: {hasattr(user, 'UserID')}")
+            print(f"DEBUG: User pk: {user.pk}")
             
+            # Test token generation step by step
+            print("DEBUG: Starting token generation...")
+            try:
+                from rest_framework_simplejwt.tokens import RefreshToken
+                print("DEBUG: RefreshToken imported successfully")
+                
+                refresh = RefreshToken.for_user(user)
+                print("DEBUG: RefreshToken.for_user() succeeded")
+                
+                access_token = refresh.access_token
+                print("DEBUG: Access token generated")
+                
+                tokens = {
+                    'token': str(access_token),
+                    'refresh_token': str(refresh),
+                }
+                print("DEBUG: Token conversion to string succeeded")
+                
+            except Exception as token_error:
+                print(f"DEBUG: Token generation failed: {token_error}")
+                print(f"DEBUG: Token error type: {type(token_error)}")
+                import traceback
+                print(f"DEBUG: Token error traceback: {traceback.format_exc()}")
+                return Response({
+                    'error': {
+                        'code': 'TOKEN_ERROR',
+                        'message': f'Token generation failed: {str(token_error)}',
+                        'details': [{'field': 'token', 'message': str(token_error)}]
+                    }
+                }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            
+            # Test user serialization
+            print("DEBUG: Starting user serialization...")
+            try:
+                user_serializer = UserProfileSerializer(user)
+                print("DEBUG: UserProfileSerializer created")
+                
+                user_data = user_serializer.data
+                print("DEBUG: User serialization succeeded")
+                
+            except Exception as serializer_error:
+                print(f"DEBUG: User serialization failed: {serializer_error}")
+                print(f"DEBUG: Serializer error type: {type(serializer_error)}")
+                import traceback
+                print(f"DEBUG: Serializer error traceback: {traceback.format_exc()}")
+                return Response({
+                    'error': {
+                        'code': 'SERIALIZER_ERROR',
+                        'message': f'User serialization failed: {str(serializer_error)}',
+                        'details': [{'field': 'user', 'message': str(serializer_error)}]
+                    }
+                }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            
+            print("DEBUG: Creating final response...")
             return Response({
                 'message': 'Customer registered successfully',
-                'user': user_serializer.data,
+                'user': user_data,
                 'token': tokens['token'],
                 'refreshToken': tokens['refresh_token']
             }, status=status.HTTP_201_CREATED)
             
         except Exception as e:
+            print(f"DEBUG: General error: {e}")
+            print(f"DEBUG: General error type: {type(e)}")
+            import traceback
+            print(f"DEBUG: General error traceback: {traceback.format_exc()}")
             return Response({
                 'error': {
                     'code': 'REGISTRATION_ERROR',

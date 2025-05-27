@@ -162,10 +162,14 @@ class FoodProviderRegistrationSerializer(BaseRegistrationSerializer):
         business_info = {
             'business_name': validated_data.pop('business_name'),
             'business_contact': validated_data.pop('business_contact'),
+            'business_email': validated_data['email'],  # Use the email from base serializer
             'street': validated_data.pop('business_street'),
             'city': validated_data.pop('business_city'),
-            'suburb': validated_data.pop('business_province'),
-            'street_number': '0',  # Default, can be updated
+            'province_or_state': validated_data.pop('business_province'),  # NOW SUPPORTED!
+            'postal_code': validated_data.pop('business_postal_code'),     # NOW SUPPORTED!
+            'country': 'South Africa',  # NOW SUPPORTED!
+            'street_number': '0',  # Default value
+            'suburb': 'Unknown',   # Default value - you can make this an optional field
         }
         validated_data.pop('business_postal_code')  # Store separately if needed
         cipc_document_data = validated_data.pop('cipc_document')

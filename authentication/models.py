@@ -39,6 +39,11 @@ class User(AbstractUser):
     
     def __str__(self):
         return self.email
+    
+    @property
+    def id(self):
+        """Compatibility property for JWT"""
+        return self.UserID
 
 
 class PaymentMethod(models.Model):
@@ -94,6 +99,9 @@ class Business(models.Model):
     street = models.CharField(max_length=255)
     suburb = models.CharField(max_length=100)
     city = models.CharField(max_length=100)
+    province_or_state = models.CharField(max_length=100)
+    postal_code = models.CharField(max_length=20)
+    country = models.CharField(max_length=100, default='South Africa')
     
     # Additional fields for API compatibility (from your current implementation)
     business_name = models.CharField(max_length=255)
