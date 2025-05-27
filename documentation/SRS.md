@@ -284,14 +284,15 @@ We adopt an **event-driven architecture (EDA)** to handle real-time data flows b
 #### **Key Components**
 
 <div align="center">
+ 
 | Component          | Role                                                                 | Example Events                          |
 |--------------------|----------------------------------------------------------------------|-----------------------------------------|
 | **Producers**      | Emit events when state changes (e.g., new listing, order placement). | `FoodListingCreated`, `OrderPlaced`     |
 | **Broker**         | Routes events to subscribed consumers (Redis Pub/Sub).               | Manages `food_listings` channel         |
 | **Consumers**      | React to events (AI, UI, notifications).                             | `AI_PredictionService`, `UserInterface` |
+
 <div>
  
-</div>
 #### **Reasons for EDA:**
 1. **Real-Time Updates**  
    - Users instantly see new listings/donations via WebSocket pushes (no page refresh).  
