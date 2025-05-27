@@ -1,6 +1,6 @@
-# Save n Bite - Reducing Food Waste Through Technology 🍎♻️
-
 <img src="assets/logo_with_gendac.png"/>
+
+# Reducing Food Waste Through Technology 🍎♻️
 
 ---
 
