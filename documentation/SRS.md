@@ -326,13 +326,17 @@ Backend: Django emits events on CRUD operations (e.g., post_save signals).
 
 ## 8. Technology Requirements  
 
-| Category       | Technologies                                                                 |
-|----------------|-----------------------------------------------------------------------------|
-| **Frontend**   | React, Material UI |
-| **Backend**    | Django, Django REST, JWT|
-| **Database**   | PostgreSQL, Redis|
-| **Cloud**      | Microsoft Azure |
-| **DevOps**     | Docker, GitHub Actions |
-| **AI/ML**      | Python, Scikit-learn, Pandas |
+<div align="center">
+
+| Category       | Technologies                               |
+|----------------|--------------------------------------------|
+| **Frontend**   | React, Material UI                         |
+| **Backend**    | Django, Django REST, JWT                   |
+| **Database**   | PostgreSQL, Redis                          |
+| **Cloud**      | Microsoft Azure                            |
+| **DevOps**     | Docker, GitHub Actions                     |
+| **AI/ML**      | Python, Scikit-learn, Pandas               |
+
+</div>
 
 ---
