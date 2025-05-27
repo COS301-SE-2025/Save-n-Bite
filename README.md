@@ -95,7 +95,6 @@ main
 │       ├── feature/...
 │       └── hotfix/...
 ```
-
 ---
 
 ## 🔗 Documentation
