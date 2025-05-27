@@ -11,7 +11,7 @@
 [![GitHub repo size](https://img.shields.io/github/repo-size/COS301-SE-2025/Save-n-Bite?style=flat-square)](https://github.com/COS301-SE-2025/Save-n-Bite)
 [![GitHub pull requests](https://img.shields.io/github/issues-pr/COS301-SE-2025/Save-n-Bite?style=flat-square)](https://github.com/COS301-SE-2025/Save-n-Bite/pulls)
 [![GitHub language count](https://img.shields.io/github/languages/count/COS301-SE-2025/Save-n-Bite?style=flat-square&cacheSeconds=3600)](https://github.com/COS301-SE-2025/Save-n-Bite)
-[![Top Language](https://img.shields.io/github/languages/top/COS301-SE-2025/Save-n-Bite?style=flat-square&logo=typescript)](https://github.com/COS301-SE-2025/Save-n-Bite)
+[![Top Language](https://img.shields.io/github/languages/top/COS301-SE-2025/Save-n-Bite?style=flat-square&logo=react&label=React&color=61DAFB)](https://github.com/COS301-SE-2025/Save-n-Bite)
 [![GitHub contributors](https://img.shields.io/github/contributors/COS301-SE-2025/Save-n-Bite?style=flat-square)](https://github.com/COS301-SE-2025/Save-n-Bite/graphs/contributors)
 [![GitHub commit activity](https://img.shields.io/github/commit-activity/w/COS301-SE-2025/Save-n-Bite?style=flat-square)](https://github.com/COS301-SE-2025/Save-n-Bite/commits)
 
