@@ -1,3 +1,12 @@
 [run]
 source = transactions
 omit = */migrations/*,*/tests/*
+
+[report]
+exclude_lines =
+    pragma: no cover
+    def __repr__
+    if __name__ == .__main__.:
+
+[html]
+directory = coverage_html_report
