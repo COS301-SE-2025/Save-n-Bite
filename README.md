@@ -18,6 +18,7 @@ Key features:
 ---
 
 ## 🛠️ Tech Stack
+<p align="center">
 | Category       | Technologies                                                                 |
 |----------------|-----------------------------------------------------------------------------|
 | **Frontend**   | React, Material UI |
@@ -26,6 +27,7 @@ Key features:
 | **Cloud**      | Microsoft Azure |
 | **DevOps**     | Docker, GitHub Actions |
 | **AI/ML**      | Python, Scikit-learn, Pandas |
+</p>
 
 <img src="assets/TechStack.png"/>
 
