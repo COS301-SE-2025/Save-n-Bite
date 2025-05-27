@@ -252,8 +252,10 @@ R11: **Gamification**
 
 ## 7. Architectural Requirements  
 
-### 7.1 Quality Requirements and Constraints  
+### 7.1 Quality Requirements and Constraints 
 
+<div align="center">
+ 
 | **Category**               | **Requirement**                                                                 | **Associated Quality Attribute/Constraint**                                                                 |
 |----------------------------|---------------------------------------------------------------------------------|-------------------------------------------------------------------------------------------|
 |                            | Secure verification to prevent misuse                                           |  Security constraint                                                             |
@@ -271,6 +273,8 @@ R11: **Gamification**
 |                            | Secure authentication                                                           |  Security                                                                        |
 | **Design**                  | UI/UX best practices                                                           |  Usability                                                                       |
 |                            | First-launch tutorial                                                           |  User onboarding                                                                 | 
+
+ </div>
  
 ### 7.2 Architectural Patterns: Event-Driven Architecture
  
@@ -278,12 +282,16 @@ R11: **Gamification**
 We adopt an **event-driven architecture (EDA)** to handle real-time data flows between food providers, consumers, and AI-driven analytics. This pattern decouples system components by treating actions (e.g., new food listings, orders) as **events** that trigger independent processes.
 
 #### **Key Components**
+
+<div align="center">
 | Component          | Role                                                                 | Example Events                          |
 |--------------------|----------------------------------------------------------------------|-----------------------------------------|
 | **Producers**      | Emit events when state changes (e.g., new listing, order placement). | `FoodListingCreated`, `OrderPlaced`     |
 | **Broker**         | Routes events to subscribed consumers (Redis Pub/Sub).               | Manages `food_listings` channel         |
 | **Consumers**      | React to events (AI, UI, notifications).                             | `AI_PredictionService`, `UserInterface` |
-
+<div>
+ 
+</div>
 #### **Reasons for EDA:**
 1. **Real-Time Updates**  
    - Users instantly see new listings/donations via WebSocket pushes (no page refresh).  
