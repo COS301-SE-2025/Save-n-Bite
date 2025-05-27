@@ -85,6 +85,9 @@ class Business(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='business_profile')
     business_type = models.CharField(max_length=20, choices=BUSINESS_TYPE_CHOICES, default='Restaurant')
     business_licence = models.FileField(upload_to='business_documents/')
+
+    verified = models.BooleanField(default=False)  # ← ADD THIS LINE
+
     
     # Address fields from schema
     street_number = models.CharField(max_length=10)
@@ -98,6 +101,17 @@ class Business(models.Model):
     business_email = models.EmailField()
     logo = models.ImageField(upload_to='provider_logos/', null=True, blank=True)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending_verification')
+
+    def save(self, *args, **kwargs):
+        # Automatically set verified=True when status='verified'
+        if self.status == 'verified':
+            self.verified = True
+        else:
+            self.verified = False
+        super().save(*args, **kwargs)
+    
+    def __str__(self):
+        return f"Business: {self.business_name}"
     
     def __str__(self):
         return f"Business: {self.business_name}"
@@ -168,6 +182,9 @@ class Organisation(models.Model):
     street = models.CharField(max_length=255)
     suburb = models.CharField(max_length=100)
     city = models.CharField(max_length=100)
+
+    verified_org = models.BooleanField(default=False)  # ← ADD THIS LINE
+
     
     # Additional fields for API compatibility
     organisation_name = models.CharField(max_length=255)
@@ -178,6 +195,13 @@ class Organisation(models.Model):
     country = models.CharField(max_length=100, default='South Africa')
     organisation_logo = models.ImageField(upload_to='ngo_logos/', null=True, blank=True)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending_verification')
+
+    def save(self, *args, **kwargs):
+        if self.status == 'verified':
+            self.verified_org = True
+        else:
+            self.verified_org = False
+        super().save(*args, **kwargs)
     
     def __str__(self):
         return f"Organisation: {self.organisation_name}"
