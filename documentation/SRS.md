@@ -114,7 +114,12 @@ The project will be piloted with **University of Pretoria food outlets** in coll
 
 ## 3. Use Case Diagrams  
 
-![Use Case Diagram](../assets/UseCase_Diagram.png)
+![Use Case Diagram for User Management](../assets/UseCase_User_Management_Subsystem.png)
+![Use Case Diagram for Food Listings](../assets/UseCase_Food_Listing_Subsystem.png)
+![Use Case Diagram for Food Discovery and Transactions](../assets/UseCase_Food_Discovery_and_Transactions.png)
+![Use Case Diagram for Feeback, Analytics and AI](../assets/UseCase_Feedback_Analytics_AI.png)
+![Use Case Diagram for Logistics](../assets/UseCase_Logistics_Subsystem.png)
+![Use Case Diagram for Blockchain, Education and Gamification](../assets/UseCase_Blockchain_Education_Gamification.png)
 
 ---
 
