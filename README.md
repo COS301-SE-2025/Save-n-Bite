@@ -50,7 +50,6 @@ Key features:
       <td style="text-align: center;"><strong>Frontend</strong></td>
       <td style="text-align: center;">
         <img src="https://img.shields.io/badge/React-61DAFB?style=for-the-badge&logo=react&logoColor=black" />
-        
       </td>
     </tr>
     <tr>
