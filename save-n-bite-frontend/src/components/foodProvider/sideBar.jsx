@@ -28,7 +28,7 @@ const navigationItems = [
     name: 'My Listings',
     icon: ListIcon,
     route: 'ListingOverview',
-    path: '/ListingOverview'
+    path: '/listings-overview'
   },
   {
     name: 'Pickups',

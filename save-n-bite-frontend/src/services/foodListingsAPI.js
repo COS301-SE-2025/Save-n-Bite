@@ -154,28 +154,25 @@ const buildQueryParams = (filters = {}, searchQuery = '', sortBy = '') => {
             'price_asc': 'discounted_price',
             'price_desc': '-discounted_price',
             'expiry_asc': 'expiry_date',
-            'distance': 'distance' // This would need backend support
+            'distance': 'created_at' // Fallback to created_at since distance sorting is not implemented yet
         };
-        params.append('ordering', sortMapping[sortBy] || sortBy);
+        params.append('sort', sortMapping[sortBy] || sortBy);
     }
     
     // Filter by price range
     if (filters.priceRange && filters.priceRange[1] < 20) {
-        params.append('max_price', filters.priceRange[1]);
+        params.append('priceMin', filters.priceRange[0]);
+        params.append('priceMax', filters.priceRange[1]);
     }
     
     // Filter by type
     if (filters.type && filters.type !== 'all') {
-        if (filters.type === 'discount') {
-            params.append('type', 'discount');
-        } else if (filters.type === 'donation') {
-            params.append('type', 'donation');
-        }
+        params.append('type', filters.type);
     }
     
     // Filter by provider
     if (filters.provider && filters.provider !== 'all') {
-        params.append('provider', filters.provider);
+        params.append('store', filters.provider);
     }
     
     // Filter by expiration
