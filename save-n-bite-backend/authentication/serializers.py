@@ -224,10 +224,13 @@ class LoginSerializer(serializers.Serializer):
 
 class UserProfileSerializer(serializers.ModelSerializer):
     profile = serializers.SerializerMethodField()
+    notification_preferences = serializers.SerializerMethodField()
+    following_count = serializers.SerializerMethodField()
+    followers_count = serializers.SerializerMethodField()
 
     class Meta:
         model = User
-        fields = ['id', 'email', 'user_type', 'role', 'profile']
+        fields = ['id', 'email', 'user_type', 'role', 'profile', 'notification_preferences', 'following_count', 'followers_count']
 
     def get_profile(self, obj):
         if obj.user_type == 'customer' and hasattr(obj, 'customer_profile'):
@@ -247,7 +250,47 @@ class UserProfileSerializer(serializers.ModelSerializer):
             return {
                 'business_name': obj.provider_profile.business_name,
                 'business_email': obj.provider_profile.business_email,
+                'business_address': obj.provider_profile.business_address,
                 'status': obj.provider_profile.status,
                 'logo': obj.provider_profile.logo.url if obj.provider_profile.logo else None
             }
         return {}
+
+    def get_notification_preferences(self, obj):
+        """Get user's notification preferences"""
+        try:
+            from notifications.models import NotificationPreferences
+            prefs, created = NotificationPreferences.objects.get_or_create(user=obj)
+            return {
+                'email_notifications': prefs.email_notifications,
+                'new_listing_notifications': prefs.new_listing_notifications,
+                'promotional_notifications': prefs.promotional_notifications,
+                'weekly_digest': prefs.weekly_digest
+            }
+        except:
+            return {
+                'email_notifications': True,
+                'new_listing_notifications': True,
+                'promotional_notifications': False,
+                'weekly_digest': True
+            }
+
+    def get_following_count(self, obj):
+        """Get count of businesses user is following (for customers/NGOs)"""
+        if obj.user_type in ['customer', 'ngo']:
+            try:
+                from notifications.models import BusinessFollower
+                return BusinessFollower.objects.filter(user=obj).count()
+            except:
+                return 0
+        return 0
+
+    def get_followers_count(self, obj):
+        """Get count of followers for business (for providers)"""
+        if obj.user_type == 'provider' and hasattr(obj, 'provider_profile'):
+            try:
+                from notifications.models import BusinessFollower
+                return BusinessFollower.objects.filter(business=obj.provider_profile).count()
+            except:
+                return 0
+        return 0
