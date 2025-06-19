@@ -102,126 +102,6 @@ def mark_notifications_read(request):
         }
     }, status=status.HTTP_400_BAD_REQUEST)
 
-@api_view(['DELETE'])
-@permission_classes([IsAuthenticated])
-def unfollow_business(request, business_id):
-    """Unfollow a business"""
-    try:
-        success = NotificationService.unfollow_business(request.user, business_id)
-        
-        if success:
-            return Response({
-                'message': 'Successfully unfollowed business'
-            }, status=status.HTTP_200_OK)
-        else:
-            return Response({
-                'error': {
-                    'code': 'NOT_FOLLOWING',
-                    'message': 'You are not following this business'
-                }
-            }, status=status.HTTP_404_NOT_FOUND)
-            
-    except ValueError as e:
-        return Response({
-            'error': {
-                'code': 'BUSINESS_ERROR',
-                'message': str(e)
-            }
-        }, status=status.HTTP_400_BAD_REQUEST)
-    except Exception as e:
-        logger.error(f"Error unfollowing business: {str(e)}")
-        return Response({
-            'error': {
-                'code': 'UNFOLLOW_ERROR',
-                'message': 'Failed to unfollow business',
-                'details': str(e)
-            }
-        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
-@api_view(['GET'])
-@permission_classes([IsAuthenticated])
-def get_following(request):
-    """Get list of businesses user is following"""
-    try:
-        following = BusinessFollower.objects.filter(
-            user=request.user
-        ).select_related('business').order_by('-created_at')
-        
-        serializer = BusinessFollowerSerializer(following, many=True)
-        
-        return Response({
-            'following': serializer.data,
-            'count': following.count()
-        }, status=status.HTTP_200_OK)
-        
-    except Exception as e:
-        logger.error(f"Error fetching following list: {str(e)}")
-        return Response({
-            'error': {
-                'code': 'FETCH_ERROR',
-                'message': 'Failed to fetch following list',
-                'details': str(e)
-            }
-        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
-@api_view(['GET'])
-@permission_classes([IsAuthenticated])
-def get_followers(request):
-    """Get list of followers for a business (business owners only)"""
-    if request.user.user_type != 'provider':
-        return Response({
-            'error': {
-                'code': 'PERMISSION_DENIED',
-                'message': 'Only business owners can view their followers'
-            }
-        }, status=status.HTTP_403_FORBIDDEN)
-    
-    try:
-        if not hasattr(request.user, 'provider_profile'):
-            return Response({
-                'error': {
-                    'code': 'PROFILE_ERROR',
-                    'message': 'Business profile not found'
-                }
-            }, status=status.HTTP_404_NOT_FOUND)
-        
-        followers = BusinessFollower.objects.filter(
-            business=request.user.provider_profile
-        ).select_related('user').order_by('-created_at')
-        
-        follower_data = []
-        for follower in followers:
-            user_data = {
-                'id': follower.id,
-                'user_id': follower.user.id,
-                'user_type': follower.user.user_type,
-                'followed_at': follower.created_at,
-            }
-            
-            # Add user-specific data based on type
-            if follower.user.user_type == 'customer' and hasattr(follower.user, 'customer_profile'):
-                user_data['name'] = follower.user.customer_profile.full_name
-                user_data['profile_image'] = follower.user.customer_profile.profile_image.url if follower.user.customer_profile.profile_image else None
-            elif follower.user.user_type == 'ngo' and hasattr(follower.user, 'ngo_profile'):
-                user_data['name'] = follower.user.ngo_profile.organisation_name
-                user_data['profile_image'] = follower.user.ngo_profile.organisation_logo.url if follower.user.ngo_profile.organisation_logo else None
-            
-            follower_data.append(user_data)
-        
-        return Response({
-            'followers': follower_data,
-            'count': followers.count()
-        }, status=status.HTTP_200_OK)
-        
-    except Exception as e:
-        logger.error(f"Error fetching followers: {str(e)}")
-        return Response({
-            'error': {
-                'code': 'FETCH_ERROR',
-                'message': 'Failed to fetch followers',
-@api_view(['POST'])
-@permission_classes([IsAuthenticated])
-def mark_all_read(request):
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def mark_all_read(request):
@@ -401,3 +281,124 @@ def follow_business(request):
             'details': serializer.errors
         }
     }, status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['DELETE'])
+@permission_classes([IsAuthenticated])
+def unfollow_business(request, business_id):
+    """Unfollow a business"""
+    try:
+        success = NotificationService.unfollow_business(request.user, business_id)
+        
+        if success:
+            return Response({
+                'message': 'Successfully unfollowed business'
+            }, status=status.HTTP_200_OK)
+        else:
+            return Response({
+                'error': {
+                    'code': 'NOT_FOLLOWING',
+                    'message': 'You are not following this business'
+                }
+            }, status=status.HTTP_404_NOT_FOUND)
+            
+    except ValueError as e:
+        return Response({
+            'error': {
+                'code': 'BUSINESS_ERROR',
+                'message': str(e)
+            }
+        }, status=status.HTTP_400_BAD_REQUEST)
+    except Exception as e:
+        logger.error(f"Error unfollowing business: {str(e)}")
+        return Response({
+            'error': {
+                'code': 'UNFOLLOW_ERROR',
+                'message': 'Failed to unfollow business',
+                'details': str(e)
+            }
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_following(request):
+    """Get list of businesses user is following"""
+    try:
+        following = BusinessFollower.objects.filter(
+            user=request.user
+        ).select_related('business').order_by('-created_at')
+        
+        serializer = BusinessFollowerSerializer(following, many=True)
+        
+        return Response({
+            'following': serializer.data,
+            'count': following.count()
+        }, status=status.HTTP_200_OK)
+        
+    except Exception as e:
+        logger.error(f"Error fetching following list: {str(e)}")
+        return Response({
+            'error': {
+                'code': 'FETCH_ERROR',
+                'message': 'Failed to fetch following list',
+                'details': str(e)
+            }
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_followers(request):
+    """Get list of followers for a business (business owners only)"""
+    if request.user.user_type != 'provider':
+        return Response({
+            'error': {
+                'code': 'PERMISSION_DENIED',
+                'message': 'Only business owners can view their followers'
+            }
+        }, status=status.HTTP_403_FORBIDDEN)
+    
+    try:
+        if not hasattr(request.user, 'provider_profile'):
+            return Response({
+                'error': {
+                    'code': 'PROFILE_ERROR',
+                    'message': 'Business profile not found'
+                }
+            }, status=status.HTTP_404_NOT_FOUND)
+        
+        followers = BusinessFollower.objects.filter(
+            business=request.user.provider_profile
+        ).select_related('user').order_by('-created_at')
+        
+        follower_data = []
+        for follower in followers:
+            user_data = {
+                'id': follower.id,
+                'user_id': follower.user.id,
+                'user_type': follower.user.user_type,
+                'followed_at': follower.created_at,
+            }
+            
+            # Add user-specific data based on type
+            if follower.user.user_type == 'customer' and hasattr(follower.user, 'customer_profile'):
+                user_data['name'] = follower.user.customer_profile.full_name
+                user_data['profile_image'] = follower.user.customer_profile.profile_image.url if follower.user.customer_profile.profile_image else None
+            elif follower.user.user_type == 'ngo' and hasattr(follower.user, 'ngo_profile'):
+                user_data['name'] = follower.user.ngo_profile.organisation_name
+                user_data['profile_image'] = follower.user.ngo_profile.organisation_logo.url if follower.user.ngo_profile.organisation_logo else None
+            
+            follower_data.append(user_data)
+        
+        return Response({
+            'followers': follower_data,
+            'count': followers.count()
+        }, status=status.HTTP_200_OK)
+        
+    except Exception as e:
+        logger.error(f"Error fetching followers: {str(e)}")
+        return Response({
+            'error': {
+                'code': 'FETCH_ERROR',
+                'message': 'Failed to fetch followers',
+                'details': str(e)
+            }
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
