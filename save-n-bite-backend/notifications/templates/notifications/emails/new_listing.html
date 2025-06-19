@@ -1,0 +1,220 @@
+<!-- notifications/templates/notifications/emails/new_listing.html -->
+{% extends "notifications/emails/base.html" %}
+
+{% block title %}New listing from {{ business_name }}{% endblock %}
+
+{% block content %}
+<h2>🆕 New Food Available!</h2>
+
+<p>Hi {{ user_name }},</p>
+
+<p>Great news! <strong>{{ business_name }}</strong> just added a new food listing:</p>
+
+<div class="listing-card">
+    {% if listing_image %}
+    <div style="text-align: center; margin-bottom: 15px;">
+        <img src="{{ listing_image }}" alt="{{ listing_name }}" style="max-width: 100%; height: 200px; object-fit: cover; border-radius: 8px;">
+    </div>
+    {% endif %}
+    
+    <h3 style="color: #4CAF50; margin-bottom: 10px;">{{ listing_name }}</h3>
+    
+    {% if listing_description %}
+    <p style="color: #666; margin-bottom: 15px;">{{ listing_description }}</p>
+    {% endif %}
+    
+    <div style="background-color: #f0f8f0; padding: 15px; border-radius: 8px; margin: 15px 0;">
+        <p style="margin: 5px 0;"><strong>💰 Price:</strong> 
+            {% if savings > 0 %}
+                <span style="text-decoration: line-through; color: #999;">R{{ original_price }}</span> 
+                <span style="color: #4CAF50; font-weight: bold;">{{ listing_price }}</span>
+                <span style="background-color: #4CAF50; color: white; padding: 2px 6px; border-radius: 12px; font-size: 12px; margin-left: 5px;">
+                    {{ discount_percentage }}% OFF
+                </span>
+            {% else %}
+                <span style="color: #4CAF50; font-weight: bold;">{{ listing_price }}</span>
+            {% endif %}
+        </p>
+        
+        {% if food_type %}
+        <p style="margin: 5px 0;"><strong>🍽️ Type:</strong> {{ food_type|title }}</p>
+        {% endif %}
+        
+        {% if quantity %}
+        <p style="margin: 5px 0;"><strong>📦 Quantity:</strong> {{ quantity }} available</p>
+        {% endif %}
+        
+        {% if pickup_window %}
+        <p style="margin: 5px 0;"><strong>⏰ Pickup Time:</strong> {{ pickup_window }}</p>
+        {% endif %}
+        
+        {% if expiry_date %}
+        <p style="margin: 5px 0;"><strong>📅 Best before:</strong> {{ expiry_date|date:"F d, Y" }}</p>
+        {% endif %}
+    </div>
+    
+    {% if savings > 0 %}
+    <div style="background-color: #fff3cd; border: 1px solid #ffeaa7; padding: 10px; border-radius: 6px; margin: 10px 0;">
+        <p style="margin: 0; color: #856404;"><strong>💰 You save R{{ savings }}!</strong> That's {{ discount_percentage }}% off the original price.</p>
+    </div>
+    {% endif %}
+</div>
+
+<p>⚡ <strong>Don't wait too long - these items go fast!</strong> Be quick to secure your meal and help reduce food waste.</p>
+
+<div style="text-align: center; margin: 30px 0;">
+    <a href="#" class="button" style="background-color: #4CAF50; color: white; padding: 15px 30px; text-decoration: none; border-radius: 6px; font-weight: bold;">
+        🛒 View Listing
+    </a>
+</div>
+
+<div style="background-color: #e8f5e8; padding: 20px; border-radius: 8px; margin: 20px 0;">
+    <h4 style="color: #2e7d32; margin-top: 0;">🌱 Environmental Impact</h4>
+    <p style="margin-bottom: 0; color: #2e7d32;">By claiming this food, you're helping reduce waste and supporting local businesses. Every meal saved makes a difference for our planet!</p>
+</div>
+
+<hr style="border: none; border-top: 1px solid #eee; margin: 30px 0;">
+
+<p style="font-size: 14px; color: #666;">
+    You're receiving this email because you follow <strong>{{ business_name }}</strong> on Save n Bite. 
+    <a href="#" style="color: #4CAF50;">Update your notification preferences</a> or 
+    <a href="#" style="color: #999;">unfollow this business</a>.
+</p>
+
+<p>Best regards,<br>
+<strong>The Save n Bite Team</strong> 🍽️</p>
+{% endblock %}
+
+<!-- Enhanced base template with better styling -->
+<!-- notifications/templates/notifications/emails/base.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Save n Bite{% endblock %}</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f7f5;
+        }
+        .container {
+            max-width: 600px;
+            margin: 20px auto;
+            background-color: #ffffff;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        .header {
+            background: linear-gradient(135deg, #4CAF50, #45a049);
+            color: white;
+            padding: 30px 20px;
+            text-align: center;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 28px;
+            font-weight: bold;
+        }
+        .header p {
+            margin: 5px 0 0 0;
+            font-size: 16px;
+            opacity: 0.9;
+        }
+        .content {
+            padding: 30px;
+        }
+        .footer {
+            background-color: #f8f9fa;
+            padding: 25px 20px;
+            text-align: center;
+            font-size: 12px;
+            color: #666;
+            border-top: 1px solid #eee;
+        }
+        .footer a {
+            color: #4CAF50;
+            text-decoration: none;
+        }
+        .button {
+            display: inline-block;
+            background-color: #4CAF50;
+            color: white !important;
+            padding: 15px 30px;
+            text-decoration: none;
+            border-radius: 6px;
+            margin: 10px 0;
+            font-weight: bold;
+            transition: background-color 0.3s;
+        }
+        .button:hover {
+            background-color: #45a049;
+        }
+        .business-card {
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+            background-color: #f9f9f9;
+        }
+        .listing-card {
+            border-left: 4px solid #4CAF50;
+            padding: 20px;
+            margin: 20px 0;
+            background-color: #f9fbf9;
+            border-radius: 0 8px 8px 0;
+        }
+        .highlight-box {
+            background-color: #e8f5e8;
+            border: 1px solid #c8e6c9;
+            padding: 15px;
+            border-radius: 6px;
+            margin: 15px 0;
+        }
+        .price-highlight {
+            background-color: #fff3cd;
+            border: 1px solid #ffeaa7;
+            padding: 10px;
+            border-radius: 6px;
+            margin: 10px 0;
+        }
+        @media only screen and (max-width: 600px) {
+            .container {
+                margin: 10px;
+                border-radius: 0;
+            }
+            .content {
+                padding: 20px;
+            }
+            .header {
+                padding: 20px;
+            }
+            .header h1 {
+                font-size: 24px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🍽️ Save n Bite</h1>
+            <p>Reducing food waste, one meal at a time</p>
+        </div>
+        <div class="content">
+            {% block content %}
+            {% endblock %}
+        </div>
+        <div class="footer">
+            <p>This email was sent by Save n Bite because you're following businesses that match your interests.</p>
+            <p><a href="#">Manage your preferences</a> | <a href="#">Unsubscribe</a> | <a href="#">Contact Support</a></p>
+            <p>&copy; 2025 Save n Bite. All rights reserved.</p>
+        </div>
+    </div>
+</body>
+</html>
