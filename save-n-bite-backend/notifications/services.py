@@ -1,4 +1,4 @@
-# notifications/services.py
+# notifications/services.py - Fixed to use UserID consistently
 
 from django.core.mail import send_mail
 from django.template.loader import render_to_string
@@ -258,7 +258,8 @@ class NotificationService:
     def follow_business(user, business_id):
         """Follow a business"""
         try:
-            business_user = User.objects.get(id=business_id, user_type='provider')
+            # Fix: Use UserID instead of id
+            business_user = User.objects.get(UserID=business_id, user_type='provider')
             business_profile = business_user.provider_profile
             
             if business_profile.status != 'verified':
@@ -266,7 +267,8 @@ class NotificationService:
             
             follower, created = BusinessFollower.objects.get_or_create(
                 user=user,
-                business=business_profile
+                business=business_profile,
+                defaults={'user': user}
             )
             
             if created:
@@ -278,27 +280,300 @@ class NotificationService:
                     message=f"{NotificationService._get_user_display_name(user)} is now following your business!",
                     sender=user,
                     business=business_profile,
-                    data={'follower_count': business_profile.followers.count()}
+                    data={
+                        'follower_id': str(user.UserID),
+                        'follower_name': NotificationService._get_user_display_name(user),
+                        'follower_type': user.user_type,
+                        'total_followers': business_profile.followers.count()
+                    }
                 )
+                
+                logger.info(f"User {user.email} started following business {business_profile.business_name}")
             
             return follower, created
             
         except User.DoesNotExist:
             raise ValueError("Business not found")
+        except Exception as e:
+            logger.error(f"Error following business {business_id}: {str(e)}")
+            raise ValueError(f"Failed to follow business: {str(e)}")
 
     @staticmethod
     def unfollow_business(user, business_id):
         """Unfollow a business"""
         try:
-            business_user = User.objects.get(id=business_id, user_type='provider')
+            # Fix: Use UserID instead of id
+            business_user = User.objects.get(UserID=business_id, user_type='provider')
             business_profile = business_user.provider_profile
             
+            # Check if user is actually following this business
+            follower_exists = BusinessFollower.objects.filter(
+                user=user,
+                business=business_profile
+            ).exists()
+            
+            if not follower_exists:
+                logger.warning(f"User {user.email} tried to unfollow business {business_profile.business_name} but was not following")
+                return False
+            
+            # Delete the follower relationship
             deleted_count, _ = BusinessFollower.objects.filter(
                 user=user,
                 business=business_profile
             ).delete()
             
+            if deleted_count > 0:
+                # Optionally send notification to business about unfollowing
+                try:
+                    NotificationService.create_notification(
+                        recipient=business_user,
+                        notification_type='business_update',
+                        title="Follower Update",
+                        message=f"Someone unfollowed your business. Total followers: {business_profile.followers.count()}",
+                        business=business_profile,
+                        data={
+                            'total_followers': business_profile.followers.count(),
+                            'action': 'unfollow'
+                        }
+                    )
+                except Exception as e:
+                    # Don't fail the unfollow if notification fails
+                    logger.error(f"Failed to send unfollow notification: {str(e)}")
+                
+                logger.info(f"User {user.email} unfollowed business {business_profile.business_name}")
+            
             return deleted_count > 0
             
         except User.DoesNotExist:
+            logger.error(f"Business with ID {business_id} not found")
             raise ValueError("Business not found")
+        except Exception as e:
+            logger.error(f"Error unfollowing business {business_id}: {str(e)}")
+            raise ValueError(f"Failed to unfollow business: {str(e)}")
+
+    @staticmethod
+    def get_user_following(user):
+        """Get list of businesses that a user is following"""
+        try:
+            following = BusinessFollower.objects.filter(
+                user=user
+            ).select_related('business', 'business__user').order_by('-created_at')
+            
+            following_data = []
+            for follow_relationship in following:
+                business_profile = follow_relationship.business
+                business_user = business_profile.user
+                
+                # Get additional business stats
+                try:
+                    from food_listings.models import FoodListing
+                    active_listings_count = FoodListing.objects.filter(
+                        provider=business_user,
+                        status='active'
+                    ).count()
+                except ImportError:
+                    active_listings_count = 0
+                
+                follower_count = BusinessFollower.objects.filter(
+                    business=business_profile
+                ).count()
+                
+                business_data = {
+                    'follow_id': follow_relationship.id,
+                    'business_id': str(business_user.UserID),  # Fix: Use UserID
+                    'business_name': business_profile.business_name,
+                    'business_email': business_profile.business_email,
+                    'business_address': business_profile.business_address,
+                    'business_contact': business_profile.business_contact,
+                    'logo': business_profile.logo.url if business_profile.logo else None,
+                    'status': business_profile.status,
+                    'followed_at': follow_relationship.created_at,
+                    'follower_count': follower_count,
+                    'active_listings_count': active_listings_count,
+                }
+                
+                following_data.append(business_data)
+            
+            logger.info(f"Retrieved {len(following_data)} businesses that user {user.email} is following")
+            return following_data
+            
+        except Exception as e:
+            logger.error(f"Error getting following list for user {user.email}: {str(e)}")
+            raise ValueError(f"Failed to get following list: {str(e)}")
+
+    @staticmethod
+    def get_business_followers(business_user):
+        """Get list of followers for a business"""
+        try:
+            if not hasattr(business_user, 'provider_profile'):
+                raise ValueError("User is not a business provider")
+            
+            business_profile = business_user.provider_profile
+            
+            followers = BusinessFollower.objects.filter(
+                business=business_profile
+            ).select_related('user').order_by('-created_at')
+            
+            followers_data = []
+            for follower_relationship in followers:
+                follower_user = follower_relationship.user
+                
+                # Build follower data based on user type
+                follower_data = {
+                    'follow_id': follower_relationship.id,
+                    'user_id': str(follower_user.UserID),  # Fix: Use UserID
+                    'user_type': follower_user.user_type,
+                    'email': follower_user.email,
+                    'followed_at': follower_relationship.created_at,
+                    'name': None,
+                    'profile_image': None,
+                    'additional_info': {}
+                }
+                
+                # Add user-specific data based on type
+                if follower_user.user_type == 'customer' and hasattr(follower_user, 'customer_profile'):
+                    customer_profile = follower_user.customer_profile
+                    follower_data.update({
+                        'name': customer_profile.full_name,
+                        'profile_image': customer_profile.profile_image.url if customer_profile.profile_image else None,
+                        'additional_info': {
+                            'user_type_display': 'Customer'
+                        }
+                    })
+                    
+                elif follower_user.user_type == 'ngo' and hasattr(follower_user, 'ngo_profile'):
+                    ngo_profile = follower_user.ngo_profile
+                    follower_data.update({
+                        'name': ngo_profile.organisation_name,
+                        'profile_image': ngo_profile.organisation_logo.url if ngo_profile.organisation_logo else None,
+                        'additional_info': {
+                            'user_type_display': 'Organization',
+                            'representative_name': ngo_profile.representative_name,
+                            'representative_email': ngo_profile.representative_email,
+                            'status': ngo_profile.status
+                        }
+                    })
+                
+                # If no specific profile found, use basic info
+                if not follower_data['name']:
+                    follower_data['name'] = follower_user.email.split('@')[0].title()
+                
+                followers_data.append(follower_data)
+            
+            # Add summary statistics
+            summary = {
+                'total_followers': len(followers_data),
+                'customer_followers': len([f for f in followers_data if f['user_type'] == 'customer']),
+                'ngo_followers': len([f for f in followers_data if f['user_type'] == 'ngo']),
+                'recent_followers_30_days': len([
+                    f for f in followers_data 
+                    if (timezone.now() - f['followed_at']).days <= 30
+                ])
+            }
+            
+            logger.info(f"Retrieved {len(followers_data)} followers for business {business_profile.business_name}")
+            
+            return {
+                'followers': followers_data,
+                'summary': summary
+            }
+            
+        except Exception as e:
+            logger.error(f"Error getting followers for business {business_user.email}: {str(e)}")
+            raise ValueError(f"Failed to get followers list: {str(e)}")
+
+    @staticmethod
+    def get_follow_status(user, business_id):
+        """Check if a user is following a specific business"""
+        try:
+            # Fix: Use UserID instead of id
+            business_user = User.objects.get(UserID=business_id, user_type='provider')
+            business_profile = business_user.provider_profile
+            
+            is_following = BusinessFollower.objects.filter(
+                user=user,
+                business=business_profile
+            ).exists()
+            
+            follower_count = BusinessFollower.objects.filter(
+                business=business_profile
+            ).count()
+            
+            return {
+                'is_following': is_following,
+                'follower_count': follower_count,
+                'business_name': business_profile.business_name,
+                'business_status': business_profile.status
+            }
+            
+        except User.DoesNotExist:
+            raise ValueError("Business not found")
+        except Exception as e:
+            logger.error(f"Error checking follow status: {str(e)}")
+            raise ValueError(f"Failed to check follow status: {str(e)}")
+
+    @staticmethod
+    def get_follow_recommendations(user, limit=5):
+        """Get recommended businesses for user to follow"""
+        try:
+            # Get businesses user is not already following
+            already_following = BusinessFollower.objects.filter(
+                user=user
+            ).values_list('business__user__UserID', flat=True)  # Fix: Use UserID
+            
+            # Get verified businesses that user is not following
+            recommended_businesses = User.objects.filter(
+                user_type='provider',
+                provider_profile__status='verified'
+            ).exclude(
+                UserID__in=already_following  # Fix: Use UserID
+            ).exclude(
+                UserID=user.UserID  # Fix: Use UserID - Don't recommend user's own business if they're a provider
+            ).select_related('provider_profile')[:limit]
+            
+            recommendations = []
+            for business_user in recommended_businesses:
+                business_profile = business_user.provider_profile
+                
+                # Get business stats
+                follower_count = BusinessFollower.objects.filter(
+                    business=business_profile
+                ).count()
+                
+                try:
+                    from food_listings.models import FoodListing
+                    active_listings_count = FoodListing.objects.filter(
+                        provider=business_user,
+                        status='active'
+                    ).count()
+                    recent_listings_count = FoodListing.objects.filter(
+                        provider=business_user,
+                        status='active',
+                        created_at__gte=timezone.now() - timezone.timedelta(days=7)
+                    ).count()
+                except ImportError:
+                    active_listings_count = 0
+                    recent_listings_count = 0
+                
+                recommendation = {
+                    'business_id': str(business_user.UserID),  # Fix: Use UserID
+                    'business_name': business_profile.business_name,
+                    'business_address': business_profile.business_address,
+                    'logo': business_profile.logo.url if business_profile.logo else None,
+                    'follower_count': follower_count,
+                    'active_listings_count': active_listings_count,
+                    'recent_listings_count': recent_listings_count,
+                    'recommendation_score': follower_count + (recent_listings_count * 2)  # Simple scoring
+                }
+                
+                recommendations.append(recommendation)
+            
+            # Sort by recommendation score
+            recommendations.sort(key=lambda x: x['recommendation_score'], reverse=True)
+            
+            logger.info(f"Generated {len(recommendations)} follow recommendations for user {user.email}")
+            return recommendations
+            
+        except Exception as e:
+            logger.error(f"Error getting follow recommendations: {str(e)}")
+            raise ValueError(f"Failed to get recommendations: {str(e)}")

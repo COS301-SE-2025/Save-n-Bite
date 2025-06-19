@@ -1,4 +1,4 @@
-# notifications/serializers.py
+# notifications/serializers.py - Fixed to handle UserID correctly
 
 from rest_framework import serializers
 from .models import Notification, NotificationPreferences, BusinessFollower, EmailNotificationLog
@@ -20,7 +20,7 @@ class NotificationPreferencesSerializer(serializers.ModelSerializer):
 class BusinessFollowerSerializer(serializers.ModelSerializer):
     business_name = serializers.CharField(source='business.business_name', read_only=True)
     business_logo = serializers.SerializerMethodField()
-    business_id = serializers.UUIDField(source='business.user.id', read_only=True)
+    business_id = serializers.SerializerMethodField()  # Fix: Use UserID
 
     class Meta:
         model = BusinessFollower
@@ -30,13 +30,18 @@ class BusinessFollowerSerializer(serializers.ModelSerializer):
         if obj.business.logo:
             return obj.business.logo.url
         return None
+    
+    def get_business_id(self, obj):
+        # Fix: Return UserID instead of id
+        return str(obj.business.user.UserID)
 
 class FollowBusinessSerializer(serializers.Serializer):
     business_id = serializers.UUIDField()
 
     def validate_business_id(self, value):
         try:
-            business_user = User.objects.get(id=value, user_type='provider')
+            # Fix: Use UserID instead of id
+            business_user = User.objects.get(UserID=value, user_type='provider')
             if not hasattr(business_user, 'provider_profile'):
                 raise serializers.ValidationError("Business profile not found")
             if business_user.provider_profile.status != 'verified':

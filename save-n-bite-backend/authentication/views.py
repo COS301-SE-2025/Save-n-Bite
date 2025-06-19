@@ -276,7 +276,8 @@ def update_user_profile(request):
 def get_business_profile(request, business_id):
     """Get public business profile information"""
     try:
-        business_user = User.objects.get(id=business_id, user_type='provider')
+        # Fix: Use UserID instead of id
+        business_user = User.objects.get(UserID=business_id, user_type='provider')
         
         if not hasattr(business_user, 'provider_profile'):
             return Response({
@@ -313,7 +314,7 @@ def get_business_profile(request, business_id):
             is_following = False
         
         business_data = {
-            'id': str(business_user.id),
+            'id': str(business_user.UserID),  # Fix: Use UserID
             'business_name': profile.business_name,
             'business_email': profile.business_email,
             'business_address': profile.business_address,

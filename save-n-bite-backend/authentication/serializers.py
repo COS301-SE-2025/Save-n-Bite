@@ -76,16 +76,19 @@ class NGORegistrationSerializer(BaseRegistrationSerializer):
 
     class Meta(BaseRegistrationSerializer.Meta):
         fields = BaseRegistrationSerializer.Meta.fields + [
-            'representative_email', 'organisational_email', 'organisation_name', 'organisation_contact',
-            'representative_name', 'organisation_street', 'organisation_city',
-            'organisation_province', 'organisation_postal_code', 'npo_document', 'organisation_logo'
+            'organisation_name', 'organisation_contact', 'representative_name',
+            'representative_email', 'organisational_email', 'organisation_street', 
+            'organisation_city', 'organisation_province', 'organisation_postal_code', 
+            'npo_document', 'organisation_logo'
         ]
 
     def create(self, validated_data):
+        # Extract NGO-specific data (don't pass to User model)
         organisation_data = {
             'organisation_name': validated_data.pop('organisation_name'),
             'organisation_contact': validated_data.pop('organisation_contact'),
             'representative_name': validated_data.pop('representative_name'),
+            'representative_email': validated_data.pop('representative_email'),  # Remove this from User creation
             'organisation_email': validated_data.pop('organisational_email'),
             'address_line1': validated_data.pop('organisation_street'),
             'city': validated_data.pop('organisation_city'),
@@ -93,32 +96,36 @@ class NGORegistrationSerializer(BaseRegistrationSerializer):
             'postal_code': validated_data.pop('organisation_postal_code'),
             'country': 'South Africa',
         }
+        
         npo_document_data = validated_data.pop('npo_document')
         logo_data = validated_data.pop('organisation_logo', None)
         validated_data['user_type'] = 'ngo'
 
+        # Create user (only with User model fields)
         user = super().create(validated_data)
 
+        # Create NGO profile with extracted data
         ngo_profile = NGOProfile.objects.create(
             user=user,
-            representative_email=validated_data['email'],
             **organisation_data
         )
 
+        # Handle document upload
         if npo_document_data:
             try:
                 format, docstr = npo_document_data.split(';base64,')
                 ext = format.split('/')[-1] if '/' in format else 'pdf'
-                doc_data = ContentFile(base64.b64decode(docstr), name=f'npo_doc_{user.id}.{ext}')
+                doc_data = ContentFile(base64.b64decode(docstr), name=f'npo_doc_{user.UserID}.{ext}')
                 ngo_profile.npo_document = doc_data
             except Exception as e:
                 pass
 
+        # Handle logo upload
         if logo_data:
             try:
                 format, imgstr = logo_data.split(';base64,')
                 ext = format.split('/')[-1]
-                img_data = ContentFile(base64.b64decode(imgstr), name=f'ngo_logo_{user.id}.{ext}')
+                img_data = ContentFile(base64.b64decode(imgstr), name=f'ngo_logo_{user.UserID}.{ext}')
                 ngo_profile.organisation_logo = img_data
             except Exception as e:
                 pass

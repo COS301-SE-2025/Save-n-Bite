@@ -19,4 +19,8 @@ urlpatterns = [
     path('unfollow/<uuid:business_id>/', views.unfollow_business, name='unfollow_business'),
     path('following/', views.get_following, name='get_following'),
     path('followers/', views.get_followers, name='get_followers'),
+
+    # Business following - Additional helper endpoints
+    path('follow-status/<uuid:business_id>/', views.get_follow_status, name='get_follow_status'),
+    path('recommendations/', views.get_follow_recommendations, name='get_follow_recommendations'),
 ]

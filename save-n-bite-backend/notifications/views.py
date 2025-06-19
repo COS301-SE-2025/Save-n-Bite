@@ -1,4 +1,4 @@
-# notifications/views.py
+# notifications/views.py - Complete fixed version
 
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
@@ -32,7 +32,7 @@ def get_notifications(request):
     """Get paginated notifications for authenticated user"""
     try:
         notifications = Notification.objects.filter(
-            recipient=request.user,
+            recipient=request.user,  # This works because of the custom JWT auth
             is_deleted=False
         ).order_by('-created_at')
 
@@ -108,7 +108,7 @@ def mark_all_read(request):
     """Mark all notifications as read for authenticated user"""
     try:
         count = Notification.objects.filter(
-            recipient=request.user,
+            recipient=request.user,  # This works because of the custom JWT auth
             is_read=False,
             is_deleted=False
         ).update(is_read=True)
@@ -157,7 +157,7 @@ def delete_notification(request, notification_id):
         notification = get_object_or_404(
             Notification, 
             id=notification_id, 
-            recipient=request.user
+            recipient=request.user  # This works because of the custom JWT auth
         )
         
         notification.is_deleted = True
@@ -182,8 +182,15 @@ def delete_notification(request, notification_id):
 def notification_preferences(request):
     """Get or update user notification preferences"""
     try:
+        # This now works because of the custom JWT auth
         preferences, created = NotificationPreferences.objects.get_or_create(
-            user=request.user
+            user=request.user,
+            defaults={
+                'email_notifications': True,
+                'new_listing_notifications': True,
+                'promotional_notifications': False,
+                'weekly_digest': True
+            }
         )
         
         if request.method == 'GET':
@@ -286,12 +293,23 @@ def follow_business(request):
 @permission_classes([IsAuthenticated])
 def unfollow_business(request, business_id):
     """Unfollow a business"""
+    # Only customers and NGOs can unfollow businesses
+    if request.user.user_type not in ['customer', 'ngo']:
+        return Response({
+            'error': {
+                'code': 'PERMISSION_DENIED',
+                'message': 'Only customers and organizations can unfollow businesses'
+            }
+        }, status=status.HTTP_403_FORBIDDEN)
+    
     try:
         success = NotificationService.unfollow_business(request.user, business_id)
         
         if success:
             return Response({
-                'message': 'Successfully unfollowed business'
+                'message': 'Successfully unfollowed business',
+                'business_id': str(business_id),
+                'action': 'unfollowed'
             }, status=status.HTTP_200_OK)
         else:
             return Response({
@@ -323,17 +341,21 @@ def unfollow_business(request, business_id):
 def get_following(request):
     """Get list of businesses user is following"""
     try:
-        following = BusinessFollower.objects.filter(
-            user=request.user
-        ).select_related('business').order_by('-created_at')
-        
-        serializer = BusinessFollowerSerializer(following, many=True)
+        following_data = NotificationService.get_user_following(request.user)
         
         return Response({
-            'following': serializer.data,
-            'count': following.count()
+            'following': following_data,
+            'count': len(following_data),
+            'message': f'Retrieved {len(following_data)} businesses you are following'
         }, status=status.HTTP_200_OK)
         
+    except ValueError as e:
+        return Response({
+            'error': {
+                'code': 'SERVICE_ERROR',
+                'message': str(e)
+            }
+        }, status=status.HTTP_400_BAD_REQUEST)
     except Exception as e:
         logger.error(f"Error fetching following list: {str(e)}")
         return Response({
@@ -357,48 +379,97 @@ def get_followers(request):
         }, status=status.HTTP_403_FORBIDDEN)
     
     try:
-        if not hasattr(request.user, 'provider_profile'):
-            return Response({
-                'error': {
-                    'code': 'PROFILE_ERROR',
-                    'message': 'Business profile not found'
-                }
-            }, status=status.HTTP_404_NOT_FOUND)
-        
-        followers = BusinessFollower.objects.filter(
-            business=request.user.provider_profile
-        ).select_related('user').order_by('-created_at')
-        
-        follower_data = []
-        for follower in followers:
-            user_data = {
-                'id': follower.id,
-                'user_id': follower.user.id,
-                'user_type': follower.user.user_type,
-                'followed_at': follower.created_at,
-            }
-            
-            # Add user-specific data based on type
-            if follower.user.user_type == 'customer' and hasattr(follower.user, 'customer_profile'):
-                user_data['name'] = follower.user.customer_profile.full_name
-                user_data['profile_image'] = follower.user.customer_profile.profile_image.url if follower.user.customer_profile.profile_image else None
-            elif follower.user.user_type == 'ngo' and hasattr(follower.user, 'ngo_profile'):
-                user_data['name'] = follower.user.ngo_profile.organisation_name
-                user_data['profile_image'] = follower.user.ngo_profile.organisation_logo.url if follower.user.ngo_profile.organisation_logo else None
-            
-            follower_data.append(user_data)
+        followers_data = NotificationService.get_business_followers(request.user)
         
         return Response({
-            'followers': follower_data,
-            'count': followers.count()
+            'followers': followers_data['followers'],
+            'summary': followers_data['summary'],
+            'count': followers_data['summary']['total_followers'],
+            'message': f'Retrieved {followers_data["summary"]["total_followers"]} followers for your business'
         }, status=status.HTTP_200_OK)
         
+    except ValueError as e:
+        return Response({
+            'error': {
+                'code': 'SERVICE_ERROR',
+                'message': str(e)
+            }
+        }, status=status.HTTP_400_BAD_REQUEST)
     except Exception as e:
         logger.error(f"Error fetching followers: {str(e)}")
         return Response({
             'error': {
                 'code': 'FETCH_ERROR',
                 'message': 'Failed to fetch followers',
+                'details': str(e)
+            }
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_follow_status(request, business_id):
+    """Get follow status for a specific business"""
+    try:
+        status_data = NotificationService.get_follow_status(request.user, business_id)
+        
+        return Response({
+            'follow_status': status_data
+        }, status=status.HTTP_200_OK)
+        
+    except ValueError as e:
+        return Response({
+            'error': {
+                'code': 'BUSINESS_ERROR',
+                'message': str(e)
+            }
+        }, status=status.HTTP_400_BAD_REQUEST)
+    except Exception as e:
+        logger.error(f"Error checking follow status: {str(e)}")
+        return Response({
+            'error': {
+                'code': 'STATUS_ERROR',
+                'message': 'Failed to check follow status',
+                'details': str(e)
+            }
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_follow_recommendations(request):
+    """Get recommended businesses to follow"""
+    # Only customers and NGOs should get recommendations
+    if request.user.user_type not in ['customer', 'ngo']:
+        return Response({
+            'recommendations': [],
+            'count': 0,
+            'message': 'Follow recommendations are only available for customers and organizations'
+        }, status=status.HTTP_200_OK)
+    
+    try:
+        limit = int(request.query_params.get('limit', 5))
+        limit = min(limit, 20)  # Cap at 20 recommendations
+        
+        recommendations = NotificationService.get_follow_recommendations(request.user, limit)
+        
+        return Response({
+            'recommendations': recommendations,
+            'count': len(recommendations),
+            'message': f'Found {len(recommendations)} recommended businesses'
+        }, status=status.HTTP_200_OK)
+        
+    except ValueError as e:
+        return Response({
+            'error': {
+                'code': 'SERVICE_ERROR',
+                'message': str(e)
+            }
+        }, status=status.HTTP_400_BAD_REQUEST)
+    except Exception as e:
+        logger.error(f"Error getting recommendations: {str(e)}")
+        return Response({
+            'error': {
+                'code': 'RECOMMENDATIONS_ERROR',
+                'message': 'Failed to get recommendations',
                 'details': str(e)
             }
         }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

@@ -9,7 +9,12 @@ User = get_user_model()
 
 class NotificationPreferences(models.Model):
     """User preferences for notifications"""
-    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='notification_preferences')
+    user = models.OneToOneField(
+        User, 
+        on_delete=models.CASCADE, 
+        related_name='notification_preferences',
+        # Remove the to_field parameter - let Django handle the FK correctly
+    )
     email_notifications = models.BooleanField(default=True)
     new_listing_notifications = models.BooleanField(default=True)
     promotional_notifications = models.BooleanField(default=False)
@@ -26,7 +31,12 @@ class NotificationPreferences(models.Model):
 
 class BusinessFollower(models.Model):
     """Tracks which users follow which businesses"""
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='following')
+    user = models.ForeignKey(
+        User, 
+        on_delete=models.CASCADE, 
+        related_name='following',
+        # Remove the to_field parameter - let Django handle the FK correctly
+    )
     business = models.ForeignKey(FoodProviderProfile, on_delete=models.CASCADE, related_name='followers')
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -49,8 +59,20 @@ class Notification(models.Model):
     ]
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    recipient = models.ForeignKey(User, on_delete=models.CASCADE, related_name='notifications')
-    sender = models.ForeignKey(User, on_delete=models.CASCADE, related_name='sent_notifications', null=True, blank=True)
+    recipient = models.ForeignKey(
+        User, 
+        on_delete=models.CASCADE, 
+        related_name='notifications',
+        # Remove the to_field parameter - let Django handle the FK correctly
+    )
+    sender = models.ForeignKey(
+        User, 
+        on_delete=models.CASCADE, 
+        related_name='sent_notifications', 
+        null=True, 
+        blank=True,
+        # Remove the to_field parameter - let Django handle the FK correctly
+    )
     business = models.ForeignKey(FoodProviderProfile, on_delete=models.CASCADE, null=True, blank=True)
     
     notification_type = models.CharField(max_length=20, choices=NOTIFICATION_TYPES)
@@ -87,7 +109,12 @@ class EmailNotificationLog(models.Model):
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     recipient_email = models.EmailField()
-    recipient_user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='email_logs')
+    recipient_user = models.ForeignKey(
+        User, 
+        on_delete=models.CASCADE, 
+        related_name='email_logs',
+        # Remove the to_field parameter - let Django handle the FK correctly
+    )
     notification = models.ForeignKey(Notification, on_delete=models.CASCADE, related_name='email_logs', null=True, blank=True)
     
     subject = models.CharField(max_length=255)
