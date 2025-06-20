@@ -183,40 +183,66 @@ class NotificationService:
     @staticmethod
     def send_verification_status_notification(user, status, user_type):
         """Send notification when user verification status changes"""
-        if status == 'verified':
-            title = "Account Verified!"
-            if user_type == 'ngo':
-                message = "Congratulations! Your organization has been verified. You can now request food donations."
+        try:
+            # Validate inputs
+            if not user or not status or not user_type:
+                logger.error(f"Invalid parameters for verification notification: user={user}, status={status}, user_type={user_type}")
+                return
+            
+            # Ensure user has the correct profile
+            if user_type == 'ngo' and not hasattr(user, 'ngo_profile'):
+                logger.error(f"User {user.email} does not have an NGO profile")
+                return
+            elif user_type == 'provider' and not hasattr(user, 'provider_profile'):
+                logger.error(f"User {user.email} does not have a provider profile")
+                return
+
+            if status == 'verified':
+                title = "Account Verified!"
+                if user_type == 'ngo':
+                    message = "Congratulations! Your organization has been verified. You can now request food donations."
+                else:
+                    message = "Congratulations! Your business has been verified. You can now start listing surplus food."
+            elif status == 'rejected':
+                title = "Account Verification Update"
+                message = "Unfortunately, your account verification was not approved. Please contact support for more information."
             else:
-                message = "Congratulations! Your business has been verified. You can now start listing surplus food."
-        else:
-            title = "Account Verification Failed"
-            message = "Unfortunately, your account verification was not approved. Please contact support for more information."
+                logger.warning(f"Unknown verification status: {status}")
+                return
 
-        notification = NotificationService.create_notification(
-            recipient=user,
-            notification_type='business_update',
-            title=title,
-            message=message,
-            data={'verification_status': status, 'user_type': user_type}
-        )
+            # Create in-app notification
+            notification = NotificationService.create_notification(
+                recipient=user,
+                notification_type='business_update',
+                title=title,
+                message=message,
+                data={'verification_status': status, 'user_type': user_type}
+            )
 
-        # Send email notification
-        email_context = {
-            'user_name': NotificationService._get_user_display_name(user),
-            'status': status,
-            'user_type': user_type,
-        }
+            # Prepare email context
+            email_context = {
+                'user_name': NotificationService._get_user_display_name(user),
+                'status': status,
+                'user_type': user_type,
+            }
 
-        template_name = 'verification_approved' if status == 'verified' else 'verification_rejected'
-        
-        NotificationService.send_email_notification(
-            user=user,
-            subject=f"Save n Bite Account {status.title()}",
-            template_name=template_name,
-            context=email_context,
-            notification=notification
-        )
+            # Choose email template
+            template_name = 'verification_approved' if status == 'verified' else 'verification_rejected'
+            
+            # Send email notification
+            NotificationService.send_email_notification(
+                user=user,
+                subject=f"Save n Bite Account {status.title()}",
+                template_name=template_name,
+                context=email_context,
+                notification=notification
+            )
+            
+            logger.info(f"Verification notification sent successfully to {user.email} for {user_type} account: {status}")
+
+        except Exception as e:
+            logger.error(f"Failed to send verification notification to {user.email if user else 'unknown'}: {str(e)}")
+            # Don't re-raise the exception to avoid breaking the verification process
 
     @staticmethod
     def _get_user_display_name(user):
