@@ -7,39 +7,30 @@
     <title>{% block title %}Save n Bite{% endblock %}</title>
     <style>
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: Arial, sans-serif;
             line-height: 1.6;
             color: #333;
-            margin: 0;
-            padding: 0;
-            background-color: #f4f4f4;
-        }
-        .container {
             max-width: 600px;
             margin: 0 auto;
-            background-color: #ffffff;
-            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            padding: 20px;
         }
         .header {
-            background: linear-gradient(135deg, #4CAF50, #45a049);
+            background-color: #2E7D32;
             color: white;
             padding: 20px;
             text-align: center;
-        }
-        .header h1 {
-            margin: 0;
-            font-size: 24px;
+            border-radius: 8px 8px 0 0;
         }
         .content {
-            padding: 30px;
+            background-color: #f9f9f9;
+            padding: 20px;
+            border-radius: 0 0 8px 8px;
         }
         .footer {
-            background-color: #f8f8f8;
-            padding: 20px;
             text-align: center;
+            margin-top: 20px;
             font-size: 12px;
             color: #666;
-            border-top: 1px solid #eee;
         }
         .button {
             display: inline-block;
@@ -50,195 +41,29 @@
             border-radius: 4px;
             margin: 10px 0;
         }
-        .button:hover {
-            background-color: #45a049;
-        }
-        .business-card {
-            border: 1px solid #ddd;
-            border-radius: 8px;
+        .business-info {
+            background-color: white;
             padding: 15px;
-            margin: 15px 0;
-            background-color: #f9f9f9;
-        }
-        .listing-card {
+            border-radius: 4px;
+            margin: 10px 0;
             border-left: 4px solid #4CAF50;
-            padding: 15px;
-            margin: 15px 0;
-            background-color: #f9f9f9;
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="header">
-            <h1>🍽️ Save n Bite</h1>
-            <p>Reducing food waste, one meal at a time</p>
-        </div>
-        <div class="content">
-            {% block content %}
-            {% endblock %}
-        </div>
-        <div class="footer">
-            <p>This email was sent by Save n Bite. If you no longer wish to receive these emails, you can <a href="#">unsubscribe here</a>.</p>
-            <p>&copy; 2025 Save n Bite. All rights reserved.</p>
-        </div>
+    <div class="header">
+        <h1>Save n Bite</h1>
+        <p>Reducing Food Waste Together</p>
+    </div>
+    
+    <div class="content">
+        {% block content %}
+        {% endblock %}
+    </div>
+    
+    <div class="footer">
+        <p>This email was sent from Save n Bite</p>
+        <p>If you no longer wish to receive these emails, you can update your notification preferences in your account settings.</p>
     </div>
 </body>
 </html>
-
-<!-- notifications/templates/notifications/emails/welcome.html -->
-{% extends "notifications/emails/base.html" %}
-
-{% block title %}Welcome to Save n Bite!{% endblock %}
-
-{% block content %}
-<h2>Welcome to Save n Bite, {{ user_name }}! 🎉</h2>
-
-<p>We're thrilled to have you join our community of food waste warriors!</p>
-
-{% if user_type == 'customer' %}
-<p>As a customer, you can:</p>
-<ul>
-    <li>🛒 Browse discounted food from local businesses</li>
-    <li>❤️ Follow your favorite food providers</li>
-    <li>📧 Get notified about new listings</li>
-    <li>🌍 Help reduce food waste in your community</li>
-</ul>
-{% elif user_type == 'ngo' %}
-<p>Your organization registration is currently under review. Once verified, you'll be able to:</p>
-<ul>
-    <li>🎁 Request food donations from businesses</li>
-    <li>📊 Track your impact and meals received</li>
-    <li>🤝 Connect with food providers in your area</li>
-    <li>📧 Receive notifications about available donations</li>
-</ul>
-<p>We'll notify you as soon as your verification is complete!</p>
-{% else %}
-<p>Your business registration is currently under review. Once verified, you'll be able to:</p>
-<ul>
-    <li>📝 List surplus food for sale or donation</li>
-    <li>📈 Track your environmental impact</li>
-    <li>👥 Build a community of followers</li>
-    <li>🤖 Get AI-powered suggestions for optimal listing times</li>
-</ul>
-<p>We'll notify you as soon as your verification is complete!</p>
-{% endif %}
-
-<div style="text-align: center; margin: 30px 0;">
-    <a href="#" class="button">Get Started</a>
-</div>
-
-<p>If you have any questions, feel free to reach out to our support team.</p>
-
-<p>Happy saving!</p>
-<p>The Save n Bite Team</p>
-{% endblock %}
-
-<!-- notifications/templates/notifications/emails/new_listing.html -->
-{% extends "notifications/emails/base.html" %}
-
-{% block title %}New listing from {{ business_name }}{% endblock %}
-
-{% block content %}
-<h2>🆕 New Food Available!</h2>
-
-<p>Hi {{ user_name }},</p>
-
-<p>Great news! <strong>{{ business_name }}</strong> just added a new food listing:</p>
-
-<div class="listing-card">
-    <h3>{{ listing_name }}</h3>
-    {% if listing_description %}
-    <p>{{ listing_description }}</p>
-    {% endif %}
-    <p><strong>Price:</strong> {% if listing_price == 'Free' or listing_price == 0 %}Free (Donation){% else %}R{{ listing_price }}{% endif %}</p>
-    {% if expiry_date %}
-    <p><strong>Best before:</strong> {{ expiry_date|date:"F d, Y" }}</p>
-    {% endif %}
-</div>
-
-<p>Don't wait too long - these items go fast! 🏃‍♂️💨</p>
-
-<div style="text-align: center; margin: 30px 0;">
-    <a href="#" class="button">View Listing</a>
-</div>
-
-<p>By claiming this food, you're helping reduce waste and supporting local businesses. Every meal saved makes a difference! 🌱</p>
-
-<p>Best regards,<br>The Save n Bite Team</p>
-{% endblock %}
-
-<!-- notifications/templates/notifications/emails/verification_approved.html -->
-{% extends "notifications/emails/base.html" %}
-
-{% block title %}Account Verified!{% endblock %}
-
-{% block content %}
-<h2>🎉 Congratulations! Your account has been verified!</h2>
-
-<p>Hi {{ user_name }},</p>
-
-<p>Great news! Your {% if user_type == 'ngo' %}organization{% else %}business{% endif %} account has been successfully verified and approved.</p>
-
-{% if user_type == 'ngo' %}
-<p>You can now:</p>
-<ul>
-    <li>🎁 Request food donations from verified businesses</li>
-    <li>📊 Track meals received and your community impact</li>
-    <li>❤️ Follow businesses to get notified about new donations</li>
-    <li>📧 Receive email notifications about available food</li>
-</ul>
-{% else %}
-<p>You can now:</p>
-<ul>
-    <li>📝 Create food listings for sale or donation</li>
-    <li>👥 Build a community of followers</li>
-    <li>📈 Track your environmental impact</li>
-    <li>🤖 Get AI-powered listing recommendations</li>
-</ul>
-{% endif %}
-
-<div style="text-align: center; margin: 30px 0;">
-    <a href="#" class="button">Start Using Save n Bite</a>
-</div>
-
-<p>Thank you for joining our mission to reduce food waste and support the community!</p>
-
-<p>Best regards,<br>The Save n Bite Team</p>
-{% endblock %}
-
-<!-- notifications/templates/notifications/emails/verification_rejected.html -->
-{% extends "notifications/emails/base.html" %}
-
-{% block title %}Account Verification Update{% endblock %}
-
-{% block content %}
-<h2>Account Verification Update</h2>
-
-<p>Hi {{ user_name }},</p>
-
-<p>Thank you for your interest in joining Save n Bite. Unfortunately, we were unable to verify your {% if user_type == 'ngo' %}organization{% else %}business{% endif %} account at this time.</p>
-
-<p>This could be due to:</p>
-<ul>
-    <li>📄 Incomplete or unclear documentation</li>
-    <li>ℹ️ Missing required information</li>
-    <li>🔍 Need for additional verification</li>
-</ul>
-
-<p>Don't worry! You can:</p>
-<ul>
-    <li>📞 Contact our support team for specific feedback</li>
-    <li>📝 Resubmit your application with updated information</li>
-    <li>❓ Ask questions about the verification process</li>
-</ul>
-
-<div style="text-align: center; margin: 30px 0;">
-    <a href="#" class="button">Contact Support</a>
-    <a href="#" class="button">Resubmit Application</a>
-</div>
-
-<p>We're here to help you get verified and join our community of food waste warriors!</p>
-
-<p>Best regards,<br>The Save n Bite Team</p>
-{% endblock %}
