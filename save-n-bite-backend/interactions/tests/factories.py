@@ -9,8 +9,8 @@ from django.contrib.auth import get_user_model
 from authentication.models import CustomerProfile, FoodProviderProfile, NGOProfile
 from food_listings.models import FoodListing
 from interactions.models import (
-    Transaction, Cart, CartItem, Order, Payment,
-    TransactionItem, PickupDetails, TransactionStatusHistory
+    Interaction, Cart, CartItem, Order, Payment,
+    InteractionItem, PickupDetails, InteractionStatusHistory
 )
 
 User = get_user_model()
@@ -76,11 +76,11 @@ class FoodListingFactory(factory.django.DjangoModelFactory):
     provider = factory.SubFactory(UserFactory, user_type='provider')
     status = 'active'
 
-class TransactionFactory(factory.django.DjangoModelFactory):
+class InteractionFactory(factory.django.DjangoModelFactory):
     class Meta:
-        model = Transaction
+        model = Interaction
 
-    transaction_type = 'Purchase'
+    interaction_type = 'Purchase'
     quantity = 2
     status = 'pending'
     total_amount = 15.0
@@ -90,11 +90,11 @@ class TransactionFactory(factory.django.DjangoModelFactory):
 
     
 
-class TransactionItemFactory(factory.django.DjangoModelFactory):
+class InteractionItemFactory(factory.django.DjangoModelFactory):
     class Meta:
-        model = TransactionItem
+        model = InteractionItem
 
-    transaction = factory.SubFactory(TransactionFactory)
+    interaction = factory.SubFactory(InteractionFactory)
     food_listing = factory.SubFactory(FoodListingFactory)
     name = factory.LazyAttribute(lambda obj: obj.food_listing.name)
     quantity = 2
@@ -121,7 +121,7 @@ class OrderFactory(factory.django.DjangoModelFactory):
         model = Order
 
     id = factory.LazyFunction(uuid4)
-    transaction = factory.SubFactory(TransactionFactory)
+    interaction = factory.SubFactory(InteractionFactory)
     status = "pending"
     pickup_window = fuzzy.FuzzyText(length=11, chars='0123456789:- ')  # e.g. "12:00 - 13:00"
     pickup_code = fuzzy.FuzzyText(length=10, chars='ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789')
@@ -130,16 +130,16 @@ class PaymentFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = Payment
 
-    transaction = factory.SubFactory(TransactionFactory)
+    interaction = factory.SubFactory(InteractionFactory)
     method = 'card'
-    amount = factory.LazyAttribute(lambda obj: obj.transaction.total_amount)
+    amount = factory.LazyAttribute(lambda obj: obj.interaction.total_amount)
     status = 'pending'
 
-class TransactionStatusHistoryFactory(factory.django.DjangoModelFactory):
+class InteractionStatusHistoryFactory(factory.django.DjangoModelFactory):
     class Meta:
-        model = TransactionStatusHistory
+        model = InteractionStatusHistory
 
-    transaction = factory.SubFactory(TransactionFactory)
+    interaction = factory.SubFactory(InteractionFactory)
     old_status = 'pending'
     new_status = 'confirmed'
     changed_by = factory.SubFactory(UserFactory)
