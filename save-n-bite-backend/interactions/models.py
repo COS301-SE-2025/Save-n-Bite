@@ -9,8 +9,8 @@ from django.contrib.auth import get_user_model
 
 User = get_user_model()  # Gets the active user model
 
-class Transaction(models.Model):
-    class TransactionType(models.TextChoices):
+class Interaction(models.Model):
+    class InteractionType(models.TextChoices):
         PURCHASE = "Purchase", "Purchase"
         DONATION = "Donation", "Donation"
 
@@ -22,7 +22,7 @@ class Transaction(models.Model):
         FAILED = 'failed', 'Failed'
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    transaction_type = models.CharField(max_length=10, choices=TransactionType.choices)
+    interaction_type = models.CharField(max_length=10, choices=InteractionType.choices)
     quantity = models.PositiveIntegerField(default=1)
     status = models.CharField(max_length=10, choices=Status.choices, default=Status.PENDING)
     total_amount = models.DecimalField(max_digits=10, decimal_places=2)
@@ -31,18 +31,18 @@ class Transaction(models.Model):
     completed_at = models.DateTimeField(null=True, blank=True)
     verification_code = models.CharField(max_length=20, blank=True)
     special_instructions = models.TextField(blank=True)
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='transactions')
-    business = models.ForeignKey(FoodProviderProfile, on_delete=models.CASCADE, related_name='transactions')
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='interactions')
+    business = models.ForeignKey(FoodProviderProfile, on_delete=models.CASCADE, related_name='interactions')
 
     class Meta:
         ordering = ['-created_at']
 
     def __str__(self):
-        return f"{self.transaction_type} - {self.status} - {self.total_amount}"
+        return f"{self.interaction_type} - {self.status} - {self.total_amount}"
     
     def clean(self):
-        if self.pk and Transaction.objects.filter(pk=self.pk).exists():
-            original = Transaction.objects.get(pk=self.pk)
+        if self.pk and Interaction.objects.filter(pk=self.pk).exists():
+            original = Interaction.objects.get(pk=self.pk)
             if original.status in ['completed', 'cancelled'] and self.status != original.status:
                 raise ValidationError(f"Cannot change status from {original.status}")
             
@@ -99,7 +99,7 @@ class Order(models.Model):
         CANCELLED = 'cancelled', 'Cancelled'
     
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    transaction = models.OneToOneField(Transaction, on_delete=models.CASCADE, related_name='order')
+    interaction = models.OneToOneField(Interaction, on_delete=models.CASCADE, related_name='order')
     status = models.CharField(max_length=20, choices=Status.choices, default=Status.PENDING)
     pickup_window = models.CharField(max_length=50)
     pickup_code = models.CharField(max_length=20)
@@ -108,7 +108,7 @@ class Order(models.Model):
 
     @property
     def items(self):
-        return self.transaction.items.all()
+        return self.interaction.items.all()
 
     def __str__(self):
         return f"Order {self.id} - {self.status}"
@@ -126,7 +126,7 @@ class Payment(models.Model):
         REFUNDED = 'refunded', 'Refunded'
     
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    transaction = models.OneToOneField(Transaction, on_delete=models.CASCADE, related_name='payment')
+    interaction = models.OneToOneField(Interaction, on_delete=models.CASCADE, related_name='payment')
     method = models.CharField(max_length=20, choices=PaymentMethod.choices)
     amount = models.DecimalField(max_digits=10, decimal_places=2)
     status = models.CharField(max_length=20, choices=Status.choices, default=Status.PENDING)
@@ -137,9 +137,9 @@ class Payment(models.Model):
     def __str__(self):
         return f"Payment {self.id} - {self.method} - {self.status}"
 
-class TransactionItem(models.Model):
+class InteractionItem(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    transaction = models.ForeignKey(Transaction, on_delete=models.CASCADE, related_name='items')
+    interaction = models.ForeignKey(Interaction, on_delete=models.CASCADE, related_name='items')
     food_listing = models.ForeignKey('food_listings.FoodListing', on_delete=models.PROTECT)  
     name = models.CharField(max_length=100)
     quantity = models.PositiveIntegerField()
@@ -168,9 +168,9 @@ class PickupDetails(models.Model):
     def __str__(self):
         return f"Pickup for {self.order} at {self.scheduled_time}"
 
-class TransactionStatusHistory(models.Model):
+class InteractionStatusHistory(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    transaction = models.ForeignKey(Transaction, on_delete=models.CASCADE, related_name='status_history')
+    Interaction = models.ForeignKey(Interaction, on_delete=models.CASCADE, related_name='status_history')
     old_status = models.CharField(max_length=20)
     new_status = models.CharField(max_length=20)
     changed_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True)  # Fixed
@@ -179,7 +179,7 @@ class TransactionStatusHistory(models.Model):
 
     class Meta:
         ordering = ['-changed_at']
-        verbose_name_plural = 'Transaction Status Histories'
+        verbose_name_plural = 'Interaction Status Histories'
 
     def __str__(self):
         return f"Status change from {self.old_status} to {self.new_status}"

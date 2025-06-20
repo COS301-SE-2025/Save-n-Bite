@@ -1,4 +1,4 @@
-# transactions/tests/factories.py
+# interactions/tests/factories.py
 import uuid
 from decimal import Decimal
 from datetime import datetime, timedelta
@@ -8,7 +8,7 @@ from factory import fuzzy
 from django.contrib.auth import get_user_model
 from authentication.models import CustomerProfile, FoodProviderProfile, NGOProfile
 from food_listings.models import FoodListing
-from transactions.models import (
+from interactions.models import (
     Transaction, Cart, CartItem, Order, Payment,
     TransactionItem, PickupDetails, TransactionStatusHistory
 )
