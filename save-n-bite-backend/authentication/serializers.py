@@ -65,7 +65,6 @@ class NGORegistrationSerializer(BaseRegistrationSerializer):
     organisation_name = serializers.CharField(max_length=255)
     organisation_contact = serializers.CharField(max_length=20)
     representative_name = serializers.CharField(max_length=255)
-    representative_email = serializers.EmailField()
     organisational_email = serializers.EmailField()
     organisation_street = serializers.CharField(max_length=255)
     organisation_city = serializers.CharField(max_length=255)
@@ -76,10 +75,17 @@ class NGORegistrationSerializer(BaseRegistrationSerializer):
 
     class Meta(BaseRegistrationSerializer.Meta):
         fields = BaseRegistrationSerializer.Meta.fields + [
-            'representative_email', 'organisational_email', 'organisation_name', 'organisation_contact',
+            'organisational_email', 'organisation_name', 'organisation_contact',
             'representative_name', 'organisation_street', 'organisation_city',
             'organisation_province', 'organisation_postal_code', 'npo_document', 'organisation_logo'
         ]
+
+    def validate_npo_document(self, value):
+        if not value:
+            raise serializers.ValidationError("NPO document is required")
+        if not value.startswith('data:'):
+            raise serializers.ValidationError("Invalid file format")
+        return value
 
     def create(self, validated_data):
         organisation_data = {
@@ -96,12 +102,15 @@ class NGORegistrationSerializer(BaseRegistrationSerializer):
         npo_document_data = validated_data.pop('npo_document')
         logo_data = validated_data.pop('organisation_logo', None)
         validated_data['user_type'] = 'ngo'
+        
+        # Store email before it gets consumed by parent create method
+        user_email = validated_data.get('email')
 
         user = super().create(validated_data)
 
         ngo_profile = NGOProfile.objects.create(
             user=user,
-            representative_email=validated_data['email'],
+            representative_email=user_email,
             **organisation_data
         )
 

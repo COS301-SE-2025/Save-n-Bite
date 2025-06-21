@@ -50,15 +50,7 @@ apiClient.interceptors.response.use(
 );
 
 const foodAPI = {
-    // ============== FOOD LISTINGS API ==============
-    
-    /**
-     * Get all food listings with filters and search
-     * @param {Object} filters - Filter parameters
-     * @param {string} searchQuery - Search query
-     * @param {string} sortBy - Sort parameter
-     * @returns {Promise} API response
-     */
+ 
     getFoodListings: async (filters = {}, searchQuery = '', sortBy = '') => {
         try {
             const params = new URLSearchParams();
@@ -109,11 +101,7 @@ const foodAPI = {
         }
     },
 
-    /**
-     * Get details of a specific food listing
-     * @param {string} listingId - The listing ID
-     * @returns {Promise} API response
-     */
+
     getFoodListingDetails: async (listingId) => {
         try {
             const response = await apiClient.get(`/api/food-listings/${listingId}/`);
@@ -155,10 +143,6 @@ const foodAPI = {
         }
     },
 
-    /**
-     * Get unique providers for filter options
-     * @returns {Promise} API response
-     */
     getUniqueProviders: async () => {
         try {
             const response = await apiClient.get('/api/food-listings/');
@@ -184,12 +168,7 @@ const foodAPI = {
         }
     },
 
-    // ============== CART API ==============
-    
-    /**
-     * Get current user's cart
-     * @returns {Promise} API response
-     */
+
     getCart: async () => {
         try {
             const response = await apiClient.get('/cart/');
@@ -225,12 +204,7 @@ const foodAPI = {
         }
     },
 
-    /**
-     * Add item to cart
-     * @param {string} listingId - The food listing ID
-     * @param {number} quantity - Quantity to add
-     * @returns {Promise} API response
-     */
+  
     addToCart: async (listingId, quantity = 1) => {
         try {
             const response = await apiClient.post('/cart/add/', {
@@ -264,11 +238,7 @@ const foodAPI = {
         }
     },
 
-    /**
-     * Remove item from cart
-     * @param {string} cartItemId - The cart item ID
-     * @returns {Promise} API response
-     */
+
     removeFromCart: async (cartItemId) => {
         try {
             const response = await apiClient.post('/cart/remove/', {
@@ -289,12 +259,7 @@ const foodAPI = {
         }
     },
 
-    /**
-     * Update cart item quantity
-     * @param {string} cartItemId - The cart item ID
-     * @param {number} quantity - New quantity
-     * @returns {Promise} API response
-     */
+ 
     updateCartItemQuantity: async (cartItemId, quantity) => {
         try {
             const response = await apiClient.put(`/cart/items/${cartItemId}/`, {
@@ -315,13 +280,7 @@ const foodAPI = {
         }
     },
 
-    // ============== CHECKOUT API ==============
     
-    /**
-     * Process checkout
-     * @param {Object} checkoutData - Checkout data including payment method and details
-     * @returns {Promise} API response
-     */
     processCheckout: async (checkoutData) => {
         try {
             const response = await apiClient.post('/cart/checkout/', checkoutData);
@@ -340,10 +299,7 @@ const foodAPI = {
         }
     },
 
-    /**
-     * Get order history
-     * @returns {Promise} API response
-     */
+
     getOrderHistory: async () => {
         try {
             const response = await apiClient.get('/cart/orders/');
@@ -361,11 +317,7 @@ const foodAPI = {
         }
     },
 
-    /**
-     * Get order details
-     * @param {string} orderId - The order ID
-     * @returns {Promise} API response
-     */
+ 
     getOrderDetails: async (orderId) => {
         try {
             const response = await apiClient.get(`/cart/orders/${orderId}/`);
@@ -383,13 +335,6 @@ const foodAPI = {
         }
     },
 
-    // ============== UTILITY FUNCTIONS ==============
-    
-    /**
-     * Transform API listing data to UI format
-     * @param {Object} apiListing - API listing data
-     * @returns {Object} Transformed listing
-     */
     transformListingForUI: (apiListing) => {
         return {
             id: apiListing.id,
@@ -399,7 +344,7 @@ const foodAPI = {
             type: apiListing.food_type === 'donation' ? 'Donation' : 'Discount',
             originalPrice: parseFloat(apiListing.original_price || 0),
             discountPrice: parseFloat(apiListing.discounted_price || 0),
-            distance: '0.5 km', // You might want to calculate this based on user location
+            distance: '0.5 km', // Will be calculated based on the user location
             expirationTime: apiListing.expiry_date ? new Date(apiListing.expiry_date).toLocaleDateString() : 'N/A',
             pickupWindow: apiListing.pickup_window,
             quantity: apiListing.quantity_available || apiListing.quantity,
@@ -409,11 +354,7 @@ const foodAPI = {
         };
     },
 
-    /**
-     * Get error message from API response
-     * @param {Object} error - Error object
-     * @returns {string} Error message
-     */
+
     getErrorMessage: (error) => {
         if (error.response?.data?.message) {
             return error.response.data.message;
