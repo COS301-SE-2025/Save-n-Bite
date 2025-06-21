@@ -14,7 +14,7 @@ const DonationRequestPage = () => {
   const [pickupMethod, setPickupMethod] = useState('pickup');
   const [message, setMessage] = useState('');
   const [submitting, setSubmitting] = useState(false);
-  const [debugInfo, setDebugInfo] = useState(null); // Add debug info state
+  const [debugInfo, setDebugInfo] = useState(null); 
 
   useEffect(() => {
     const fetchListing = async () => {

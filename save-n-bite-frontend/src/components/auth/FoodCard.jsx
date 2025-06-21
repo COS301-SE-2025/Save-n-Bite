@@ -7,7 +7,6 @@ import { useNavigate } from 'react-router-dom';
 const FoodCard = ({ item }) => {
   const { isNGO } = useAuth();
   
-   // Debug logging to help identify the issue
   console.log('FoodCard Debug:', {
     itemType: item.type,
     itemId: item.id,
@@ -15,8 +14,6 @@ const FoodCard = ({ item }) => {
     linkDestination: isNGO() && item.type === 'Donation' ? `/donation-request/${item.id}` : `/item/${item.id}`
   });
 
-
-  // Determine the link destination based on item type
   const getLinkDestination = () => {
     if (item.type === 'Donation') {
       return `/donation-request/${item.id}`;
