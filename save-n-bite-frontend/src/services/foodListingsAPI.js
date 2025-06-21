@@ -142,6 +142,33 @@ const formatExpirationTime = (expiryDate) => {
     }
 };
 
+const getUserType = () => {
+    try {
+        const storedUser = localStorage.getItem('user');
+        if (!storedUser) return 'customer';
+        
+        const user = JSON.parse(storedUser);
+        
+        // Check if user has organisation_name (NGO)
+        if (user.organisation_name || user.representative_name) {
+            return 'ngo';
+        }
+        
+        // Check if user has business_name (Provider)
+        if (user.business_name) {
+            return 'provider';
+        }
+        
+        // Default to customer
+        return 'customer';
+    } catch (error) {
+        console.error('Error determining user type:', error);
+        return 'customer';
+    }
+};
+
+
+
 const buildQueryParams = (filters = {}, searchQuery = '', sortBy = '') => {
     const params = new URLSearchParams();
     

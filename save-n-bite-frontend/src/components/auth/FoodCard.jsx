@@ -1,11 +1,48 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Clock, MapPin } from 'lucide-react';
+import { useAuth } from '../../context/AuthContext';
+import { useNavigate } from 'react-router-dom';
 
 const FoodCard = ({ item }) => {
+  const { isNGO } = useAuth();
+  
+   // Debug logging to help identify the issue
+  console.log('FoodCard Debug:', {
+    itemType: item.type,
+    itemId: item.id,
+    isNGOResult: isNGO(),
+    linkDestination: isNGO() && item.type === 'Donation' ? `/donation-request/${item.id}` : `/item/${item.id}`
+  });
+
+
+  // Determine the link destination based on item type
+  const getLinkDestination = () => {
+    if (item.type === 'Donation') {
+      return `/donation-request/${item.id}`;
+    }
+
+    return `/item/${item.id}`;
+  };
+
+  const getButtonText = () => {
+    if (item.type === 'Donation') {
+      return 'Request';
+    }
+    return 'Order';
+  };
+
+  
+  const getButtonStyling = () => {
+    if (item.type === 'Donation') {
+      return 'bg-blue-600 text-white hover:bg-blue-700 hover:shadow-md';
+    }
+    return 'bg-emerald-600 text-white hover:bg-emerald-700 hover:shadow-md';
+  };
+
   return (
     <Link 
-      to={`/item/${item.id}`} 
+      to={getLinkDestination()}  
       className="bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-all duration-300 transform hover:-translate-y-1 group"
     >
       <div className="relative">
@@ -70,12 +107,10 @@ const FoodCard = ({ item }) => {
             <Clock size={12} className="mr-1" />
             Expires: {item.expirationTime}
           </span>
-          <button className={`px-3 py-1 text-sm rounded-full font-medium transition-all duration-200 ${
-            item.type === 'Donation' 
-              ? 'bg-blue-600 text-white hover:bg-blue-700 hover:shadow-md' 
-              : 'bg-emerald-600 text-white hover:bg-emerald-700 hover:shadow-md'
-          }`}>
-            {item.type === 'Donation' ? 'Request' : 'Order'}
+          <button 
+          type="button"
+          className={`px-3 py-1 text-sm rounded-full font-medium transition-all duration-200 ${getButtonStyling()}`}>
+            {getButtonText()}
           </button>
         </div>
       </div>

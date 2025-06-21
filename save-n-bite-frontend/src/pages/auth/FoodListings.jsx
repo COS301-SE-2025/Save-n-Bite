@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../../context/AuthContext';
 import SearchBar from '../../components/auth/SearchBar';
 import FilterSidebar from '../../components/auth/FilterSidebar';
 import FoodListingsGrid from '../../components/auth/FoodListingsGrid';
@@ -10,6 +11,7 @@ import foodListingsAPI from '../../services/foodListingsAPI';
 
 const FoodListings = () => {
   const navigate = useNavigate();
+  const { getUserType, isNGO, isCustomer } = useAuth();
   const [showFilters, setShowFilters] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [filters, setFilters] = useState({
@@ -27,13 +29,15 @@ const FoodListings = () => {
   const [uniqueProviders, setUniqueProviders] = useState([]);
   const [totalCount, setTotalCount] = useState(0);
 
-  // Fetch food listings
+  const userType = getUserType();
+
+  // Fetch food listings with user type consideration
   const fetchFoodListings = async () => {
     setLoading(true);
     setError(null);
     
     try {
-      const response = await foodListingsAPI.getFoodListings(filters, searchQuery, selectedSort);
+      const response = await foodListingsAPI.getFoodListings(filters, searchQuery, selectedSort, userType);
       
       if (response.success) {
         setFoodListings(response.data.listings);
@@ -43,9 +47,9 @@ const FoodListings = () => {
         setFoodListings([]);
       }
     } catch (err) {
-      // On any error, just show the error message
+      
       setError('An unexpected error occurred while fetching listings');
-      // Don't clear listings if we have them
+    
       if (foodListings.length === 0) {
         setFoodListings([]);
       }
@@ -54,7 +58,7 @@ const FoodListings = () => {
     }
   };
 
-  // Fetch unique providers for filter
+  
   const fetchUniqueProviders = async () => {
     try {
       const response = await foodListingsAPI.getUniqueProviders();
@@ -62,27 +66,27 @@ const FoodListings = () => {
         setUniqueProviders(response.data);
       }
     } catch (err) {
-      // Just log the error, don't navigate
+    
       console.error('Error fetching providers:', err);
     }
   };
 
-  // Initial data fetch
+
   useEffect(() => {
     fetchFoodListings();
     fetchUniqueProviders();
-  }, []);
+  }, [userType]); 
 
-  // Fetch data when filters, search, or sort changes
+  
   useEffect(() => {
     const debounceTimer = setTimeout(() => {
       fetchFoodListings();
-    }, 300); // Debounce search queries
+    }, 300); 
 
     return () => clearTimeout(debounceTimer);
   }, [filters, searchQuery, selectedSort]);
 
-  // Handle filter reset
+ 
   const handleResetFilters = () => {
     setFilters({
       priceRange: [0, 20],
@@ -92,6 +96,27 @@ const FoodListings = () => {
     });
     setSearchQuery('');
     setSelectedSort('');
+  };
+
+  // Get available filter options based on user type
+  const getAvailableTypeFilters = () => {
+    if (isCustomer()) {
+      return [
+        { value: 'all', label: 'All Items' },
+        { value: 'discount', label: 'Discounted' }
+      ];
+    } else if (isNGO()) {
+      return [
+        { value: 'all', label: 'All Items' },
+        { value: 'discount', label: 'Discounted' },
+        { value: 'donation', label: 'Donations' }
+      ];
+    }
+    return [
+      { value: 'all', label: 'All Items' },
+      { value: 'discount', label: 'Discounted' },
+      { value: 'donation', label: 'Donations' }
+    ];
   };
 
   if (loading && foodListings.length === 0) {
@@ -122,6 +147,26 @@ const FoodListings = () => {
       <br />
       
       <div className="max-w-6xl mx-auto p-4 md:p-6">
+        {/* User type info banner */}
+        {userType && (
+          <div className="mb-4 p-3 rounded-lg border">
+            {isCustomer() && (
+              <div className="bg-emerald-50 border-emerald-200 text-emerald-800">
+                <p className="text-sm font-medium">
+                  🛍️ Customer View - Showing discounted items available for purchase
+                </p>
+              </div>
+            )}
+            {isNGO() && (
+              <div className="bg-blue-50 border-blue-200 text-blue-800">
+                <p className="text-sm font-medium">
+                  🏢 NGO View - Showing both discounted items for purchase and donation requests
+                </p>
+              </div>
+            )}
+          </div>
+        )}
+
         {/* Error message */}
         {error && (
           <div className="mb-6 bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-md">
@@ -142,6 +187,7 @@ const FoodListings = () => {
             filters={filters}
             setFilters={setFilters}
             providerOptions={uniqueProviders}
+            typeOptions={getAvailableTypeFilters()}
             onResetFilters={handleResetFilters}
           />
           

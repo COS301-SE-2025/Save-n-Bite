@@ -39,6 +39,7 @@ const CustomerNavBar = () => {
           <Link to="/cart" className="nav-link">My Cart</Link>
           <Link to="/orders" className="nav-link">Order History</Link>
           <Link to="/profile" className="nav-link">Profile</Link>
+          
           {/* <Link to="/how-it-works" className="nav-link">How It Works</Link>
           <Link to="/about" className="nav-link">About</Link> */}
           <NotificationBell/>

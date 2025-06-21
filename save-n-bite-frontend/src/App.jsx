@@ -10,6 +10,8 @@ import OrderHistory from './pages/auth/OrderHistory';
 import FoodItem from './pages/auth/FoodItem';
 import CreateListing from './pages/foodProvider/CreateListing';
 import ListingOverview from './pages/foodProvider/ListingsOverview';
+import DonationRequest from './pages/auth/DonationRequest';
+import DonationConfirmation from './pages/auth/DonationConfirmationPage';
 
 function App() {
   return (
@@ -24,6 +26,8 @@ function App() {
           <Route path="/cart" element={<Cart />} />
           <Route path="/create-listing" element={<CreateListing />} />
           <Route path="/listings-overview" element={<ListingOverview />} />
+          <Route path="/donation-request/:id" element={<DonationRequest />} />
+          <Route path="/donation-confirmation/:id" element={<DonationConfirmation />} />
           <Route path="/notifications" element={<OrderHistory />} />
 
 
