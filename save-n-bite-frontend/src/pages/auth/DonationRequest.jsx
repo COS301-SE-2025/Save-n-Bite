@@ -110,7 +110,7 @@ const DonationRequestPage = () => {
     return (
       <div className="min-h-screen bg-gray-50 p-4 flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-600 mx-auto mb-4"></div>
           <p className="text-gray-600">Loading donation details...</p>
         </div>
       </div>
@@ -129,7 +129,7 @@ const DonationRequestPage = () => {
           
           <button
             onClick={() => navigate('/food-listing')}
-            className="flex items-center text-blue-600 hover:text-blue-800 mt-4"
+            className="flex items-center text-emerald-600 hover:text-emerald-800 mt-4"
           >
             <ArrowLeft size={16} className="mr-1" />
             Back to Listings
@@ -150,7 +150,7 @@ const DonationRequestPage = () => {
         
           <button
             onClick={() => navigate('/food-listing')}
-            className="flex items-center text-blue-600 hover:text-blue-800 mt-4"
+            className="flex items-center text-emerald-600 hover:text-emerald-800 mt-4"
           >
             <ArrowLeft size={16} className="mr-1" />
             Back to Listings
@@ -165,7 +165,7 @@ const DonationRequestPage = () => {
       <div className="max-w-3xl mx-auto">
         <button
           onClick={() => navigate(-1)}
-          className="flex items-center text-blue-600 hover:text-blue-800 mb-4"
+          className="flex items-center text-emerald-600 hover:text-emerald-800 mb-4"
         >
           <ArrowLeft size={16} className="mr-1" />
           Back to Listings
@@ -182,7 +182,7 @@ const DonationRequestPage = () => {
               }}
             />
             <div className="absolute top-0 right-0 m-3">
-              <span className="bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-1 rounded-full border border-blue-200">
+              <span className="bg-emerald-100 text-emerald-800 text-xs font-medium px-2.5 py-1 rounded-full border border-emerald-200">
                 {listing.type}
               </span>
             </div>
@@ -239,7 +239,7 @@ const DonationRequestPage = () => {
                       onChange={(e) =>
                         setQuantity(Math.max(1, parseInt(e.target.value) || 1))
                       }
-                      className="w-16 text-center border-t border-b border-gray-300 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-16 text-center border-t border-b border-gray-300 py-2 focus:outline-none focus:ring-2 focus:ring-emerald-500"
                     />
                     <button
                       type="button"
@@ -253,7 +253,7 @@ const DonationRequestPage = () => {
                 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Pickup Method
+                    Collection Method
                   </label>
                   <div className="grid grid-cols-2 gap-4">
                     <button
@@ -261,7 +261,7 @@ const DonationRequestPage = () => {
                       onClick={() => setPickupMethod('pickup')}
                       className={`flex items-center justify-center p-4 border rounded-md transition-colors ${
                         pickupMethod === 'pickup' 
-                          ? 'bg-blue-50 border-blue-500 text-blue-700' 
+                          ? 'bg-emerald-50 border-emerald-500 text-emerald-700' 
                           : 'border-gray-300 text-gray-600 hover:bg-gray-50'
                       }`}
                     >
@@ -279,7 +279,7 @@ const DonationRequestPage = () => {
                     value={message}
                     onChange={(e) => setMessage(e.target.value)}
                     placeholder="E.g., We serve 200 kids on Thursdays"
-                    className="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    className="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
                     rows={3}
                   />
                 </div>
@@ -288,7 +288,7 @@ const DonationRequestPage = () => {
                   <button
                     type="submit"
                     disabled={submitting}
-                    className={`px-6 py-2 bg-blue-600 text-white font-medium rounded-md hover:bg-blue-700 transition-colors ${
+                    className={`px-6 py-2 bg-emerald-600 text-white font-medium rounded-md hover:bg-emerald-700 transition-colors ${
                       submitting ? 'opacity-70 cursor-not-allowed' : ''
                     }`}
                   >

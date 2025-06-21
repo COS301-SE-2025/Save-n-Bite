@@ -35,7 +35,7 @@ const FoodCard = ({ item }) => {
   
   const getButtonStyling = () => {
     if (item.type === 'Donation') {
-      return 'bg-blue-600 text-white hover:bg-blue-700 hover:shadow-md';
+      return 'bg-emerald-600 text-white hover:bg-emerald-700 hover:shadow-md';
     }
     return 'bg-emerald-600 text-white hover:bg-emerald-700 hover:shadow-md';
   };
@@ -54,7 +54,7 @@ const FoodCard = ({ item }) => {
         <div className="absolute top-0 right-0 m-2">
           <span className={`text-xs font-medium px-2 py-1 rounded-full backdrop-blur-sm ${
             item.type === 'Donation' 
-              ? 'bg-blue-100/90 text-blue-800 border border-blue-200' 
+              ? 'bg-emerald-100/90 text-emerald-800 border border-emerald-200' 
               : 'bg-emerald-100/90 text-emerald-800 border border-emerald-200'
           }`}>
             {item.type}
@@ -91,7 +91,7 @@ const FoodCard = ({ item }) => {
                 </span>
               </div>
             ) : (
-              <span className="font-bold text-lg text-blue-600">
+              <span className="font-bold text-lg text-emerald-600">
                 Free
               </span>
             )}

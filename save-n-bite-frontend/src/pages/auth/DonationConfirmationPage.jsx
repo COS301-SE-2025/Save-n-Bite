@@ -22,15 +22,15 @@ const DonationConfirmationPage = () => {
       <div className="max-w-2xl mx-auto">
          <button
                     onClick={() => navigate('/food-listing')}
-                    className="flex items-center text-blue-600 hover:text-blue-800"
+                    className="flex items-center text-emerald-600 hover:text-emerald-800"
                   >
                     <ArrowLeft size={16} className="mr-1" />
                     Back to Listings
                   </button>
 
         <div className="bg-white rounded-lg shadow-md overflow-hidden">
-          <div className="bg-blue-50 p-6 flex items-center">
-            <CheckCircle size={32} className="text-blue-600 mr-4" />
+          <div className="bg-emerald-50 p-6 flex items-center">
+            <CheckCircle size={32} className="text-emerald-600 mr-4" />
             <div>
               <h1 className="text-xl font-bold text-gray-800">
                 Donation Request Submitted
@@ -107,7 +107,7 @@ const DonationConfirmationPage = () => {
               <div className="flex flex-col sm:flex-row justify-center gap-3">
                  <button
                             onClick={() => navigate('/food-listing')}
-                            className="flex items-center text-blue-600 hover:text-blue-800"
+                            className="flex items-center text-emerald-600 hover:text-emerald-800"
                           >
                             <ArrowLeft size={16} className="mr-1" />
                            Browse More Listings
