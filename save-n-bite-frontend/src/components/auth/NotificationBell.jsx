@@ -92,7 +92,7 @@ if (unread > 0) {
     fetchNotifications();
     
     // Set up polling for new notifications (every 30 seconds)
-    const intervalId = setInterval(fetchNotifications, 30000);
+    const intervalId = setInterval(fetchNotifications, 300000);
     return () => clearInterval(intervalId);
   }, []);
 
