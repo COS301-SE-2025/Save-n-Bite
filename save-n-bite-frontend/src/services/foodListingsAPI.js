@@ -176,12 +176,12 @@ const getUserType = () => {
             if (item) {
                 const user = JSON.parse(item);
                 if (user.user_type) {
-                    return user.user_type; // 🚀 Just return this!
+                    return user.user_type; 
                 }
             }
         }
 
-        return 'customer'; // default fallback
+        return 'customer'; 
     } catch (err) {
         console.error("Error reading user type:", err);
         return 'customer';
@@ -281,6 +281,11 @@ const foodListingsAPI = {
             };
         }
     },
+
+
+    
+
+
 
     async getProviderListings() {
         try {

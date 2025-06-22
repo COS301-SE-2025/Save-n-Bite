@@ -59,9 +59,9 @@ const DonationConfirmationPage = () => {
                 </div>
               </div>
             </div>
-            <div className="mb-6">
-              <h2 className="text-lg font-semibold mb-2">Pickup Information</h2>
-              <div className="bg-gray-50 rounded-lg p-4 space-y-3">
+            {/* <div className="mb-6"> */}
+              {/* <h2 className="text-lg font-semibold mb-2">Pickup Information</h2> */}
+              {/* <div className="bg-gray-50 rounded-lg p-4 space-y-3">
                 <div className="flex items-center">
                   {donationRequest.pickupMethod === 'pickup' ? (
                     <Store size={18} className="text-gray-600 mr-2" />
@@ -86,9 +86,9 @@ const DonationConfirmationPage = () => {
                     Available for pickup until {listing.expirationTime}
                   </span>
                 </div>
-              </div>
-            </div>
-            {donationRequest.message && (
+              </div> */}
+            {/* </div> */}
+            {/* {donationRequest.message && (
               <div className="mb-6">
                 <h2 className="text-lg font-semibold mb-2">Your Message</h2>
                 <div className="bg-gray-50 rounded-lg p-4">
@@ -97,7 +97,7 @@ const DonationConfirmationPage = () => {
                   </p>
                 </div>
               </div>
-            )}
+            )} */}
             <div className="border-t border-gray-100 pt-6 text-center">
               <p className="text-sm text-gray-600 mb-4">
                 The provider will review your request and contact you if needed.
