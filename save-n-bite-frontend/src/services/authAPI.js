@@ -1,4 +1,3 @@
-// src/services/authAPI.js
 import axios from 'axios';
 
 const API_BASE_URL = 'http://localhost:8000';
@@ -18,6 +17,7 @@ const transformFormData = (formData, userType) => {
                 email: formData.email,
                 password: formData.password,
                 username: formData.email, // Use email as username
+                role: 'normal', // Add role field
                 full_name: `${formData.firstName || ''} ${formData.lastName || ''}`.trim(),
                 profile_image: formData.profileImage || '',
             };
@@ -27,6 +27,7 @@ const transformFormData = (formData, userType) => {
                 email: formData.email,
                 password: formData.password,
                 username: formData.email, // Use email as username
+                role: 'normal', // Add role field
                 business_email: formData.businessEmail,
                 business_name: formData.businessName,
                 business_contact: formData.businessContact,
@@ -44,7 +45,7 @@ const transformFormData = (formData, userType) => {
                 email: formData.email,
                 password: formData.password,
                 username: formData.email, // Use email as username
-                representative_email: formData.representativeEmail,
+                role: 'normal', // Add role field
                 organisational_email: formData.organisationEmail,
                 organisation_name: formData.organisationName,
                 organisation_contact: formData.organisationContact,
@@ -88,15 +89,34 @@ export const authAPI = {
             return response.data;
         } catch (error) {
             console.error('Registration error:', error.response?.data); // Debug log
+            console.error('Full error response:', error.response); // More detailed error info
+            console.error('Error response data:', JSON.stringify(error.response?.data, null, 2)); // Expanded error data
+            
             // Enhanced error handling
             if (error.response?.data?.error) {
                 const backendError = error.response.data.error;
+                console.error('Backend error details:', JSON.stringify(backendError, null, 2));
+                
+                // Check for specific error types
+                if (backendError.details && backendError.details.length > 0) {
+                    const firstDetail = backendError.details[0];
+                    if (firstDetail.message && firstDetail.message.includes('duplicate key value')) {
+                        if (firstDetail.message.includes('username')) {
+                            throw new Error('This email address is already registered. Please use a different email or try logging in.');
+                        } else if (firstDetail.message.includes('email')) {
+                            throw new Error('This email address is already registered. Please use a different email or try logging in.');
+                        }
+                    }
+                }
+                
                 throw new Error(backendError.message || 'Registration failed');
             }
             
             // Handle Django validation errors
             if (error.response?.data) {
                 const errorData = error.response.data;
+                console.error('Error data:', JSON.stringify(errorData, null, 2)); // Log the error data
+                
                 if (typeof errorData === 'object') {
                     // Extract first error message from validation errors
                     const firstError = Object.values(errorData)[0];

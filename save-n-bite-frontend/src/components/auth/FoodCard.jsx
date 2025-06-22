@@ -1,8 +1,85 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Clock, MapPin } from 'lucide-react';
+import BusinessAPI from '../../services/BusinessAPI';
 
 const FoodCard = ({ item }) => {
+  const [isFollowing, setIsFollowing] = useState(false);
+  const [followStatusLoading, setFollowStatusLoading] = useState(false);
+
+  useEffect(() => {
+    let mounted = true;
+    
+    async function checkFollow() {
+      if (item.id) {
+        try {
+          // Check if this specific item is liked (you may need to create this API endpoint)
+          // For now, using localStorage as the primary source
+          const followed = localStorage.getItem(`liked_item_${item.id}`);
+          if (mounted) {
+            setIsFollowing(followed === 'true');
+          }
+          
+          // Optional: Check with backend if you have an API for item likes
+          // const res = await BusinessAPI.checkItemLikeStatus(item.id);
+          // if (mounted && res.success) {
+          //   setIsFollowing(res.isLiked);
+          //   localStorage.setItem(`liked_item_${item.id}`, res.isLiked ? 'true' : 'false');
+          // }
+        } catch (err) {
+          console.error('Error checking like status:', err);
+          // Fallback to localStorage
+          const followed = localStorage.getItem(`liked_item_${item.id}`);
+          if (mounted) {
+            setIsFollowing(followed === 'true');
+          }
+        }
+      }
+    }
+    
+    checkFollow();
+    return () => { mounted = false; };
+  }, [item.id]);
+
+  const handleFollowClick = async (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    if (!item.id) {
+      alert('Item ID not found!');
+      return;
+    }
+    
+    setFollowStatusLoading(true);
+    
+    try {
+      // Toggle the like status for this specific item
+      const newFollowStatus = !isFollowing;
+      setIsFollowing(newFollowStatus);
+      
+      if (newFollowStatus) {
+        localStorage.setItem(`liked_item_${item.id}`, 'true');
+      } else {
+        localStorage.removeItem(`liked_item_${item.id}`);
+      }
+      
+      // Optional: Update backend if you have an API for item likes
+      // if (newFollowStatus) {
+      //   await BusinessAPI.likeItem(item.id);
+      // } else {
+      //   await BusinessAPI.unlikeItem(item.id);
+      // }
+      
+    } catch (error) {
+      console.error('Error updating like status:', error);
+      // Revert the change if there was an error
+      setIsFollowing(!isFollowing);
+      alert('Failed to update like status. Please try again.');
+    } finally {
+      setFollowStatusLoading(false);
+    }
+  };
+
   return (
     <Link 
       to={`/item/${item.id}`} 
@@ -37,10 +114,20 @@ const FoodCard = ({ item }) => {
         <h3 className="font-semibold text-lg mb-1 text-gray-800 group-hover:text-emerald-600 transition-colors">
           {item.title}
         </h3>
-        <p className="text-gray-600 text-sm mb-3 flex items-center">
-          <MapPin size={14} className="mr-1" />
-          {item.provider}
-        </p>
+        <div className="flex items-center justify-between mb-3">
+          <p className="text-gray-600 text-sm flex items-center">
+            <MapPin size={14} className="mr-1" />
+            {item.provider.business_name}
+          </p>
+          <button
+            onClick={handleFollowClick}
+            className="text-2xl ml-2 transition-transform duration-200 hover:scale-110 disabled:opacity-50"
+            title={isFollowing ? 'Unlike item' : 'Like item'}
+            disabled={followStatusLoading}
+          >
+            {followStatusLoading ? '⏳' : (isFollowing ? '❤️' : '🤍')}
+          </button>
+        </div>
         
         <div className="flex justify-between items-center mb-3">
           <div>

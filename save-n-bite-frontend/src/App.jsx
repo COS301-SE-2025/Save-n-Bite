@@ -10,9 +10,11 @@ import OrderHistory from './pages/auth/OrderHistory';
 import FoodItem from './pages/auth/FoodItem';
 import CreateListing from './pages/foodProvider/CreateListing';
 import ListingOverview from './pages/foodProvider/ListingsOverview';
+import Notification from './pages/auth/NotificationPage';
 
 function App() {
   return (
+    
     <Router>
       <Routes>
         <Route path="/login" element={<Login />} />
@@ -24,6 +26,9 @@ function App() {
           <Route path="/cart" element={<Cart />} />
           <Route path="/create-listing" element={<CreateListing />} />
           <Route path="/listings-overview" element={<ListingOverview />} />
+
+          <Route path="/notifications" element={<Notification />} />
+
 
 
       </Routes>

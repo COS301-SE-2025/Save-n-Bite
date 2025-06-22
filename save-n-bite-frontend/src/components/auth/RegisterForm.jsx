@@ -30,7 +30,6 @@ const RegisterForm = ({ userType = USER_TYPES.CUSTOMER, onSuccess, onError }) =>
         organisationEmail: '',
         representativeName: '',
         representativeSurname: '',
-        representativeEmail: '',
         npoDocument: null,
         
         // Shared address fields
@@ -174,10 +173,6 @@ const RegisterForm = ({ userType = USER_TYPES.CUSTOMER, onSuccess, onError }) =>
 
             if (!validateRequired(formData.representativeName)) {
                 newErrors.representativeName = 'Representative name is required';
-            }
-
-            if (!validateEmail(formData.representativeEmail)) {
-                newErrors.representativeEmail = 'Valid representative email is required';
             }
 
             if (!validateRequired(formData.addressLine1)) {
@@ -536,21 +531,6 @@ const RegisterForm = ({ userType = USER_TYPES.CUSTOMER, onSuccess, onError }) =>
                             className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-emerald-500 focus:border-emerald-500"
                         />
                         {errors.representativeName && <p className="mt-1 text-sm text-red-600">{errors.representativeName}</p>}
-                    </div>
-
-                    <div>
-                        <label htmlFor="representativeEmail" className="block text-sm font-medium text-gray-700 mb-1">
-                            Representative Email
-                        </label>
-                        <input
-                            type="email"
-                            id="representativeEmail"
-                            name="representativeEmail"
-                            value={formData.representativeEmail}
-                            onChange={handleInputChange}
-                            className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-emerald-500 focus:border-emerald-500"
-                        />
-                        {errors.representativeEmail && <p className="mt-1 text-sm text-red-600">{errors.representativeEmail}</p>}
                     </div>
 
                     <div>

@@ -1,0 +1,34 @@
+<!-- notifications/templates/notifications/emails/verification_approved.html -->
+{% extends "notifications/emails/base.html" %}
+
+{% block content %}
+<h2>Account Verified - Welcome to Save n Bite!</h2>
+
+<p>Hi {{ user_name }},</p>
+
+<p>Congratulations! Your account has been successfully verified and approved.</p>
+
+{% if user_type == 'ngo' %}
+<p>Your organization can now:</p>
+<ul>
+    <li>Request food donations from verified businesses</li>
+    <li>Browse available donation listings</li>
+    <li>Follow food providers for regular donation opportunities</li>
+</ul>
+{% else %}
+<p>Your business can now:</p>
+<ul>
+    <li>Create food listings for sale or donation</li>
+    <li>Manage your surplus food inventory</li>
+    <li>Connect with customers and organizations</li>
+    <li>Track your sustainability impact</li>
+</ul>
+{% endif %}
+
+<p>You can now access all features of the Save n Bite platform.</p>
+
+<p>Thank you for helping us reduce food waste!</p>
+
+<p>Best regards,</p>
+<p>The Save n Bite Team</p>
+{% endblock %}

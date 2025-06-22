@@ -80,7 +80,10 @@ const transformListingData = (backendListing) => {
         description: backendListing.description,
         image: backendListing.imageUrl || 'https://images.unsplash.com/photo-1546833999-b9f581a1996d?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80', // fallback image
         imageUrl: backendListing.imageUrl,
-        provider: backendListing.provider?.business_name || 'Unknown Provider',
+        provider: {
+            id: backendListing.provider?.id,
+            business_name: backendListing.provider?.business_name || 'Unknown Provider',
+        },
         provider_name: backendListing.provider?.business_name,
         provider_address: backendListing.provider?.business_address,
         provider_logo: backendListing.provider?.logo,

@@ -1,0 +1,42 @@
+<!-- notifications/templates/notifications/emails/welcome.html -->
+{% extends "notifications/emails/base.html" %}
+
+{% block content %}
+<h2>Welcome to Save n Bite!</h2>
+
+<p>Hi {{ user_name }},</p>
+
+<p>Welcome to Save n Bite - your platform for reducing food waste and saving money!</p>
+
+{% if user_type == 'customer' %}
+<p>As a customer, you can:</p>
+<ul>
+    <li>Browse discounted food from local businesses</li>
+    <li>Follow your favorite restaurants and stores</li>
+    <li>Get notifications about new listings</li>
+    <li>Help reduce food waste in your community</li>
+</ul>
+{% elif user_type == 'ngo' %}
+<p>As an organization, you can:</p>
+<ul>
+    <li>Request food donations from local businesses</li>
+    <li>Follow food providers for donation opportunities</li>
+    <li>Help feed those in need in your community</li>
+</ul>
+<p><strong>Note:</strong> Your organization registration is currently pending verification. You'll receive an email once your account is approved.</p>
+{% elif user_type == 'provider' %}
+<p>As a food provider, you can:</p>
+<ul>
+    <li>List surplus food for discounted sale or donation</li>
+    <li>Reduce your food waste and environmental impact</li>
+    <li>Connect with customers and organizations in your community</li>
+    <li>Track your sustainability impact</li>
+</ul>
+<p><strong>Note:</strong> Your business registration is currently pending verification. You'll receive an email once your account is approved.</p>
+{% endif %}
+
+<p>Thank you for joining our mission to reduce food waste!</p>
+
+<p>Best regards,</p>
+<p>The Save n Bite Team</p>
+{% endblock %}
