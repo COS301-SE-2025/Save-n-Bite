@@ -23,7 +23,8 @@ function App() {
           <Route path="/orders" element={<OrderHistory />} />
           <Route path="/cart" element={<Cart />} />
           <Route path="/create-listing" element={<CreateListing />} />
-          <Route path="/ListingOverview" element={<ListingOverview />} />
+          <Route path="/listings-overview" element={<ListingOverview />} />
+          <Route path="/notifications" element={<OrderHistory />} />
 
 
       </Routes>

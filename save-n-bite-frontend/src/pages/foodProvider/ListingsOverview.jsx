@@ -143,13 +143,13 @@ export default function ListingsOverview() {
                         </span>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {listing.type === 'donation' ? 'Free' : `R${listing.price}`}
+                        {listing.type === 'donation' ? 'Free' : `R${listing.discountedPrice}`}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                         {listing.quantity}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {new Date(listing.expiry_date).toLocaleDateString()}
+                        {listing.expiryDate}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${

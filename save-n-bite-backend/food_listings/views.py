@@ -21,7 +21,7 @@ from .serializers import (
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def get_provider_listings(request):
-    """Get all listings for the authenticated provider"""
+    """Get all listings for the authenticated provider with follower insights"""
     if request.user.user_type != 'provider':
         return Response({
             'error': {
@@ -33,9 +33,24 @@ def get_provider_listings(request):
     listings = FoodListing.objects.filter(provider=request.user)
     serializer = FoodListingSerializer(listings, many=True)
     
+    # Add follower insights
+    try:
+        from notifications.models import BusinessFollower
+        follower_count = BusinessFollower.objects.filter(
+            business=request.user.provider_profile
+        ).count()
+    except:
+        follower_count = 0
+    
     return Response({
         'listings': serializer.data,
-        'totalCount': listings.count()
+        'totalCount': listings.count(),
+        'followerCount': follower_count,
+        'insights': {
+            'total_followers': follower_count,
+            'active_listings': listings.filter(status='active').count(),
+            'sold_out_listings': listings.filter(status='sold_out').count(),
+        }
     }, status=status.HTTP_200_OK)
 
 
@@ -162,7 +177,7 @@ def browse_food_listings(request):
         status='active',
         quantity_available__gt=0,
         expiry_date__gte=date.today()
-    )
+    ).select_related('provider__provider_profile')
     
     # Apply search query
     search_query = request.GET.get('search', '').strip()
@@ -226,8 +241,27 @@ def browse_food_listings(request):
     paginator = Paginator(queryset, limit)
     page_obj = paginator.get_page(page)
     
-    # Serialize listings
-    serializer = FoodListingSerializer(page_obj.object_list, many=True)
+    # Serialize listings with follow status if user is authenticated
+    listings_data = []
+    for listing in page_obj.object_list:
+        serializer = FoodListingSerializer(listing)
+        listing_data = serializer.data
+        
+        # Add follow status if user is authenticated
+        if request.user.is_authenticated:
+            try:
+                from notifications.models import BusinessFollower
+                is_following = BusinessFollower.objects.filter(
+                    user=request.user,
+                    business=listing.provider.provider_profile
+                ).exists()
+                listing_data['provider']['is_following'] = is_following
+            except:
+                listing_data['provider']['is_following'] = False
+        else:
+            listing_data['provider']['is_following'] = False
+            
+        listings_data.append(listing_data)
     
     # Get filter options
     all_listings = FoodListing.objects.filter(status='active')
@@ -238,7 +272,7 @@ def browse_food_listings(request):
     }
     
     return Response({
-        'listings': serializer.data,
+        'listings': listings_data,
         'pagination': {
             'currentPage': page,
             'totalPages': paginator.num_pages,
@@ -259,7 +293,7 @@ def browse_food_listings(request):
 def get_food_listing_details(request, listing_id):
     """Get detailed information about a specific food listing"""
     try:
-        listing = FoodListing.objects.select_related('provider').get(
+        listing = FoodListing.objects.select_related('provider__provider_profile').get(
             id=listing_id,
             status='active'
         )
@@ -272,7 +306,30 @@ def get_food_listing_details(request, listing_id):
         }, status=status.HTTP_404_NOT_FOUND)
     
     serializer = FoodListingDetailSerializer(listing)
+    listing_data = serializer.data
+    
+    # Add follow status and follower count if user is authenticated
+    if request.user.is_authenticated:
+        try:
+            from notifications.models import BusinessFollower
+            is_following = BusinessFollower.objects.filter(
+                user=request.user,
+                business=listing.provider.provider_profile
+            ).exists()
+            listing_data['provider']['is_following'] = is_following
+            
+            # Add follower count
+            follower_count = BusinessFollower.objects.filter(
+                business=listing.provider.provider_profile
+            ).count()
+            listing_data['provider']['follower_count'] = follower_count
+        except:
+            listing_data['provider']['is_following'] = False
+            listing_data['provider']['follower_count'] = 0
+    else:
+        listing_data['provider']['is_following'] = False
+        listing_data['provider']['follower_count'] = 0
     
     return Response({
-        'listing': serializer.data
+        'listing': listing_data
     }, status=status.HTTP_200_OK)
