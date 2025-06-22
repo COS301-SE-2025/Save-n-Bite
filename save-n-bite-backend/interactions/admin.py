@@ -40,4 +40,4 @@ class PickupDetailsAdmin(admin.ModelAdmin):
 
 @admin.register(InteractionStatusHistory)
 class InteractionStatusHistoryAdmin(admin.ModelAdmin):
-    list_display = ('interaction', 'old_status', 'new_status', 'changed_by', 'changed_at')
+    list_display = ('Interaction', 'old_status', 'new_status', 'changed_by', 'changed_at')

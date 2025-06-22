@@ -14,7 +14,7 @@ from .serializers import (
     OrderSerializer,
     CheckoutResponseSerializer
 )
-from django.db import interaction as db_interaction
+from django.db import transaction as db_transaction
 import uuid
 
 class CartView(APIView):
@@ -93,7 +93,7 @@ class RemoveCartItemView(APIView):
 class CheckoutView(APIView):
     permission_classes = [IsAuthenticated]
 
-    @db_interaction.atomic
+    @db_transaction.atomic
     def post(self, request):
         """POST /cart/checkout - Process cart checkout"""
         serializer = CheckoutSerializer(data=request.data)
@@ -111,7 +111,7 @@ class CheckoutView(APIView):
         provider_profile = first_item.food_listing.provider.provider_profile
 
         # Create interaction
-        with db_interaction.atomic():
+        with db_transaction.atomic():
             # 1. Create Interaction
             interaction = Interaction.objects.create(
                 user=request.user,

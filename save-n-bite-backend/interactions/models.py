@@ -99,7 +99,7 @@ class Order(models.Model):
         CANCELLED = 'cancelled', 'Cancelled'
     
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    interaction = models.OneToOneField(Interaction, on_delete=models.CASCADE, related_name='order')
+    interaction = models.OneToOneField(Interaction, on_delete=models.CASCADE, related_name='order',default=1)
     status = models.CharField(max_length=20, choices=Status.choices, default=Status.PENDING)
     pickup_window = models.CharField(max_length=50)
     pickup_code = models.CharField(max_length=20)
@@ -126,7 +126,7 @@ class Payment(models.Model):
         REFUNDED = 'refunded', 'Refunded'
     
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    interaction = models.OneToOneField(Interaction, on_delete=models.CASCADE, related_name='payment')
+    interaction = models.OneToOneField(Interaction, on_delete=models.CASCADE, related_name='payment',default=1)
     method = models.CharField(max_length=20, choices=PaymentMethod.choices)
     amount = models.DecimalField(max_digits=10, decimal_places=2)
     status = models.CharField(max_length=20, choices=Status.choices, default=Status.PENDING)
@@ -139,7 +139,7 @@ class Payment(models.Model):
 
 class InteractionItem(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    interaction = models.ForeignKey(Interaction, on_delete=models.CASCADE, related_name='items')
+    interaction = models.ForeignKey(Interaction, on_delete=models.CASCADE, related_name='items', default=1)
     food_listing = models.ForeignKey('food_listings.FoodListing', on_delete=models.PROTECT)  
     name = models.CharField(max_length=100)
     quantity = models.PositiveIntegerField()
@@ -170,7 +170,7 @@ class PickupDetails(models.Model):
 
 class InteractionStatusHistory(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    Interaction = models.ForeignKey(Interaction, on_delete=models.CASCADE, related_name='status_history')
+    Interaction = models.ForeignKey(Interaction, on_delete=models.CASCADE, related_name='status_history', default=1)
     old_status = models.CharField(max_length=20)
     new_status = models.CharField(max_length=20)
     changed_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True)  # Fixed
