@@ -14,6 +14,7 @@ import Notification from './pages/auth/NotificationPage';
 
 function App() {
   return (
+    
     <Router>
       <Routes>
         <Route path="/login" element={<Login />} />
