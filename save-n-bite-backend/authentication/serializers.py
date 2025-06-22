@@ -65,7 +65,6 @@ class NGORegistrationSerializer(BaseRegistrationSerializer):
     organisation_name = serializers.CharField(max_length=255)
     organisation_contact = serializers.CharField(max_length=20)
     representative_name = serializers.CharField(max_length=255)
-    representative_email = serializers.EmailField()
     organisational_email = serializers.EmailField()
     organisation_street = serializers.CharField(max_length=255)
     organisation_city = serializers.CharField(max_length=255)
@@ -81,6 +80,13 @@ class NGORegistrationSerializer(BaseRegistrationSerializer):
             'organisation_city', 'organisation_province', 'organisation_postal_code', 
             'npo_document', 'organisation_logo'
         ]
+
+    def validate_npo_document(self, value):
+        if not value:
+            raise serializers.ValidationError("NPO document is required")
+        if not value.startswith('data:'):
+            raise serializers.ValidationError("Invalid file format")
+        return value
 
     def create(self, validated_data):
         # Extract NGO-specific data (don't pass to User model)
@@ -100,6 +106,9 @@ class NGORegistrationSerializer(BaseRegistrationSerializer):
         npo_document_data = validated_data.pop('npo_document')
         logo_data = validated_data.pop('organisation_logo', None)
         validated_data['user_type'] = 'ngo'
+        
+        # Store email before it gets consumed by parent create method
+        user_email = validated_data.get('email')
 
         # Create user (only with User model fields)
         user = super().create(validated_data)
