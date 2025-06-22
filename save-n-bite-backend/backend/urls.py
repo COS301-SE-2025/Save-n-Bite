@@ -10,6 +10,7 @@ urlpatterns = [
     path('', include('authentication.urls')),
     path('api/', include('food_listings.urls')),
     path('cart/',include('interactions.urls')),
+    path('api/', include('notifications.urls')),
 ]+ static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
 
 # Serve media files during development

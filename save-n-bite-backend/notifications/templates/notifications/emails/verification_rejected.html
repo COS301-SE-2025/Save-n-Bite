@@ -1,0 +1,24 @@
+<!-- notifications/templates/notifications/emails/verification_rejected.html -->
+{% extends "notifications/emails/base.html" %}
+
+{% block content %}
+<h2>Account Verification Update</h2>
+
+<p>Hi {{ user_name }},</p>
+
+<p>Thank you for your interest in joining Save n Bite.</p>
+
+<p>Unfortunately, we were unable to verify your account at this time. This could be due to:</p>
+<ul>
+    <li>Incomplete or unclear documentation</li>
+    <li>Information that doesn't match our verification requirements</li>
+    <li>Technical issues with uploaded files</li>
+</ul>
+
+<p>If you believe this is an error or would like to resubmit your verification documents, please contact our support team.</p>
+
+<p>We appreciate your understanding and look forward to helping you join our platform in the future.</p>
+
+<p>Best regards,</p>
+<p>The Save n Bite Team</p>
+{% endblock %}

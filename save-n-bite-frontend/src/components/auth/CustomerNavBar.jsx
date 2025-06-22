@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { MenuIcon, XIcon } from 'lucide-react';
 import logo from '../../assets/images/SnB_leaf_icon.png';
+import NotificationBell from './NotificationBell';
 
 const CustomerNavBar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -40,6 +41,7 @@ const CustomerNavBar = () => {
           <Link to="/profile" className="nav-link">Profile</Link>
           {/* <Link to="/how-it-works" className="nav-link">How It Works</Link>
           <Link to="/about" className="nav-link">About</Link> */}
+          <NotificationBell/>
           <button
             onClick={handleLogout}
             className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700"
@@ -47,7 +49,20 @@ const CustomerNavBar = () => {
             Logout
           </button>
         </div>
+
+        <div className="md:hidden flex items-center space-x-2">
+            <NotificationBell />
+            <button
+              onClick={() => setIsMenuOpen(!isMenuOpen)}
+              className="text-gray-500 hover:text-emerald-600 focus:outline-none"
+            >
+              {isMenuOpen ? <XIcon size={24} /> : <MenuIcon size={24} />}
+            </button>
+          </div>
+        
       </div>
+
+      
 
       {isMenuOpen && (
         <div className="md:hidden mt-4 pb-4 px-4">
