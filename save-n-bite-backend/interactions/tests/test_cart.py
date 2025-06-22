@@ -1,8 +1,8 @@
-# transactions/tests/test_cart.py
+# interactions/tests/test_cart.py
 from django.test import TestCase
 from decimal import Decimal
 from django.db import IntegrityError
-from transactions.tests.factories import (
+from interactions.tests.factories import (
     CartFactory,
     CartItemFactory,
     FoodListingFactory
