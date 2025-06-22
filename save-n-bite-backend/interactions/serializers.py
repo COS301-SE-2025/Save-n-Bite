@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from food_listings.models import FoodListing
 from authentication.models import FoodProviderProfile
-from transactions.models import Cart, CartItem, Order, Payment, Transaction, TransactionItem, TransactionStatusHistory
+from interactions.models import Cart, CartItem, Order, Payment, Interaction, InteractionItem, InteractionStatusHistory
 
 class FoodProviderSerializer(serializers.ModelSerializer):
     class Meta:
@@ -70,14 +70,14 @@ class CheckoutSerializer(serializers.Serializer):
 
 class OrderItemSerializer(serializers.ModelSerializer):
     class Meta:
-        model = TransactionItem
+        model = InteractionItem
         fields = ['id', 'name', 'quantity', 'price_per_item', 'total_price', 'expiry_date', 'image_url']
 
 class OrderSerializer(serializers.ModelSerializer):
-    providerId = serializers.UUIDField(source='transaction.business.id')
-    providerName = serializers.CharField(source='transaction.business.business_name')
+    providerId = serializers.UUIDField(source='interaction.business.id')
+    providerName = serializers.CharField(source='interaction.business.business_name')
     items = serializers.SerializerMethodField()
-    totalAmount = serializers.DecimalField(source='transaction.total_amount', max_digits=10, decimal_places=2)
+    totalAmount = serializers.DecimalField(source='interaction.total_amount', max_digits=10, decimal_places=2)
     pickupWindow = serializers.CharField(source='pickup_window')
     pickupCode = serializers.CharField(source='pickup_code')
     createdAt = serializers.DateTimeField(source='created_at')
@@ -89,7 +89,7 @@ class OrderSerializer(serializers.ModelSerializer):
     
     def get_items(self, obj):
         return OrderItemSerializer(
-            obj.transaction.items.all(),
+            obj.interaction.items.all(),
             many=True,
             context={'request': self.context.get('request')}
         ).data
@@ -112,18 +112,18 @@ class PaymentSerializer(serializers.ModelSerializer):
         fields = ['id', 'paymentMethod', 'amount', 'status', 'processed_at']
         read_only_fields = ['id', 'status', 'processed_at']
 
-class TransactionItemSerializer(serializers.ModelSerializer):
+class InteractionItemSerializer(serializers.ModelSerializer):
     class Meta:
-        model = TransactionItem
+        model = InteractionItem
         fields = ['id', 'name', 'quantity', 'price_per_item', 'total_price', 'expiry_date', 'image_url']
 
-class TransactionSerializer(serializers.ModelSerializer):
-    items = TransactionItemSerializer(many=True, read_only=True)
+class InteractionSerializer(serializers.ModelSerializer):
+    items = InteractionItemSerializer(many=True, read_only=True)
     payment = PaymentSerializer(read_only=True)
     order = OrderSerializer(read_only=True)
     
     class Meta:
-        model = Transaction
-        fields = ['id', 'transaction_type', 'status', 'quantity', 'total_amount',
+        model = Interaction
+        fields = ['id', 'interaction_type', 'status', 'quantity', 'total_amount',
                  'created_at', 'completed_at', 'verification_code',
                  'special_instructions', 'items', 'payment', 'order']

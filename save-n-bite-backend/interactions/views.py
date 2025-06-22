@@ -4,7 +4,7 @@ from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from django.shortcuts import get_object_or_404
-from .models import Cart, CartItem, Transaction, Order, Payment, TransactionItem
+from .models import Cart, CartItem, Interaction, Order, Payment, InteractionItem
 from food_listings.models import FoodListing
 from .serializers import (
     CartResponseSerializer,
@@ -110,22 +110,22 @@ class CheckoutView(APIView):
         first_item = cart.items.first()
         provider_profile = first_item.food_listing.provider.provider_profile
 
-        # Create transaction
+        # Create interaction
         with db_transaction.atomic():
-            # 1. Create Transaction
-            transaction = Transaction.objects.create(
+            # 1. Create Interaction
+            interaction = Interaction.objects.create(
                 user=request.user,
                 business=provider_profile,  # Use provider_profile instead of user
-                transaction_type='Purchase',
+                interaction_type='Purchase',
                 quantity=cart.total_items,
                 total_amount=cart.subtotal,
                 special_instructions=serializer.validated_data.get('specialInstructions', '')
             )
 
-            # 2. Create Transaction Items
+            # 2. Create Interaction Items
             for cart_item in cart.items.all():
-                TransactionItem.objects.create(
-                    transaction=transaction,
+                InteractionItem.objects.create(
+                    interaction=interaction,
                     food_listing=cart_item.food_listing,
                     name=cart_item.food_listing.name,
                     quantity=cart_item.quantity,
@@ -137,7 +137,7 @@ class CheckoutView(APIView):
 
             # 3. Create Payment
             payment = Payment.objects.create(
-                transaction=transaction,
+                interaction=interaction,
                 method=serializer.validated_data['paymentMethod'],
                 amount=cart.subtotal,
                 details=serializer.validated_data['paymentDetails']
@@ -145,7 +145,7 @@ class CheckoutView(APIView):
 
             # 4. Create Order
             order = Order.objects.create(
-                transaction=transaction,
+                interaction=interaction,
                 pickup_window=first_item.food_listing.pickup_window,
                 pickup_code=str(uuid.uuid4())[:6].upper()
             )
@@ -171,7 +171,7 @@ class OrderListView(APIView):
 
     def get(self, request):
         """GET /orders - List user's orders"""
-        orders = Order.objects.filter(transaction__user=request.user)
+        orders = Order.objects.filter(interaction__user=request.user)
         serializer = OrderSerializer(orders, many=True)
         return Response(serializer.data)
 
@@ -183,7 +183,7 @@ class OrderDetailView(APIView):
         order = get_object_or_404(
             Order, 
             id=order_id, 
-            transaction__user=request.user
+            interaction__user=request.user
         )
         serializer = OrderSerializer(order)
         return Response(serializer.data)

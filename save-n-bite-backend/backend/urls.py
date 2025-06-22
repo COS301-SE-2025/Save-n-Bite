@@ -9,7 +9,7 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include('authentication.urls')),
     path('api/', include('food_listings.urls')),
-    path('cart/',include('transactions.urls')),
+    path('cart/',include('interactions.urls')),
     path('api/', include('notifications.urls')),
 ]+ static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
 
