@@ -1,88 +1,45 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Clock, MapPin } from 'lucide-react';
-import BusinessAPI from '../../services/BusinessAPI';
+import { useAuth } from '../../context/AuthContext';
+import { useNavigate } from 'react-router-dom';
 
 const FoodCard = ({ item }) => {
-  const [isFollowing, setIsFollowing] = useState(false);
-  const [followStatusLoading, setFollowStatusLoading] = useState(false);
+  const { isNGO } = useAuth();
+  
+  console.log('FoodCard Debug:', {
+    itemType: item.type,
+    itemId: item.id,
+    isNGOResult: isNGO(),
+    linkDestination: isNGO() && item.type === 'Donation' ? `/donation-request/${item.id}` : `/item/${item.id}`
+  });
 
-  useEffect(() => {
-    let mounted = true;
-    
-    async function checkFollow() {
-      if (item.id) {
-        try {
-          // Check if this specific item is liked (you may need to create this API endpoint)
-          // For now, using localStorage as the primary source
-          const followed = localStorage.getItem(`liked_item_${item.id}`);
-          if (mounted) {
-            setIsFollowing(followed === 'true');
-          }
-          
-          // Optional: Check with backend if you have an API for item likes
-          // const res = await BusinessAPI.checkItemLikeStatus(item.id);
-          // if (mounted && res.success) {
-          //   setIsFollowing(res.isLiked);
-          //   localStorage.setItem(`liked_item_${item.id}`, res.isLiked ? 'true' : 'false');
-          // }
-        } catch (err) {
-          console.error('Error checking like status:', err);
-          // Fallback to localStorage
-          const followed = localStorage.getItem(`liked_item_${item.id}`);
-          if (mounted) {
-            setIsFollowing(followed === 'true');
-          }
-        }
-      }
+  const getLinkDestination = () => {
+    if (item.type === 'Donation') {
+      return `/donation-request/${item.id}`;
     }
-    
-    checkFollow();
-    return () => { mounted = false; };
-  }, [item.id]);
 
-  const handleFollowClick = async (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    
-    if (!item.id) {
-      alert('Item ID not found!');
-      return;
+    return `/item/${item.id}`;
+  };
+
+  const getButtonText = () => {
+    if (item.type === 'Donation') {
+      return 'Request';
     }
-    
-    setFollowStatusLoading(true);
-    
-    try {
-      // Toggle the like status for this specific item
-      const newFollowStatus = !isFollowing;
-      setIsFollowing(newFollowStatus);
-      
-      if (newFollowStatus) {
-        localStorage.setItem(`liked_item_${item.id}`, 'true');
-      } else {
-        localStorage.removeItem(`liked_item_${item.id}`);
-      }
-      
-      // Optional: Update backend if you have an API for item likes
-      // if (newFollowStatus) {
-      //   await BusinessAPI.likeItem(item.id);
-      // } else {
-      //   await BusinessAPI.unlikeItem(item.id);
-      // }
-      
-    } catch (error) {
-      console.error('Error updating like status:', error);
-      // Revert the change if there was an error
-      setIsFollowing(!isFollowing);
-      alert('Failed to update like status. Please try again.');
-    } finally {
-      setFollowStatusLoading(false);
+    return 'Order';
+  };
+
+  
+  const getButtonStyling = () => {
+    if (item.type === 'Donation') {
+      return 'bg-emerald-600 text-white hover:bg-emerald-700 hover:shadow-md';
     }
+    return 'bg-emerald-600 text-white hover:bg-emerald-700 hover:shadow-md';
   };
 
   return (
     <Link 
-      to={`/item/${item.id}`} 
+      to={getLinkDestination()}  
       className="bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-all duration-300 transform hover:-translate-y-1 group"
     >
       <div className="relative">
@@ -94,7 +51,7 @@ const FoodCard = ({ item }) => {
         <div className="absolute top-0 right-0 m-2">
           <span className={`text-xs font-medium px-2 py-1 rounded-full backdrop-blur-sm ${
             item.type === 'Donation' 
-              ? 'bg-blue-100/90 text-blue-800 border border-blue-200' 
+              ? 'bg-emerald-100/90 text-emerald-800 border border-emerald-200' 
               : 'bg-emerald-100/90 text-emerald-800 border border-emerald-200'
           }`}>
             {item.type}
@@ -141,7 +98,7 @@ const FoodCard = ({ item }) => {
                 </span>
               </div>
             ) : (
-              <span className="font-bold text-lg text-blue-600">
+              <span className="font-bold text-lg text-emerald-600">
                 Free
               </span>
             )}
@@ -157,12 +114,10 @@ const FoodCard = ({ item }) => {
             <Clock size={12} className="mr-1" />
             Expires: {item.expirationTime}
           </span>
-          <button className={`px-3 py-1 text-sm rounded-full font-medium transition-all duration-200 ${
-            item.type === 'Donation' 
-              ? 'bg-blue-600 text-white hover:bg-blue-700 hover:shadow-md' 
-              : 'bg-emerald-600 text-white hover:bg-emerald-700 hover:shadow-md'
-          }`}>
-            {item.type === 'Donation' ? 'Request' : 'Order'}
+          <button 
+          type="button"
+          className={`px-3 py-1 text-sm rounded-full font-medium transition-all duration-200 ${getButtonStyling()}`}>
+            {getButtonText()}
           </button>
         </div>
       </div>

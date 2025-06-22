@@ -11,6 +11,8 @@ import FoodItem from './pages/auth/FoodItem';
 import CreateListing from './pages/foodProvider/CreateListing';
 import ListingOverview from './pages/foodProvider/ListingsOverview';
 import Notification from './pages/auth/NotificationPage';
+import DonationRequest from './pages/auth/DonationRequest';
+import DonationConfirmation from './pages/auth/DonationConfirmationPage';
 
 function App() {
   return (
@@ -29,6 +31,9 @@ function App() {
 
           <Route path="/notifications" element={<Notification />} />
 
+          <Route path="/donation-request/:id" element={<DonationRequest />} />
+          <Route path="/donation-confirmation/:id" element={<DonationConfirmation />} />
+          <Route path="/notifications" element={<OrderHistory />} />
 
 
       </Routes>

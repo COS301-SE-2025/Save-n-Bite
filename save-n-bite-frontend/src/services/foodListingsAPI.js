@@ -145,6 +145,56 @@ const formatExpirationTime = (expiryDate) => {
     }
 };
 
+// const getUserType = () => {
+//     try {
+//         const storedUser = localStorage.getItem('user');
+//         if (!storedUser) return 'customer';
+        
+//         const user = JSON.parse(storedUser);
+        
+//         // Check if user has organisation_name (NGO)
+//         if (user.organisation_name || user.representative_name) {
+//             return 'ngo';
+//         }
+        
+//         // Check if user has business_name (Provider)
+//         if (user.business_name) {
+//             return 'provider';
+//         }
+        
+//         // Default to customer
+//         return 'customer';
+//     } catch (error) {
+//         console.error('Error determining user type:', error);
+//         return 'customer';
+//     }
+// };
+
+const getUserType = () => {
+    try {
+        const keysToCheck = ['user', 'userData', 'currentUser', 'authUser', 'profile'];
+
+        for (const key of keysToCheck) {
+            const item = localStorage.getItem(key);
+            if (item) {
+                const user = JSON.parse(item);
+                if (user.user_type) {
+                    return user.user_type; 
+                }
+            }
+        }
+
+        return 'customer'; 
+    } catch (err) {
+        console.error("Error reading user type:", err);
+        return 'customer';
+    }
+};
+
+
+
+
+
 const buildQueryParams = (filters = {}, searchQuery = '', sortBy = '') => {
     const params = new URLSearchParams();
     
@@ -234,6 +284,11 @@ const foodListingsAPI = {
             };
         }
     },
+
+
+    
+
+
 
     async getProviderListings() {
         try {
@@ -393,6 +448,19 @@ const foodListingsAPI = {
             };
         }
     },
+
+    getUserType: () => {
+    console.log("=== getUserType Debug ===");
+
+    const userTypeFromStorage = getUserType();
+    console.log("User type from localStorage:", userTypeFromStorage);
+
+    console.log("========================");
+    return userTypeFromStorage;
+}
+
 };
 
+// Export for use
+export { getUserType };
 export default foodListingsAPI;
