@@ -1,0 +1,26 @@
+<!-- notifications/templates/notifications/emails/new_listing.html -->
+{% extends "notifications/emails/base.html" %}
+
+{% block content %}
+<h2>New Food Listing Available!</h2>
+
+<p>Hi {{ user_name }},</p>
+
+<p>Great news! <strong>{{ business_name }}</strong> has just added a new food item that you might be interested in:</p>
+
+<div class="business-info">
+    <h3>{{ listing_name }}</h3>
+    <p><strong>Description:</strong> {{ listing_description }}</p>
+    <p><strong>Price:</strong> R{{ listing_price }}</p>
+    {% if expiry_date %}
+    <p><strong>Best before:</strong> {{ expiry_date }}</p>
+    {% endif %}
+</div>
+
+<p>Don't miss out on this opportunity to save money and help reduce food waste!</p>
+
+<p>Visit Save n Bite to view this listing and place your order.</p>
+
+<p>Happy saving!</p>
+<p>The Save n Bite Team</p>
+{% endblock %}

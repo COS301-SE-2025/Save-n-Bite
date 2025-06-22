@@ -3,7 +3,7 @@
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth import authenticate
 from .serializers import (
@@ -186,3 +186,211 @@ def google_signin(request):
             'message': 'Google Sign-in feature is under development'
         }
     }, status=status.HTTP_501_NOT_IMPLEMENTED)
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_user_profile(request):
+    """Get current user's profile with notification preferences and follow stats"""
+    serializer = UserProfileSerializer(request.user)
+    return Response({
+        'user': serializer.data
+    }, status=status.HTTP_200_OK)
+
+@api_view(['PUT'])
+@permission_classes([IsAuthenticated])
+def update_user_profile(request):
+    """Update user profile information"""
+    user = request.user
+    
+    try:
+        # Update basic user info if provided
+        if 'email' in request.data:
+            # Check if email is already taken by another user
+            if User.objects.filter(email=request.data['email']).exclude(id=user.id).exists():
+                return Response({
+                    'error': {
+                        'code': 'EMAIL_EXISTS',
+                        'message': 'Email already exists'
+                    }
+                }, status=status.HTTP_400_BAD_REQUEST)
+            user.email = request.data['email']
+            user.username = request.data['email']  # Keep username synced with email
+            user.save()
+
+        # Update profile based on user type
+        if user.user_type == 'customer' and hasattr(user, 'customer_profile'):
+            profile = user.customer_profile
+            if 'full_name' in request.data:
+                profile.full_name = request.data['full_name']
+            
+            # Handle profile image update
+            if 'profile_image' in request.data and request.data['profile_image']:
+                try:
+                    image_data = request.data['profile_image']
+                    if image_data.startswith('data:'):
+                        format, imgstr = image_data.split(';base64,')
+                        ext = format.split('/')[-1]
+                        from django.core.files.base import ContentFile
+                        import base64
+                        data = ContentFile(base64.b64decode(imgstr), name=f'profile_{user.id}.{ext}')
+                        profile.profile_image = data
+                except Exception as e:
+                    pass  # Handle image upload error gracefully
+            
+            profile.save()
+            
+        elif user.user_type == 'ngo' and hasattr(user, 'ngo_profile'):
+            profile = user.ngo_profile
+            update_fields = ['representative_name', 'organisation_contact', 'organisation_email']
+            for field in update_fields:
+                if field in request.data:
+                    setattr(profile, field, request.data[field])
+            profile.save()
+            
+        elif user.user_type == 'provider' and hasattr(user, 'provider_profile'):
+            profile = user.provider_profile
+            update_fields = ['business_name', 'business_contact', 'business_email', 'business_address']
+            for field in update_fields:
+                if field in request.data:
+                    setattr(profile, field, request.data[field])
+            profile.save()
+
+        # Return updated profile
+        serializer = UserProfileSerializer(user)
+        return Response({
+            'message': 'Profile updated successfully',
+            'user': serializer.data
+        }, status=status.HTTP_200_OK)
+
+    except Exception as e:
+        return Response({
+            'error': {
+                'code': 'UPDATE_ERROR',
+                'message': 'Failed to update profile',
+                'details': str(e)
+            }
+        }, status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def get_business_profile(request, business_id):
+    """Get public business profile information"""
+    try:
+        # Fix: Use UserID instead of id
+        business_user = User.objects.get(UserID=business_id, user_type='provider')
+        
+        if not hasattr(business_user, 'provider_profile'):
+            return Response({
+                'error': {
+                    'code': 'PROFILE_NOT_FOUND',
+                    'message': 'Business profile not found'
+                }
+            }, status=status.HTTP_404_NOT_FOUND)
+        
+        profile = business_user.provider_profile
+        
+        # Get follower count and recent listings count
+        try:
+            from notifications.models import BusinessFollower
+            from food_listings.models import FoodListing
+            
+            follower_count = BusinessFollower.objects.filter(business=profile).count()
+            active_listings_count = FoodListing.objects.filter(
+                provider=business_user, 
+                status='active'
+            ).count()
+            
+            # Check if current user is following (if authenticated)
+            is_following = False
+            if request.user.is_authenticated and request.user.user_type in ['customer', 'ngo']:
+                is_following = BusinessFollower.objects.filter(
+                    user=request.user,
+                    business=profile
+                ).exists()
+                
+        except:
+            follower_count = 0
+            active_listings_count = 0
+            is_following = False
+        
+        business_data = {
+            'id': str(business_user.UserID),  # Fix: Use UserID
+            'business_name': profile.business_name,
+            'business_email': profile.business_email,
+            'business_address': profile.business_address,
+            'business_contact': profile.business_contact,
+            'logo': profile.logo.url if profile.logo else None,
+            'status': profile.status,
+            'follower_count': follower_count,
+            'active_listings_count': active_listings_count,
+            'is_following': is_following,
+            'joined_date': business_user.date_joined.isoformat() if hasattr(business_user, 'date_joined') else None
+        }
+        
+        return Response({
+            'business': business_data
+        }, status=status.HTTP_200_OK)
+        
+    except User.DoesNotExist:
+        return Response({
+            'error': {
+                'code': 'BUSINESS_NOT_FOUND',
+                'message': 'Business not found'
+            }
+        }, status=status.HTTP_404_NOT_FOUND)
+
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def search_businesses(request):
+    """Search for businesses"""
+    search_query = request.GET.get('search', '').strip()
+    
+    if not search_query:
+        return Response({
+            'businesses': [],
+            'count': 0
+        }, status=status.HTTP_200_OK)
+    
+    try:
+        from django.db.models import Q
+        
+        # Search in business profiles
+        businesses = User.objects.filter(
+            user_type='provider',
+            provider_profile__status='verified'
+        ).filter(
+            Q(provider_profile__business_name__icontains=search_query) |
+            Q(provider_profile__business_address__icontains=search_query)
+        ).select_related('provider_profile')[:20]  # Limit to 20 results
+        
+        business_list = []
+        for business in businesses:
+            try:
+                from notifications.models import BusinessFollower
+                follower_count = BusinessFollower.objects.filter(
+                    business=business.provider_profile
+                ).count()
+            except:
+                follower_count = 0
+                
+            business_list.append({
+                'id': str(business.id),
+                'business_name': business.provider_profile.business_name,
+                'business_address': business.provider_profile.business_address,
+                'logo': business.provider_profile.logo.url if business.provider_profile.logo else None,
+                'follower_count': follower_count
+            })
+        
+        return Response({
+            'businesses': business_list,
+            'count': len(business_list)
+        }, status=status.HTTP_200_OK)
+        
+    except Exception as e:
+        return Response({
+            'error': {
+                'code': 'SEARCH_ERROR',
+                'message': 'Failed to search businesses',
+                'details': str(e)
+            }
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
