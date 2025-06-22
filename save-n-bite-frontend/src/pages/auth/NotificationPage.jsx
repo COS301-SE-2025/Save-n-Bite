@@ -1,118 +1,33 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Bell, Check, Trash2, ArrowLeft } from 'lucide-react';
+import { useNotifications } from '../../services/contexts/NotificationContext';
 import NotificationCard from '../../components/notifications/NotificationCard';
 
+const NotificationPage = () => {
+  const navigate = useNavigate();
+  const {
+    notifications,
+    loading,
+    error,
+    unreadCount,
+    fetchNotifications,
+    markAsRead,
+    markAllAsRead,
+    deleteNotification,
+    clearAllNotifications
+  } = useNotifications();
 
-const NotificationPage = () =>{
-
-const navigate = useNavigate();
-const [notifications, setNotifications] = useState([]);
-const [loading,setLoading] = useState(true);
-const [error, setError] = useState(null);
-const [filter, setFilter] = useState("all");
-const [isDeleting, setIsDeleting] = useState(false);
-
-
- const mockNotifications = [
-    {
-      id: "6cab68e5-8d5d-48d0-8f38-1cd5c341dcfb",
-      notification_type: "new_listing",
-      title: "New listing from Antonio's Pizzeria",
-      message: "Antonio's Pizzeria has added a new food item: Tasty Pizza",
-      data: {
-        listing_id: "f738efc1-289a-4e11-adc8-082b03ec4081",
-        expiry_date: "2025-06-21",
-        listing_name: "Tasty Pizza",
-        listing_price: 15.0
-      },
-      is_read: false,
-      created_at: new Date(Date.now() - 1000 * 60 * 5).toISOString(),
-      read_at: null,
-      sender_name: "Antonio's Pizzeria",
-      business_name: "Antonio's Pizzeria",
-      actionLink: "/food-listings"
-    },
-    {
-      id: "9221d75a-1958-414d-b8e2-8a8d860ebcf0",
-      notification_type: "new_listing",
-      title: "New listing from Test Restaurant",
-      message: "Test Restaurant has added a new food item: Fresh Pizza",
-      data: {
-        listing_id: "19353171-2b2b-4ead-8f5f-a1bcf0b45f1d",
-        expiry_date: "2025-06-21",
-        listing_name: "Fresh Pizza",
-        listing_price: 15.0
-      },
-      is_read: true,
-      created_at: new Date(Date.now() - 1000 * 60 * 60 * 19).toISOString(),
-      read_at: null,
-      sender_name: "Test Restaurant",
-      business_name: "Test Restaurant",
-      actionLink: "/food-listings"
-    },
-    {
-      id: "4209a481-b13a-4356-b8a2-09ce3ec6bd36",
-      notification_type: "welcome",
-      title: "Welcome to Save n Bite!",
-      message: "Welcome to Save n Bite! Start browsing discounted food from local businesses and help reduce food waste.",
-      data: {
-        user_type: "customer"
-      },
-      is_read: true,
-      created_at: new Date(Date.now() - 1000 * 60 * 60 * 21).toISOString(),
-      read_at: null,
-      sender_name: "System",
-      actionLink: "/food-listings"
-    },
-    {
-      id: "registration-success",
-      notification_type: "system",
-      title: "Registration Successful!",
-      message: "Your account has been created successfully. Welcome to Save n Bite community!",
-      data: {
-        user_type: "customer"
-      },
-      is_read: false,
-      created_at: new Date(Date.now() - 1000 * 60 * 30).toISOString(),
-      read_at: null,
-      sender_name: "System"
-    }
-  ];
-
+  const [filter, setFilter] = useState('all');
+  const [isDeleting, setIsDeleting] = useState(false);
 
   useEffect(() => {
     fetchNotifications();
-  },[filter]);
-
-  const fetchNotifications = async () => {
-    setLoading(true);
-    try {
-      // TODO: Replace with actual API call
-      // const response = await notificationsAPI.getNotifications(filter);
-      
-      // Mock API delay
-      await new Promise(resolve => setTimeout(resolve, 500));
-      
-      setNotifications(mockNotifications);
-      setError(null);
-    } catch (err) {
-      setError('An error occurred while fetching notifications');
-    } finally {
-      setLoading(false);
-    }
-  };
+  }, []);
 
   const handleMarkAsRead = async (id) => {
     try {
-      // TODO: Replace with actual API call
-      // await notificationsAPI.markAsRead(id);
-      
-      setNotifications(
-        notifications.map((n) =>
-          n.id === id ? { ...n, is_read: true } : n
-        )
-      );
+      await markAsRead(id);
     } catch (err) {
       console.error('Failed to mark notification as read', err);
     }
@@ -120,12 +35,7 @@ const [isDeleting, setIsDeleting] = useState(false);
 
   const handleMarkAllAsRead = async () => {
     try {
-      // TODO: Replace with actual API call
-      // await notificationsAPI.markAllAsRead();
-      
-      setNotifications(
-        notifications.map((n) => ({ ...n, is_read: true }))
-      );
+      await markAllAsRead();
     } catch (err) {
       console.error('Failed to mark all notifications as read', err);
     }
@@ -134,17 +44,13 @@ const [isDeleting, setIsDeleting] = useState(false);
   const handleDelete = async (id) => {
     setIsDeleting(true);
     try {
-      // TODO: Replace with actual API call
-      // await notificationsAPI.deleteNotification(id);
-      
-      setNotifications(notifications.filter((n) => n.id !== id));
+      await deleteNotification(id);
     } catch (err) {
       console.error('Failed to delete notification', err);
     } finally {
       setIsDeleting(false);
     }
   };
-
 
   const handleClearAll = async () => {
     if (!window.confirm('Are you sure you want to delete all notifications?')) {
@@ -153,34 +59,58 @@ const [isDeleting, setIsDeleting] = useState(false);
     
     setIsDeleting(true);
     try {
-      // TODO: Replace with actual API call
-      // await notificationsAPI.clearAllNotifications();
-      
-      setNotifications([]);
+      const result = await clearAllNotifications();
+      if (!result.success) {
+        // Since clearAllNotifications is not supported by backend, 
+        // we'll show an alert to the user
+        alert(result.error || 'Bulk clear of all notifications is not supported.');
+      }
     } catch (err) {
       console.error('Failed to clear all notifications', err);
+      alert('Failed to clear all notifications. Please try deleting them individually.');
     } finally {
       setIsDeleting(false);
     }
   };
 
   const handleNavigate = (notification) => {
-    if (notification.actionLink) {
-      navigate(notification.actionLink);
+    // Mark as read when navigating
+    if (!notification.isRead) {
+      handleMarkAsRead(notification.id);
+    }
+    
+    if (notification.actionUrl) {
+      navigate(notification.actionUrl);
+    } else if (notification.metadata?.listing_id) {
+      navigate(`/food-listings/${notification.metadata.listing_id}`);
+    } else {
+      // Default navigation based on notification type
+      switch (notification.type) {
+        case 'new_listing':
+          navigate('/food-listings');
+          break;
+        case 'order_update':
+          navigate('/orders');
+          break;
+        case 'welcome':
+        case 'system':
+          navigate('/dashboard');
+          break;
+        default:
+          navigate('/dashboard');
+      }
     }
   };
 
-
   const getFilteredNotifications = () => {
     if (filter === 'all') return notifications;
-    if (filter === 'unread') return notifications.filter((n) => !n.is_read);
-    if (filter === 'new_listing') return notifications.filter((n) => n.notification_type === 'new_listing');
-    if (filter === 'system') return notifications.filter((n) => n.notification_type === 'welcome' || n.notification_type === 'system');
+    if (filter === 'unread') return notifications.filter((n) => !n.isRead);
+    if (filter === 'new_listing') return notifications.filter((n) => n.type === 'new_listing');
+    if (filter === 'system') return notifications.filter((n) => ['welcome', 'system'].includes(n.type));
     return notifications;
   };
 
   const filteredNotifications = getFilteredNotifications();
-  const unreadCount = notifications.filter((n) => !n.is_read).length;
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -218,7 +148,7 @@ const [isDeleting, setIsDeleting] = useState(false);
               {unreadCount > 0 && (
                 <button
                   onClick={handleMarkAllAsRead}
-                  className="text-xs bg-emerald-50 text-emerald-600 px-3 py-1 rounded-full hover:bg-emerald-100 transition-colors flex items-center"
+                  className="text-xs bg-emerald-50 text-emerald-600 px-3 py-1 rounded-full hover:bg-emerald-100 transition-colors flex items-center disabled:opacity-50"
                   disabled={loading || isDeleting}
                 >
                   <Check size={12} className="mr-1" />
@@ -228,7 +158,7 @@ const [isDeleting, setIsDeleting] = useState(false);
               {notifications.length > 0 && (
                 <button
                   onClick={handleClearAll}
-                  className="text-xs bg-gray-100 text-gray-600 px-3 py-1 rounded-full hover:bg-gray-200 transition-colors flex items-center"
+                  className="text-xs bg-gray-100 text-gray-600 px-3 py-1 rounded-full hover:bg-gray-200 transition-colors flex items-center disabled:opacity-50"
                   disabled={loading || isDeleting}
                 >
                   <Trash2 size={12} className="mr-1" />
@@ -248,7 +178,7 @@ const [isDeleting, setIsDeleting] = useState(false);
                   : 'text-gray-600 hover:text-gray-800'
               }`}
             >
-              All
+              All ({notifications.length})
             </button>
             <button
               onClick={() => setFilter('unread')}
@@ -258,7 +188,7 @@ const [isDeleting, setIsDeleting] = useState(false);
                   : 'text-gray-600 hover:text-gray-800'
               }`}
             >
-              Unread
+              Unread ({unreadCount})
             </button>
             <button
               onClick={() => setFilter('new_listing')}
@@ -268,7 +198,7 @@ const [isDeleting, setIsDeleting] = useState(false);
                   : 'text-gray-600 hover:text-gray-800'
               }`}
             >
-              New Listings
+              New Listings ({notifications.filter(n => n.type === 'new_listing').length})
             </button>
             <button
               onClick={() => setFilter('system')}
@@ -278,7 +208,7 @@ const [isDeleting, setIsDeleting] = useState(false);
                   : 'text-gray-600 hover:text-gray-800'
               }`}
             >
-              Save 'n Bite Notifications
+              Save 'n Bite Notifications ({notifications.filter(n => ['welcome', 'system'].includes(n.type)).length})
             </button>
           </div>
         </div>
@@ -294,22 +224,25 @@ const [isDeleting, setIsDeleting] = useState(false);
             <div className="p-6 text-center text-red-600">
               <p>{error}</p>
               <button
-                onClick={fetchNotifications}
+                onClick={() => fetchNotifications()}
                 className="mt-2 text-sm underline hover:no-underline"
               >
                 Try again
               </button>
             </div>
           ) : filteredNotifications.length > 0 ? (
-            filteredNotifications.map((notification) => (
-              <NotificationCard
-                key={notification.id}
-                notification={notification}
-                onMarkAsRead={handleMarkAsRead}
-                onDelete={handleDelete}
-                onNavigate={handleNavigate}
-              />
-            ))
+            <div>
+              {filteredNotifications.map((notification, index) => (
+                <NotificationCard
+                  key={notification.id}
+                  notification={notification}
+                  onMarkAsRead={handleMarkAsRead}
+                  onDelete={handleDelete}
+                  onNavigate={handleNavigate}
+                  isLast={index === filteredNotifications.length - 1}
+                />
+              ))}
+            </div>
           ) : (
             <div className="p-6 text-center text-gray-500">
               <Bell size={32} className="mx-auto mb-2 text-gray-400" />
@@ -328,6 +261,3 @@ const [isDeleting, setIsDeleting] = useState(false);
 };
 
 export default NotificationPage;
-
-
-
