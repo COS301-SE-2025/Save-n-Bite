@@ -55,6 +55,7 @@ INSTALLED_APPS = [
     'interactions',
     'food_listings',
     'notifications',
+    'reviews',
 ]
 
 MIDDLEWARE = [
