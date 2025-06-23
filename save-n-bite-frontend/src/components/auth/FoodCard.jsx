@@ -7,20 +7,20 @@ import { useNavigate } from 'react-router-dom';
 const FoodCard = ({ item }) => {
   const { isNGO } = useAuth();
   
+  // Fix the getLinkDestination function to match the debug logic
+  const getLinkDestination = () => {
+    if (isNGO() && item.type === 'Donation') {
+      return `/donation-request/${item.id}`;
+    }
+    return `/item/${item.id}`;
+  };
+
   console.log('FoodCard Debug:', {
     itemType: item.type,
     itemId: item.id,
     isNGOResult: isNGO(),
-    linkDestination: isNGO() && item.type === 'Donation' ? `/donation-request/${item.id}` : `/item/${item.id}`
+    linkDestination: getLinkDestination() // Use the actual function instead of duplicating logic
   });
-
-  const getLinkDestination = () => {
-    if (item.type === 'Donation') {
-      return `/donation-request/${item.id}`;
-    }
-
-    return `/item/${item.id}`;
-  };
 
   const getButtonText = () => {
     if (item.type === 'Donation') {
@@ -29,7 +29,6 @@ const FoodCard = ({ item }) => {
     return 'Order';
   };
 
-  
   const getButtonStyling = () => {
     if (item.type === 'Donation') {
       return 'bg-emerald-600 text-white hover:bg-emerald-700 hover:shadow-md';
@@ -37,7 +36,7 @@ const FoodCard = ({ item }) => {
     return 'bg-emerald-600 text-white hover:bg-emerald-700 hover:shadow-md';
   };
 
-   const [isFollowing, setIsFollowing] = useState(false);
+  const [isFollowing, setIsFollowing] = useState(false);
   const [followStatusLoading, setFollowStatusLoading] = useState(false);
 
   useEffect(() => {
@@ -46,8 +45,7 @@ const FoodCard = ({ item }) => {
     async function checkFollow() {
       if (item.id) {
         try {
-          // Check if this specific item is liked (you may need to create this API endpoint)
-          // For now, using localStorage as the primary source
+          // Fix: Initialize isFollowing to false by default
           const followed = localStorage.getItem(`liked_item_${item.id}`);
           if (mounted) {
             setIsFollowing(followed === 'true');
@@ -74,7 +72,6 @@ const FoodCard = ({ item }) => {
     return () => { mounted = false; };
   }, [item.id]);
 
-  
   const handleFollowClick = async (e) => {
     e.preventDefault();
     e.stopPropagation();
