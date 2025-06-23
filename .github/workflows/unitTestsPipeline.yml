@@ -1,7 +1,4 @@
-# .github/workflows/ci-cd.yml
-
-        #Frontend 
----
+# Frontend Tests Workflow
 name: Frontend Tests
 
 on:
