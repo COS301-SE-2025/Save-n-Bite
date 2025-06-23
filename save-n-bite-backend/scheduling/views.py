@@ -15,7 +15,12 @@ from .models import (
     PickupLocation, PickupTimeSlot, ScheduledPickup, 
     PickupOptimization, PickupAnalytics
 )
+
 from interactions.models import Order
+
+# Import services
+from .services import PickupSchedulingService, PickupOptimizationService
+
 from .serializers import (
     PickupLocationSerializer, PickupTimeSlotSerializer,
     AvailableSlotSerializer, SchedulePickupSerializer,
@@ -24,7 +29,7 @@ from .serializers import (
     PickupAnalyticsSerializer, BusinessScheduleOverviewSerializer,
     CustomerScheduleSerializer, PickupHistorySerializer
 )
-from .services import PickupSchedulingService, PickupOptimizationService
+
 import logging
 
 User = get_user_model()
