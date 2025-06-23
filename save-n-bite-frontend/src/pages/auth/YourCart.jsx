@@ -111,6 +111,10 @@ const YourCart = () => {
     );
   }
 
+  const handlePaymentSuccess = () => {
+    navigate('/pickup')
+  }
+
   return (
     <div className="min-h-screen bg-gray-50 w-full py-8">
       <CustomerNavBar />
@@ -221,6 +225,7 @@ const YourCart = () => {
                     expiry_date: formData.get('expiry_date'),
                     cvv: formData.get('cvv')
                   });
+                  handlePaymentSuccess()
                 }} 
                 className="space-y-4"
               >
