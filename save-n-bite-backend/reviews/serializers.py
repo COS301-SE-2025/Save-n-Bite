@@ -2,7 +2,7 @@
 
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
-from .models import Review, ReviewModerationLog, ReviewHelpfulness, BusinessReviewStats
+from .models import Review, ReviewModerationLog, BusinessReviewStats
 from interactions.models import Interaction
 from authentication.models import FoodProviderProfile
 
@@ -259,10 +259,7 @@ class ReviewModerationActionSerializer(serializers.Serializer):
     action = serializers.ChoiceField(choices=['flag', 'censor', 'delete', 'restore'])
     reason = serializers.CharField(max_length=500)
     moderation_notes = serializers.CharField(max_length=1000, required=False, allow_blank=True)
-
-
-# Removed ReviewHelpfulnessSerializer since helpfulness voting is not needed
-
+    
 
 class InteractionReviewStatusSerializer(serializers.Serializer):
     """Serializer to check if an interaction can be reviewed"""
