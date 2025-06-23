@@ -37,6 +37,83 @@ const FoodCard = ({ item }) => {
     return 'bg-emerald-600 text-white hover:bg-emerald-700 hover:shadow-md';
   };
 
+   const [isFollowing, setIsFollowing] = useState(false);
+  const [followStatusLoading, setFollowStatusLoading] = useState(false);
+
+  useEffect(() => {
+    let mounted = true;
+    
+    async function checkFollow() {
+      if (item.id) {
+        try {
+          // Check if this specific item is liked (you may need to create this API endpoint)
+          // For now, using localStorage as the primary source
+          const followed = localStorage.getItem(`liked_item_${item.id}`);
+          if (mounted) {
+            setIsFollowing(followed === 'true');
+          }
+          
+          // Optional: Check with backend if you have an API for item likes
+          // const res = await BusinessAPI.checkItemLikeStatus(item.id);
+          // if (mounted && res.success) {
+          //   setIsFollowing(res.isLiked);
+          //   localStorage.setItem(`liked_item_${item.id}`, res.isLiked ? 'true' : 'false');
+          // }
+        } catch (err) {
+          console.error('Error checking like status:', err);
+          // Fallback to localStorage
+          const followed = localStorage.getItem(`liked_item_${item.id}`);
+          if (mounted) {
+            setIsFollowing(followed === 'true');
+          }
+        }
+      }
+    }
+    
+    checkFollow();
+    return () => { mounted = false; };
+  }, [item.id]);
+
+  
+  const handleFollowClick = async (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    if (!item.id) {
+      alert('Item ID not found!');
+      return;
+    }
+    
+    setFollowStatusLoading(true);
+    
+    try {
+      // Toggle the like status for this specific item
+      const newFollowStatus = !isFollowing;
+      setIsFollowing(newFollowStatus);
+      
+      if (newFollowStatus) {
+        localStorage.setItem(`liked_item_${item.id}`, 'true');
+      } else {
+        localStorage.removeItem(`liked_item_${item.id}`);
+      }
+      
+      // Optional: Update backend if you have an API for item likes
+      // if (newFollowStatus) {
+      //   await BusinessAPI.likeItem(item.id);
+      // } else {
+      //   await BusinessAPI.unlikeItem(item.id);
+      // }
+      
+    } catch (error) {
+      console.error('Error updating like status:', error);
+      // Revert the change if there was an error
+      setIsFollowing(!isFollowing);
+      alert('Failed to update like status. Please try again.');
+    } finally {
+      setFollowStatusLoading(false);
+    }
+  };
+
   return (
     <Link 
       to={getLinkDestination()}  

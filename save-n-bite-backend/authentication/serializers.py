@@ -65,7 +65,7 @@ class NGORegistrationSerializer(BaseRegistrationSerializer):
     organisation_name = serializers.CharField(max_length=255)
     organisation_contact = serializers.CharField(max_length=20)
     representative_name = serializers.CharField(max_length=255)
-    representative_email = serializers.EmailField()
+    representative_email = serializers.EmailField(required=False, allow_blank=True)
     organisational_email = serializers.EmailField()
     organisation_street = serializers.CharField(max_length=255)
     organisation_city = serializers.CharField(max_length=255)
@@ -88,7 +88,7 @@ class NGORegistrationSerializer(BaseRegistrationSerializer):
             'organisation_name': validated_data.pop('organisation_name'),
             'organisation_contact': validated_data.pop('organisation_contact'),
             'representative_name': validated_data.pop('representative_name'),
-            'representative_email': validated_data.pop('representative_email'),  # Remove this from User creation
+             # Remove this from User creation
             'organisation_email': validated_data.pop('organisational_email'),
             'address_line1': validated_data.pop('organisation_street'),
             'city': validated_data.pop('organisation_city'),
