@@ -55,6 +55,7 @@ INSTALLED_APPS = [
     'interactions',
     'food_listings',
     'notifications',
+    'analytics',
 ]
 
 MIDDLEWARE = [
@@ -197,6 +198,7 @@ APPEND_SLASH = False
 
 # Custom user model
 AUTH_USER_MODEL = 'authentication.User'
+LOGIN_URL = '/auth/login/'
 
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.gmail.com'
