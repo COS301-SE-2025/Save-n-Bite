@@ -16,7 +16,7 @@
     "preview": "vite preview",
     "test": "jest",
     "test:watch": "jest --watch",
-    "test:coverage": "jest --coverage",
+    "test:coverage": "jest --coverage --watchAll=false",
     "test:ci": "jest --ci --coverage --watchAll=false --passWithNoTests"
   },
   "devDependencies": {
@@ -58,5 +58,4 @@
       "last 1 safari version"
     ]
   }
-  
 }
