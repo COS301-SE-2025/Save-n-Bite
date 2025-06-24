@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { ShoppingCartIcon, TrashIcon, CreditCardIcon } from 'lucide-react';
+import { ShoppingCartIcon, TrashIcon, CreditCardIcon, ClockIcon } from 'lucide-react';
 import CustomerNavBar from '../../components/auth/CustomerNavBar';
 import foodAPI from '../../services/FoodAPI';
 
@@ -10,6 +10,61 @@ const YourCart = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [showPayment, setShowPayment] = useState(false);
+  const [selectedTimeSlot, setSelectedTimeSlot] = useState('');
+
+  // Generate time slots for today and tomorrow
+  const generateTimeSlots = () => {
+    const slots = [];
+    const now = new Date();
+    const today = new Date();
+    const tomorrow = new Date(today);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+
+    // Helper function to format time
+    const formatTime = (hour, minute) => {
+      const time = new Date();
+      time.setHours(hour, minute, 0, 0);
+      return time.toLocaleTimeString('en-US', { 
+        hour: 'numeric', 
+        minute: '2-digit', 
+        hour12: true 
+      });
+    };
+
+    // Helper function to add slots for a given date
+    const addSlotsForDate = (date, label) => {
+      const isToday = date.toDateString() === today.toDateString();
+      const currentHour = now.getHours();
+      const currentMinute = now.getMinutes();
+
+      // Generate slots from 9 AM to 8 PM in 30-minute intervals
+      for (let hour = 9; hour <= 20; hour++) {
+        for (let minute = 0; minute < 60; minute += 30) {
+          // Skip past time slots for today
+          if (isToday && (hour < currentHour || (hour === currentHour && minute <= currentMinute + 30))) {
+            continue;
+          }
+
+          const timeString = formatTime(hour, minute);
+          const value = `${date.toISOString().split('T')[0]}-${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`;
+          
+          slots.push({
+            value,
+            label: `${label} ${timeString}`,
+            time: timeString,
+            date: label
+          });
+        }
+      }
+    };
+
+    addSlotsForDate(today, 'Today');
+    addSlotsForDate(tomorrow, 'Tomorrow');
+
+    return slots;
+  };
+
+  const timeSlots = generateTimeSlots();
 
   useEffect(() => {
     fetchCart();
@@ -55,14 +110,16 @@ const YourCart = () => {
     try {
       const response = await foodAPI.processCheckout({
         payment_method: 'card',
-        payment_details: paymentDetails
+        payment_details: paymentDetails,
+        pickup_time: selectedTimeSlot
       });
       
       if (response.success) {
         navigate('/order-success', { 
           state: { 
             orderId: response.data.order_id,
-            total: total
+            total: total,
+            pickupTime: selectedTimeSlot
           }
         });
       } else {
@@ -71,6 +128,14 @@ const YourCart = () => {
     } catch (err) {
       setError('Failed to process payment');
     }
+  };
+
+  const handleProceedToPayment = () => {
+    if (!selectedTimeSlot) {
+      setError('Please select a pickup time slot');
+      return;
+    }
+    setShowPayment(true);
   };
 
   const total = cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
@@ -200,13 +265,46 @@ const YourCart = () => {
                     </span>
                   </div>
                 </div>
+
+                {/* Pickup Time Selection */}
+                <div className="mb-6">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <ClockIcon size={16} className="inline mr-1" />
+                    Select Pickup Time
+                  </label>
+                  <select
+                    value={selectedTimeSlot}
+                    onChange={(e) => setSelectedTimeSlot(e.target.value)}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                    required
+                  >
+                    <option value="">Choose a time slot...</option>
+                    {timeSlots.map((slot) => (
+                      <option key={slot.value} value={slot.value}>
+                        {slot.label}
+                      </option>
+                    ))}
+                  </select>
+                  {selectedTimeSlot && (
+                    <p className="text-xs text-gray-500 mt-1">
+                      Your order will be ready for pickup at the selected time
+                    </p>
+                  )}
+                </div>
+
                 <button 
-                  onClick={() => setShowPayment(true)} 
-                  className="w-full py-3 bg-emerald-600 text-white rounded-md hover:bg-emerald-700 transition-colors flex items-center justify-center"
+                  onClick={handleProceedToPayment} 
+                  className="w-full py-3 bg-emerald-600 text-white rounded-md hover:bg-emerald-700 transition-colors flex items-center justify-center disabled:bg-gray-400 disabled:cursor-not-allowed"
+                  disabled={!selectedTimeSlot}
                 >
                   <CreditCardIcon size={20} className="mr-2" />
                   Proceed to Payment
                 </button>
+                {!selectedTimeSlot && (
+                  <p className="text-xs text-red-500 mt-1 text-center">
+                    Please select a pickup time to continue
+                  </p>
+                )}
               </div>
             </div>
           </div>
@@ -216,6 +314,14 @@ const YourCart = () => {
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4">
             <div className="bg-white rounded-lg p-6 max-w-md w-full">
               <h2 className="text-xl font-semibold mb-4">Payment Details</h2>
+              {selectedTimeSlot && (
+                <div className="mb-4 p-3 bg-emerald-50 border border-emerald-200 rounded-md">
+                  <p className="text-sm text-emerald-800">
+                    <ClockIcon size={14} className="inline mr-1" />
+                    Pickup: {timeSlots.find(slot => slot.value === selectedTimeSlot)?.label}
+                  </p>
+                </div>
+              )}
               <form 
                 onSubmit={(e) => {
                   e.preventDefault();
