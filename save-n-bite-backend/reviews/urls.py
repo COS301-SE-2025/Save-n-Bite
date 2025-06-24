@@ -14,8 +14,8 @@ urlpatterns = [
     path('reviews/summary/', views.get_user_review_summary, name='get_user_review_summary'),
     
     # Interaction review status
-    path('interactions/<uuid:interaction_id>/review-status/', views.check_interaction_review_status, name='check_interaction_review_status'),
-    path('interactions/<uuid:interaction_id>/review/', views.get_interaction_review, name='get_interaction_review'),
+    # path('interactions/<uuid:interaction_id>/review-status/', views.check_interaction_review_status, name='check_interaction_review_status'),
+    # path('interactions/<uuid:interaction_id>/review/', views.get_interaction_review, name='get_interaction_review'),
     
     # Business review endpoints (for food providers)
     path('business/reviews/', views.get_business_reviews, name='get_business_reviews'),
