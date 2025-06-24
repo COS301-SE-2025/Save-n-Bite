@@ -5,6 +5,13 @@ on:
     branches: [ backend ]
   pull_request:
     branches: [ backend ]
+  workflow_dispatch:  # Allows manual triggering from GitHub UI
+    inputs:
+      run_coverage:
+        description: 'Run test coverage report'
+        required: false
+        default: 'false'
+        type: boolean
 
 jobs:
   test:
@@ -43,7 +50,9 @@ jobs:
         echo "SECRET_KEY=test-secret-key-for-ci" >> $GITHUB_ENV
     
 
-  
+    - name: Run scheduling tests
+      run: |
+        python -m pytest scheduling/tests.py -v --tb=short
     
     - name: Run authentication tests
       run: |
@@ -57,4 +66,13 @@ jobs:
       run: |
         python -m pytest notifications/tests.py -v --tb=short
     
-   
+    - name: Generate test coverage report (optional)
+      run: |
+        pip install pytest-cov
+        python -m pytest --cov=. --cov-report=xml
+    
+    - name: Upload coverage to Codecov (optional)
+      uses: codecov/codecov-action@v3
+      with:
+        file: ./coverage.xml
+        fail_ci_if_error: false
