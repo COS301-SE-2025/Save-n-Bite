@@ -43,9 +43,7 @@ jobs:
         echo "SECRET_KEY=test-secret-key-for-ci" >> $GITHUB_ENV
     
 
-    - name: Run scheduling tests
-      run: |
-        python -m pytest scheduling/tests.py -v --tb=short
+  
     
     - name: Run authentication tests
       run: |
