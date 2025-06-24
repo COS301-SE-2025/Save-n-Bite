@@ -57,13 +57,4 @@ jobs:
       run: |
         python -m pytest notifications/tests.py -v --tb=short
     
-    - name: Generate test coverage report (optional)
-      run: |
-        pip install pytest-cov
-        python -m pytest --cov=. --cov-report=xml
-    
-    - name: Upload coverage to Codecov (optional)
-      uses: codecov/codecov-action@v3
-      with:
-        file: ./coverage.xml
-        fail_ci_if_error: false
+   
