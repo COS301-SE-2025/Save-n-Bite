@@ -1,0 +1,27 @@
+name: frontend
+on:
+  push:
+    branches: [frontend]
+  pull_request:
+    branches: [frontend]
+env:
+  NODE_VERSION: 20
+jobs:
+  frontend-tests:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./save-n-bite-frontend
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{env.NODE_VERSION}}
+          cache: 'npm'
+          cache-dependency-path: './save-n-bite-frontend/package-lock.json'
+      - name: Install Dependencies
+        run: npm ci
+      - name: Run Tests
+        run: npm run test:ci
