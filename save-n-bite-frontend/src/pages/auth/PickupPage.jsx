@@ -1,13 +1,16 @@
 import React, { useState } from 'react'
+import CustomerNavBar from '../../components/auth/CustomerNavBar'
+
+
 import {
   QrCodeIcon,
   MapPinIcon,
   ClockIcon,
   CheckCircleIcon,
+  XIcon,
 } from 'lucide-react'
-
-import PostPickupFeedback from "../../components/CustomerFeedback/PostPickupFeedback";
-
+import { motion, AnimatePresence } from 'framer-motion'
+import StarRating from "../../components/CustomerFeedback/StarRating";
 
 // Mock pickup data
 const pickups = [
@@ -23,9 +26,119 @@ const pickups = [
     status: 'Ready for pickup',
   },
 ]
+
+// Simple feedback modal for pickup page only
+const SimplePickupFeedback = ({ orderNumber, providerName, onClose }) => {
+  const [rating, setRating] = useState(0)
+  const [comment, setComment] = useState('')
+  const [isComplete, setIsComplete] = useState(false)
+
+  const handleSubmit = () => {
+    if (rating === 0) return
+    // Save the rating and comment
+    console.log('Saving pickup feedback:', { orderNumber, rating, comment })
+    setIsComplete(true)
+    setTimeout(() => {
+      onClose()
+    }, 2000)
+  }
+
+  const handleSkip = () => {
+    setIsComplete(true)
+    setTimeout(() => {
+      onClose()
+    }, 2000)
+  }
+
+  return (
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+      <div className="bg-white w-full max-w-md rounded-xl shadow-xl">
+        <div className="relative p-6">
+          <button
+            onClick={onClose}
+            className="absolute right-4 top-4 text-gray-400 hover:text-gray-600"
+          >
+            <XIcon size={24} />
+          </button>
+
+          <AnimatePresence mode="wait">
+            {!isComplete ? (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                className="space-y-6"
+              >
+                <div className="text-center space-y-2">
+                  <div className="text-2xl mb-1">🎉</div>
+                  <h2 className="text-xl font-semibold text-gray-800">
+                    Order #{orderNumber} Successfully Collected!
+                  </h2>
+                  <p className="text-gray-600">
+                    Thank you for shopping at {providerName}.
+                  </p>
+                  <p className="text-sm text-gray-500">
+                    We hope you enjoy your meal. Let us know how it went!
+                  </p>
+                </div>
+
+                <div className="space-y-4">
+                  <p className="font-medium text-gray-700 text-center">
+                    How was your experience?
+                  </p>
+                  <div className="flex justify-center">
+                    <StarRating rating={rating} setRating={setRating} />
+                  </div>
+                  <textarea
+                    placeholder="Leave a quick note (optional)"
+                    value={comment}
+                    onChange={(e) => setComment(e.target.value)}
+                    className="w-full p-3 border rounded-lg resize-none h-24 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                  />
+                </div>
+
+                <div className="flex justify-end space-x-3">
+                  <button
+                    onClick={handleSkip}
+                    className="px-4 py-2 text-gray-600 hover:text-gray-800"
+                  >
+                    Skip
+                  </button>
+                  <button
+                    onClick={handleSubmit}
+                    disabled={rating === 0}
+                    className="px-6 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    Submit
+                  </button>
+                </div>
+              </motion.div>
+            ) : (
+              <motion.div
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                className="py-8 text-center space-y-4"
+              >
+                <CheckCircleIcon size={48} className="text-emerald-500 mx-auto" />
+                <h2 className="text-xl font-semibold text-gray-800">
+                  Thanks for your feedback!
+                </h2>
+                <p className="text-gray-600">
+                  You can leave a detailed review anytime from your order history.
+                </p>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 const PickupPage = () => {
   const [showFeedback, setShowFeedback] = useState(false);
   const [pickedUp, setPickedUp] = useState(false);
+  
   const handleMarkAsPickedUp = () => {
     setPickedUp(true); 
     setTimeout(() => {
@@ -33,9 +146,9 @@ const PickupPage = () => {
     }, 300); 
   };
 
-
   return (
     <div className="min-h-screen bg-gray-50 w-full py-8">
+        <CustomerNavBar/>
       <div className="max-w-4xl mx-auto px-4">
         <h1 className="text-2xl font-bold mb-8 text-gray-800">
           Pickup Instructions
@@ -122,10 +235,9 @@ const PickupPage = () => {
         </div>
       </div>
       {showFeedback && (
-        <PostPickupFeedback
+        <SimplePickupFeedback
           orderNumber={pickups[0].orderNumber}
           providerName={pickups[0].provider}
-          itemName={pickups[0].items[0]}
           onClose={() => {
             setShowFeedback(false);
           }}
@@ -134,4 +246,5 @@ const PickupPage = () => {
     </div>
   )
 }
+
 export default PickupPage

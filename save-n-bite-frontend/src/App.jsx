@@ -14,6 +14,7 @@ import Notification from './pages/auth/NotificationPage';
 import DonationRequest from './pages/auth/DonationRequest';
 import DonationConfirmation from './pages/auth/DonationConfirmationPage';
 import Pickup from './pages/auth/PickupPage';
+import Reviews from './pages/auth/ReviewPage';
 
 
 function App() {
@@ -37,6 +38,8 @@ function App() {
           <Route path="/donation-confirmation/:id" element={<DonationConfirmation />} />
           <Route path="/notifications" element={<OrderHistory />} />
           <Route path="/pickup" element={<Pickup />} />
+          {/* <Route path="/reviews/:id" element={<Reviews />} /> */}
+          <Route path="/reviews" element={<Reviews />} />
 
 
       </Routes>

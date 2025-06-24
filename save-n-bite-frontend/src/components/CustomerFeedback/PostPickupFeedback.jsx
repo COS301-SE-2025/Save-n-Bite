@@ -6,17 +6,9 @@ import ProviderReview from './ProviderReview'
 import ItemReview from './ItemReview'
 
 const PostPickupFeedback = ({ orderNumber, providerName, itemName, onClose }) => {
-  const [step, setStep] = useState(1)
-  const [rating, setRating] = useState(0)
-  const [comment, setComment] = useState('')
   const [showProviderReview, setShowProviderReview] = useState(false)
   const [showItemReview, setShowItemReview] = useState(false)
   const [isComplete, setIsComplete] = useState(false)
-
-  const handleInitialSubmit = () => {
-    if (rating === 0) return
-    setStep(2)
-  }
 
   const handleSkip = () => {
     setIsComplete(true)
@@ -37,60 +29,7 @@ const PostPickupFeedback = ({ orderNumber, providerName, itemName, onClose }) =>
           </button>
 
           <AnimatePresence mode="wait">
-            {step === 1 && (
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -20 }}
-                className="space-y-6"
-              >
-                <div className="text-center space-y-2">
-                  <div className="text-2xl mb-1">🎉</div>
-                  <h2 className="text-xl font-semibold text-gray-800">
-                    Order #{orderNumber} Successfully Collected!
-                  </h2>
-                  <p className="text-gray-600">
-                    Thank you for shopping at {providerName}.
-                  </p>
-                  <p className="text-sm text-gray-500">
-                    We hope you enjoy your meal. Let us know how it went!
-                  </p>
-                </div>
-
-                <div className="space-y-4">
-                  <p className="font-medium text-gray-700 text-center">
-                    How was your experience?
-                  </p>
-                  <div className="flex justify-center">
-                    <StarRating rating={rating} setRating={setRating} />
-                  </div>
-                  <textarea
-                    placeholder="Leave a quick note (optional)"
-                    value={comment}
-                    onChange={(e) => setComment(e.target.value)}
-                    className="w-full p-3 border rounded-lg resize-none h-24 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
-                  />
-                </div>
-
-                <div className="flex justify-end space-x-3">
-                  <button
-                    onClick={handleSkip}
-                    className="px-4 py-2 text-gray-600 hover:text-gray-800"
-                  >
-                    Skip
-                  </button>
-                  <button
-                    onClick={handleInitialSubmit}
-                    disabled={rating === 0}
-                    className="px-6 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    Submit
-                  </button>
-                </div>
-              </motion.div>
-            )}
-
-            {step === 2 && !isComplete && (
+            {!isComplete && (
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -101,6 +40,9 @@ const PostPickupFeedback = ({ orderNumber, providerName, itemName, onClose }) =>
                   <h2 className="text-xl font-semibold text-gray-800">
                     Would you like to review more details?
                   </h2>
+                  <p className="text-gray-600">
+                    Order #{orderNumber} from {providerName}
+                  </p>
                   <p className="text-sm text-gray-500">
                     Your feedback helps us and our providers improve.
                   </p>
