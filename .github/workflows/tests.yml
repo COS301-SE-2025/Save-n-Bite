@@ -23,5 +23,17 @@ jobs:
           cache-dependency-path: './save-n-bite-frontend/package-lock.json'
       - name: Install Dependencies
         run: npm ci
-      - name: Run Tests
-        run: npm run test:ci
+      - name: Run Tests with Coverage
+        run: npm run test:coverage
+      - name: Upload coverage reports to Codecov
+        uses: codecov/codecov-action@v4
+        with:
+          directory: ./save-n-bite-frontend/coverage
+          fail_ci_if_error: true
+          token: ${{ secrets.CODECOV_TOKEN }}
+      - name: Comment PR with Coverage
+        if: github.event_name == 'pull_request'
+        uses: romeovs/lcov-reporter-action@v0.3.1
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          lcov-file: ./save-n-bite-frontend/coverage/lcov.info
