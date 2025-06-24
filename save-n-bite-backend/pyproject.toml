@@ -112,7 +112,7 @@ plugins = ["mypy_django_plugin.main", "mypy_drf_plugin.main"]
 django_settings_module = "backend.settings"
 
 [tool.coverage.run]
-source = "."
+source = ["."]
 omit = [
     "*/migrations/*",
     "*/venv/*",
@@ -132,3 +132,6 @@ exclude_lines = [
     "raise AssertionError",
     "raise NotImplementedError",
 ]
+
+[tool.coverage.run]
+source = ["."] 
