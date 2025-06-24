@@ -11,6 +11,7 @@ urlpatterns = [
     path('api/', include('food_listings.urls')),
     path('cart/',include('interactions.urls')),
     path('api/', include('notifications.urls')),
+     path('api/', include('analytics.urls')),
     path('api/scheduling/', include('scheduling.urls')),
     path('api/', include('reviews.urls')),
 ]+ static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
