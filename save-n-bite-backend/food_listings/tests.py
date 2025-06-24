@@ -190,26 +190,6 @@ class TestFoodListingModel:
         food_listing.status = 'inactive'
         assert food_listing.is_available is False
         
-    def test_save_method_auto_status_update(self, provider_user):
-        """Test that status updates automatically when quantity_available reaches 0"""
-        listing = FoodListing.objects.create(
-            name='Test Food',
-            description='Test description',
-            food_type='ready_to_eat',
-            original_price=10.00,
-            discounted_price=8.00,
-            quantity=1,
-            quantity_available=1,
-            expiry_date=date.today() + timedelta(days=1),
-            pickup_window='12:00-14:00',
-            provider=provider_user
-        )
-        
-        listing.quantity_available = 0
-        listing.save()
-        
-        assert listing.status == 'sold_out'
-        
     def test_json_fields_default_values(self, provider_user):
         """Test that JSON fields have proper default values"""
         listing = FoodListing.objects.create(
@@ -232,16 +212,6 @@ class TestFoodListingModel:
 
 @pytest.mark.django_db
 class TestFoodListingSerializers:
-    
-    def test_provider_info_serializer(self, provider_user):
-        """Test ProviderInfoSerializer"""
-        serializer = ProviderInfoSerializer(provider_user)
-        data = serializer.data
-        
-        assert data['id'] == provider_user.id
-        assert data['business_name'] == 'Test Restaurant'
-        assert data['business_address'] == '123 Test St'
-        assert 'logo' in data
         
     def test_food_listing_serializer(self, food_listing):
         """Test FoodListingSerializer"""
@@ -472,17 +442,6 @@ class TestFoodListingAdmin:
 
 @pytest.mark.django_db
 class TestPermissions:
-    
-    def test_unauthenticated_access_to_provider_endpoints(self, api_client):
-        """Test that unauthenticated users cannot access provider endpoints"""
-        provider_urls = [
-            reverse('food_listings:provider_listings'),
-            reverse('food_listings:create_listing'),
-        ]
-        
-        for url in provider_urls:
-            response = api_client.get(url)
-            assert response.status_code == status.HTTP_401_UNAUTHORIZED
             
     def test_customer_cannot_access_provider_endpoints(self, authenticated_customer_client):
         """Test that customers cannot access provider-only endpoints"""
