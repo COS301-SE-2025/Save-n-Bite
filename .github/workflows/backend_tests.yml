@@ -61,12 +61,4 @@ jobs:
     - name: Run notifications tests
       run: poetry run pytest notifications/tests.py -v --tb=short
 
-    - name: Generate test coverage report (optional)
-      run: |
-        poetry run pytest --cov=. --cov-report=xml
-
-    - name: Upload coverage to Codecov (optional)
-      uses: codecov/codecov-action@v3
-      with:
-        file: ./coverage.xml
-        fail_ci_if_error: false
+  
