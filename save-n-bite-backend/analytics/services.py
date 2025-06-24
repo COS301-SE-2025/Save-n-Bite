@@ -7,7 +7,7 @@ import calendar
 
 from .models import (
     UserAnalytics, MonthlyAnalytics, TransactionAnalytics, 
-    ReviewAnalytics, Badge, UserBadge, SystemAnalytics
+    Badge, UserBadge, SystemAnalytics
 )
 
 class AnalyticsService:
@@ -219,8 +219,8 @@ class AnalyticsService:
         elif transaction_type == 'donation':
             monthly_analytics.donations_given += 1
         
-        monthly_analytics.meals_saved_monthly += transaction_data.get('meals_saved', 1)
-        monthly_analytics.co2_reduced_monthly += Decimal(str(transaction_data.get('co2_reduction', 0.5)))
+        #monthly_analytics.meals_saved_monthly += transaction_data.get('meals_saved', 1)
+        #monthly_analytics.co2_reduced_monthly += Decimal(str(transaction_data.get('co2_reduction', 0.5)))
         
         monthly_analytics.save()
     
