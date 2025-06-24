@@ -10,7 +10,8 @@ module.exports = {
   },
   collectCoverageFrom: [
     'src/components/auth/FoodCard.jsx',
-    'src/components/auth/CustomerNavBar.jsx'
+    'src/components/auth/CustomerNavBar.jsx',
+    'src/components/auth/FilterSidebar.jsx'
   ],
   coverageDirectory: 'coverage',
   coverageReporters: ['text', 'lcov', 'html', 'json'],
