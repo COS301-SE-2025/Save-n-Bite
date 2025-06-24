@@ -1012,8 +1012,21 @@ class TestReviewSerializers:
             rating_5_count=4
         )
         
-        serializer = BusinessReviewStatsSerializer(stats)
-        data = serializer.data
+        response = authenticated_provider_client.get('/api/business/reviews/stats/')
+        assert response.status_code == status.HTTP_200_OK
+        stats_data = response.json()['stats']
+        assert stats_data['total_reviews'] == 5
+        assert float(stats_data['average_rating']) == 3.60
+
+    def test_review_permissions_integration(self, customer_user, provider_user, admin_user, 
+                                          completed_interaction, api_client):
+        """Test comprehensive permission integration"""
+        # Create review
+        review = Review.objects.create(
+            interaction=completed_interaction,
+            reviewer=customer_user,
+            general_rating=3
+        )
         
         assert data['total_reviews'] == 10
         assert float(data['average_rating']) == 4.25
