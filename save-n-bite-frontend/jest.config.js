@@ -16,6 +16,8 @@ module.exports = {
     'src/components/auth/FoodItemHeader.jsx',
     'src/components/auth/FoodListingsGrid.jsx',
     'src/components/auth/FoodProviderCarousel.jsx'
+    
+    
   ],
   coverageDirectory: 'coverage',
   coverageReporters: ['text', 'lcov', 'html', 'json'],
