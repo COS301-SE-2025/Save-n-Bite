@@ -25,3 +25,7 @@ jobs:
         run: npm ci
       - name: Run Tests
         run: npm run test:ci
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v3
+        with:
+        file: ./save-n-bite-frontend/coverage/coverage-final.json
