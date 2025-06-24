@@ -8,7 +8,7 @@ const ItemReview = ({ itemName, onClose, onComplete }) => {
   const [comment, setComment] = useState('')
 
   const handleSubmit = () => {
-    if (rating === 0) return
+    if (comment.trim() === '') return
     onComplete()
   }
 
@@ -33,12 +33,12 @@ const ItemReview = ({ itemName, onClose, onComplete }) => {
         </div>
 
         <div className="space-y-4">
-          <p className="font-medium text-gray-700">Rate this item</p>
+          {/* <p className="font-medium text-gray-700">Rate this item</p>
           <div className="flex justify-center">
             <StarRating rating={rating} setRating={setRating} />
-          </div>
+          </div> */}
           <textarea
-            placeholder="How was the food? (optional)"
+            placeholder="How was the food?"
             value={comment}
             onChange={(e) => setComment(e.target.value)}
             className="w-full p-3 border rounded-lg resize-none h-24 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
@@ -54,7 +54,7 @@ const ItemReview = ({ itemName, onClose, onComplete }) => {
           </button>
           <button
             onClick={handleSubmit}
-            disabled={rating === 0}
+            disabled={comment.trim() === ''}
             className="px-6 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             Submit Review

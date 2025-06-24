@@ -130,8 +130,8 @@ const ReviewPage = () => {
                     className="p-6 border-2 border-gray-200 rounded-lg hover:border-emerald-500 hover:text-emerald-600 transition-colors text-center"
                   >
                     <div className="text-2xl mb-2">🏪</div>
-                    <h3 className="font-medium mb-1">Review Provider</h3>
-                    <p className="text-sm text-gray-500">Rate {order.provider}</p>
+                    <h3 className="font-medium mb-1">Review Food Provider</h3>
+                    {/* <p className="text-sm text-gray-500">Rate {order.provider}</p> */}
                   </button>
                   <button
                     onClick={() => setShowItemReview(true)}
@@ -139,18 +139,18 @@ const ReviewPage = () => {
                   >
                     <div className="text-2xl mb-2">🍽️</div>
                     <h3 className="font-medium mb-1">Review Items</h3>
-                    <p className="text-sm text-gray-500">Rate the food quality</p>
+                    {/* <p className="text-sm text-gray-500">Rate the food quality</p> */}
                   </button>
                 </div>
 
-                <div className="flex justify-center pt-4">
+                {/* <div className="flex justify-center pt-4">
                   <button
                     onClick={handleSkip}
                     className="px-6 py-2 text-gray-600 hover:text-gray-800"
                   >
                     Maybe later
                   </button>
-                </div>
+                </div> */}
               </motion.div>
             )}
 

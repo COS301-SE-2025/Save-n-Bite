@@ -88,7 +88,7 @@ const ImpactSummary = ({ impact, userType }) => {
       </div>
 
       {/* Additional insights for NGOs */}
-      {userType === 'ngo' && impact.ordersCount > 0 && (
+      {/* {userType === 'ngo' && impact.ordersCount > 0 && (
         <div className="mt-4 pt-4 border-t border-white/50">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
             <div className="bg-white/60 rounded-lg p-3">
@@ -106,10 +106,10 @@ const ImpactSummary = ({ impact, userType }) => {
             </div>
           </div>
         </div>
-      )}
+      )} */}
 
       {/* Additional insights for customers */}
-      {userType === 'customer' && impact.ordersCount > 0 && (
+      {/* {userType === 'customer' && impact.ordersCount > 0 && (
         <div className="mt-4 pt-4 border-t border-white/50">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
             <div className="bg-white/60 rounded-lg p-3">
@@ -127,7 +127,7 @@ const ImpactSummary = ({ impact, userType }) => {
             </div>
           </div>
         </div>
-      )}
+      )} */}
     </div>
   );
 };

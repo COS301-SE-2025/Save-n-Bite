@@ -186,7 +186,7 @@ const PickupPage = () => {
                 <div className="flex items-start">
                   <ClockIcon size={20} className="mr-2 text-emerald-600 mt-1" />
                   <div>
-                    <p className="font-medium text-gray-800">Pickup Window</p>
+                    <p className="font-medium text-gray-800">Selected pickup time slot</p>
                     <p className="text-sm text-gray-600">{pickup.pickupTime}</p>
                   </div>
                 </div>
@@ -197,8 +197,9 @@ const PickupPage = () => {
                   />
                   <div>
                     <p className="font-medium text-gray-800">
-                      Show this at pickup
+                      Show this confirmation code at pickup
                     </p>
+                    {/* place the confirmation code here */}
                     <p className="text-sm text-gray-600">
                       Order confirmation code
                     </p>

@@ -580,7 +580,7 @@ const OrderHistory = () => {
                       </div>
                       <div className="text-right ml-4">
                         <p className="font-semibold text-emerald-600 mb-2">
-                          {order.type === 'purchase' ? `$${order.total.toFixed(2)}` : 'Free'}
+                          {order.type === 'purchase' ? `R${order.total.toFixed(2)}` : 'Free'}
                         </p>
                         {getActionButton(order)}
                       </div>
@@ -590,9 +590,9 @@ const OrderHistory = () => {
                         <p className="text-sm text-blue-800">
                           <strong>Pickup window:</strong> {order.pickupWindow}
                         </p>
-                        <p className="text-sm text-blue-600 mt-1">
+                        {/* <p className="text-sm text-blue-600 mt-1">
                           {order.pickupAddress}
-                        </p>
+                        </p> */}
                       </div>
                     )}
                     {order.status === 'pending' && order.type === 'donation' && (
@@ -606,8 +606,7 @@ const OrderHistory = () => {
                       </div>
                     )}
                     <div className="mt-4 text-sm text-gray-600">
-                      <strong>Impact:</strong> {order.impact.mealsSaved} meals saved •{' '}
-                      {order.impact.co2Reduced} kg CO₂ reduced
+                      <strong>Impact:</strong> {order.impact.mealsSaved} meals saved.
                     </div>
                   </div>
                 ))}
