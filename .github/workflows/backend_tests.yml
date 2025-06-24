@@ -48,6 +48,9 @@ jobs:
       run: |
         echo "DEBUG=True" >> $GITHUB_ENV
         echo "SECRET_KEY=test-secret-key-for-ci" >> $GITHUB_ENV
+    - name: Install dependencies
+      run: |
+          poetry install --with dev
     
 
 
