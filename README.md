@@ -115,10 +115,6 @@ main
 ```
 ---
 
-## 🔗 Documentation
-- **📄 [Software Requirements Specification (SRS)](documentation/SRS.md)**
-- **📊 [GitHub Project Board](https://github.com/orgs/COS301-SE-2025/projects/177/views/2)**  
-
 ---
 
 ## 👥 Team Members
@@ -141,7 +137,8 @@ main
    - Browsing food listings (React + Django API, Redis).
    - Purchase/Request food (React + Django REST, PostgreSQL).
 
-2. **SRS Document**: **📄 [Software Requirements Specification (SRS)](documentation/SRS.md)**  
+2. **SRS Document**:
+   - **📄 [Software Requirements Specification (SRS)](documentation/SRS.md)**  
    - Introduction
    - User stories
    - Use Case Diagrams
@@ -152,10 +149,10 @@ main
    - Technology Requirements
 
 
-3. **GitHub Hygiene**:  
+4. **GitHub Hygiene**:  
 We follow a GitFlow-inspired branching strategy to maintain clean and organized version control. The *main* branch holds production-ready code, while all active development takes place in the *dev* branch. From dev, we maintain separate long-lived backend and frontend branches to isolate concerns. Features are developed in *feature/* branches branched off their respective areas, and urgent fixes are handled in *hotfix/* branches. All changes are merged via pull requests with code reviews to ensure stability, consistency, and collaboration across the team.
 
-4. **GitHub Project Board**:
+5. **GitHub Project Board**:
    - **📊 [GitHub Project Board](https://github.com/orgs/COS301-SE-2025/projects/177/views/2)**  
 
 6. **Demo 1 Video**
