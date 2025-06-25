@@ -40,7 +40,7 @@ const navigationItems = [
     name: 'Orders/Feedback',
     icon: ShoppingCartIcon,
     route: 'orders',
-    path: '/orders'
+    path: '/orders-and-feedback'
   },
   {
     name: 'Settings',

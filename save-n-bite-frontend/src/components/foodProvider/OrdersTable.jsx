@@ -5,36 +5,11 @@ import {
   Mail as MailIcon,
   Phone as PhoneIcon,
 } from 'lucide-react'
-import { StatusBadge } from '../StatusBadge'
-import { Button } from '../Button'
-type Order = {
-  id: number
-  orderId: string
-  itemName: string
-  customerName: string
-  customerEmail: string
-  customerPhone: string
-  type: string
-  date: string
-  pickupWindow: string
-  pickupDate: string
-  status: string
-  hasReview: boolean
-  amount: string
-  imageUrl: string
-  review?: {
-    rating: number
-    comment: string
-    date: string
-    isPositive: boolean
-    isResolved: boolean
-  }
-}
-type OrdersTableProps = {
-  orders: Order[]
-  onViewDetails: (order: Order) => void
-}
-export function OrdersTable({ orders, onViewDetails }: OrdersTableProps) {
+import { StatusBadge } from '../../components/foodProvider/StatusBadge'
+import { Button } from '../../components/foodProvider/Button'
+
+
+function OrdersTable({ orders, onViewReviews }) {
   return (
     <div className="bg-white rounded-lg shadow overflow-hidden">
       <table className="min-w-full divide-y divide-gray-200">
@@ -62,7 +37,7 @@ export function OrdersTable({ orders, onViewDetails }: OrdersTableProps) {
               Status
             </th>
             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              Actions
+              Reviews
             </th>
           </tr>
         </thead>
@@ -131,9 +106,9 @@ export function OrdersTable({ orders, onViewDetails }: OrdersTableProps) {
                   variant="secondary"
                   size="sm"
                   icon={<EyeIcon className="h-4 w-4" />}
-                  onClick={() => onViewDetails(order)}
+                  onClick={() => onViewReviews(order)}
                 >
-                  View Details
+                  View Reviews
                 </Button>
               </td>
             </tr>
@@ -143,3 +118,6 @@ export function OrdersTable({ orders, onViewDetails }: OrdersTableProps) {
     </div>
   )
 }
+
+
+export default OrdersTable;
