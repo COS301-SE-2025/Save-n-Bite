@@ -240,7 +240,11 @@ R11: **Gamification**
 
 - [Authentication Service Contract](Authentication_service_contract.md)  
 - [Food Listing Service Contract](Food_Listing_service_contract.md)  
-- [Transactions Service Contract](Transactions_service_contracts.md)
+- [Interactions Service Contract](Interactions_service_contracts.md)
+- [Notifications Service Contract](Notifications_service_contracts.md)
+- [Scheduling Service Contract](Scheduling_service_contracts.md)
+- [Reviews and Feedback Service Contract](Reviews_and_Feedback_service_contracts.md)
+- [Analytics Service Contract](Analytics_service_contracts.md)
 
 ---
 
