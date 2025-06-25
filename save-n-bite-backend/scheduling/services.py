@@ -5,19 +5,21 @@ from io import BytesIO
 import base64
 from datetime import datetime, timedelta, time, date
 from django.utils import timezone
-from django.db.models import Count, Q, Avg
+from django.db.models import Count, Q, Avg, F
 from django.core.exceptions import ValidationError
+from django.db import transaction
 from .models import (
-    PickupLocation, PickupTimeSlot, ScheduledPickup, 
-    PickupOptimization, PickupAnalytics
+    PickupLocation, FoodListingPickupSchedule, PickupTimeSlot, 
+    ScheduledPickup, PickupOptimization, PickupAnalytics
 )
+from food_listings.models import FoodListing
 from interactions.models import Order
 import logging
 
 logger = logging.getLogger(__name__)
 
 class PickupSchedulingService:
-    """Core service for handling pickup scheduling logic"""
+    """Core service for handling food-listing-based pickup scheduling logic"""
 
     @staticmethod
     def create_pickup_location(business, location_data):
@@ -42,184 +44,186 @@ class PickupSchedulingService:
             raise ValidationError(f"Failed to create pickup location: {str(e)}")
 
     @staticmethod
-    def create_time_slot(business, location, slot_data):
-        """Create a new time slot for pickups"""
+    def create_pickup_schedule_for_listing(food_listing, schedule_data):
+        """Create pickup schedule when creating a food listing"""
         try:
-            time_slot = PickupTimeSlot.objects.create(
-                business=business,
-                location=location,
-                day_of_week=slot_data['day_of_week'],
-                start_time=slot_data['start_time'],
-                end_time=slot_data['end_time'],
-                slot_duration=timedelta(minutes=slot_data.get('slot_duration_minutes', 30)),
-                max_orders_per_slot=slot_data.get('max_orders_per_slot', 10),
-                buffer_time=timedelta(minutes=slot_data.get('buffer_time_minutes', 5)),
-                advance_booking_hours=slot_data.get('advance_booking_hours', 2),
-            )
-            
-            logger.info(f"Created time slot for {business.business_name} on {time_slot.get_day_of_week_display()}")
-            return time_slot
-            
-        except Exception as e:
-            logger.error(f"Error creating time slot: {str(e)}")
-            raise ValidationError(f"Failed to create time slot: {str(e)}")
-
-    @staticmethod
-    def get_available_slots(business, target_date=None, location=None):
-        """Get available pickup slots for a specific date"""
-        if target_date is None:
-            target_date = timezone.now().date()
-        
-        # Get day of week (0=Monday, 6=Sunday)
-        day_of_week = target_date.weekday()
-        
-        # Filter time slots
-        slots_query = PickupTimeSlot.objects.filter(
-            business=business,
-            day_of_week=day_of_week,
-            is_active=True
-        )
-        
-        if location:
-            slots_query = slots_query.filter(location=location)
-        
-        available_slots = []
-        current_time = timezone.now()
-        
-        for time_slot in slots_query:
-            # Check if slot is not in the past
-            slot_datetime = timezone.make_aware(
-                datetime.combine(target_date, time_slot.start_time)
-            )
-            
-            # Skip if too close to start time (advance booking requirement)
-            if slot_datetime <= current_time + timedelta(hours=time_slot.advance_booking_hours):
-                continue
-            
-            # Count existing bookings for this slot
-            existing_bookings = ScheduledPickup.objects.filter(
-                time_slot=time_slot,
-                scheduled_date=target_date,
-                status__in=['scheduled', 'confirmed', 'in_progress']
-            ).count()
-            
-            available_capacity = time_slot.max_orders_per_slot - existing_bookings
-            
-            if available_capacity > 0:
-                # Generate specific time slots within the window
-                slot_times = PickupSchedulingService._generate_slot_times(
-                    time_slot, target_date, available_capacity
+            with transaction.atomic():
+                # Get location and validate it belongs to the same business
+                location = PickupLocation.objects.get(
+                    id=schedule_data['location_id'],
+                    business=food_listing.provider.provider_profile,
+                    is_active=True
                 )
                 
-                available_slots.extend(slot_times)
-        
-        return sorted(available_slots, key=lambda x: x['start_time'])
-
-    @staticmethod
-    def _generate_slot_times(time_slot, target_date, available_capacity):
-        """Generate specific time slots within a time window"""
-        slots = []
-        current_time = time_slot.start_time
-        slot_duration = time_slot.slot_duration
-        buffer_time = time_slot.buffer_time
-        
-        while current_time < time_slot.end_time:
-            end_time = (datetime.combine(date.today(), current_time) + slot_duration).time()
-            
-            if end_time <= time_slot.end_time:
-                # Check if this specific time is available
-                existing_count = ScheduledPickup.objects.filter(
-                    time_slot=time_slot,
-                    scheduled_date=target_date,
-                    scheduled_start_time=current_time,
-                    status__in=['scheduled', 'confirmed', 'in_progress']
-                ).count()
+                # Create the pickup schedule
+                pickup_schedule = FoodListingPickupSchedule.objects.create(
+                    food_listing=food_listing,
+                    location=location,
+                    pickup_window=schedule_data['pickup_window'],
+                    total_slots=schedule_data.get('total_slots', 4),
+                    max_orders_per_slot=schedule_data.get('max_orders_per_slot', 5),
+                    slot_buffer_minutes=schedule_data.get('slot_buffer_minutes', 5)
+                )
                 
-                if existing_count == 0:  # Slot is available
-                    slots.append({
-                        'time_slot_id': time_slot.id,
-                        'location_id': time_slot.location.id,
-                        'location_name': time_slot.location.name,
-                        'start_time': current_time,
-                        'end_time': end_time,
-                        'date': target_date,
-                        'available_capacity': available_capacity
-                    })
-            
-            # Move to next slot
-            current_time = (datetime.combine(date.today(), current_time) + 
-                          slot_duration + buffer_time).time()
-        
-        return slots
+                logger.info(f"Created pickup schedule for food listing {food_listing.name}")
+                return pickup_schedule
+                
+        except PickupLocation.DoesNotExist:
+            raise ValidationError("Pickup location not found or doesn't belong to your business")
+        except Exception as e:
+            logger.error(f"Error creating pickup schedule: {str(e)}")
+            raise ValidationError(f"Failed to create pickup schedule: {str(e)}")
 
     @staticmethod
-    def schedule_pickup(order, slot_data):
-        """Schedule a pickup for an order"""
+    def generate_time_slots_for_date(food_listing, target_date):
+        """Generate time slots for a specific food listing and date"""
         try:
-            time_slot = PickupTimeSlot.objects.get(id=slot_data['time_slot_id'])
-            location = PickupLocation.objects.get(id=slot_data['location_id'])
+            # Check if food listing has a pickup schedule
+            if not hasattr(food_listing, 'pickup_schedule'):
+                raise ValidationError("Food listing does not have a pickup schedule configured")
             
-            # Validate the slot is still available
-            target_date = slot_data['date']
-            target_start_time = slot_data['start_time']
-            target_end_time = slot_data['end_time']
+            pickup_schedule = food_listing.pickup_schedule
             
-            # Check for conflicts
-            existing_pickup = ScheduledPickup.objects.filter(
-                time_slot=time_slot,
-                scheduled_date=target_date,
-                scheduled_start_time=target_start_time,
-                status__in=['scheduled', 'confirmed', 'in_progress']
-            ).exists()
-            
-            if existing_pickup:
-                raise ValidationError("This time slot is no longer available")
-            
-            # Create the scheduled pickup
-            pickup = ScheduledPickup.objects.create(
-                order=order,
-                time_slot=time_slot,
-                location=location,
-                scheduled_date=target_date,
-                scheduled_start_time=target_start_time,
-                scheduled_end_time=target_end_time,
+            # Check if slots already exist for this date
+            existing_slots = PickupTimeSlot.objects.filter(
+                pickup_schedule=pickup_schedule,
+                date=target_date
             )
             
-            # Generate QR code
-            qr_image = PickupSchedulingService.generate_qr_code(pickup)
+            if existing_slots.exists():
+                logger.info(f"Time slots already exist for {food_listing.name} on {target_date}")
+                return existing_slots
             
-            # Send confirmation notification
-            PickupSchedulingService._send_pickup_confirmation(pickup)
+            # Generate new slots
+            slot_configs = pickup_schedule.generate_time_slots()
+            created_slots = []
             
-            logger.info(f"Scheduled pickup {pickup.confirmation_code} for order {order.id}")
-            return pickup, qr_image
+            with transaction.atomic():
+                for slot_config in slot_configs:
+                    slot = PickupTimeSlot.objects.create(
+                        pickup_schedule=pickup_schedule,
+                        slot_number=slot_config['slot_number'],
+                        start_time=slot_config['start_time'],
+                        end_time=slot_config['end_time'],
+                        max_orders_per_slot=slot_config['max_orders'],
+                        date=target_date
+                    )
+                    created_slots.append(slot)
+                
+                logger.info(f"Generated {len(created_slots)} time slots for {food_listing.name} on {target_date}")
+                return created_slots
+                
+        except Exception as e:
+            logger.error(f"Error generating time slots: {str(e)}")
+            raise ValidationError(f"Failed to generate time slots: {str(e)}")
+
+    @staticmethod
+    def get_available_slots(food_listing, target_date=None):
+        """Get available pickup slots for a food listing"""
+        try:
+            if target_date is None:
+                target_date = timezone.now().date()
             
+            # Ensure slots exist for the target date
+            PickupSchedulingService.generate_time_slots_for_date(food_listing, target_date)
+            
+            # Get available slots
+            available_slots = PickupTimeSlot.objects.filter(
+                pickup_schedule__food_listing=food_listing,
+                date=target_date,
+                is_active=True
+            ).annotate(
+                available_spots=F('max_orders_per_slot') - F('current_bookings')
+            ).filter(
+                available_spots__gt=0
+            ).order_by('start_time')
+            
+            return available_slots
+            
+        except Exception as e:
+            logger.error(f"Error getting available slots: {str(e)}")
+            return PickupTimeSlot.objects.none()
+
+    @staticmethod
+    def schedule_pickup(order, schedule_data):
+        """Schedule a pickup for an order"""
+        try:
+            with transaction.atomic():
+                # Get and validate the time slot
+                time_slot = PickupTimeSlot.objects.select_for_update().get(
+                    id=schedule_data['time_slot_id'],
+                    date=schedule_data['date'],
+                    is_active=True
+                )
+                
+                # Check availability
+                if not time_slot.is_available:
+                    raise ValidationError("Time slot is no longer available")
+                
+                # Get the food listing from the order (assuming order has food listing reference)
+                food_listing = FoodListing.objects.get(id=schedule_data['food_listing_id'])
+                
+                # Validate that the time slot belongs to this food listing
+                if time_slot.pickup_schedule.food_listing != food_listing:
+                    raise ValidationError("Time slot does not belong to the specified food listing")
+                
+                # Create the scheduled pickup
+                scheduled_pickup = ScheduledPickup.objects.create(
+                    order=order,
+                    food_listing=food_listing,
+                    time_slot=time_slot,
+                    location=time_slot.pickup_schedule.location,
+                    scheduled_date=schedule_data['date'],
+                    scheduled_start_time=time_slot.start_time,
+                    scheduled_end_time=time_slot.end_time,
+                    customer_notes=schedule_data.get('customer_notes', ''),
+                    status='scheduled'
+                )
+                
+                # Update time slot booking count
+                time_slot.current_bookings += 1
+                time_slot.save()
+                
+                # Generate QR code
+                qr_code_image = PickupSchedulingService.generate_qr_code(scheduled_pickup)
+                
+                logger.info(f"Scheduled pickup {scheduled_pickup.confirmation_code} for order {order.id}")
+                
+                return scheduled_pickup, qr_code_image
+                
+        except PickupTimeSlot.DoesNotExist:
+            raise ValidationError("Time slot not found or inactive")
+        except FoodListing.DoesNotExist:
+            raise ValidationError("Food listing not found")
         except Exception as e:
             logger.error(f"Error scheduling pickup: {str(e)}")
             raise ValidationError(f"Failed to schedule pickup: {str(e)}")
 
     @staticmethod
-    def generate_qr_code(pickup):
+    def generate_qr_code(scheduled_pickup):
         """Generate QR code for pickup verification"""
         try:
+            qr_data = scheduled_pickup.qr_code_data
+            
+            # Create QR code
             qr = qrcode.QRCode(
                 version=1,
                 error_correction=qrcode.constants.ERROR_CORRECT_L,
                 box_size=10,
                 border=4,
             )
-            
-            qr.add_data(pickup.qr_code_data)
+            qr.add_data(str(qr_data))
             qr.make(fit=True)
             
+            # Create image
             img = qr.make_image(fill_color="black", back_color="white")
             
-            # Convert to base64 string
+            # Convert to base64
             buffer = BytesIO()
             img.save(buffer, format='PNG')
-            qr_image = base64.b64encode(buffer.getvalue()).decode()
+            img_str = base64.b64encode(buffer.getvalue()).decode()
             
-            return qr_image
+            return f"data:image/png;base64,{img_str}"
             
         except Exception as e:
             logger.error(f"Error generating QR code: {str(e)}")
@@ -235,148 +239,125 @@ class PickupSchedulingService:
                 status__in=['scheduled', 'confirmed']
             )
             
-            # Check if pickup is scheduled for today or is overdue
-            today = timezone.now().date()
-            if pickup.scheduled_date > today:
-                raise ValidationError("Pickup is not scheduled for today")
+            # Update status to confirmed if it was just scheduled
+            if pickup.status == 'scheduled':
+                pickup.status = 'confirmed'
+                pickup.save()
             
             return pickup
             
         except ScheduledPickup.DoesNotExist:
-            raise ValidationError("Invalid confirmation code")
+            raise ValidationError("Invalid confirmation code or pickup not found")
 
     @staticmethod
-    def complete_pickup(pickup, completion_data=None):
-        """Mark a pickup as completed"""
+    def complete_pickup(pickup):
+        """Mark pickup as completed"""
         try:
-            pickup.status = 'completed'
-            pickup.actual_pickup_time = timezone.now()
-            pickup.pickup_notes = completion_data.get('notes', '') if completion_data else ''
-            pickup.save()
-            
-            # Update order status
-            pickup.order.status = 'completed'
-            pickup.order.save()
-            
-            # Send completion notifications
-            PickupSchedulingService._send_completion_notifications(pickup)
-            
-            # Update analytics
-            PickupSchedulingService._update_analytics(pickup)
-            
-            logger.info(f"Completed pickup {pickup.confirmation_code}")
-            return pickup
-            
+            with transaction.atomic():
+                pickup.status = 'completed'
+                pickup.actual_pickup_time = timezone.now()
+                pickup.save()
+                
+                # Update order status if needed
+                order = pickup.order
+                if order.status != 'completed':
+                    order.status = 'completed'
+                    order.save()
+                
+                logger.info(f"Completed pickup {pickup.confirmation_code}")
+                return pickup
+                
         except Exception as e:
             logger.error(f"Error completing pickup: {str(e)}")
             raise ValidationError(f"Failed to complete pickup: {str(e)}")
 
     @staticmethod
-    def _send_pickup_confirmation(pickup):
-        """Send pickup confirmation notification"""
+    def cancel_pickup(pickup, cancelled_by_customer=True):
+        """Cancel a scheduled pickup"""
         try:
-            from notifications.services import NotificationService
+            with transaction.atomic():
+                # Update pickup status
+                pickup.status = 'cancelled'
+                pickup.save()
+                
+                # Free up the time slot
+                time_slot = pickup.time_slot
+                time_slot.current_bookings = max(0, time_slot.current_bookings - 1)
+                time_slot.save()
+                
+                # Update order status
+                order = pickup.order
+                if cancelled_by_customer:
+                    order.status = 'cancelled'
+                    order.save()
+                
+                logger.info(f"Cancelled pickup {pickup.confirmation_code}")
+                return pickup
+                
+        except Exception as e:
+            logger.error(f"Error cancelling pickup: {str(e)}")
+            raise ValidationError(f"Failed to cancel pickup: {str(e)}")
+
+    @staticmethod
+    def get_business_schedule_overview(business, target_date=None):
+        """Get schedule overview for a business"""
+        try:
+            if target_date is None:
+                target_date = timezone.now().date()
             
-            # Notification to customer
-            customer = pickup.order.interaction.user
+            # Get all pickups for the date
+            pickups = ScheduledPickup.objects.filter(
+                location__business=business,
+                scheduled_date=target_date
+            ).select_related('food_listing', 'location', 'order')
             
-            title = "Pickup Scheduled"
-            message = f"Your pickup is scheduled for {pickup.scheduled_date} at {pickup.scheduled_start_time}. Location: {pickup.location.name}"
+            # Calculate metrics
+            total_pickups = pickups.count()
+            completed_pickups = pickups.filter(status='completed').count()
+            pending_pickups = pickups.filter(status__in=['scheduled', 'confirmed']).count()
+            missed_pickups = pickups.filter(status='missed').count()
             
-            NotificationService.create_notification(
-                recipient=customer,
-                notification_type='business_update',
-                title=title,
-                message=message,
-                data={
-                    'pickup_id': str(pickup.id),
+            # Group by hour
+            pickups_by_hour = {}
+            for pickup in pickups:
+                hour = pickup.scheduled_start_time.hour
+                if hour not in pickups_by_hour:
+                    pickups_by_hour[hour] = []
+                pickups_by_hour[hour].append({
+                    'id': pickup.id,
                     'confirmation_code': pickup.confirmation_code,
-                    'location': pickup.location.name,
-                    'scheduled_time': f"{pickup.scheduled_date} {pickup.scheduled_start_time}",
-                    'qr_data': pickup.qr_code_data
-                }
+                    'food_listing_name': pickup.food_listing.name,
+                    'customer_name': getattr(pickup.order.interaction.user.customer_profile, 'full_name', 'Unknown'),
+                    'status': pickup.status,
+                    'time': pickup.scheduled_start_time.strftime('%H:%M')
+                })
+            
+            # Get food listings with pickups
+            food_listings_with_pickups = list(
+                pickups.values('food_listing__id', 'food_listing__name')
+                .distinct()
+                .annotate(pickup_count=Count('id'))
             )
+            
+            return {
+                'date': target_date,
+                'total_pickups': total_pickups,
+                'completed_pickups': completed_pickups,
+                'pending_pickups': pending_pickups,
+                'missed_pickups': missed_pickups,
+                'pickups_by_hour': pickups_by_hour,
+                'food_listings_with_pickups': food_listings_with_pickups
+            }
             
         except Exception as e:
-            logger.error(f"Error sending pickup confirmation: {str(e)}")
-
-    @staticmethod
-    def _send_completion_notifications(pickup):
-        """Send completion notifications"""
-        try:
-            from notifications.services import NotificationService
-            
-            customer = pickup.order.interaction.user
-            business_user = pickup.location.business.user
-            
-            # Customer notification
-            NotificationService.create_notification(
-                recipient=customer,
-                notification_type='business_update',
-                title="Order Completed",
-                message=f"Your order has been successfully picked up. Thank you for using Save n Bite!",
-                data={
-                    'pickup_id': str(pickup.id),
-                    'completion_time': pickup.actual_pickup_time.isoformat(),
-                    'order_id': str(pickup.order.id)
-                }
-            )
-            
-            # Business notification
-            NotificationService.create_notification(
-                recipient=business_user,
-                notification_type='business_update',
-                title="Pickup Completed",
-                message=f"Order {pickup.confirmation_code} has been picked up successfully.",
-                data={
-                    'pickup_id': str(pickup.id),
-                    'customer_id': str(customer.id),
-                    'completion_time': pickup.actual_pickup_time.isoformat()
-                }
-            )
-            
-        except Exception as e:
-            logger.error(f"Error sending completion notifications: {str(e)}")
-
-    @staticmethod
-    def _update_analytics(pickup):
-        """Update pickup analytics"""
-        try:
-            business = pickup.location.business
-            pickup_date = pickup.scheduled_date
-            
-            analytics, created = PickupAnalytics.objects.get_or_create(
-                business=business,
-                date=pickup_date,
-                defaults={
-                    'total_completed': 0,
-                    'total_scheduled': 0,
-                    'on_time_percentage': 0.0,
-                    'efficiency_score': 0.0
-                }
-            )
-            
-            analytics.total_completed += 1
-            
-            # Calculate on-time percentage
-            scheduled_time = timezone.make_aware(
-                datetime.combine(pickup.scheduled_date, pickup.scheduled_start_time)
-            )
-            
-            if pickup.actual_pickup_time <= scheduled_time + timedelta(minutes=15):
-                # Consider on-time if within 15 minutes
-                pass  # Update calculation logic as needed
-            
-            analytics.save()
-            
-        except Exception as e:
-            logger.error(f"Error updating analytics: {str(e)}")
+            logger.error(f"Error getting schedule overview: {str(e)}")
+            return None
 
     @staticmethod
     def send_pickup_reminders():
-        """Send reminder notifications for upcoming pickups"""
+        """Send pickup reminders for upcoming pickups"""
         try:
-            # Get pickups starting in the next hour
+            # Get pickups that need reminders (1 hour before)
             reminder_time = timezone.now() + timedelta(hours=1)
             reminder_date = reminder_time.date()
             reminder_hour = reminder_time.hour
@@ -384,7 +365,7 @@ class PickupSchedulingService:
             upcoming_pickups = ScheduledPickup.objects.filter(
                 scheduled_date=reminder_date,
                 scheduled_start_time__hour=reminder_hour,
-                status='scheduled',
+                status__in=['scheduled', 'confirmed'],
                 reminder_sent=False
             )
             
@@ -407,23 +388,47 @@ class PickupSchedulingService:
             customer = pickup.order.interaction.user
             
             title = "Pickup Reminder"
-            message = f"Reminder: Your pickup is scheduled in 1 hour at {pickup.location.name}. Don't forget to bring your QR code!"
+            message = f"Reminder: Your pickup for '{pickup.food_listing.name}' is scheduled in 1 hour at {pickup.location.name}. Don't forget to bring your QR code!"
             
             NotificationService.create_notification(
                 recipient=customer,
-                notification_type='business_update',
+                notification_type='pickup_reminder',
                 title=title,
                 message=message,
                 data={
                     'pickup_id': str(pickup.id),
                     'confirmation_code': pickup.confirmation_code,
-                    'location': pickup.location.name,
+                    'food_listing_name': pickup.food_listing.name,
+                    'location_name': pickup.location.name,
                     'time_until_pickup': '1 hour'
                 }
             )
             
         except Exception as e:
             logger.error(f"Error sending pickup reminder: {str(e)}")
+
+    @staticmethod
+    def update_pickup_schedule(pickup_schedule, schedule_data):
+        """Update existing pickup schedule"""
+        try:
+            with transaction.atomic():
+                # Update schedule fields
+                for field, value in schedule_data.items():
+                    if hasattr(pickup_schedule, field):
+                        setattr(pickup_schedule, field, value)
+                
+                pickup_schedule.save()
+                
+                # If the schedule changed significantly, we might need to regenerate future slots
+                # For now, just log the change
+                logger.info(f"Updated pickup schedule for {pickup_schedule.food_listing.name}")
+                
+                return pickup_schedule
+                
+        except Exception as e:
+            logger.error(f"Error updating pickup schedule: {str(e)}")
+            raise ValidationError(f"Failed to update pickup schedule: {str(e)}")
+
 
 class PickupOptimizationService:
     """Service for optimizing pickup schedules"""
@@ -463,92 +468,160 @@ class PickupOptimizationService:
             
         except Exception as e:
             logger.error(f"Error optimizing schedule: {str(e)}")
-            return []
+            return None
 
     @staticmethod
     def _analyze_schedule(pickups, optimization):
-        """Analyze current schedule and provide recommendations"""
-        recommendations = []
-        
-        # Check for peak time overload
-        peak_start = optimization.peak_hours_start
-        peak_end = optimization.peak_hours_end
-        
-        peak_pickups = [
-            p for p in pickups 
-            if peak_start <= p.scheduled_start_time <= peak_end
-        ]
-        
-        if len(peak_pickups) > optimization.max_concurrent_pickups:
-            recommendations.append({
-                'type': 'peak_overload',
-                'message': f'Too many pickups ({len(peak_pickups)}) during peak hours',
-                'suggestion': 'Consider spreading some pickups to off-peak times'
-            })
-        
-        # Check for gaps that could be filled
-        # Add more optimization logic as needed
-        
-        return recommendations
-
-    @staticmethod
-    def get_business_analytics(business, days_back=7):
-        """Get pickup analytics for a business"""
+        """Analyze pickup schedule and provide recommendations"""
         try:
-            end_date = timezone.now().date()
-            start_date = end_date - timedelta(days=days_back)
-            
-            analytics = PickupAnalytics.objects.filter(
-                business=business,
-                date__range=[start_date, end_date]
-            ).order_by('-date')
-            
-            # Calculate summary metrics
-            total_scheduled = sum(a.total_scheduled for a in analytics)
-            total_completed = sum(a.total_completed for a in analytics)
-            total_missed = sum(a.total_missed for a in analytics)
-            
-            completion_rate = (total_completed / total_scheduled * 100) if total_scheduled > 0 else 0
-            
-            summary = {
-                'total_scheduled': total_scheduled,
-                'total_completed': total_completed,
-                'total_missed': total_missed,
-                'completion_rate': round(completion_rate, 2),
-                'days_analyzed': days_back,
-                'average_daily_pickups': round(total_scheduled / days_back, 1),
-                'efficiency_trend': PickupOptimizationService._calculate_efficiency_trend(analytics)
+            recommendations = {
+                'total_pickups': pickups.count(),
+                'peak_hours': [],
+                'suggestions': [],
+                'efficiency_score': 0.0
             }
             
-            return {
-                'summary': summary,
-                'daily_analytics': [
-                    {
-                        'date': a.date.isoformat(),
-                        'scheduled': a.total_scheduled,
-                        'completed': a.total_completed,
-                        'missed': a.total_missed,
-                        'on_time_percentage': a.on_time_percentage,
-                        'efficiency_score': a.efficiency_score
-                    }
-                    for a in analytics
-                ]
-            }
+            if not pickups.exists():
+                return recommendations
+            
+            # Group pickups by hour to find peak times
+            pickups_by_hour = {}
+            for pickup in pickups:
+                hour = pickup.scheduled_start_time.hour
+                pickups_by_hour[hour] = pickups_by_hour.get(hour, 0) + 1
+            
+            # Find peak hours (more than max_concurrent_pickups)
+            for hour, count in pickups_by_hour.items():
+                if count > optimization.max_concurrent_pickups:
+                    recommendations['peak_hours'].append({
+                        'hour': hour,
+                        'pickup_count': count,
+                        'suggested_max': optimization.max_concurrent_pickups
+                    })
+                    recommendations['suggestions'].append(
+                        f"Consider spreading out pickups at {hour}:00 - currently {count} scheduled"
+                    )
+            
+            # Calculate efficiency score
+            total_slots = len(pickups_by_hour)
+            if total_slots > 0:
+                avg_pickups_per_slot = pickups.count() / total_slots
+                optimal_pickups_per_slot = optimization.max_concurrent_pickups * 0.8  # 80% utilization
+                efficiency = min(100, (avg_pickups_per_slot / optimal_pickups_per_slot) * 100)
+                recommendations['efficiency_score'] = round(efficiency, 2)
+            
+            return recommendations
             
         except Exception as e:
-            logger.error(f"Error getting business analytics: {str(e)}")
-            return {'summary': {}, 'daily_analytics': []}
+            logger.error(f"Error analyzing schedule: {str(e)}")
+            return {'error': str(e)}
+
+
+class PickupAnalyticsService:
+    """Service for pickup analytics"""
 
     @staticmethod
-    def _calculate_efficiency_trend(analytics):
-        """Calculate efficiency trend over time"""
-        if len(analytics) < 2:
-            return 0
-        
-        recent_efficiency = analytics[0].efficiency_score
-        older_efficiency = analytics[-1].efficiency_score
-        
-        if older_efficiency == 0:
-            return 0
-        
-        return round(((recent_efficiency - older_efficiency) / older_efficiency) * 100, 2)
+    def update_daily_analytics(business, target_date=None):
+        """Update daily analytics for a business"""
+        try:
+            if target_date is None:
+                target_date = timezone.now().date()
+            
+            # Get pickups for the date
+            pickups = ScheduledPickup.objects.filter(
+                location__business=business,
+                scheduled_date=target_date
+            )
+            
+            # Calculate metrics
+            total_scheduled = pickups.count()
+            total_completed = pickups.filter(status='completed').count()
+            total_missed = pickups.filter(status='missed').count()
+            total_cancelled = pickups.filter(status='cancelled').count()
+            
+            # Calculate on-time percentage
+            on_time_pickups = pickups.filter(
+                status='completed',
+                actual_pickup_time__lte=timezone.make_aware(
+                    datetime.combine(target_date, time(23, 59))
+                )
+            ).count()
+            
+            on_time_percentage = (on_time_pickups / total_scheduled * 100) if total_scheduled > 0 else 0
+            
+            # Update or create analytics record
+            analytics, created = PickupAnalytics.objects.update_or_create(
+                business=business,
+                date=target_date,
+                defaults={
+                    'total_scheduled': total_scheduled,
+                    'total_completed': total_completed,
+                    'total_missed': total_missed,
+                    'total_cancelled': total_cancelled,
+                    'on_time_percentage': round(on_time_percentage, 2),
+                    'slot_utilization_rate': PickupAnalyticsService._calculate_slot_utilization(business, target_date),
+                    'efficiency_score': PickupAnalyticsService._calculate_efficiency_score(business, target_date)
+                }
+            )
+            
+            logger.info(f"Updated analytics for {business.business_name} on {target_date}")
+            return analytics
+            
+        except Exception as e:
+            logger.error(f"Error updating analytics: {str(e)}")
+            return None
+
+    @staticmethod
+    def _calculate_slot_utilization(business, target_date):
+        """Calculate slot utilization rate"""
+        try:
+            # Get all time slots for the date
+            total_slots = PickupTimeSlot.objects.filter(
+                pickup_schedule__location__business=business,
+                date=target_date,
+                is_active=True
+            ).count()
+            
+            if total_slots == 0:
+                return 0.0
+            
+            # Get slots with bookings
+            utilized_slots = PickupTimeSlot.objects.filter(
+                pickup_schedule__location__business=business,
+                date=target_date,
+                is_active=True,
+                current_bookings__gt=0
+            ).count()
+            
+            return round((utilized_slots / total_slots) * 100, 2)
+            
+        except Exception as e:
+            logger.error(f"Error calculating slot utilization: {str(e)}")
+            return 0.0
+
+    @staticmethod
+    def _calculate_efficiency_score(business, target_date):
+        """Calculate overall efficiency score"""
+        try:
+            # This is a composite score based on various factors
+            analytics = PickupAnalytics.objects.filter(
+                business=business,
+                date=target_date
+            ).first()
+            
+            if not analytics:
+                return 0.0
+            
+            # Factors: completion rate, on-time rate, slot utilization
+            completion_rate = (analytics.total_completed / max(1, analytics.total_scheduled)) * 100
+            on_time_rate = analytics.on_time_percentage
+            utilization_rate = analytics.slot_utilization_rate
+            
+            # Weighted average
+            efficiency_score = (completion_rate * 0.4) + (on_time_rate * 0.3) + (utilization_rate * 0.3)
+            
+            return round(efficiency_score, 2)
+            
+        except Exception as e:
+            logger.error(f"Error calculating efficiency score: {str(e)}")
+            return 0.0
