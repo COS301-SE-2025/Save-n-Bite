@@ -19,7 +19,8 @@ module.exports = {
     'src/components/auth/LoginForm.jsx',
     'src/components/auth/NavBar.jsx',
     'src/components/auth/NotificationBell.jsx',
-    'src/components/auth/OrderCard.jsx'
+    'src/components/auth/OrderCard.jsx',
+    'src/components/auth/PriceDisplay.jsx'
     
   ],
   coverageDirectory: 'coverage',
