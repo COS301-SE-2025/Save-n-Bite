@@ -136,10 +136,10 @@ main
    - Food listing by businesses (React, Django + Redis).  
    - Browsing food listings (React + Django API, Redis).  
    - Purchase/Request food (React + Django REST, PostgreSQL).  
-   - Notifications system (Django + WebSocket, Redis for real-time pub/sub)    
+   - Notifications system (Django + WebSocket, Redis for real-time pub/sub)  
    - Scheduling and Pickup system (React + Django REST, PostgreSQL + Redis caching)  
-   - Feedback and Revies system (React + Django REST, PostgreSQL + moderation)     
-   - Business Analytics system (Django + Pandas, Scikit-learn for ML predictions, PostgreSQL + Redis)    
+   - Feedback and Revies system (React + Django REST, PostgreSQL + moderation)  
+   - Business Analytics system (Django + Pandas, Scikit-learn for ML predictions, PostgreSQL + Redis)  
 
 3. **SRS Document**:  
    - **📄 [Software Requirements Specification (SRS)](documentation/SRS-V2.md)**  
