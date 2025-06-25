@@ -138,7 +138,7 @@ main
    - Purchase/Request food (React + Django REST, PostgreSQL).
 
 2. **SRS Document**:  
-   -**📄 [Software Requirements Specification (SRS)](documentation/SRS-V2.md)**  
+   - **📄 [Software Requirements Specification (SRS)](documentation/SRS-V2.md)**  
    - Introduction
    - User stories
    - Use Case Diagrams
@@ -170,7 +170,7 @@ We follow a GitFlow-inspired branching strategy to maintain clean and organized 
    - Purchase/Request food (React + Django REST, PostgreSQL).
 
 2. **SRS Document**:  
-   -**📄 [Software Requirements Specification (SRS)](documentation/SRS.md)**  
+   - **📄 [Software Requirements Specification (SRS)](documentation/SRS.md)**  
    - Introduction
    - User stories
    - Use Case Diagrams
