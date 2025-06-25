@@ -1,6 +1,6 @@
 # Software Requirements Specification (SRS)  
 **Project Name:** Save n Bite  
-**Version:** 1.0  
+**Version:** 2.0  
 **Date:** [22/05/2025]  
 **Team:** [Secure Web & Mobile Guild]  
 **GitHub Repository:** [Link to Repo](https://github.com/COS301-SE-2025/Save-n-Bite)
@@ -337,7 +337,7 @@ We adopt an **event-driven architecture (EDA)** to handle real-time data flows b
 
 ---
 
-## 8. Technology Requirements  
+## 8. Technology Choices  
 
 <div align="center">
 
@@ -351,5 +351,13 @@ We adopt an **event-driven architecture (EDA)** to handle real-time data flows b
 | **AI/ML**      | Python, Scikit-learn, Pandas               |
 
 </div>
+
+---
+
+## 8. Deployment Model
+
+---
+
+## 9. Live Deployed System
 
 ---
