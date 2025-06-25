@@ -1028,6 +1028,17 @@ class TestReviewSerializers:
             general_rating=3
         )
         
+        stats = BusinessReviewStats.objects.create(
+            business=completed_interaction.business,
+            total_reviews=10,
+            average_rating=Decimal('4.25'),
+            rating_1_count=0,
+            rating_2_count=1,
+            rating_3_count=2,
+            rating_4_count=3,
+            rating_5_count=4
+        )
+        data = BusinessReviewStatsSerializer(stats).data
         assert data['total_reviews'] == 10
         assert float(data['average_rating']) == 4.25
         # Only test fields that actually exist in the serializer

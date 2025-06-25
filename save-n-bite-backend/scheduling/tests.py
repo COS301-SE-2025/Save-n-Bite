@@ -16,12 +16,12 @@ from decimal import Decimal
 import json
 import uuid
 
-from .models import (
+from scheduling.models import (
     PickupLocation, FoodListingPickupSchedule, PickupTimeSlot, 
     ScheduledPickup, PickupOptimization, PickupAnalytics
 )
-from .services import PickupSchedulingService, PickupOptimizationService, PickupAnalyticsService
-from .serializers import (
+from scheduling.services import PickupSchedulingService, PickupOptimizationService, PickupAnalyticsService
+from scheduling.serializers import (
     PickupLocationSerializer, FoodListingPickupScheduleSerializer,
     PickupTimeSlotSerializer, SchedulePickupSerializer
 )
