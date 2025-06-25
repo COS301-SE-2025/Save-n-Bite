@@ -17,8 +17,9 @@ module.exports = {
     'src/components/auth/FoodListingsGrid.jsx',
     'src/components/auth/FoodProviderCarousel.jsx',
     'src/components/auth/LoginForm.jsx',
-    'src/components/auth/NavBar.jsx'
-    
+    'src/components/auth/NavBar.jsx',
+    'src/components/auth/NotificationBell.jsx',
+    'src/components/auth/OrderCard.jsx'
     
   ],
   coverageDirectory: 'coverage',
