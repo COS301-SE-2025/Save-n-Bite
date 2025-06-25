@@ -987,29 +987,9 @@ AWS_SES_REGION_ENDPOINT = 'email.us-east-1.amazonaws.com'
 
 ---
 
-## 16. Support & Maintenance
+## 16. Appendix
 
-### 16.1 Operational Tasks
-- **Daily**: Monitor delivery rates and error logs
-- **Weekly**: Review notification performance metrics
-- **Monthly**: Clean up old notification data
-- **Quarterly**: Update email templates and review policies
-
-### 16.2 Support Channels
-- **Technical Support**: notifications-support@savenbiteguild.com
-- **Business Support**: business-notifications@savenbiteguild.com
-- **Emergency Escalation**: +27 11 123-4567 (24/7)
-
-### 16.3 Maintenance Windows
-- **Regular Maintenance**: Sundays 01:00-03:00 SAST
-- **Emergency Maintenance**: As needed with 1-hour notice
-- **Template Updates**: Can be deployed without downtime
-
----
-
-## 17. Appendix
-
-### 17.1 Notification Frequency Limits
+### 16.1 Notification Frequency Limits
 
 | User Type | In-App | Email | Push | SMS |
 |-----------|--------|-------|------|-----|
@@ -1018,13 +998,13 @@ AWS_SES_REGION_ENDPOINT = 'email.us-east-1.amazonaws.com'
 | Provider | 200/day | 50/day | 20/day | 10/day |
 | Admin | Unlimited | 100/day | 50/day | 20/day |
 
-### 17.2 Quiet Hours Configuration
+### 16.2 Quiet Hours Configuration
 - **Default**: 22:00 - 07:00 SAST
 - **Customizable**: Users can set personal quiet hours
 - **Emergency Override**: Critical notifications bypass quiet hours
 - **Timezone Aware**: Respects user's local timezone
 
-### 17.3 Glossary
+### 16.3 Glossary
 - **In-App Notification**: Notifications displayed within the application
 - **Push Notification**: Device-level notifications via FCM
 - **WebSocket**: Real-time bidirectional communication protocol
@@ -1033,7 +1013,7 @@ AWS_SES_REGION_ENDPOINT = 'email.us-east-1.amazonaws.com'
 - **Bulk Campaign**: Mass notification sent to multiple users
 - **Engagement Rate**: Percentage of notifications that users interact with
 
-### 17.4 Sample Notification Payloads
+### 16.4 Sample Notification Payloads
 
 #### New Listing Notification
 ```json
@@ -1100,7 +1080,7 @@ AWS_SES_REGION_ENDPOINT = 'email.us-east-1.amazonaws.com'
 }
 ```
 
-### 17.5 WebSocket Connection Management
+### 16.5 WebSocket Connection Management
 
 #### Connection Establishment
 ```javascript
@@ -1195,7 +1175,7 @@ class NotificationConsumer(AsyncWebsocketConsumer):
             return None
 ```
 
-### 17.6 Background Task Processing
+### 16.6 Background Task Processing
 
 #### Celery Tasks
 ```python
@@ -1320,7 +1300,7 @@ def send_push_notification(self, user_id, title, message, data=None):
         return False
 ```
 
-### 17.7 Push Notification Service
+### 16.7 Push Notification Service
 
 #### FCM Integration
 ```python
@@ -1448,7 +1428,7 @@ class PushNotificationService:
             return False
 ```
 
-### 17.8 Email Service Configuration
+### 16.8 Email Service Configuration
 
 #### Email Templates Management
 ```python
@@ -1525,9 +1505,9 @@ class EmailService:
 
 ---
 
-## 18. API Rate Limiting
+## 17. API Rate Limiting
 
-### 18.1 Rate Limit Configuration
+### 17.1 Rate Limit Configuration
 ```python
 # settings.py
 REST_FRAMEWORK = {
@@ -1553,7 +1533,7 @@ class BulkNotificationThrottle(UserRateThrottle):
     scope = 'bulk_notifications'
 ```
 
-### 18.2 Rate Limiting by User Type
+### 17.2 Rate Limiting by User Type
 ```python
 # notifications/throttles.py
 from rest_framework.throttling import UserRateThrottle
@@ -1580,9 +1560,9 @@ class UserTypeBasedThrottle(UserRateThrottle):
 
 ---
 
-## 19. Data Migration & Backup
+## 18. Data Migration & Backup
 
-### 19.1 Database Migrations
+### 18.1 Database Migrations
 ```python
 # Example migration for notification preferences
 from django.db import migrations
@@ -1614,7 +1594,7 @@ class Migration(migrations.Migration):
     ]
 ```
 
-### 19.2 Backup Strategy
+### 18.2 Backup Strategy
 ```bash
 #!/bin/bash
 # notifications_backup.sh
