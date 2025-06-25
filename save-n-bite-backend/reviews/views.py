@@ -1,5 +1,6 @@
 # reviews/views.py
 
+from django.contrib.auth.decorators import user_passes_test
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
@@ -334,7 +335,7 @@ def get_interaction_review(request, interaction_id):
 @permission_classes([IsAuthenticated])
 def get_all_reviews_admin(request):
     """Get all reviews for admin moderation (admin only)"""
-    if not request.user.admin_rights:
+    if not (request.user.is_superuser or request.user.is_staff):
         return Response({
             'error': {
                 'code': 'PERMISSION_DENIED',
@@ -377,7 +378,7 @@ def get_all_reviews_admin(request):
 @permission_classes([IsAuthenticated])
 def moderate_review(request, review_id):
     """Moderate a review (admin only)"""
-    if not request.user.admin_rights:
+    if not (request.user.is_superuser or request.user.is_staff):
         return Response({
             'error': {
                 'code': 'PERMISSION_DENIED',
@@ -452,7 +453,7 @@ def moderate_review(request, review_id):
 @permission_classes([IsAuthenticated])
 def get_moderation_logs(request, review_id):
     """Get moderation history for a review (admin only)"""
-    if not request.user.admin_rights:
+    if not (request.user.is_superuser or request.user.is_staff):
         return Response({
             'error': {
                 'code': 'PERMISSION_DENIED',
@@ -489,6 +490,16 @@ def get_moderation_logs(request, review_id):
         'moderation_logs': logs_data,
         'total_logs': len(logs_data)
     }, status=status.HTTP_200_OK)
+
+def is_admin_user(user):
+    """Check if user has admin permissions using Django's permission system"""
+    return user.is_authenticated and (
+        user.is_superuser or 
+        user.is_staff or
+        user.has_perm('reviews.view_review') or  # Specific permission
+        user.has_perm('reviews.change_review') or
+        user.has_perm('reviews.delete_review')
+    )
 
 
 # =============== ANALYTICS ENDPOINTS ===============
@@ -555,8 +566,8 @@ def get_user_review_summary(request):
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def get_review_analytics_admin(request):
-    """Get system-wide review analytics (admin only)"""
-    if not request.user.admin_rights:
+    """Get all reviews for admin moderation (admin only)"""
+    if not (request.user.is_superuser or request.user.is_staff):
         return Response({
             'error': {
                 'code': 'PERMISSION_DENIED',
