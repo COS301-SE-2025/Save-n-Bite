@@ -1,160 +1,149 @@
 # scheduling/serializers.py
 
 from rest_framework import serializers
-from django.contrib.auth import get_user_model
+from django.utils import timezone
+from datetime import datetime, date, time
 from .models import (
-    PickupLocation, PickupTimeSlot, ScheduledPickup, 
-    PickupOptimization, PickupAnalytics
+    PickupLocation, FoodListingPickupSchedule, PickupTimeSlot, 
+    ScheduledPickup, PickupOptimization, PickupAnalytics
 )
+from food_listings.models import FoodListing
 from interactions.models import Order
-from datetime import datetime, time
 
-User = get_user_model()
 
 class PickupLocationSerializer(serializers.ModelSerializer):
-    """Serializer for pickup locations"""
+    """Serializer for pickup locations - unchanged"""
     
     class Meta:
         model = PickupLocation
         fields = [
-            'id', 'name', 'address', 'instructions', 'contact_person', 
-            'contact_phone', 'latitude', 'longitude', 'is_active', 
+            'id', 'name', 'address', 'instructions', 'contact_person',
+            'contact_phone', 'latitude', 'longitude', 'is_active',
             'created_at', 'updated_at'
         ]
         read_only_fields = ['id', 'created_at', 'updated_at']
 
-    def validate_name(self, value):
-        """Ensure location name is unique for the business"""
+    def validate(self, data):
         business = self.context.get('business')
-        if business:
+        if business and 'name' in data:
+            # Check for duplicate names within the same business
             existing = PickupLocation.objects.filter(
                 business=business, 
-                name=value
+                name=data['name']
             ).exclude(id=self.instance.id if self.instance else None)
             
             if existing.exists():
-                raise serializers.ValidationError(
-                    "A pickup location with this name already exists for your business"
-                )
-        return value
+                raise serializers.ValidationError({
+                    'name': 'A pickup location with this name already exists for your business.'
+                })
+        
+        return data
+
+
+class FoodListingPickupScheduleSerializer(serializers.ModelSerializer):
+    """Serializer for food listing pickup schedules"""
+    
+    food_listing_name = serializers.CharField(source='food_listing.name', read_only=True)
+    location_name = serializers.CharField(source='location.name', read_only=True)
+    business_name = serializers.CharField(source='location.business.business_name', read_only=True)
+    
+    # Computed fields
+    start_time = serializers.ReadOnlyField()
+    end_time = serializers.ReadOnlyField()
+    window_duration_minutes = serializers.ReadOnlyField()
+    slot_duration_minutes = serializers.ReadOnlyField()
+    generated_slots = serializers.SerializerMethodField()
+    
+    class Meta:
+        model = FoodListingPickupSchedule
+        fields = [
+            'id', 'food_listing', 'food_listing_name', 'location', 'location_name',
+            'business_name', 'pickup_window', 'total_slots', 'max_orders_per_slot',
+            'slot_buffer_minutes', 'is_active', 'start_time', 'end_time',
+            'window_duration_minutes', 'slot_duration_minutes', 'generated_slots',
+            'created_at', 'updated_at'
+        ]
+        read_only_fields = ['id', 'created_at', 'updated_at']
+
+    def get_generated_slots(self, obj):
+        """Get the time slots that would be generated for this schedule"""
+        return obj.generate_time_slots()
+
+    def validate_pickup_window(self, value):
+        """Validate the pickup window format"""
+        try:
+            start_str, end_str = value.split('-')
+            start_time = datetime.strptime(start_str.strip(), '%H:%M').time()
+            end_time = datetime.strptime(end_str.strip(), '%H:%M').time()
+            
+            if start_time >= end_time:
+                raise serializers.ValidationError("Start time must be before end time")
+            
+            return value
+        except (ValueError, AttributeError):
+            raise serializers.ValidationError("Pickup window must be in format 'HH:MM-HH:MM'")
+
+    def validate(self, data):
+        """Validate that location belongs to the same business as food listing"""
+        food_listing = data.get('food_listing')
+        location = data.get('location')
+        
+        if food_listing and location:
+            if location.business != food_listing.provider.provider_profile:
+                raise serializers.ValidationError({
+                    'location': 'Pickup location must belong to the same business that owns the food listing'
+                })
+        
+        return data
+
 
 class PickupTimeSlotSerializer(serializers.ModelSerializer):
-    """Serializer for pickup time slots"""
-    location_name = serializers.CharField(source='location.name', read_only=True)
-    day_name = serializers.CharField(source='get_day_of_week_display', read_only=True)
+    """Serializer for individual time slots"""
+    
+    food_listing_name = serializers.CharField(source='pickup_schedule.food_listing.name', read_only=True)
+    location_name = serializers.CharField(source='pickup_schedule.location.name', read_only=True)
+    is_available = serializers.ReadOnlyField()
+    available_spots = serializers.ReadOnlyField()
     
     class Meta:
         model = PickupTimeSlot
         fields = [
-            'id', 'location', 'location_name', 'day_of_week', 'day_name',
-            'start_time', 'end_time', 'slot_duration', 'max_orders_per_slot',
-            'buffer_time', 'advance_booking_hours', 'is_active',
-            'created_at', 'updated_at'
+            'id', 'pickup_schedule', 'slot_number', 'start_time', 'end_time',
+            'max_orders_per_slot', 'date', 'current_bookings', 'is_active',
+            'food_listing_name', 'location_name', 'is_available', 'available_spots',
+            'created_at'
         ]
-        read_only_fields = ['id', 'created_at', 'updated_at', 'location_name', 'day_name']
+        read_only_fields = ['id', 'current_bookings', 'created_at']
 
-    def validate(self, data):
-        """Validate time slot data"""
-        start_time = data.get('start_time')
-        end_time = data.get('end_time')
-        
-        if start_time and end_time and start_time >= end_time:
-            raise serializers.ValidationError("Start time must be before end time")
-        
-        # Validate location belongs to the business
-        location = data.get('location')
-        business = self.context.get('business')
-        if business and location and location.business != business:
-            raise serializers.ValidationError("Location must belong to your business")
-        
-        return data
 
-class AvailableSlotSerializer(serializers.Serializer):
-    """Serializer for available pickup slots"""
-    time_slot_id = serializers.UUIDField()
-    location_id = serializers.UUIDField()
-    location_name = serializers.CharField()
-    start_time = serializers.TimeField()
-    end_time = serializers.TimeField()
-    date = serializers.DateField()
-    available_capacity = serializers.IntegerField()
-
-class SchedulePickupSerializer(serializers.Serializer):
-    """Serializer for scheduling a pickup"""
-    order_id = serializers.UUIDField()
-    time_slot_id = serializers.UUIDField()
-    location_id = serializers.UUIDField()
-    date = serializers.DateField()
-    start_time = serializers.TimeField()
-    end_time = serializers.TimeField()
-    special_instructions = serializers.CharField(required=False, allow_blank=True)
-
-    def validate_order_id(self, value):
-        """Validate order exists and belongs to user"""
-        user = self.context.get('user')
-        try:
-            order = Order.objects.get(id=value, interaction__user=user)
-            if hasattr(order, 'scheduled_pickup'):
-                raise serializers.ValidationError("This order already has a scheduled pickup")
-            return value
-        except Order.DoesNotExist:
-            raise serializers.ValidationError("Order not found")
-
-    def validate_date(self, value):
-        """Validate pickup date is not in the past"""
-        if value < datetime.now().date():
-            raise serializers.ValidationError("Cannot schedule pickup for past dates")
-        return value
-
-class ScheduledPickupSerializer(serializers.ModelSerializer):
-    """Serializer for scheduled pickups"""
-    order_details = serializers.SerializerMethodField()
-    location_details = serializers.SerializerMethodField()
-    customer_details = serializers.SerializerMethodField()
-    qr_code_image = serializers.SerializerMethodField()
-    status_display = serializers.CharField(source='get_status_display', read_only=True)
-    is_today = serializers.BooleanField(read_only=True)
-    is_upcoming = serializers.BooleanField(read_only=True)
-
+class AvailableSlotSerializer(serializers.ModelSerializer):
+    """Serializer for available pickup slots (customer view)"""
+    
+    food_listing = serializers.SerializerMethodField()
+    location = serializers.SerializerMethodField()
+    
     class Meta:
-        model = ScheduledPickup
+        model = PickupTimeSlot
         fields = [
-            'id', 'order_details', 'location_details', 'customer_details',
-            'scheduled_date', 'scheduled_start_time', 'scheduled_end_time',
-            'actual_pickup_time', 'pickup_notes', 'status', 'status_display',
-            'confirmation_code', 'qr_code_data', 'qr_code_image',
-            'reminder_sent', 'confirmation_sent', 'is_today', 'is_upcoming',
-            'created_at', 'updated_at'
+            'id', 'slot_number', 'start_time', 'end_time', 'date',
+            'available_spots', 'food_listing', 'location'
         ]
-        read_only_fields = [
-            'id', 'confirmation_code', 'qr_code_data', 'reminder_sent',
-            'confirmation_sent', 'created_at', 'updated_at'
-        ]
-
-    def get_order_details(self, obj):
-        """Get order information"""
-        order = obj.order
-        interaction = order.interaction
-        
+    
+    def get_food_listing(self, obj):
+        """Get food listing information"""
+        listing = obj.pickup_schedule.food_listing
         return {
-            'order_id': str(order.id),
-            'total_amount': float(interaction.total_amount),
-            'item_count': interaction.items.count(),
-            'items': [
-                {
-                    'name': item.name,
-                    'quantity': item.quantity,
-                    'price': float(item.price_per_item)
-                }
-                for item in interaction.items.all()
-            ]
+            'id': listing.id,
+            'name': listing.name,
+            'description': listing.description,
+            'pickup_window': listing.pickup_window
         }
-
-    def get_location_details(self, obj):
-        """Get pickup location information"""
-        location = obj.location
+    
+    def get_location(self, obj):
+        """Get location information"""
+        location = obj.pickup_schedule.location
         return {
-            'id': str(location.id),
+            'id': location.id,
             'name': location.name,
             'address': location.address,
             'instructions': location.instructions,
@@ -162,57 +151,252 @@ class ScheduledPickupSerializer(serializers.ModelSerializer):
             'contact_phone': location.contact_phone
         }
 
-    def get_customer_details(self, obj):
+
+class SchedulePickupSerializer(serializers.Serializer):
+    """Serializer for scheduling a pickup"""
+    
+    food_listing_id = serializers.UUIDField()
+    time_slot_id = serializers.UUIDField()
+    date = serializers.DateField()
+    customer_notes = serializers.CharField(required=False, allow_blank=True, max_length=500)
+    
+    def validate_food_listing_id(self, value):
+        """Validate food listing exists and is available"""
+        try:
+            listing = FoodListing.objects.get(id=value, status='active')
+            if listing.quantity_available <= 0:
+                raise serializers.ValidationError("This food listing is no longer available")
+            return value
+        except FoodListing.DoesNotExist:
+            raise serializers.ValidationError("Food listing not found or inactive")
+    
+    def validate_time_slot_id(self, value):
+        """Validate time slot exists and is available"""
+        try:
+            slot = PickupTimeSlot.objects.get(id=value, is_active=True)
+            if not slot.is_available:
+                raise serializers.ValidationError("This time slot is no longer available")
+            return value
+        except PickupTimeSlot.DoesNotExist:
+            raise serializers.ValidationError("Time slot not found or inactive")
+    
+    def validate_date(self, value):
+        """Validate date is not in the past"""
+        if value < timezone.now().date():
+            raise serializers.ValidationError("Cannot schedule pickup for past dates")
+        return value
+    
+    def validate(self, data):
+        """Cross-validate the data"""
+        try:
+            food_listing = FoodListing.objects.get(id=data['food_listing_id'])
+            time_slot = PickupTimeSlot.objects.get(id=data['time_slot_id'])
+            
+            # Ensure time slot belongs to the food listing
+            if time_slot.pickup_schedule.food_listing != food_listing:
+                raise serializers.ValidationError({
+                    'time_slot_id': 'Time slot does not belong to the specified food listing'
+                })
+            
+            # Ensure the date matches the time slot date
+            if time_slot.date != data['date']:
+                raise serializers.ValidationError({
+                    'date': 'Date does not match the time slot date'
+                })
+            
+        except (FoodListing.DoesNotExist, PickupTimeSlot.DoesNotExist):
+            pass  # Already handled in individual field validators
+        
+        return data
+
+
+class ScheduledPickupSerializer(serializers.ModelSerializer):
+    """Serializer for scheduled pickups"""
+    
+    customer = serializers.SerializerMethodField()
+    food_listing = serializers.SerializerMethodField()
+    location = serializers.SerializerMethodField()
+    is_upcoming = serializers.ReadOnlyField()
+    is_today = serializers.ReadOnlyField()
+    
+    class Meta:
+        model = ScheduledPickup
+        fields = [
+            'id', 'order', 'food_listing', 'time_slot', 'location',
+            'scheduled_date', 'scheduled_start_time', 'scheduled_end_time',
+            'actual_pickup_time', 'status', 'confirmation_code',
+            'customer', 'customer_notes', 'business_notes',
+            'is_upcoming', 'is_today', 'created_at', 'updated_at'
+        ]
+        read_only_fields = [
+            'id', 'confirmation_code', 'qr_code_data', 'is_upcoming', 
+            'is_today', 'created_at', 'updated_at'
+        ]
+    
+    def get_customer(self, obj):
         """Get customer information"""
         user = obj.order.interaction.user
-        
-        customer_data = {
-            'id': str(user.UserID),
+        return {
+            'id': user.id,
+            'full_name': getattr(user.customer_profile, 'full_name', ''),
             'email': user.email,
-            'user_type': user.user_type,
-            'name': None
+            'phone': getattr(user.customer_profile, 'phone_number', '')
         }
-        
-        if user.user_type == 'customer' and hasattr(user, 'customer_profile'):
-            customer_data['name'] = user.customer_profile.full_name
-        elif user.user_type == 'ngo' and hasattr(user, 'ngo_profile'):
-            customer_data['name'] = user.ngo_profile.organisation_name
-        
-        return customer_data
+    
+    def get_food_listing(self, obj):
+        """Get food listing information"""
+        listing = obj.food_listing
+        return {
+            'id': listing.id,
+            'name': listing.name,
+            'description': listing.description,
+            'quantity': obj.order.total_quantity,
+            'pickup_window': listing.pickup_window
+        }
+    
+    def get_location(self, obj):
+        """Get pickup location information"""
+        location = obj.location
+        return {
+            'id': location.id,
+            'name': location.name,
+            'address': location.address,
+            'instructions': location.instructions,
+            'contact_person': location.contact_person,
+            'contact_phone': location.contact_phone
+        }
 
-    def get_qr_code_image(self, obj):
-        """Get QR code image for pickup"""
-        try:
-            from .services import PickupSchedulingService
-            return PickupSchedulingService.generate_qr_code(obj)
-        except Exception:
-            return None
 
 class PickupVerificationSerializer(serializers.Serializer):
     """Serializer for pickup verification"""
+    
     confirmation_code = serializers.CharField(max_length=10)
-    completion_notes = serializers.CharField(required=False, allow_blank=True)
-
+    
     def validate_confirmation_code(self, value):
-        """Validate confirmation code format"""
-        if len(value) != 6:
-            raise serializers.ValidationError("Confirmation code must be 6 characters")
-        return value.upper()
+        """Validate confirmation code exists"""
+        business = self.context.get('business')
+        
+        try:
+            pickup = ScheduledPickup.objects.get(
+                confirmation_code=value,
+                location__business=business,
+                status__in=['scheduled', 'confirmed']
+            )
+            return value
+        except ScheduledPickup.DoesNotExist:
+            raise serializers.ValidationError("Invalid confirmation code or pickup not found")
+
 
 class QRCodeVerificationSerializer(serializers.Serializer):
     """Serializer for QR code verification"""
+    
     qr_data = serializers.JSONField()
-    completion_notes = serializers.CharField(required=False, allow_blank=True)
-
+    
     def validate_qr_data(self, value):
-        """Validate QR code data structure"""
-        required_fields = ['pickup_id', 'order_id', 'confirmation_code', 'business_id']
+        """Validate QR code data"""
+        required_fields = ['pickup_id', 'confirmation_code', 'business_id']
         
         for field in required_fields:
             if field not in value:
                 raise serializers.ValidationError(f"QR code missing required field: {field}")
         
+        business = self.context.get('business')
+        if str(business.id) != value.get('business_id'):
+            raise serializers.ValidationError("QR code is not for this business")
+        
         return value
+
+
+class BusinessScheduleOverviewSerializer(serializers.Serializer):
+    """Serializer for business schedule overview"""
+    
+    date = serializers.DateField()
+    total_pickups = serializers.IntegerField()
+    completed_pickups = serializers.IntegerField()
+    pending_pickups = serializers.IntegerField()
+    missed_pickups = serializers.IntegerField()
+    pickups_by_hour = serializers.DictField()
+    food_listings_with_pickups = serializers.ListField()
+
+
+class CustomerScheduleSerializer(serializers.ModelSerializer):
+    """Serializer for customer's pickup schedule"""
+    
+    food_listing = serializers.SerializerMethodField()
+    business = serializers.SerializerMethodField()
+    location = serializers.SerializerMethodField()
+    
+    class Meta:
+        model = ScheduledPickup
+        fields = [
+            'id', 'scheduled_date', 'scheduled_start_time', 'scheduled_end_time',
+            'status', 'confirmation_code', 'food_listing', 'business',
+            'location', 'customer_notes', 'is_upcoming', 'is_today'
+        ]
+    
+    def get_food_listing(self, obj):
+        """Get food listing information"""
+        return {
+            'id': obj.food_listing.id,
+            'name': obj.food_listing.name,
+            'description': obj.food_listing.description,
+            'pickup_window': obj.food_listing.pickup_window,
+            'expiry_date': obj.food_listing.expiry_date
+        }
+    
+    def get_business(self, obj):
+        """Get business information"""
+        business = obj.location.business
+        return {
+            'id': business.id,
+            'business_name': business.business_name,
+            'business_address': business.business_address,
+            'business_contact': business.business_contact
+        }
+    
+    def get_location(self, obj):
+        """Get pickup location information"""
+        return {
+            'id': obj.location.id,
+            'name': obj.location.name,
+            'address': obj.location.address,
+            'instructions': obj.location.instructions,
+            'contact_person': obj.location.contact_person,
+            'contact_phone': obj.location.contact_phone
+        }
+
+
+class PickupHistorySerializer(serializers.ModelSerializer):
+    """Serializer for pickup history"""
+    
+    food_listing_name = serializers.CharField(source='food_listing.name', read_only=True)
+    customer_name = serializers.SerializerMethodField()
+    location_name = serializers.CharField(source='location.name', read_only=True)
+    duration = serializers.SerializerMethodField()
+    
+    class Meta:
+        model = ScheduledPickup
+        fields = [
+            'id', 'scheduled_date', 'scheduled_start_time', 'scheduled_end_time',
+            'actual_pickup_time', 'status', 'confirmation_code',
+            'food_listing_name', 'customer_name', 'location_name',
+            'duration', 'customer_notes', 'business_notes'
+        ]
+    
+    def get_customer_name(self, obj):
+        """Get customer name"""
+        return getattr(obj.order.interaction.user.customer_profile, 'full_name', 'Unknown')
+    
+    def get_duration(self, obj):
+        """Calculate pickup duration if completed"""
+        if obj.actual_pickup_time and obj.status == 'completed':
+            scheduled_datetime = timezone.make_aware(
+                datetime.combine(obj.scheduled_date, obj.scheduled_start_time)
+            )
+            duration = obj.actual_pickup_time - scheduled_datetime
+            return int(duration.total_seconds() / 60)  # Return in minutes
+        return None
+
 
 class PickupOptimizationSerializer(serializers.ModelSerializer):
     """Serializer for pickup optimization settings"""
@@ -221,105 +405,95 @@ class PickupOptimizationSerializer(serializers.ModelSerializer):
         model = PickupOptimization
         fields = [
             'id', 'max_concurrent_pickups', 'optimal_pickup_duration',
-            'peak_hours_start', 'peak_hours_end', 'average_pickup_duration',
-            'peak_day_demand', 'efficiency_score', 'auto_optimize',
-            'last_optimization', 'created_at', 'updated_at'
+            'peak_hours_start', 'peak_hours_end', 'auto_optimize',
+            'auto_send_reminders', 'reminder_hours_before',
+            'last_optimization', 'optimization_score'
         ]
-        read_only_fields = [
-            'id', 'average_pickup_duration', 'peak_day_demand', 
-            'efficiency_score', 'last_optimization', 'created_at', 'updated_at'
-        ]
+        read_only_fields = ['id', 'last_optimization', 'optimization_score']
+
 
 class PickupAnalyticsSerializer(serializers.ModelSerializer):
     """Serializer for pickup analytics"""
+    
     completion_rate = serializers.SerializerMethodField()
+    no_show_rate = serializers.SerializerMethodField()
     
     class Meta:
         model = PickupAnalytics
         fields = [
-            'id', 'date', 'total_scheduled', 'total_completed', 
-            'total_missed', 'total_cancelled', 'completion_rate',
-            'average_pickup_duration', 'on_time_percentage', 
-            'customer_satisfaction_score', 'peak_hour', 
-            'busiest_location', 'efficiency_score', 'created_at'
+            'id', 'date', 'total_scheduled', 'total_completed', 'total_missed',
+            'total_cancelled', 'on_time_percentage', 'average_pickup_duration',
+            'customer_satisfaction_rating', 'slot_utilization_rate',
+            'peak_hour_efficiency', 'efficiency_score', 'completion_rate',
+            'no_show_rate'
         ]
-        read_only_fields = ['id', 'created_at']
-
-    def get_completion_rate(self, obj):
-        """Calculate completion rate percentage"""
-        if obj.total_scheduled == 0:
-            return 0
-        return round((obj.total_completed / obj.total_scheduled) * 100, 2)
-
-class BusinessScheduleOverviewSerializer(serializers.Serializer):
-    """Serializer for business schedule overview"""
-    date = serializers.DateField()
-    total_pickups = serializers.IntegerField()
-    pending_pickups = serializers.IntegerField()
-    completed_pickups = serializers.IntegerField()
-    missed_pickups = serializers.IntegerField()
-    peak_hours = serializers.ListField(child=serializers.TimeField())
-    locations = serializers.ListField(child=serializers.CharField())
-
-class CustomerScheduleSerializer(serializers.Serializer):
-    """Serializer for customer's scheduled pickups"""
-    pickup_id = serializers.UUIDField()
-    business_name = serializers.CharField()
-    business_logo = serializers.URLField(allow_null=True)
-    location_name = serializers.CharField()
-    location_address = serializers.CharField()
-    scheduled_date = serializers.DateField()
-    scheduled_time = serializers.TimeField()
-    confirmation_code = serializers.CharField()
-    status = serializers.CharField()
-    qr_code_image = serializers.CharField(allow_null=True)
-    order_total = serializers.DecimalField(max_digits=10, decimal_places=2)
-
-class PickupHistorySerializer(serializers.ModelSerializer):
-    """Serializer for pickup history"""
-    business_name = serializers.CharField(source='location.business.business_name', read_only=True)
-    customer_name = serializers.SerializerMethodField()
-    duration_minutes = serializers.SerializerMethodField()
+        read_only_fields = ['id']
     
-    class Meta:
-        model = ScheduledPickup
-        fields = [
-            'id', 'business_name', 'customer_name', 'scheduled_date',
-            'scheduled_start_time', 'actual_pickup_time', 'status',
-            'confirmation_code', 'duration_minutes', 'pickup_notes'
-        ]
+    def get_completion_rate(self, obj):
+        """Calculate completion rate"""
+        if obj.total_scheduled > 0:
+            return round((obj.total_completed / obj.total_scheduled) * 100, 2)
+        return 0.0
+    
+    def get_no_show_rate(self, obj):
+        """Calculate no-show rate"""
+        if obj.total_scheduled > 0:
+            return round((obj.total_missed / obj.total_scheduled) * 100, 2)
+        return 0.0
 
-    def get_customer_name(self, obj):
-        """Get customer display name"""
-        user = obj.order.interaction.user
-        if user.user_type == 'customer' and hasattr(user, 'customer_profile'):
-            return user.customer_profile.full_name
-        elif user.user_type == 'ngo' and hasattr(user, 'ngo_profile'):
-            return user.ngo_profile.organisation_name
-        return user.email
 
-    def get_duration_minutes(self, obj):
-        """Calculate pickup duration in minutes"""
-        if obj.actual_pickup_time and obj.scheduled_start_time:
-            scheduled_datetime = datetime.combine(
-                obj.scheduled_date, 
-                obj.scheduled_start_time
-            )
+# Additional serializers for specific use cases
+
+class CreatePickupScheduleSerializer(serializers.Serializer):
+    """Serializer for creating pickup schedule when creating food listing"""
+    
+    location_id = serializers.UUIDField()
+    pickup_window = serializers.CharField(max_length=50)
+    total_slots = serializers.IntegerField(min_value=1, max_value=20, default=4)
+    max_orders_per_slot = serializers.IntegerField(min_value=1, max_value=50, default=5)
+    slot_buffer_minutes = serializers.IntegerField(min_value=0, max_value=60, default=5)
+    
+    def validate_location_id(self, value):
+        """Validate location exists and is active"""
+        try:
+            location = PickupLocation.objects.get(id=value, is_active=True)
+            return value
+        except PickupLocation.DoesNotExist:
+            raise serializers.ValidationError("Pickup location not found or inactive")
+    
+    def validate_pickup_window(self, value):
+        """Validate pickup window format"""
+        try:
+            start_str, end_str = value.split('-')
+            start_time = datetime.strptime(start_str.strip(), '%H:%M').time()
+            end_time = datetime.strptime(end_str.strip(), '%H:%M').time()
             
-            if obj.actual_pickup_time.date() == obj.scheduled_date:
-                duration = obj.actual_pickup_time.time()
-                scheduled_time = obj.scheduled_start_time
-                
-                # Simple duration calculation (this could be improved)
-                duration_delta = datetime.combine(datetime.min, duration) - datetime.combine(datetime.min, scheduled_time)
-                return int(duration_delta.total_seconds() / 60)
-        
-        return None
+            if start_time >= end_time:
+                raise serializers.ValidationError("Start time must be before end time")
+            
+            return value
+        except (ValueError, AttributeError):
+            raise serializers.ValidationError("Pickup window must be in format 'HH:MM-HH:MM'")
 
-class PickupReminderSerializer(serializers.Serializer):
-    """Serializer for pickup reminder settings"""
-    pickup_id = serializers.UUIDField()
-    reminder_time_minutes = serializers.IntegerField(min_value=15, max_value=1440)  # 15 minutes to 24 hours
-    send_email = serializers.BooleanField(default=True)
-    send_push = serializers.BooleanField(default=True)
-    custom_message = serializers.CharField(required=False, allow_blank=True, max_length=255)
+
+class GenerateTimeSlotsSerializer(serializers.Serializer):
+    """Serializer for generating time slots for a specific date"""
+    
+    food_listing_id = serializers.UUIDField()
+    date = serializers.DateField()
+    
+    def validate_food_listing_id(self, value):
+        """Validate food listing has a pickup schedule"""
+        try:
+            listing = FoodListing.objects.get(id=value, status='active')
+            if not hasattr(listing, 'pickup_schedule'):
+                raise serializers.ValidationError("Food listing does not have a pickup schedule configured")
+            return value
+        except FoodListing.DoesNotExist:
+            raise serializers.ValidationError("Food listing not found or inactive")
+    
+    def validate_date(self, value):
+        """Validate date is not in the past"""
+        if value < timezone.now().date():
+            raise serializers.ValidationError("Cannot generate slots for past dates")
+        return value
