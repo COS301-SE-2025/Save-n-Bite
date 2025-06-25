@@ -22,7 +22,7 @@ jobs:
           cache: 'npm'
           cache-dependency-path: './save-n-bite-frontend/package-lock.json'
       - name: Install Dependencies
-        run: npm ci
+        run: npm install-clean
       - name: Run Tests with Coverage
         run: npm run test:coverage
       - name: Upload coverage reports to Codecov
