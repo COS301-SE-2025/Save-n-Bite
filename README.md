@@ -138,7 +138,7 @@ main
    - Browsing food listings (React + Django API, Redis).
    - Purchase/Request food (React + Django REST, PostgreSQL).  
      
-***For Demo 2***  
+ ***For Demo 2***  
    - Notifications system
    - Scheduling and Pickup system
    - Feedback and Revies system
