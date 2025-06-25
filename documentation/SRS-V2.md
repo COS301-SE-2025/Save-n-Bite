@@ -250,31 +250,270 @@ R11: **Gamification**
 
 ---
 
-## 7. Architectural Requirements  
+## 7. Architectural Requirements
 
 ### 7.1 Quality Requirements and Constraints 
 
-<div align="center">
- 
-| **Category**               | **Requirement**                                                                 | **Associated Quality Attribute/Constraint**                                                                 |
-|----------------------------|---------------------------------------------------------------------------------|-------------------------------------------------------------------------------------------|
-|                            | Secure verification to prevent misuse                                           |  Security constraint                                                             |
-| **User Access**             | Role-based access (Provider/Organization/Consumer)                             |  Security model                                                                  |
-|                            | Secure login for all users                                                      |  Security standard                                                               |
-| **Security & Compliance**   | Fraud prevention (bulk purchase limits, etc.)                                  |  Security policy                                                                 |
-|                            | Compliance with food safety regulations                                         |  Legal/regulatory constraint                                                     |
-| **Platform UX**             | Responsive web app                                                             |  Usability standard/interoperability                                             |
-|                            | Notifications for popular/upcoming listings                                     |  Performance/usability                                                           |
-|                            | Only verified users access core features                                        |  Security constraint                                                             |
-| **Logistics (Optional)**    | Route optimization for bulk donations                                          |  Performance optimization                                                        |
-| **Analytics (Optional)**    | Impact reporting (meals saved, CO₂ reduced)                                    |  Analytics/scalability                                                           |
-| **Architecture**            | Cloud-hosted deployment (Azure)                                                |  Infrastructure constraint                                                       |
-|                            | Modular system design                                                           |  Maintainability                                                                 |
-|                            | Secure authentication                                                           |  Security                                                                        |
-| **Design**                  | UI/UX best practices                                                           |  Usability                                                                       |
-|                            | First-launch tutorial                                                           |  User onboarding                                                                 | 
+#### **Priority 1: Security - Authentication & Authorization**
+**Description**: Secure user authentication and role-based access control system  
+**Justification**: Critical for food safety compliance, fraud prevention, and user trust  
+**Quantification Metrics**:
+- 100% of protected API endpoints require authentication
+- 4 distinct user roles with specific permissions (customer, provider, organization, admin)
+- JWT token-based authentication with configurable expiration
+- Password validation with 4 security validators
+- Zero unauthorized access to protected resources
 
- </div>
+**Implementation Evidence**:
+- Django REST Framework with JWT authentication
+- Role-based permissions implemented across all 7 Django applications
+- Custom user model with user_type field for role differentiation
+- Comprehensive permission decorators on all sensitive endpoints
+
+**Testing Strategy**:
+- Automated security tests implemented across all unit test suits
+
+---
+
+#### **Priority 2: Modularity - Component Independence**
+**Description**: Loosely coupled system architecture with clear separation of concerns
+**Justification**: Enables parallel development, easier maintenance, and system scalability
+**Quantification Metrics**:
+- 7 independent Django applications with distinct responsibilities
+- Minimal circular dependencies between modules
+- Each module independently testable and deployable
+- Clear API contracts between components
+- High code cohesion within modules
+
+**Implementation Evidence**:
+```
+System Architecture:
+├── authentication/    
+├── food_listings/     
+├── interactions/      
+├── notifications/     
+├── analytics/         
+├── scheduling/        
+└── reviews/          
+```
+
+**Module Responsibilities**:
+- **Authentication**: User registration, login, JWT management, role-based permissions
+- **Food Listings**: Food item management, search, filtering, availability tracking
+- **Interactions**: Shopping cart, purchase flows, order management
+- **Notifications**: User alerts, email notifications, preference management
+- **Analytics**: Business metrics, waste reduction tracking, impact reporting
+- **Scheduling**: Pickup coordination, time slot management, logistics
+- **Reviews**: User feedback, rating system, content moderation
+
+**Testing Strategy**:
+- Independent unit testing per module
+- Integration testing between modules
+- API contract compliance testing
+
+---
+
+#### **Priority 3: Performance - Database Efficiency**
+**Description**: Optimized database operations and query performance  
+**Justification**: Ensures responsive user experience and system scalability  
+**Quantification Metrics**:
+- API response times under 500ms for 95% of requests
+- Database query optimization with proper indexing
+- ACID compliance for all transactions
+- Support for 50+ concurrent users
+- Efficient connection pooling and resource management
+
+**Implementation Evidence**:
+- PostgreSQL database with ACID transaction support
+- Django ORM with optimized queries and select_related/prefetch_related
+- Database indexes on frequently queried fields
+- Connection pooling for efficient resource utilization
+- Pagination for large data sets (PAGE_SIZE: 20)
+
+**Performance Optimizations**:
+- Indexed fields: user roles, listing status, creation dates, ratings
+- Efficient foreign key relationships with proper joins
+- Cached user sessions and authentication tokens
+- Optimized serializers for API responses
+
+**Testing Strategy**:
+- Load testing with concurrent user simulation
+- Database query performance profiling
+- Response time monitoring and benchmarking
+- Resource utilization tracking
+
+---
+
+#### **Priority 4: Usability - Responsive User Experience**
+**Description**: Intuitive, accessible interface across all device types
+**Justification**: Maximizes user adoption and ensures accessibility compliance
+**Quantification Metrics**:
+- 100% responsive design across device breakpoints
+- Page load times under 3 seconds on standard connections
+- Maximum 3 clicks to reach any core functionality
+- WCAG 2.1 AA accessibility compliance target
+- Cross-browser compatibility (Chrome, Firefox, Safari, Edge)
+
+**Implementation Evidence**:
+- React frontend with responsive component architecture
+- CSS Grid and Flexbox for adaptive layouts
+- Progressive loading strategies for optimal performance
+- Mobile-first design approach
+- Accessible UI components with proper ARIA labels
+
+**Device Support**:
+- Mobile: < 768px (Optimized for smartphone usage)
+- Tablet: 768px - 1024px (Enhanced navigation and content)
+- Desktop: > 1024px (Full feature access and dashboard views)
+
+**Testing Strategy**:
+- Cross-device compatibility testing
+- Page speed analysis and optimization
+- User journey timing and efficiency measurement
+- Accessibility audit and compliance validation
+
+---
+
+#### **Priority 5: Reliability - System Availability & Error Handling**
+**Description**: Consistent system availability with graceful error handling
+**Justification**: Maintains user trust and ensures business continuity
+**Quantification Metrics**:
+- Target 99.5% system uptime
+- Automated test coverage >80% across all modules
+- Comprehensive error handling with appropriate HTTP status codes
+- Zero data loss during normal operations
+- Automatic failover for critical system components
+
+**Implementation Evidence**:
+- Comprehensive test suite with pytest framework
+- Django's built-in error handling and validation
+- Proper HTTP status code responses (200, 400, 401, 403, 404, 500)
+- Database transaction rollback on failures
+- Logging and monitoring for system health tracking
+
+**Error Handling Strategy**:
+- Input validation at API and database levels
+- Graceful degradation for non-critical features
+- User-friendly error messages with actionable guidance
+- Automated error logging and alerting
+- Regular backup and recovery procedures
+
+**Testing Strategy**:
+- Unit testing for individual components
+- Integration testing for system workflows
+- Error scenario testing and validation
+- System health monitoring and alerting
+
+---
+
+### 7.2 Architectural Patterns
+
+#### **Primary Pattern: Layered Architecture (MVC)**
+The system follows Django's Model-View-Controller pattern with clear separation between:
+- **Models**: Data layer with Django ORM (PostgreSQL)
+- **Views**: Business logic layer with Django REST Framework
+- **Templates/Frontend**: Presentation layer with React
+
+#### **Secondary Patterns**:
+- **API-First Design**: RESTful API architecture for frontend-backend separation
+- **Repository Pattern**: Django ORM abstracts data access layer
+- **Observer Pattern**: Django signals for event-driven notifications
+- **Factory Pattern**: Django model managers and serializers
+
+---
+
+### 7.3 Architectural Design Strategy (take out?)
+
+**Chosen Strategy**: Decomposition by Business Capability
+**Justification**: Aligns with food waste management domain expertise and enables team specialization
+
+**Design Principles**:
+1. **Single Responsibility**: Each Django app handles one business capability
+2. **Open/Closed Principle**: System extensible without modifying existing code
+3. **Interface Segregation**: Clear API contracts between components
+4. **Dependency Inversion**: High-level modules don't depend on low-level details
+
+---
+
+### 7.4 Architectural Constraints
+
+#### **Technical Constraints**:
+- **Database**: PostgreSQL required for ACID compliance and complex food safety queries
+- **Authentication**: JWT tokens for stateless, scalable session management
+- **API Standards**: RESTful design following OpenAPI specifications
+- **Browser Support**: Modern browsers with JavaScript ES6+ support
+
+#### **Business Constraints**:
+- **Food Safety Compliance**: Must track expiration dates, allergen information, and safety metadata
+- **Privacy Regulations**: GDPR/POPIA compliance for user data handling and verification documents
+- **Verification Requirements**: All users must be verified before accessing core platform features
+- **Academic Timeline**: 6-month development window with incremental demo deliveries
+
+#### **Performance Constraints**:
+- **Response Time**: Core API operations must complete within 500ms
+- **Concurrent Users**: System must support minimum 50 simultaneous users
+- **Data Retention**: Transaction and audit history maintained for compliance
+- **Mobile Compatibility**: Must function on devices with limited processing power and bandwidth
+
+#### **Security Constraints**:
+- **Authentication**: All protected endpoints require valid JWT tokens
+- **Authorization**: Role-based access strictly enforced
+- **Data Protection**: Sensitive information encrypted at rest and in transit
+- **Input Validation**: All user inputs validated and sanitized
+
+---
+
+### 7.5 Technology Choices & Justifications
+
+#### **Backend Technology Stack**
+
+| Component | Technology | Alternatives Considered | Justification |
+|-----------|------------|------------------------|---------------|
+| **Web Framework** | Django + Django REST Framework | Node.js/Express, Spring Boot, FastAPI | Built-in security features, rapid development, excellent ORM for complex relationships |
+| **Database** | PostgreSQL | MySQL, MongoDB | ACID compliance for financial transactions, complex query support, JSON field support |
+| **Authentication** | JWT + Django Simple JWT | Session-based auth, Auth0, Firebase Auth | Stateless authentication, scalability, cross-domain support |
+| **API Design** | RESTful APIs | GraphQL, gRPC | Industry standard, excellent tooling, team familiarity |
+
+#### **Frontend Technology Stack**
+
+| Component | Technology | Alternatives Considered | Justification |
+|-----------|------------|------------------------|---------------|
+| **Frontend Framework** | React | Vue.js, Angular, Svelte | Large ecosystem, component reusability, team expertise |
+| **State Management** | React Hooks + Context | Redux, MobX | Simplified state management, reduced complexity |
+| **Styling** | CSS Modules + Bootstrap | Styled Components, Tailwind | Responsive design, component isolation |
+| **Build Tool** | Create React App | Vite, Webpack | Zero configuration, production-ready setup |
+
+#### **Development & DevOps**
+
+| Component | Technology | Alternatives Considered | Justification |
+|-----------|------------|------------------------|---------------|
+| **Testing** | pytest + Jest | unittest, Mocha/Chai | Comprehensive testing features, excellent Django integration |
+| **Version Control** | Git + GitHub | GitLab, Bitbucket | Team familiarity, excellent CI/CD integration |
+| **Dependency Management** | Poetry (Python) + npm | pip + requirements.txt, Yarn | Deterministic builds, lock file support |
+| **Code Quality** | ESLint + Black | Prettier, flake8 | Consistent code formatting, error prevention |
+
+
+
+### 7.6 Quality Assurance Strategy
+
+#### **Testing Pyramid**
+- **Unit Tests (70%)**: Individual component functionality
+- **Integration Tests (20%)**: API endpoint workflows and module interactions
+- **End-to-End Tests (10%)**: Complete user journey validation
+
+#### **Continuous Quality Monitoring**
+- **Code Coverage**: Target approx. 90% across all modules
+- **Performance Monitoring**: Response time tracking and alerting
+- **Security Scanning**: Automated vulnerability assessment
+- **User Experience**: Regular usability testing and feedback integration
+
+#### **Quality Gates**
+- All tests must pass before code integration
+- Code review required for all changes
+- Performance benchmarks must be maintained
+- Security vulnerabilities must be addressed before deployment
+
+This architectural foundation ensures Save 'n' Bite meets all quality requirements while maintaining scalability, security, and user experience excellence.
  
 ### 7.2 Architectural Patterns: Event-Driven Architecture
  
