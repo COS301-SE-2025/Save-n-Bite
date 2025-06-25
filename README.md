@@ -137,7 +137,7 @@ main
    - Browsing food listings (React + Django API, Redis).
    - Purchase/Request food (React + Django REST, PostgreSQL).
 
-2. **SRS Document**:
+2. **SRS Document**:  
    -**📄 [Software Requirements Specification (SRS)](documentation/SRS-V2.md)**  
    - Introduction
    - User stories
@@ -169,7 +169,7 @@ We follow a GitFlow-inspired branching strategy to maintain clean and organized 
    - Browsing food listings (React + Django API, Redis).
    - Purchase/Request food (React + Django REST, PostgreSQL).
 
-2. **SRS Document**:
+2. **SRS Document**:  
    -**📄 [Software Requirements Specification (SRS)](documentation/SRS.md)**  
    - Introduction
    - User stories
