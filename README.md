@@ -130,14 +130,14 @@ main
 
 ## ✅ Demo 2 Deliverables (27 June 2025)
 1. **Implemented Use Cases:**  
-   ***From Demo 1***
+***From Demo 1***
    - User registration/login (JWT/OAuth2).    
    - User themes and profile preferences (React + PostgreSQL).
    - Validation of user input (React + Django validators).
    - Food listing by businesses (React, Django + Redis).
    - Browsing food listings (React + Django API, Redis).
    - Purchase/Request food (React + Django REST, PostgreSQL).  
-   ***For Demo 2***
+***For Demo 2***
    - Notifications system
    - Scheduling and Pickup system
    - Feedback and Revies system
