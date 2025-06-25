@@ -1,3 +1,4 @@
+
 <img src="assets/LOGO_WITH_SWMG_AND_GENDAC.png"/>
 
 ## *"Reducing Food Waste Through Technology"* 🍎♻️
@@ -7,7 +8,7 @@
 <div align="center">
 
 [![Build Status](https://img.shields.io/github/actions/workflow/status/COS301-SE-2025/Save-n-Bite/build.yml?style=for-the-badge&color=green&label=Build)](https://github.com/COS301-SE-2025/Save-n-Bite/actions)
-[![Coverage](https://codecov.io/gh/COS301-SE-2025/Save-n-Bite/branch/frontend/graph/badge.svg)](https://codecov.io/gh/COS301-SE-2025/Save-n-Bite/branch/frontend)
+[![Coverage](https://img.shields.io/coveralls/github/COS301-SE-2025/Save-n-Bite/main?style=for-the-badge&color=9cf)](https://coveralls.io/github/COS301-SE-2025/Save-n-Bite?branch=main)
 [![Issues](https://img.shields.io/github/issues/COS301-SE-2025/Save-n-Bite?style=for-the-badge&color=red)](https://github.com/COS301-SE-2025/Save-n-Bite/issues)
 
 [![Last Commit](https://img.shields.io/github/last-commit/COS301-SE-2025/Save-n-Bite?style=for-the-badge&color=blue)](https://github.com/COS301-SE-2025/Save-n-Bite/commits)
@@ -50,7 +51,6 @@ Key features:
       <td style="text-align: center;"><strong>Frontend</strong></td>
       <td style="text-align: center;">
         <img src="https://img.shields.io/badge/React-61DAFB?style=for-the-badge&logo=react&logoColor=black" />
-        <img src="https://img.shields.io/badge/Material--UI-007FFF?style=for-the-badge&logo=mui&logoColor=white" />
       </td>
     </tr>
     <tr>
@@ -141,7 +141,7 @@ main
    - Browsing food listings (React + Django API, Redis).
    - Purchase/Request food (React + Django REST, PostgreSQL).
 
-2. **SRS Document**:  
+2. **SRS Document**: **📄 [Software Requirements Specification (SRS)](documentation/SRS.md)**  
    - Introduction
    - User stories
    - Use Case Diagrams
@@ -154,6 +154,12 @@ main
 
 3. **GitHub Hygiene**:  
 We follow a GitFlow-inspired branching strategy to maintain clean and organized version control. The *main* branch holds production-ready code, while all active development takes place in the *dev* branch. From dev, we maintain separate long-lived backend and frontend branches to isolate concerns. Features are developed in *feature/* branches branched off their respective areas, and urgent fixes are handled in *hotfix/* branches. All changes are merged via pull requests with code reviews to ensure stability, consistency, and collaboration across the team.
+
+4. **GitHub Project Board**:
+   - **📊 [GitHub Project Board](https://github.com/orgs/COS301-SE-2025/projects/177/views/2)**  
+
+6. **Demo 1 Video**
+   [Click here!](https://www.canva.com/design/DAGowUskyDY/E8nYEYzEWrMe1D13DkMVFw/watch?utm_content=DAGowUskyDY&utm_campaign=designshare&utm_medium=link2&utm_source=uniquelinks&utlId=h3390ca1771)
 
 ---
 
