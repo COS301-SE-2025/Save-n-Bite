@@ -34,3 +34,4 @@ seaborn>=0.13.0
 pytest>=8.4.0
 pytest-django>=4.11.1
 pytest-cov>=6.2.0
+

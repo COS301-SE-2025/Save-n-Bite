@@ -187,5 +187,7 @@ export const authAPI = {
             }
             throw new Error(error.message || 'Google sign-in failed');
         }
-    }
+    },
+
 };
+

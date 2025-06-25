@@ -65,7 +65,9 @@ class NGORegistrationSerializer(BaseRegistrationSerializer):
     organisation_name = serializers.CharField(max_length=255)
     organisation_contact = serializers.CharField(max_length=20)
     representative_name = serializers.CharField(max_length=255)
-    representative_email = serializers.EmailField()  # This field is declared
+
+    representative_email = serializers.EmailField(required=False, allow_blank=True)
+
     organisational_email = serializers.EmailField()
     organisation_street = serializers.CharField(max_length=255)
     organisation_city = serializers.CharField(max_length=255)
@@ -83,13 +85,6 @@ class NGORegistrationSerializer(BaseRegistrationSerializer):
             'npo_document', 'organisation_logo'
         ]
 
-    def validate_npo_document(self, value):
-        if not value:
-            raise serializers.ValidationError("NPO document is required")
-        if not value.startswith('data:'):
-            raise serializers.ValidationError("Invalid file format")
-        return value
-
     def create(self, validated_data):
         # Extract NGO-specific data (don't pass to User model)
         organisation_data = {
@@ -97,6 +92,7 @@ class NGORegistrationSerializer(BaseRegistrationSerializer):
             'organisation_contact': validated_data.pop('organisation_contact'),
             'representative_name': validated_data.pop('representative_name'),
             'representative_email': validated_data.pop('representative_email'),  # Remove from User creation
+
             'organisation_email': validated_data.pop('organisational_email'),
             'address_line1': validated_data.pop('organisation_street'),
             'city': validated_data.pop('organisation_city'),
@@ -108,9 +104,6 @@ class NGORegistrationSerializer(BaseRegistrationSerializer):
         npo_document_data = validated_data.pop('npo_document')
         logo_data = validated_data.pop('organisation_logo', None)
         validated_data['user_type'] = 'ngo'
-        
-        # Store email before it gets consumed by parent create method
-        user_email = validated_data.get('email')
 
         # Create user (only with User model fields)
         user = super().create(validated_data)
