@@ -15,6 +15,7 @@ import DonationRequest from './pages/auth/DonationRequest';
 import DonationConfirmation from './pages/auth/DonationConfirmationPage';
 import Pickup from './pages/auth/PickupPage';
 import Reviews from './pages/auth/ReviewPage';
+import Dashboard from './pages/foodProvider/Dashboard';
 
 
 function App() {
@@ -40,6 +41,7 @@ function App() {
           <Route path="/pickup" element={<Pickup />} />
           {/* <Route path="/reviews/:id" element={<Reviews />} /> */}
           <Route path="/reviews" element={<Reviews />} />
+          <Route path="/dashboard" element={<Dashboard />} />
 
 
       </Routes>

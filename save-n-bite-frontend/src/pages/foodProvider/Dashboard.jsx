@@ -23,17 +23,23 @@ import {
   HelpCircleIcon,
   DownloadIcon,
 } from 'lucide-react'
-import { Button } from '../components/Button'
+import { Button } from '../../components/foodProvider/Button'
 import {
   monthlyOrdersData,
   salesDonationData,
   followersData,
   sustainabilityData,
-} from '../utils/mockData'
-export function BusinessDashboard() {
+} from '../../utils/MockData'
+
+import SideBar from '../../components/foodProvider/SideBar';
+
+
+function Dashboard() {
   const COLORS = ['#2563eb', '#60a5fa']
   return (
-    <div className="w-full">
+    <div className="w-full flex min-h-screen">
+         <SideBar onNavigate={() => {}} currentPage="dashboard" />
+             <div className="flex-1 p-6 overflow-auto">
       <div className="flex justify-between items-center mb-6">
         <div>
           <h1 className="text-2xl font-bold">Business Dashboard</h1>
@@ -307,6 +313,8 @@ export function BusinessDashboard() {
           </p>
         </div>
       </div>
+      </div>
     </div>
   )
 }
+export default Dashboard;

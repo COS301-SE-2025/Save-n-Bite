@@ -16,7 +16,7 @@ const navigationItems = [
     name: 'Dashboard',
     icon: LayoutDashboardIcon,
     route: 'dashboard',
-    path: '/' 
+    path: '/dashboard' 
   },
   {
     name: 'Create Listing',
