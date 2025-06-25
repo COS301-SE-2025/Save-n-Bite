@@ -3,346 +3,459 @@
 from django.contrib import admin
 from django.utils.html import format_html
 from django.urls import reverse
+from django.utils.safestring import mark_safe
 from django.utils import timezone
 from .models import (
-    PickupLocation, PickupTimeSlot, ScheduledPickup, 
-    PickupOptimization, PickupAnalytics
+    PickupLocation, FoodListingPickupSchedule, PickupTimeSlot,
+    ScheduledPickup, PickupOptimization, PickupAnalytics
 )
+
 
 @admin.register(PickupLocation)
 class PickupLocationAdmin(admin.ModelAdmin):
     list_display = [
-        'name', 'business_name', 'contact_person', 'contact_phone', 
+        'name', 'business', 'contact_person', 'contact_phone', 
         'is_active', 'created_at'
     ]
-    list_filter = ['is_active', 'created_at', 'business__status']
-    search_fields = [
-        'name', 'business__business_name', 'contact_person', 
-        'contact_phone', 'address'
-    ]
+    list_filter = ['is_active', 'created_at', 'business']
+    search_fields = ['name', 'business__business_name', 'contact_person', 'address']
     readonly_fields = ['id', 'created_at', 'updated_at']
     
     fieldsets = (
         ('Basic Information', {
-            'fields': ('id', 'business', 'name', 'address')
+            'fields': ('business', 'name', 'address', 'instructions')
         }),
-        ('Contact Details', {
-            'fields': ('contact_person', 'contact_phone', 'instructions')
+        ('Contact Information', {
+            'fields': ('contact_person', 'contact_phone')
         }),
-        ('Location Data', {
+        ('Location Coordinates', {
             'fields': ('latitude', 'longitude'),
             'classes': ('collapse',)
         }),
         ('Status', {
             'fields': ('is_active',)
         }),
-        ('Timestamps', {
-            'fields': ('created_at', 'updated_at'),
+        ('Metadata', {
+            'fields': ('id', 'created_at', 'updated_at'),
             'classes': ('collapse',)
-        }),
+        })
     )
+    
+    def get_queryset(self, request):
+        return super().get_queryset(request).select_related('business')
 
-    def business_name(self, obj):
-        return obj.business.business_name
-    business_name.short_description = 'Business'
-    business_name.admin_order_field = 'business__business_name'
 
-@admin.register(PickupTimeSlot)
-class PickupTimeSlotAdmin(admin.ModelAdmin):
+class PickupTimeSlotInline(admin.TabularInline):
+    model = PickupTimeSlot
+    extra = 0
+    readonly_fields = ['id', 'current_bookings', 'is_available', 'created_at']
+    fields = [
+        'slot_number', 'start_time', 'end_time', 'date', 
+        'max_orders_per_slot', 'current_bookings', 'is_available', 'is_active'
+    ]
+    
+    def is_available(self, obj):
+        if obj.pk:
+            return obj.is_available
+        return True
+    is_available.boolean = True
+    is_available.short_description = 'Available'
+
+
+@admin.register(FoodListingPickupSchedule)
+class FoodListingPickupScheduleAdmin(admin.ModelAdmin):
     list_display = [
-        'business_name', 'location_name', 'day_name', 'time_range',
-        'max_orders_per_slot', 'is_active'
+        'food_listing_name', 'business_name', 'location', 'pickup_window',
+        'total_slots', 'max_orders_per_slot', 'is_active', 'created_at'
     ]
-    list_filter = [
-        'day_of_week', 'is_active', 'business__status', 'created_at'
-    ]
+    list_filter = ['is_active', 'created_at', 'location__business', 'total_slots']
     search_fields = [
-        'business__business_name', 'location__name'
+        'food_listing__name', 'location__business__business_name', 
+        'location__name', 'pickup_window'
     ]
-    readonly_fields = ['id', 'created_at', 'updated_at']
+    readonly_fields = [
+        'id', 'created_at', 'updated_at', 'start_time', 'end_time',
+        'window_duration_minutes', 'slot_duration_minutes', 'generated_slots_preview'
+    ]
+    inlines = [PickupTimeSlotInline]
     
     fieldsets = (
-        ('Basic Information', {
-            'fields': ('id', 'business', 'location')
+        ('Food Listing & Location', {
+            'fields': ('food_listing', 'location')
         }),
-        ('Schedule Details', {
+        ('Schedule Configuration', {
             'fields': (
-                'day_of_week', 'start_time', 'end_time', 
-                'slot_duration', 'max_orders_per_slot'
+                'pickup_window', 'total_slots', 'max_orders_per_slot', 
+                'slot_buffer_minutes'
             )
         }),
-        ('Booking Settings', {
-            'fields': ('buffer_time', 'advance_booking_hours')
+        ('Calculated Information', {
+            'fields': (
+                'start_time', 'end_time', 'window_duration_minutes', 
+                'slot_duration_minutes', 'generated_slots_preview'
+            ),
+            'classes': ('collapse',)
         }),
         ('Status', {
             'fields': ('is_active',)
         }),
-        ('Timestamps', {
-            'fields': ('created_at', 'updated_at'),
+        ('Metadata', {
+            'fields': ('id', 'created_at', 'updated_at'),
             'classes': ('collapse',)
-        }),
+        })
     )
-
-    def business_name(self, obj):
-        return obj.business.business_name
-    business_name.short_description = 'Business'
-    business_name.admin_order_field = 'business__business_name'
-
-    def location_name(self, obj):
-        return obj.location.name
-    location_name.short_description = 'Location'
-    location_name.admin_order_field = 'location__name'
-
-    def day_name(self, obj):
-        return obj.get_day_of_week_display()
-    day_name.short_description = 'Day'
-    day_name.admin_order_field = 'day_of_week'
-
-    def time_range(self, obj):
-        return f"{obj.start_time} - {obj.end_time}"
-    time_range.short_description = 'Time Range'
-
-@admin.register(ScheduledPickup)
-class ScheduledPickupAdmin(admin.ModelAdmin):
-    list_display = [
-        'confirmation_code', 'business_name', 'customer_name', 
-        'scheduled_date', 'scheduled_time', 'status_badge', 
-        'actual_pickup_time', 'created_at'
-    ]
-    list_filter = [
-        'status', 'scheduled_date', 'reminder_sent', 
-        'confirmation_sent', 'created_at'
-    ]
-    search_fields = [
-        'confirmation_code', 'order__interaction__user__email',
-        'location__business__business_name', 'location__name'
-    ]
-    readonly_fields = [
-        'id', 'confirmation_code', 'qr_code_data', 'qr_code_display',
-        'created_at', 'updated_at'
-    ]
-    date_hierarchy = 'scheduled_date'
     
-    fieldsets = (
-        ('Basic Information', {
-            'fields': ('id', 'order', 'time_slot', 'location')
-        }),
-        ('Schedule Details', {
-            'fields': (
-                'scheduled_date', 'scheduled_start_time', 
-                'scheduled_end_time', 'actual_pickup_time'
-            )
-        }),
-        ('Verification', {
-            'fields': ('confirmation_code', 'qr_code_data', 'qr_code_display')
-        }),
-        ('Status & Notes', {
-            'fields': ('status', 'pickup_notes')
-        }),
-        ('Notifications', {
-            'fields': ('reminder_sent', 'confirmation_sent')
-        }),
-        ('Timestamps', {
-            'fields': ('created_at', 'updated_at'),
-            'classes': ('collapse',)
-        }),
-    )
-
+    def food_listing_name(self, obj):
+        return obj.food_listing.name
+    food_listing_name.short_description = 'Food Listing'
+    food_listing_name.admin_order_field = 'food_listing__name'
+    
     def business_name(self, obj):
         return obj.location.business.business_name
     business_name.short_description = 'Business'
     business_name.admin_order_field = 'location__business__business_name'
+    
+    def generated_slots_preview(self, obj):
+        if obj.pk:
+            slots = obj.generate_time_slots()
+            if slots:
+                html = "<ul>"
+                for slot in slots[:5]:  # Show first 5 slots
+                    html += f"<li>Slot {slot['slot_number']}: {slot['start_time']} - {slot['end_time']} (max {slot['max_orders']})</li>"
+                if len(slots) > 5:
+                    html += f"<li>... and {len(slots) - 5} more slots</li>"
+                html += "</ul>"
+                return mark_safe(html)
+        return "Save to see generated slots"
+    generated_slots_preview.short_description = 'Generated Slots Preview'
+    
+    def get_queryset(self, request):
+        return super().get_queryset(request).select_related(
+            'food_listing', 'location', 'location__business'
+        )
 
+
+@admin.register(PickupTimeSlot)
+class PickupTimeSlotAdmin(admin.ModelAdmin):
+    list_display = [
+        'food_listing_name', 'date', 'slot_number', 'start_time', 'end_time',
+        'current_bookings', 'max_orders_per_slot', 'availability_status', 'is_active'
+    ]
+    list_filter = [
+        'date', 'is_active', 'pickup_schedule__location__business',
+        'pickup_schedule__food_listing__status'
+    ]
+    search_fields = [
+        'pickup_schedule__food_listing__name',
+        'pickup_schedule__location__business__business_name'
+    ]
+    readonly_fields = [
+        'id', 'is_available', 'available_spots', 'created_at'
+    ]
+    date_hierarchy = 'date'
+    
+    fieldsets = (
+        ('Schedule Reference', {
+            'fields': ('pickup_schedule',)
+        }),
+        ('Slot Information', {
+            'fields': (
+                'slot_number', 'date', 'start_time', 'end_time', 
+                'max_orders_per_slot'
+            )
+        }),
+        ('Booking Status', {
+            'fields': (
+                'current_bookings', 'is_available', 'available_spots'
+            )
+        }),
+        ('Status', {
+            'fields': ('is_active',)
+        }),
+        ('Metadata', {
+            'fields': ('id', 'created_at'),
+            'classes': ('collapse',)
+        })
+    )
+    
+    def food_listing_name(self, obj):
+        return obj.pickup_schedule.food_listing.name
+    food_listing_name.short_description = 'Food Listing'
+    food_listing_name.admin_order_field = 'pickup_schedule__food_listing__name'
+    
+    def availability_status(self, obj):
+        if obj.is_available:
+            return format_html(
+                '<span style="color: green;">✓ Available ({}/{})</span>',
+                obj.available_spots,
+                obj.max_orders_per_slot
+            )
+        else:
+            return format_html(
+                '<span style="color: red;">✗ Full ({}/{})</span>',
+                obj.current_bookings,
+                obj.max_orders_per_slot
+            )
+    availability_status.short_description = 'Availability'
+    
+    def get_queryset(self, request):
+        return super().get_queryset(request).select_related(
+            'pickup_schedule__food_listing', 'pickup_schedule__location__business'
+        )
+
+
+@admin.register(ScheduledPickup)
+class ScheduledPickupAdmin(admin.ModelAdmin):
+    list_display = [
+        'confirmation_code', 'food_listing_name', 'customer_name',
+        'scheduled_date', 'scheduled_start_time', 'status_badge', 
+        'location', 'created_at'
+    ]
+    list_filter = [
+        'status', 'scheduled_date', 'location__business', 
+        'food_listing__food_type', 'created_at'
+    ]
+    search_fields = [
+        'confirmation_code', 'food_listing__name',
+        'order__interaction__user__email',
+        'order__interaction__user__customer_profile__full_name'
+    ]
+    readonly_fields = [
+        'id', 'confirmation_code', 'qr_code_data', 'is_upcoming', 
+        'is_today', 'created_at', 'updated_at', 'qr_code_display'
+    ]
+    date_hierarchy = 'scheduled_date'
+    
+    fieldsets = (
+        ('Order & Food Listing', {
+            'fields': ('order', 'food_listing', 'time_slot')
+        }),
+        ('Schedule Details', {
+            'fields': (
+                'location', 'scheduled_date', 'scheduled_start_time', 
+                'scheduled_end_time', 'actual_pickup_time'
+            )
+        }),
+        ('Status & Verification', {
+            'fields': (
+                'status', 'confirmation_code', 'qr_code_display', 
+                'reminder_sent'
+            )
+        }),
+        ('Notes', {
+            'fields': ('customer_notes', 'business_notes'),
+            'classes': ('collapse',)
+        }),
+        ('Additional Information', {
+            'fields': ('is_upcoming', 'is_today'),
+            'classes': ('collapse',)
+        }),
+        ('Metadata', {
+            'fields': ('id', 'qr_code_data', 'created_at', 'updated_at'),
+            'classes': ('collapse',)
+        })
+    )
+    
+    actions = ['mark_as_completed', 'mark_as_missed', 'send_reminder']
+    
+    def food_listing_name(self, obj):
+        return obj.food_listing.name
+    food_listing_name.short_description = 'Food Listing'
+    food_listing_name.admin_order_field = 'food_listing__name'
+    
     def customer_name(self, obj):
         user = obj.order.interaction.user
-        if user.user_type == 'customer' and hasattr(user, 'customer_profile'):
-            return user.customer_profile.full_name
-        elif user.user_type == 'ngo' and hasattr(user, 'ngo_profile'):
-            return user.ngo_profile.organisation_name
+        if hasattr(user, 'customer_profile'):
+            return user.customer_profile.full_name or user.email
         return user.email
     customer_name.short_description = 'Customer'
-
-    def scheduled_time(self, obj):
-        return obj.scheduled_start_time
-    scheduled_time.short_description = 'Time'
-    scheduled_time.admin_order_field = 'scheduled_start_time'
-
+    
     def status_badge(self, obj):
         colors = {
-            'scheduled': 'blue',
-            'confirmed': 'green',
-            'in_progress': 'orange',
-            'completed': 'darkgreen',
-            'missed': 'red',
-            'cancelled': 'gray'
+            'scheduled': '#17a2b8',  # Blue
+            'confirmed': '#28a745',  # Green
+            'in_progress': '#ffc107',  # Yellow
+            'completed': '#6f42c1',  # Purple
+            'missed': '#dc3545',  # Red
+            'cancelled': '#6c757d',  # Gray
         }
-        color = colors.get(obj.status, 'gray')
+        color = colors.get(obj.status, '#6c757d')
         return format_html(
-            '<span style="background-color: {}; color: white; padding: 2px 6px; '
-            'border-radius: 3px; font-size: 11px;">{}</span>',
-            color, obj.get_status_display()
+            '<span style="background-color: {}; color: white; padding: 3px 8px; border-radius: 3px; font-size: 11px;">{}</span>',
+            color,
+            obj.get_status_display()
         )
     status_badge.short_description = 'Status'
-    status_badge.admin_order_field = 'status'
-
+    
     def qr_code_display(self, obj):
         if obj.qr_code_data:
             return format_html(
                 '<details><summary>View QR Data</summary><pre>{}</pre></details>',
-                obj.qr_code_data
+                str(obj.qr_code_data)
             )
-        return 'No QR data'
+        return "No QR code data"
     qr_code_display.short_description = 'QR Code Data'
-
-    actions = ['mark_as_completed', 'mark_as_missed', 'send_reminders']
-
+    
     def mark_as_completed(self, request, queryset):
         count = 0
-        for pickup in queryset.filter(status__in=['scheduled', 'confirmed']):
-            pickup.status = 'completed'
-            pickup.actual_pickup_time = timezone.now()
-            pickup.save()
-            count += 1
-        
-        self.message_user(
-            request, 
-            f'{count} pickup(s) marked as completed.'
-        )
-    mark_as_completed.short_description = 'Mark selected pickups as completed'
-
-    def mark_as_missed(self, request, queryset):
-        count = 0
-        for pickup in queryset.filter(status__in=['scheduled', 'confirmed']):
-            pickup.status = 'missed'
-            pickup.save()
-            count += 1
-        
-        self.message_user(
-            request, 
-            f'{count} pickup(s) marked as missed.'
-        )
-    mark_as_missed.short_description = 'Mark selected pickups as missed'
-
-    def send_reminders(self, request, queryset):
-        count = 0
-        for pickup in queryset.filter(
-            status='scheduled', 
-            reminder_sent=False,
-            scheduled_date=timezone.now().date()
-        ):
-            try:
-                from .services import PickupSchedulingService
-                PickupSchedulingService._send_pickup_reminder(pickup)
-                pickup.reminder_sent = True
+        for pickup in queryset:
+            if pickup.status in ['scheduled', 'confirmed', 'in_progress']:
+                pickup.status = 'completed'
+                pickup.actual_pickup_time = timezone.now()
                 pickup.save()
                 count += 1
-            except Exception:
-                pass
         
         self.message_user(
             request, 
-            f'{count} reminder(s) sent.'
+            f"Successfully marked {count} pickup(s) as completed."
         )
-    send_reminders.short_description = 'Send reminders for selected pickups'
+    mark_as_completed.short_description = "Mark selected pickups as completed"
+    
+    def mark_as_missed(self, request, queryset):
+        count = 0
+        for pickup in queryset:
+            if pickup.status in ['scheduled', 'confirmed']:
+                pickup.status = 'missed'
+                pickup.save()
+                # Free up the time slot
+                time_slot = pickup.time_slot
+                time_slot.current_bookings = max(0, time_slot.current_bookings - 1)
+                time_slot.save()
+                count += 1
+        
+        self.message_user(
+            request, 
+            f"Successfully marked {count} pickup(s) as missed."
+        )
+    mark_as_missed.short_description = "Mark selected pickups as missed"
+    
+    def send_reminder(self, request, queryset):
+        count = 0
+        from .services import PickupSchedulingService
+        
+        for pickup in queryset:
+            if pickup.status in ['scheduled', 'confirmed'] and pickup.is_upcoming:
+                try:
+                    PickupSchedulingService._send_pickup_reminder(pickup)
+                    pickup.reminder_sent = True
+                    pickup.save()
+                    count += 1
+                except Exception as e:
+                    pass
+        
+        self.message_user(
+            request, 
+            f"Successfully sent reminders for {count} pickup(s)."
+        )
+    send_reminder.short_description = "Send reminders for selected pickups"
+    
+    def get_queryset(self, request):
+        return super().get_queryset(request).select_related(
+            'food_listing', 'location', 'order__interaction__user__customer_profile',
+            'time_slot__pickup_schedule'
+        )
+
 
 @admin.register(PickupOptimization)
 class PickupOptimizationAdmin(admin.ModelAdmin):
     list_display = [
-        'business_name', 'max_concurrent_pickups', 'efficiency_score',
-        'auto_optimize', 'last_optimization', 'created_at'
+        'business', 'max_concurrent_pickups', 'auto_optimize', 
+        'auto_send_reminders', 'optimization_score', 'last_optimization'
     ]
-    list_filter = ['auto_optimize', 'last_optimization', 'created_at']
+    list_filter = ['auto_optimize', 'auto_send_reminders', 'last_optimization']
     search_fields = ['business__business_name']
-    readonly_fields = [
-        'id', 'average_pickup_duration', 'peak_day_demand', 
-        'efficiency_score', 'last_optimization', 'created_at', 'updated_at'
-    ]
+    readonly_fields = ['last_optimization', 'optimization_score']
     
     fieldsets = (
         ('Business', {
-            'fields': ('id', 'business')
+            'fields': ('business',)
         }),
-        ('Optimization Settings', {
+        ('Capacity Settings', {
             'fields': (
                 'max_concurrent_pickups', 'optimal_pickup_duration',
                 'peak_hours_start', 'peak_hours_end'
             )
         }),
-        ('Performance Data', {
+        ('Automation Settings', {
             'fields': (
-                'average_pickup_duration', 'peak_day_demand', 
-                'efficiency_score'
-            ),
+                'auto_optimize', 'auto_send_reminders', 'reminder_hours_before'
+            )
+        }),
+        ('Analytics', {
+            'fields': ('last_optimization', 'optimization_score'),
             'classes': ('collapse',)
-        }),
-        ('Auto-Optimization', {
-            'fields': ('auto_optimize', 'last_optimization')
-        }),
-        ('Timestamps', {
-            'fields': ('created_at', 'updated_at'),
-            'classes': ('collapse',)
-        }),
+        })
     )
+    
+    def get_queryset(self, request):
+        return super().get_queryset(request).select_related('business')
 
-    def business_name(self, obj):
-        return obj.business.business_name
-    business_name.short_description = 'Business'
-    business_name.admin_order_field = 'business__business_name'
 
 @admin.register(PickupAnalytics)
 class PickupAnalyticsAdmin(admin.ModelAdmin):
     list_display = [
-        'business_name', 'date', 'total_scheduled', 'total_completed',
+        'business', 'date', 'total_scheduled', 'total_completed', 
         'completion_rate_display', 'on_time_percentage', 'efficiency_score'
     ]
-    list_filter = ['date', 'created_at']
+    list_filter = ['date', 'business']
     search_fields = ['business__business_name']
-    readonly_fields = ['id', 'created_at']
+    readonly_fields = ['completion_rate', 'no_show_rate']
     date_hierarchy = 'date'
     
     fieldsets = (
-        ('Basic Information', {
-            'fields': ('id', 'business', 'date')
+        ('Business & Date', {
+            'fields': ('business', 'date')
         }),
-        ('Pickup Counts', {
+        ('Basic Metrics', {
             'fields': (
-                'total_scheduled', 'total_completed', 
-                'total_missed', 'total_cancelled'
+                'total_scheduled', 'total_completed', 'total_missed', 
+                'total_cancelled'
             )
         }),
         ('Performance Metrics', {
             'fields': (
-                'average_pickup_duration', 'on_time_percentage', 
-                'customer_satisfaction_score', 'efficiency_score'
+                'on_time_percentage', 'average_pickup_duration',
+                'customer_satisfaction_rating'
             )
         }),
-        ('Operational Insights', {
-            'fields': ('peak_hour', 'busiest_location'),
-            'classes': ('collapse',)
+        ('Efficiency Metrics', {
+            'fields': (
+                'slot_utilization_rate', 'peak_hour_efficiency', 
+                'efficiency_score'
+            )
         }),
-        ('Timestamps', {
-            'fields': ('created_at',),
+        ('Calculated Rates', {
+            'fields': ('completion_rate', 'no_show_rate'),
             'classes': ('collapse',)
-        }),
+        })
     )
-
-    def business_name(self, obj):
-        return obj.business.business_name
-    business_name.short_description = 'Business'
-    business_name.admin_order_field = 'business__business_name'
-
+    
     def completion_rate_display(self, obj):
-        if obj.total_scheduled == 0:
-            return '0%'
-        rate = (obj.total_completed / obj.total_scheduled) * 100
-        color = 'green' if rate >= 80 else 'orange' if rate >= 60 else 'red'
-        return format_html(
-            '<span style="color: {}; font-weight: bold;">{:.1f}%</span>',
-            color, rate
-        )
+        if obj.total_scheduled > 0:
+            rate = (obj.total_completed / obj.total_scheduled) * 100
+            color = 'green' if rate >= 80 else 'orange' if rate >= 60 else 'red'
+            return format_html(
+                '<span style="color: {};">{:.1f}%</span>',
+                color, rate
+            )
+        return '0%'
     completion_rate_display.short_description = 'Completion Rate'
+    
+    def completion_rate(self, obj):
+        if obj.total_scheduled > 0:
+            return round((obj.total_completed / obj.total_scheduled) * 100, 2)
+        return 0.0
+    
+    def no_show_rate(self, obj):
+        if obj.total_scheduled > 0:
+            return round((obj.total_missed / obj.total_scheduled) * 100, 2)
+        return 0.0
+    
+    def get_queryset(self, request):
+        return super().get_queryset(request).select_related('business')
 
-# Custom admin site configuration
-admin.site.site_header = 'Save n Bite Pickup Management'
-admin.site.site_title = 'Pickup Admin'
-admin.site.index_title = 'Pickup & Scheduling Administration'
+
+# Customize admin site header
+admin.site.site_header = "Save n Bite - Pickup Scheduling Admin"
+admin.site.site_title = "Pickup Scheduling"
+admin.site.index_title = "Pickup Scheduling Administration"
