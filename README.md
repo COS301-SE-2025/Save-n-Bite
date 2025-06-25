@@ -7,7 +7,7 @@
 <div align="center">
 
 [![Build Status](https://img.shields.io/github/actions/workflow/status/COS301-SE-2025/Save-n-Bite/build.yml?style=for-the-badge&color=green&label=Build)](https://github.com/COS301-SE-2025/Save-n-Bite/actions)
-[![Coverage](https://img.shields.io/coveralls/github/COS301-SE-2025/Save-n-Bite/main?style=for-the-badge&color=9cf)](https://coveralls.io/github/COS301-SE-2025/Save-n-Bite?branch=main)
+[![Coverage](https://codecov.io/gh/COS301-SE-2025/Save-n-Bite/branch/frontend/graph/badge.svg)](https://codecov.io/gh/COS301-SE-2025/Save-n-Bite/branch/frontend)
 [![Issues](https://img.shields.io/github/issues/COS301-SE-2025/Save-n-Bite?style=for-the-badge&color=red)](https://github.com/COS301-SE-2025/Save-n-Bite/issues)
 
 [![Last Commit](https://img.shields.io/github/last-commit/COS301-SE-2025/Save-n-Bite?style=for-the-badge&color=blue)](https://github.com/COS301-SE-2025/Save-n-Bite/commits)

@@ -11,6 +11,7 @@ const FoodItemDetails = ({ pickupWindow, address, quantity }) => (
       </div>
     </div>
     
+    {/* remember */}
     <div className="flex items-start mb-3">
       <MapPinIcon size={20} className="mr-2 text-emerald-600 mt-0.5" />
       <div>

@@ -16,7 +16,7 @@ const navigationItems = [
     name: 'Dashboard',
     icon: LayoutDashboardIcon,
     route: 'dashboard',
-    path: '/' 
+    path: '/dashboard' 
   },
   {
     name: 'Create Listing',
@@ -33,14 +33,14 @@ const navigationItems = [
   {
     name: 'Pickups',
     icon: PackageIcon,
-    route: 'pickups',
-    path: '/pickups'
+    route: 'pickup-coordination',
+    path: '/pickup-coordination'
   },
   {
     name: 'Orders/Feedback',
     icon: ShoppingCartIcon,
-    route: 'orders',
-    path: '/orders'
+    route: 'orders-and-feedback',
+    path: '/orders-and-feedback'
   },
   {
     name: 'Settings',

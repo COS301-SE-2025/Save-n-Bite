@@ -52,7 +52,7 @@ INSTALLED_APPS = [
     'rest_framework_simplejwt',
     'corsheaders',
     'authentication',
-    'interactions',
+    'transactions',
     'food_listings',
     'notifications',
 ]
@@ -104,6 +104,8 @@ DATABASES = {
     }
 }
 
+print("DB_USER:", os.getenv("DB_USER"))
+print("DB_PASSWORD:", os.getenv("DB_USER_PASSWORD"))
 
 
 # Password validation
@@ -141,10 +143,8 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
 
 STATIC_URL = '/static/'
-STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')  
-STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, 'static'),  
-]
+STATICFILES_DIRS = [BASE_DIR / "static"]
+STATIC_ROOT = BASE_DIR / "staticfiles"
 
 
 # Media files

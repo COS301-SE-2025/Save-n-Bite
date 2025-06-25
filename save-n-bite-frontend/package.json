@@ -4,23 +4,40 @@
   "private": true,
   "dependencies": {
     "axios": "^1.9.0",
+    "framer-motion": "^12.19.1",
     "lucide-react": "^0.511.0",
     "prop-types": "^15.8.1",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
-    "react-router-dom": "^7.6.0"
+    "react-router-dom": "^6.13.0",
+    "recharts": "^3.0.0"
   },
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage --watchAll=false",
+    "test:ci": "jest --ci --coverage --watchAll=false --passWithNoTests"
   },
   "devDependencies": {
+    "@babel/core": "^7.27.4",
+    "@babel/preset-env": "^7.27.2",
+    "@babel/preset-react": "^7.27.1",
+    "@testing-library/jest-dom": "^5.17.0",
+    "@testing-library/react": "^13.4.0",
+    "@testing-library/user-event": "^14.6.1",
     "@types/node": "^22.15.21",
     "@types/react": "^19.1.5",
     "@types/react-dom": "^19.1.5",
     "@vitejs/plugin-react": "^3.1.0",
     "autoprefixer": "^10.4.21",
+    "babel-jest": "^27.5.1",
+    "identity-obj-proxy": "^3.0.0",
+    "jest": "^27.5.1",
+    "jest-environment-jsdom": "^27.5.1",
+    "jest-transform-stub": "^2.0.0",
     "postcss": "^8.0.0",
     "tailwindcss": "^3.4.17",
     "vite": "^4.5.14"

@@ -17,7 +17,7 @@ const FoodListingsGrid = ({ listings }) => {
       {/* Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
         {listings.map(item => (
-          <FoodCard key={item.id} item={item} />
+          <FoodCard key={item.id + '-' + (item.provider?.id || '')} item={item} />
         ))}
       </div>
       

@@ -3,13 +3,17 @@ import { authAPI } from '../../services/authAPI';
 import { useNavigate, Link } from 'react-router-dom';
 import LoginForm from '../../components/auth/LoginForm';
 import logo from '../../assets/images/SnB_leaf_icon.png';
+import { useNotifications } from '../../services/contexts/NotificationContext';
 
 const Login = () => {
   const [message, setMessage] = useState('');
   const [messageType, setMessageType] = useState(''); // 'success' or 'error'
+  const [showPopup, setShowPopup] = useState(false);
+  const [unreadCountSnapshot, setUnreadCountSnapshot] = useState(0);
   const navigate = useNavigate();
+  const { fetchUnreadCount, unreadCount } = useNotifications();
 
-  const handleLoginSuccess = (response) => {
+  const handleLoginSuccess = async (response) => {
     // Display welcome message with environmental fact
     setMessage(response.welcomeMessage || 'Welcome back! Great to see you again!');
     setMessageType('success');
@@ -21,6 +25,16 @@ const Login = () => {
     if (response.user) {
       localStorage.setItem('userData', JSON.stringify(response.user));
     }
+
+    // Fetch unread notifications after login
+    await fetchUnreadCount();
+    // Use a short delay to ensure state updates
+    setTimeout(() => {
+      if (unreadCount > 0) {
+        // Trigger NotificationBell popup via custom event
+        window.dispatchEvent(new Event('show-unread-popup'));
+      }
+    }, 500);
     
     setTimeout(() => {
       // Navigate based on user type
@@ -47,6 +61,12 @@ const Login = () => {
 
   return (
     <div className="min-h-[80vh] flex items-center justify-center px-4 py-12">
+      {/* Notification Popup (top right) */}
+      {showPopup && unreadCountSnapshot > 0 && (
+        <div className="fixed top-5 right-5 bg-emerald-500 text-white px-4 py-2 rounded shadow-lg z-50 animate-fade-in-out">
+          You have {unreadCountSnapshot} unread notification{unreadCountSnapshot > 1 ? 's' : ''}!
+        </div>
+      )}
       <div className="max-w-6xl w-full bg-white rounded-lg shadow-sm overflow-hidden">
         <div className="md:flex">
           {/* Left Side - Branding */}
