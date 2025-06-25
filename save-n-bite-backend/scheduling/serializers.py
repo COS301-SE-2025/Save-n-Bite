@@ -216,8 +216,8 @@ class ScheduledPickupSerializer(serializers.ModelSerializer):
     customer = serializers.SerializerMethodField()
     food_listing = serializers.SerializerMethodField()
     location = serializers.SerializerMethodField()
-    is_upcoming = serializers.ReadOnlyField()
-    is_today = serializers.ReadOnlyField()
+    is_upcoming = serializers.SerializerMethodField()  # Changed to SerializerMethodField
+    is_today = serializers.SerializerMethodField()  # Changed to SerializerMethodField
     
     class Meta:
         model = ScheduledPickup
@@ -238,19 +238,21 @@ class ScheduledPickupSerializer(serializers.ModelSerializer):
         user = obj.order.interaction.user
         return {
             'id': user.id,
-            'full_name': getattr(user.customer_profile, 'full_name', ''),
+            'full_name': getattr(user.customer_profile, 'full_name', '') if hasattr(user, 'customer_profile') else '',
             'email': user.email,
-            'phone': getattr(user.customer_profile, 'phone_number', '')
+            'phone': getattr(user, 'phone_number', '')  # Phone is on User model, not CustomerProfile
         }
     
     def get_food_listing(self, obj):
         """Get food listing information"""
         listing = obj.food_listing
+        # Calculate total quantity from interaction items
+        total_quantity = sum(item.quantity for item in obj.order.interaction.items.all())
         return {
             'id': listing.id,
             'name': listing.name,
             'description': listing.description,
-            'quantity': obj.order.total_quantity,
+            'quantity': total_quantity,  # Use calculated total quantity
             'pickup_window': listing.pickup_window
         }
     
@@ -265,6 +267,14 @@ class ScheduledPickupSerializer(serializers.ModelSerializer):
             'contact_person': location.contact_person,
             'contact_phone': location.contact_phone
         }
+    
+    def get_is_upcoming(self, obj):
+        """Check if pickup is in the future"""
+        return obj.is_upcoming
+    
+    def get_is_today(self, obj):
+        """Check if pickup is today"""
+        return obj.is_today
 
 
 class PickupVerificationSerializer(serializers.Serializer):
@@ -325,6 +335,8 @@ class CustomerScheduleSerializer(serializers.ModelSerializer):
     food_listing = serializers.SerializerMethodField()
     business = serializers.SerializerMethodField()
     location = serializers.SerializerMethodField()
+    is_upcoming = serializers.SerializerMethodField()  # Changed to SerializerMethodField
+    is_today = serializers.SerializerMethodField()  # Changed to SerializerMethodField
     
     class Meta:
         model = ScheduledPickup
@@ -343,6 +355,14 @@ class CustomerScheduleSerializer(serializers.ModelSerializer):
             'pickup_window': obj.food_listing.pickup_window,
             'expiry_date': obj.food_listing.expiry_date
         }
+    
+    def get_is_upcoming(self, obj):
+        """Check if pickup is in the future"""
+        return obj.is_upcoming
+    
+    def get_is_today(self, obj):
+        """Check if pickup is today"""
+        return obj.is_today
     
     def get_business(self, obj):
         """Get business information"""

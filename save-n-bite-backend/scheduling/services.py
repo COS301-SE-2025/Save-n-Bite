@@ -105,8 +105,10 @@ class PickupSchedulingService:
                         slot_number=slot_config['slot_number'],
                         start_time=slot_config['start_time'],
                         end_time=slot_config['end_time'],
-                        max_orders_per_slot=slot_config['max_orders'],
-                        date=target_date
+                        max_orders_per_slot=slot_config.get('max_orders', pickup_schedule.max_orders_per_slot),  # Ensure this is set
+                        date=target_date,
+                        current_bookings=0,  # Explicitly set to 0
+                        is_active=True  # Explicitly set to True
                     )
                     created_slots.append(slot)
                 
@@ -127,22 +129,22 @@ class PickupSchedulingService:
             # Ensure slots exist for the target date
             PickupSchedulingService.generate_time_slots_for_date(food_listing, target_date)
             
-            # Get available slots
+            # Get available slots using database filtering
             available_slots = PickupTimeSlot.objects.filter(
                 pickup_schedule__food_listing=food_listing,
                 date=target_date,
-                is_active=True
-            ).annotate(
-                available_spots=F('max_orders_per_slot') - F('current_bookings')
-            ).filter(
-                available_spots__gt=0
+                is_active=True,
+                current_bookings__lt=F('max_orders_per_slot')  # Filter for available slots in database
+            ).select_related(
+                'pickup_schedule__food_listing',
+                'pickup_schedule__location'
             ).order_by('start_time')
             
             return available_slots
             
         except Exception as e:
             logger.error(f"Error getting available slots: {str(e)}")
-            return PickupTimeSlot.objects.none()
+            return PickupTimeSlot.objects.none()  # Return empty QuerySet instead of empty list
 
     @staticmethod
     def schedule_pickup(order, schedule_data):

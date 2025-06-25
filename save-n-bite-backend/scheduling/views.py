@@ -393,11 +393,50 @@ def verify_pickup_code(request):
                 business
             )
             
-            pickup_serializer = ScheduledPickupSerializer(pickup)
+            # Create manual response to avoid serializer issues
+            user = pickup.order.interaction.user
+            customer_profile = getattr(user, 'customer_profile', None)
+            
+            pickup_data = {
+                'id': str(pickup.id),
+                'order': str(pickup.order.id),
+                'food_listing': {
+                    'id': str(pickup.food_listing.id),
+                    'name': pickup.food_listing.name,
+                    'description': pickup.food_listing.description,
+                    'quantity': sum(item.quantity for item in pickup.order.interaction.items.all()),
+                    'pickup_window': pickup.food_listing.pickup_window
+                },
+                'location': {
+                    'id': str(pickup.location.id),
+                    'name': pickup.location.name,
+                    'address': pickup.location.address,
+                    'instructions': pickup.location.instructions,
+                    'contact_person': pickup.location.contact_person,
+                    'contact_phone': pickup.location.contact_phone
+                },
+                'scheduled_date': pickup.scheduled_date,
+                'scheduled_start_time': pickup.scheduled_start_time,
+                'scheduled_end_time': pickup.scheduled_end_time,
+                'status': pickup.status,
+                'confirmation_code': pickup.confirmation_code,
+                'customer': {
+                    'id': str(user.id),
+                    'full_name': customer_profile.full_name if customer_profile else '',
+                    'email': user.email,
+                    'phone': user.phone_number if hasattr(user, 'phone_number') else ''  # Phone is on User model
+                },
+                'customer_notes': pickup.customer_notes,
+                'business_notes': pickup.business_notes,
+                'is_upcoming': pickup.is_upcoming,
+                'is_today': pickup.is_today,
+                'created_at': pickup.created_at,
+                'updated_at': pickup.updated_at
+            }
             
             return Response({
                 'message': 'Pickup verified successfully',
-                'pickup': pickup_serializer.data
+                'pickup': pickup_data
             }, status=status.HTTP_200_OK)
             
         except Exception as e:
@@ -439,11 +478,17 @@ def complete_pickup(request, pickup_id):
         
         completed_pickup = PickupSchedulingService.complete_pickup(pickup)
         
-        serializer = ScheduledPickupSerializer(completed_pickup)
-        
+        # Create simple response to avoid serializer issues
         return Response({
             'message': 'Pickup completed successfully',
-            'pickup': serializer.data
+            'pickup': {
+                'id': str(completed_pickup.id),
+                'status': completed_pickup.status,
+                'actual_pickup_time': completed_pickup.actual_pickup_time,
+                'confirmation_code': completed_pickup.confirmation_code,
+                'food_listing_name': completed_pickup.food_listing.name,
+                'customer_email': completed_pickup.order.interaction.user.email
+            }
         }, status=status.HTTP_200_OK)
         
     except Exception as e:
@@ -559,11 +604,20 @@ def schedule_pickup(request):
                 order, serializer.validated_data
             )
             
-            pickup_serializer = ScheduledPickupSerializer(scheduled_pickup)
-            
+            # Return simple response without using the problematic serializer
             return Response({
                 'message': 'Pickup scheduled successfully',
-                'pickup': pickup_serializer.data,
+                'pickup': {
+                    'id': str(scheduled_pickup.id),
+                    'confirmation_code': scheduled_pickup.confirmation_code,
+                    'scheduled_date': scheduled_pickup.scheduled_date,
+                    'scheduled_start_time': scheduled_pickup.scheduled_start_time,
+                    'scheduled_end_time': scheduled_pickup.scheduled_end_time,
+                    'status': scheduled_pickup.status,
+                    'food_listing_name': scheduled_pickup.food_listing.name,
+                    'location_name': scheduled_pickup.location.name,
+                    'customer_notes': scheduled_pickup.customer_notes
+                },
                 'qr_code': qr_code
             }, status=status.HTTP_201_CREATED)
             
@@ -624,10 +678,43 @@ def customer_pickups(request):
     paginator = PickupPagination()
     paginated_pickups = paginator.paginate_queryset(pickups, request)
     
-    serializer = CustomerScheduleSerializer(paginated_pickups, many=True)
+    # Create simple response without using the problematic serializer
+    pickup_data = []
+    for pickup in paginated_pickups:
+        pickup_data.append({
+            'id': str(pickup.id),
+            'scheduled_date': pickup.scheduled_date,
+            'scheduled_start_time': pickup.scheduled_start_time,
+            'scheduled_end_time': pickup.scheduled_end_time,
+            'status': pickup.status,
+            'confirmation_code': pickup.confirmation_code,
+            'food_listing': {
+                'id': str(pickup.food_listing.id),
+                'name': pickup.food_listing.name,
+                'pickup_window': pickup.food_listing.pickup_window,
+                'expiry_date': pickup.food_listing.expiry_date
+            },
+            'business': {
+                'id': str(pickup.location.business.id),
+                'business_name': pickup.location.business.business_name,
+                'business_address': pickup.location.business.business_address,
+                'business_contact': pickup.location.business.business_contact
+            },
+            'location': {
+                'id': str(pickup.location.id),
+                'name': pickup.location.name,
+                'address': pickup.location.address,
+                'instructions': pickup.location.instructions,
+                'contact_person': pickup.location.contact_person,
+                'contact_phone': pickup.location.contact_phone
+            },
+            'customer_notes': pickup.customer_notes,
+            'is_upcoming': pickup.is_upcoming,
+            'is_today': pickup.is_today
+        })
     
     return paginator.get_paginated_response({
-        'pickups': serializer.data
+        'pickups': pickup_data
     })
 
 
@@ -656,10 +743,50 @@ def pickup_details(request, pickup_id):
                 }
             }, status=status.HTTP_403_FORBIDDEN)
         
-        serializer = ScheduledPickupSerializer(pickup)
+        # Create manual response to avoid serializer issues
+        user = pickup.order.interaction.user
+        customer_profile = getattr(user, 'customer_profile', None)
+        
+        pickup_data = {
+            'id': str(pickup.id),
+            'order': str(pickup.order.id),
+            'food_listing': {
+                'id': str(pickup.food_listing.id),
+                'name': pickup.food_listing.name,
+                'description': pickup.food_listing.description,
+                'pickup_window': pickup.food_listing.pickup_window,
+                'quantity': sum(item.quantity for item in pickup.order.interaction.items.all())  # Calculate total quantity
+            },
+            'location': {
+                'id': str(pickup.location.id),
+                'name': pickup.location.name,
+                'address': pickup.location.address,
+                'instructions': pickup.location.instructions,
+                'contact_person': pickup.location.contact_person,
+                'contact_phone': pickup.location.contact_phone
+            },
+            'scheduled_date': pickup.scheduled_date,
+            'scheduled_start_time': pickup.scheduled_start_time,
+            'scheduled_end_time': pickup.scheduled_end_time,
+            'actual_pickup_time': pickup.actual_pickup_time,
+            'status': pickup.status,
+            'confirmation_code': pickup.confirmation_code,
+            'customer': {
+                'id': str(user.id),
+                'full_name': customer_profile.full_name if customer_profile else '',
+                'email': user.email,
+                'phone': user.phone_number if hasattr(user, 'phone_number') else ''  # Phone is on User model, not CustomerProfile
+            },
+            'customer_notes': pickup.customer_notes,
+            'business_notes': pickup.business_notes,
+            'is_upcoming': pickup.is_upcoming,
+            'is_today': pickup.is_today,
+            'created_at': pickup.created_at,
+            'updated_at': pickup.updated_at
+        }
         
         return Response({
-            'pickup': serializer.data
+            'pickup': pickup_data
         }, status=status.HTTP_200_OK)
         
     except ScheduledPickup.DoesNotExist:
@@ -685,11 +812,12 @@ def cancel_pickup(request, pickup_id):
         
         cancelled_pickup = PickupSchedulingService.cancel_pickup(pickup, cancelled_by_customer=True)
         
-        serializer = ScheduledPickupSerializer(cancelled_pickup)
-        
+        # Don't serialize the pickup object to avoid the total_quantity error
+        # Just return a simple success response
         return Response({
             'message': 'Pickup cancelled successfully',
-            'pickup': serializer.data
+            'pickup_id': str(cancelled_pickup.id),
+            'status': cancelled_pickup.status
         }, status=status.HTTP_200_OK)
         
     except ScheduledPickup.DoesNotExist:

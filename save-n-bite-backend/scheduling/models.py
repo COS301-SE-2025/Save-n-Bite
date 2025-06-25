@@ -172,13 +172,13 @@ class PickupTimeSlot(models.Model):
     slot_number = models.PositiveIntegerField()
     start_time = models.TimeField()
     end_time = models.TimeField()
-    max_orders_per_slot = models.PositiveIntegerField()
+    max_orders_per_slot = models.PositiveIntegerField(default=5)  # Added default value
     
     # Date for which this slot applies
     date = models.DateField()
     
     # Tracking
-    current_bookings = models.PositiveIntegerField(default=0)
+    current_bookings = models.PositiveIntegerField(default=0)  # This should already have default=0
     is_active = models.BooleanField(default=True)
     
     created_at = models.DateTimeField(auto_now_add=True)
@@ -190,12 +190,18 @@ class PickupTimeSlot(models.Model):
     @property
     def is_available(self):
         """Check if slot has availability"""
-        return self.is_active and self.current_bookings < self.max_orders_per_slot
+        # Add None checks to prevent the error
+        current = self.current_bookings or 0
+        max_orders = self.max_orders_per_slot or 0
+        return self.is_active and current < max_orders
 
     @property
     def available_spots(self):
         """Number of available booking spots"""
-        return max(0, self.max_orders_per_slot - self.current_bookings)
+        # Add None checks to prevent the error
+        current = self.current_bookings or 0
+        max_orders = self.max_orders_per_slot or 0
+        return max(0, max_orders - current)
 
     def __str__(self):
         return f"Slot {self.slot_number} for {self.pickup_schedule.food_listing.name} on {self.date} ({self.start_time}-{self.end_time})"
