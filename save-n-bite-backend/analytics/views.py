@@ -1,10 +1,10 @@
-from django.db.models import Count, Sum, Q, F
+from django.db.models import Count, Sum
 from django.db.models.functions import TruncMonth
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
-from datetime import datetime, timedelta
 from dateutil.relativedelta import relativedelta
+from django.utils import timezone
 
 from interactions.models import Interaction
 from notifications.models import BusinessFollower
@@ -15,69 +15,121 @@ class BusinessAnalyticsView(APIView):
 
     def get(self, request):
         user = request.user
-        business = FoodProviderProfile.objects.get(user=user)
+        try:
+            business = FoodProviderProfile.objects.get(user=user)
+        except FoodProviderProfile.DoesNotExist:
+            return Response({"error": "Business profile not found"}, status=404)
 
-        today = datetime.today()
-        start_of_month = today.replace(day=1)
-        start_of_last_month = (start_of_month - relativedelta(months=1))
-
-        interactions = Interaction.objects.filter(business=business, status='completed')
-
-        # --- Total Orders Fulfilled
-        current_orders = interactions.filter(created_at__gte=start_of_month).count()
-        last_month_orders = interactions.filter(created_at__gte=start_of_last_month, created_at__lt=start_of_month).count()
-        order_change = self._percent_change(current_orders, last_month_orders)
-
-        # --- Donations
-        current_donations = interactions.filter(interaction_type='Donation', created_at__gte=start_of_month).count()
-        last_month_donations = interactions.filter(interaction_type='Donation', created_at__gte=start_of_last_month, created_at__lt=start_of_month).count()
-        donation_change = self._percent_change(current_donations, last_month_donations)
-
-        # --- Followers
-        current_followers = BusinessFollower.objects.filter(business=business, created_at__gte=start_of_month).count()
-        last_month_followers = BusinessFollower.objects.filter(business=business, created_at__gte=start_of_last_month, created_at__lt=start_of_month).count()
-        total_followers = BusinessFollower.objects.filter(business=business).count()
-        follower_change = self._percent_change(current_followers, last_month_followers)
-
-        # --- Orders per Month (last 6 months)
+        now = timezone.now()
+        start_of_month = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+        end_of_month = start_of_month + relativedelta(months=1)
+        start_of_last_month = start_of_month - relativedelta(months=1)
         six_months_ago = start_of_month - relativedelta(months=5)
-        monthly_orders = (
-            interactions.filter(created_at__gte=six_months_ago)
-            .annotate(month=TruncMonth('created_at'))
-            .values('month')
-            .annotate(count=Count('id'))
-            .order_by('month')
+
+        # Filtered interactions
+        current_month_interactions = Interaction.objects.filter(
+            business=business, status='completed',
+            created_at__gte=start_of_month, created_at__lt=end_of_month
+        )
+        for i in current_month_interactions:
+                print(f"{i.interaction_type}, quantity={i.quantity}, created_at={i.created_at}, business={i.business.business_name}")
+
+        last_month_interactions = Interaction.objects.filter(
+            business=business, status='completed',
+            created_at__gte=start_of_last_month, created_at__lt=start_of_month
         )
 
-        # --- Sales vs Donations Split
-        sales_count = interactions.filter(interaction_type='Purchase').count()
-        donation_count = interactions.filter(interaction_type='Donation').count()
+        current_orders = Interaction.objects.filter(
+            business=business,
+            status='completed',
+            created_at__gte=start_of_month,
+            created_at__lt=end_of_month
+        ).count()
 
-        # --- New Followers Over Time (last 6 months)
-        follower_growth = (
-            BusinessFollower.objects.filter(business=business, created_at__gte=six_months_ago)
-            .annotate(month=TruncMonth('created_at'))
-            .values('month')
-            .annotate(count=Count('id'))
-            .order_by('month')
-        )
+        last_orders = last_month_interactions.count()
 
-        # --- Sustainability Impact (Meals & Water Saved)
-        meals_saved = interactions.aggregate(total=Sum('quantity'))['total'] or 0
+        current_donations = current_month_interactions.filter(interaction_type='Donation').count()
+        last_donations = last_month_interactions.filter(interaction_type='Donation').count()
 
-        water_saved_litres = meals_saved * 500  # Example metric: 500L per meal
+        order_change = self._percent_change(current_orders, last_orders)
+        donation_change = self._percent_change(current_donations, last_donations)
 
-        # --- Top % Badge (percentile of fulfilled orders)
+        current_followers = BusinessFollower.objects.filter(
+            business=business,
+            created_at__gte=start_of_month,
+            created_at__lt=end_of_month
+        ).count()
+        last_followers = BusinessFollower.objects.filter(
+            business=business,
+            created_at__gte=start_of_last_month,
+            created_at__lt=start_of_month
+        ).count()
+        total_followers = BusinessFollower.objects.filter(business=business).count()
+        follower_change = self._percent_change(current_followers, last_followers)
+
+        # Monthly orders (last 6 months)
+        monthly_orders_qs = Interaction.objects.filter(
+            business=business, status='completed',
+            created_at__gte=six_months_ago
+        ).annotate(month=TruncMonth('created_at'))\
+         .values('month').annotate(count=Count('id')).order_by('month')
+
+        monthly_orders_dict = {entry['month']: entry['count'] for entry in monthly_orders_qs}
+        monthly_orders_list = []
+        for i in range(6):
+            month = start_of_month - relativedelta(months=5 - i)
+            monthly_orders_list.append({
+                'month': month,
+                'count': monthly_orders_dict.get(month, 0)
+            })
+
+        # Sales vs Donations (all-time)
+        all_completed = Interaction.objects.filter(business=business, status='completed')
+        sales_count = all_completed.filter(interaction_type='Purchase').count()
+        donation_count = all_completed.filter(interaction_type='Donation').count()
+
+        # Follower growth
+        follower_growth_qs = BusinessFollower.objects.filter(
+            business=business,
+            created_at__gte=six_months_ago
+        ).annotate(month=TruncMonth('created_at'))\
+         .values('month').annotate(count=Count('id')).order_by('month')
+
+        follower_growth_dict = {entry['month']: entry['count'] for entry in follower_growth_qs}
+        follower_growth_list = []
+        for i in range(6):
+            month = start_of_month - relativedelta(months=5 - i)
+            follower_growth_list.append({
+                'month': month,
+                'count': follower_growth_dict.get(month, 0)
+            })
+
+        # Sustainability impact
+        meals_saved = sales_count + donation_count
+        water_saved_litres = meals_saved * 500
+
+        # Top % badge
         all_businesses = FoodProviderProfile.objects.all()
-        business_order_counts = [
-            (b.id, Interaction.objects.filter(business=b, status='completed', created_at__gte=start_of_month).count())
-            for b in all_businesses
-        ]
-        business_order_counts.sort(key=lambda x: x[1], reverse=True)
-        total_businesses = len(business_order_counts)
-        rank = [i for i, (bid, _) in enumerate(business_order_counts) if bid == business.id][0] + 1
-        top_percent = round((rank / total_businesses) * 100, 2)
+        order_counts = []
+        for b in all_businesses:
+            total_qty = Interaction.objects.filter(
+                business=b,
+                status='completed',
+                created_at__gte=start_of_month,
+                created_at__lt=end_of_month
+            ).count()  
 
+
+        order_counts.append((b.id, total_qty))
+        order_counts.sort(key=lambda x: x[1], reverse=True) 
+
+        rank = next((i for i, (bid, _) in enumerate(order_counts) if bid == business.id), 0) + 1
+        top_percent = round((rank / len(order_counts)) * 100, 2) if order_counts else 100.0
+
+        print("==== Top Saver Calculation ====")
+        print("Order counts:", order_counts)
+        print("Rank:", rank)
+        print("Top Percent:", top_percent)
         return Response({
             "total_orders_fulfilled": current_orders,
             "order_change_percent": order_change,
@@ -85,12 +137,12 @@ class BusinessAnalyticsView(APIView):
             "donation_change_percent": donation_change,
             "total_followers": total_followers,
             "follower_change_percent": follower_change,
-            "orders_per_month": list(monthly_orders),
+            "orders_per_month": monthly_orders_list,
             "sales_vs_donations": {
                 "sales": sales_count,
                 "donations": donation_count
             },
-            "follower_growth": list(follower_growth),
+            "follower_growth": follower_growth_list,
             "sustainability_impact": {
                 "meals_saved": meals_saved,
                 "estimated_water_saved_litres": water_saved_litres
