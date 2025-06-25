@@ -15,7 +15,9 @@ module.exports = {
     'src/components/auth/FoodItemDetails.jsx',
     'src/components/auth/FoodItemHeader.jsx',
     'src/components/auth/FoodListingsGrid.jsx',
-    'src/components/auth/FoodProviderCarousel.jsx'
+    'src/components/auth/FoodProviderCarousel.jsx',
+    'src/components/auth/LoginForm.jsx',
+    'src/components/auth/NavBar.jsx'
     
     
   ],
