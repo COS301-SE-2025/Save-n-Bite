@@ -31,9 +31,7 @@ class BusinessAnalyticsView(APIView):
             business=business, status='completed',
             created_at__gte=start_of_month, created_at__lt=end_of_month
         )
-        for i in current_month_interactions:
-                print(f"{i.interaction_type}, quantity={i.quantity}, created_at={i.created_at}, business={i.business.business_name}")
-
+        
         last_month_interactions = Interaction.objects.filter(
             business=business, status='completed',
             created_at__gte=start_of_last_month, created_at__lt=start_of_month
@@ -126,10 +124,6 @@ class BusinessAnalyticsView(APIView):
         rank = next((i for i, (bid, _) in enumerate(order_counts) if bid == business.id), 0) + 1
         top_percent = round((rank / len(order_counts)) * 100, 2) if order_counts else 100.0
 
-        print("==== Top Saver Calculation ====")
-        print("Order counts:", order_counts)
-        print("Rank:", rank)
-        print("Top Percent:", top_percent)
         return Response({
             "total_orders_fulfilled": current_orders,
             "order_change_percent": order_change,
