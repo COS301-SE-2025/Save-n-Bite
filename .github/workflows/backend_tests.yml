@@ -1,0 +1,64 @@
+name: Django CI Tests
+
+on:
+  push:
+    branches: [ backend ]
+  pull_request:
+    branches: [ backend ]
+  workflow_dispatch:
+    inputs:
+      run_coverage:
+        description: 'Run test coverage report'
+        required: false
+        default: 'false'
+        type: boolean
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: save-n-bite-backend
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+
+    - name: Install Poetry
+      run: |
+        curl -sSL https://install.python-poetry.org | python3 -
+        echo "$HOME/.local/bin" >> $GITHUB_PATH  # Adds Poetry to PATH
+
+    - name: Cache virtualenv and Poetry
+      uses: actions/cache@v3
+      with:
+        path: |
+          ~/.cache/pip
+          ~/.cache/pypoetry
+        key: ${{ runner.os }}-poetry-${{ hashFiles('save-n-bite-backend/poetry.lock') }}
+        restore-keys: |
+          ${{ runner.os }}-poetry-
+
+    - name: Install dependencies with Poetry (including dev)
+      run: poetry install --with dev
+
+    - name: Set up environment variables
+      run: |
+        echo "DEBUG=True" >> $GITHUB_ENV
+        echo "SECRET_KEY=test-secret-key-for-ci" >> $GITHUB_ENV
+
+    - name: Run authentication tests
+      run: poetry run pytest authentication/tests.py -v --tb=short
+
+    - name: Run food_listings tests
+      run: poetry run pytest food_listings/tests.py -v --tb=short
+
+    - name: Run notifications tests
+      run: poetry run pytest notifications/tests.py -v --tb=short
+
+  
