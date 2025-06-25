@@ -1,7 +1,7 @@
 # Software Requirements Specification (SRS)  
 **Project Name:** Save n Bite  
 **Version:** 2.0  
-**Date:** [22/05/2025]  
+**Date:** [25/06/2025]  
 **Team:** [Secure Web & Mobile Guild]  
 **GitHub Repository:** [Link to Repo](https://github.com/COS301-SE-2025/Save-n-Bite)
 
