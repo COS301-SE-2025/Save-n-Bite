@@ -166,9 +166,9 @@ R2: **Make Listings**
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- Discounted Price 
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- Quantity  
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- Expiry Date  
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- Pickup Window
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- Pickup Window  
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- Allergens  
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- Dietery Information 
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- Dietery Information  
 &nbsp;&nbsp;&nbsp;&nbsp;R2.3 Business users should be able to indicate whether the listing is for sale at a discounted price or available as a donation.  
 &nbsp;&nbsp;&nbsp;&nbsp;R2.4 Listings should update real-time availability as items are reserved or claimed.  
 &nbsp;&nbsp;&nbsp;&nbsp;R2.5 Businesses should be able to update food listings.  
