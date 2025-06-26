@@ -483,9 +483,9 @@ This is a stub section.
 ---
 
 ## 8. Deployment Model
-
+This is a stub section.
 ---
 
 ## 9. Live Deployed System
-
+This is a stub section.
 ---
