@@ -129,10 +129,13 @@ main
 ---
 
 ## ✅ Demo 2 Deliverables (27 June 2025)
-3. **Coding Standards Document**:  
+1. **Coding Standards Document**:  
    - **[Click Here](documentation/coding_standards_doc.md)**
      
-2. **Implemented Use Cases:**   
+2. **User Manual**:  
+   - **[Click Here](documentation/save_n_bite_user_manuals.md)**
+     
+3. **Implemented Use Cases:**   
    - User registration/login (JWT/OAuth2).✅    
    - User themes and profile preferences (React + PostgreSQL).✅  
    - Validation of user input (React + Django validators).✅  
@@ -144,7 +147,7 @@ main
    - Feedback and Revies system (React + Django REST, PostgreSQL + moderation).✅  
    - Business Analytics system (Django + Pandas, Scikit-learn for ML predictions, PostgreSQL + Redis).✅  
 
-3. **SRS Document**:  
+4. **SRS Document**:  
    - **📄 [Software Requirements Specification (SRS)](documentation/SRS-V2.md)**  
    - Introduction
    - User stories
