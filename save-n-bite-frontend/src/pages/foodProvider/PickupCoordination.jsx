@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Clock4,
   QrCode,
@@ -7,15 +7,16 @@ import {
   Phone,
   Mail,
   Clock,
+  RefreshCw,
 } from 'lucide-react';
 import {StatusBadge} from '../../components/foodProvider/StatusBadge';
 import { Button } from '../../components/foodProvider/Button'
 import CalendarView from '../../components/foodProvider/CalendarView';
 import SideBar from '../../components/foodProvider/SideBar';
+import { analyticsAPI } from '../../services/analyticsAPI';
 
-
-
-const pickupsData = [
+// Mock data for demonstration
+const mockPickupsData = [
   {
     id: 1,
     orderNumber: 'ORD-2025-001',
@@ -68,18 +69,138 @@ const pickupsData = [
 ];
 
 function PickupCoordination() {
-  const [pickups, setPickups] = useState(pickupsData);
+  const [pickups, setPickups] = useState([]);
+  const [currentProvider, setCurrentProvider] = useState(null);
   const [dateFilter, setDateFilter] = useState('all');
   const [statusFilter, setStatusFilter] = useState('all');
+  const [typeFilter, setTypeFilter] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [showQRCode, setShowQRCode] = useState(null);
   const [viewMode, setViewMode] = useState('list');
   const [currentDate, setCurrentDate] = useState(new Date());
+  const [showSuccessMessage, setShowSuccessMessage] = useState(false);
+  const [successMessage, setSuccessMessage] = useState('');
 
-  const getTimeRemaining = (pickupWindow, pickupDate) => {
+  // Load pickup data on component mount
+  useEffect(() => {
+    const initializeData = async () => {
+      await loadPickupData();
+      loadProviderInfo();
+    };
+    
+    initializeData();
+  }, []);
+
+  // Auto-hide success message after 3 seconds
+  useEffect(() => {
+    if (showSuccessMessage) {
+      const timer = setTimeout(() => {
+        setShowSuccessMessage(false);
+        setSuccessMessage('');
+      }, 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [showSuccessMessage]);
+
+  const loadPickupData = async () => {
+    try {
+      // Get real orders from localStorage (added by YourCart)
+      const realOrders = JSON.parse(localStorage.getItem('pickupOrders') || '[]');
+      
+      // Get current provider's business name
+      const currentProviderBusinessName = localStorage.getItem('providerBusinessName');
+      
+      // Fetch listings data directly from API to determine donation vs sale
+      let listingsData = [];
+      try {
+        const response = await fetch('http://localhost:8000/api/food-listings/');
+        if (response.ok) {
+          const data = await response.json();
+          listingsData = data.listings || [];
+        }
+      } catch (error) {
+        console.error('Error fetching listings:', error);
+      }
+      
+      // Helper function to find listing and determine type
+      const getOrderType = (order) => {
+        // Try to find the listing by item name
+        const matchingListing = listingsData.find(listing => 
+          listing.name === order.itemName || 
+          listing.title === order.itemName ||
+          (order.items && order.items.some(item => item.includes(listing.name)))
+        );
+        
+        if (matchingListing) {
+          // Use the listing's discounted_price to determine type
+          const discountedPrice = parseFloat(matchingListing.discounted_price || matchingListing.discountedPrice || 0);
+          return {
+            type: discountedPrice > 0 ? "Sale" : "Donation",
+            amount: discountedPrice > 0 ? `R${discountedPrice}` : "N/A"
+          };
+        }
+        
+        // Fallback: check if order has price information
+        const price = order.price || order.amount || 0;
+        const isDonation = price === 0 || price === "0" || price === "N/A" || price === "Free";
+        
+        return {
+          type: isDonation ? "Donation" : "Sale",
+          amount: isDonation ? "N/A" : `R${price}`
+        };
+      };
+      
+      // Filter real orders to only show orders for this provider
+      const filteredRealOrders = currentProviderBusinessName 
+        ? realOrders.filter(order => {
+            // More flexible matching - check if provider name contains or matches
+            const orderProviderName = order.providerName || '';
+            const currentProviderName = currentProviderBusinessName || '';
+            
+            return orderProviderName.toLowerCase().includes(currentProviderName.toLowerCase()) ||
+                   currentProviderName.toLowerCase().includes(orderProviderName.toLowerCase()) ||
+                   orderProviderName.toLowerCase() === currentProviderName.toLowerCase();
+          })
+        : realOrders; // Show all orders if no provider business name is stored
+      
+      // Add type information to real orders
+      const enhancedRealOrders = filteredRealOrders.map(order => {
+        const orderTypeInfo = getOrderType(order);
+        return {
+          ...order,
+          type: orderTypeInfo.type,
+          amount: orderTypeInfo.amount
+        };
+      });
+      
+      // Combine enhanced real orders with mock data
+      const allPickups = [...mockPickupsData, ...enhancedRealOrders];
+      
+      setPickups(allPickups);
+    } catch (error) {
+      console.error('Error loading pickup data:', error);
+      setPickups(mockPickupsData);
+    }
+  };
+
+  const loadProviderInfo = () => {
+    try {
+      const providerBusinessName = localStorage.getItem('providerBusinessName');
+      if (providerBusinessName) {
+        setCurrentProvider(providerBusinessName);
+      }
+    } catch (error) {
+      console.error('Error loading provider info:', error);
+    }
+  };
+
+  const getTimeRemaining = (pickupWindow, pickupDate, expiryDate) => {
     const [startTime, endTime] = pickupWindow.split(' - ');
     const today = new Date().toLocaleDateString();
-    const pickupDateObj = new Date(pickupDate);
+    
+    // Use expiry date if available, otherwise fall back to pickup date
+    const actualDate = expiryDate || pickupDate;
+    const pickupDateObj = new Date(actualDate);
     const formattedPickupDate = pickupDateObj.toLocaleDateString();
 
     if (formattedPickupDate < today) {
@@ -129,18 +250,56 @@ function PickupCoordination() {
     return false;
   };
 
-  const handleMarkAsPickedUp = (id, status = 'On Time') => {
-    setPickups(
-      pickups.map((pickup) =>
-        pickup.id === id
-          ? {
-              ...pickup,
-              status: 'Completed',
-              pickupStatus: status,
-            }
-          : pickup,
-      ),
-    );
+  const handleMarkAsPickedUp = async (id, status = 'On Time') => {
+    try {
+      // Use the analytics API to mark order as completed
+      const success = analyticsAPI.markOrderAsCompleted(id, status);
+      
+      if (success) {
+        // Update local state to reflect the change
+        setPickups(
+          pickups.map((pickup) =>
+            pickup.id === id
+              ? {
+                  ...pickup,
+                  status: 'Completed',
+                  pickupStatus: status,
+                }
+              : pickup,
+          ),
+        );
+        
+        // Update customer's order history to mark order as completed
+        const customerOrderHistory = JSON.parse(localStorage.getItem('customerOrderHistory') || '[]');
+        const updatedOrderHistory = customerOrderHistory.map(order => {
+          if (order.id === id) {
+            return {
+              ...order,
+              status: 'confirmed'
+            };
+          }
+          return order;
+        });
+        localStorage.setItem('customerOrderHistory', JSON.stringify(updatedOrderHistory));
+        
+        // Dispatch event to notify OrderHistory component
+        window.dispatchEvent(new CustomEvent('orderCompleted'));
+        
+        // Show success message
+        setShowSuccessMessage(true);
+        setSuccessMessage(`Order ${id} marked as completed with status: ${status}`);
+        
+        // Notify Dashboard that data has been updated
+        // This will trigger a refresh when the user navigates to Dashboard
+        localStorage.setItem('dashboardNeedsRefresh', 'true');
+        
+        console.log(`Order ${id} marked as completed with status: ${status}`);
+      } else {
+        console.error('Failed to mark order as completed');
+      }
+    } catch (error) {
+      console.error('Error marking pickup as completed:', error);
+    }
   };
 
   const filteredPickups = pickups.filter((pickup) => {
@@ -156,20 +315,25 @@ function PickupCoordination() {
       (statusFilter === 'late' && pickup.pickupStatus === 'Late Pickup') ||
       (statusFilter === 'noshow' && pickup.pickupStatus === 'No Show');
 
+    const matchesType =
+      typeFilter === 'all' ||
+      (typeFilter === 'sale' && pickup.type === 'Sale') ||
+      (typeFilter === 'donation' && pickup.type === 'Donation');
+
     const matchesDate =
       dateFilter === 'all' ||
       (dateFilter === 'today' &&
-        new Date(pickup.pickupDate).toLocaleDateString() ===
+        new Date(pickup.expiryDate || pickup.pickupDate).toLocaleDateString() ===
           new Date().toLocaleDateString()) ||
       (dateFilter === 'tomorrow' &&
-        new Date(pickup.pickupDate).toLocaleDateString() ===
+        new Date(pickup.expiryDate || pickup.pickupDate).toLocaleDateString() ===
           new Date(
             new Date().setDate(new Date().getDate() + 1),
           ).toLocaleDateString()) ||
       (dateFilter === 'past' &&
-        new Date(pickup.pickupDate) < new Date().setHours(0, 0, 0, 0));
+        new Date(pickup.expiryDate || pickup.pickupDate) < new Date().setHours(0, 0, 0, 0));
 
-    return matchesSearch && matchesStatus && matchesDate;
+    return matchesSearch && matchesStatus && matchesType && matchesDate;
   });
 
   const sortedPickups = [...filteredPickups].sort((a, b) => {
@@ -179,8 +343,11 @@ function PickupCoordination() {
     if (a.status === 'Upcoming' && b.status !== 'Upcoming') return -1;
     if (a.status !== 'Upcoming' && b.status === 'Upcoming') return 1;
 
-    if (a.pickupDate !== b.pickupDate) {
-      return new Date(a.pickupDate) - new Date(b.pickupDate);
+    const aDate = a.expiryDate || a.pickupDate;
+    const bDate = b.expiryDate || b.pickupDate;
+    
+    if (aDate !== bDate) {
+      return new Date(aDate) - new Date(bDate);
     }
 
     return a.pickupWindow.localeCompare(b.pickupWindow);
@@ -188,6 +355,16 @@ function PickupCoordination() {
 
   const handleMonthChange = (direction) => {
     setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() + direction, 1));
+  };
+
+  const refreshPickupData = async () => {
+    await loadPickupData();
+    loadProviderInfo();
+    // Reset filters
+    setDateFilter('all');
+    setStatusFilter('all');
+    setTypeFilter('all');
+    setSearchQuery('');
   };
 
   return (
@@ -199,6 +376,37 @@ function PickupCoordination() {
         <p className="text-gray-600 mt-1">
           Manage food pickups and coordinate with customers
         </p>
+        {currentProvider && (
+          <div className="mt-2 p-3 bg-emerald-50 border border-emerald-200 rounded-lg">
+            <p className="text-sm text-emerald-800">
+              <strong>Current Provider:</strong> {currentProvider}
+            </p>
+            <p className="text-xs text-emerald-600 mt-1">
+              Showing orders for your business only
+            </p>
+          </div>
+        )}
+        
+        {/* Success Message */}
+        {showSuccessMessage && (
+          <div className="mt-4 p-4 bg-green-50 border border-green-200 rounded-lg">
+            <div className="flex items-center">
+              <div className="flex-shrink-0">
+                <svg className="h-5 w-5 text-green-400" viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                </svg>
+              </div>
+              <div className="ml-3">
+                <p className="text-sm text-green-800">
+                  {successMessage}
+                </p>
+                <p className="text-xs text-green-600 mt-1">
+                  Dashboard statistics have been updated
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
       <div className="bg-white rounded-lg shadow-md p-4 mb-6">
@@ -235,12 +443,28 @@ function PickupCoordination() {
             <option value="late">Late Pickup</option>
             <option value="noshow">No Show</option>
           </select>
+          <select
+            className="px-4 py-2 border border-gray-300 rounded-md bg-white"
+            value={typeFilter}
+            onChange={(e) => setTypeFilter(e.target.value)}
+          >
+            <option value="all">All Types</option>
+            <option value="sale">Sale</option>
+            <option value="donation">Donation</option>
+          </select>
           <Button
             variant={viewMode === 'calendar' ? 'primary' : 'secondary'}
             icon={<Calendar className="h-4 w-4" />}
             onClick={() => setViewMode(viewMode === 'calendar' ? 'list' : 'calendar')}
           >
             {viewMode === 'calendar' ? 'List View' : 'Calendar View'}
+          </Button>
+          <Button
+            variant="secondary"
+            icon={<RefreshCw className="h-4 w-4" />}
+            onClick={refreshPickupData}
+          >
+            Refresh
           </Button>
         </div>
       </div>
@@ -257,6 +481,7 @@ function PickupCoordination() {
             const timeRemaining = getTimeRemaining(
               pickup.pickupWindow,
               pickup.pickupDate,
+              pickup.expiryDate
             );
             const isUrgent = isPickupUrgent(timeRemaining);
 
@@ -276,6 +501,18 @@ function PickupCoordination() {
                         {pickup.orderNumber}
                       </h3>
                       <p className="text-gray-600">{pickup.customerName}</p>
+                      {pickup.type && (
+                        <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium mt-1 ${
+                          pickup.type === 'Sale' 
+                            ? 'bg-blue-100 text-blue-800' 
+                            : 'bg-green-100 text-green-800'
+                        }`}>
+                          {pickup.type}
+                          {pickup.amount && pickup.type === 'Sale' && (
+                            <span className="ml-1 text-xs">• {pickup.amount}</span>
+                          )}
+                        </span>
+                      )}
                     </div>
                     <div className="flex items-center space-x-2">
                       <StatusBadge status={pickup.status} />
@@ -321,7 +558,10 @@ function PickupCoordination() {
                         <div>
                           <p className="text-gray-800">{pickup.pickupWindow}</p>
                           <p className="text-xs text-gray-500">
-                            {new Date(pickup.pickupDate).toLocaleDateString()}
+                            {new Date(pickup.expiryDate || pickup.pickupDate).toLocaleDateString()}
+                            {pickup.expiryDate && (
+                              <span className="ml-1 text-orange-600">(Expiry)</span>
+                            )}
                           </p>
                         </div>
                       </div>

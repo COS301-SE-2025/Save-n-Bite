@@ -41,7 +41,7 @@ function App() {
           <Route path="/donation-confirmation/:id" element={<DonationConfirmation />} />
           <Route path="/notifications" element={<OrderHistory />} />
           <Route path="/pickup" element={<Pickup />} />
-          {/* <Route path="/reviews/:id" element={<Reviews />} /> */}
+          <Route path="/reviews/:orderId" element={<Reviews />} />
           <Route path="/reviews" element={<Reviews />} />
           <Route path="/dashboard" element={<Dashboard />} />
            <Route path="/orders-and-feedback" element={<OrdersAndFeedback />} />

@@ -40,10 +40,25 @@ function Dashboard() {
     fetchAnalyticsData()
   }, [])
 
+  // Check if dashboard needs refresh (from PickupCoordination)
+  useEffect(() => {
+    const needsRefresh = localStorage.getItem('dashboardNeedsRefresh');
+    if (needsRefresh === 'true') {
+      const refreshData = async () => {
+        await fetchAnalyticsData();
+        localStorage.removeItem('dashboardNeedsRefresh');
+      };
+      refreshData();
+    }
+  }, []);
+
   const fetchAnalyticsData = async () => {
     try {
       setLoading(true)
-      const data = await analyticsAPI.getBusinessAnalytics()
+      
+      // Get provider-specific analytics data
+      const data = await analyticsAPI.getProviderAnalytics();
+      console.log('Provider Analytics returned:', data)
       setAnalyticsData(data)
       setError(null)
     } catch (err) {
@@ -132,6 +147,13 @@ function Dashboard() {
             <p className="text-gray-600 mt-1">
               Track your performance and impact
             </p>
+            {analyticsData?.total_orders_fulfilled > 0 && (
+              <div className="mt-2 p-2 bg-blue-50 border border-blue-200 rounded-lg">
+                <p className="text-sm text-blue-800">
+                  <strong>Provider Analytics:</strong> Showing data for your completed orders
+                </p>
+              </div>
+            )}
           </div>
           <Button variant="secondary" icon={<DownloadIcon className="h-4 w-4" />}>
             Export Data

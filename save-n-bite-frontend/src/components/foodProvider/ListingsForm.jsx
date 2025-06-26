@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { CalendarIcon, ImageIcon, ClockIcon } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import foodListingsAPI from '../../services/foodListingsAPI';
+import schedulingAPI from '../../services/schedulingAPI';
 
 export function ListingForm() {
   const navigate = useNavigate();
@@ -193,6 +194,22 @@ export function ListingForm() {
           console.log('API response:', response); // Debug log
           
           if (response.success) {
+            // Create pickup location after listing is created
+            const locationData = {
+              name: `${formData.name} Pickup Location`,
+              address: userData?.profile?.business_address || 'Unknown Address',
+              instructions: 'Collect at the main counter',
+              contact_person: userData?.profile?.business_name || 'Business Staff',
+              contact_phone: '+27123456789', // Mocked phone
+              latitude: '-26.2041', // Mocked latitude
+              longitude: '28.0473' // Mocked longitude
+            };
+            try {
+              const locationResponse = await schedulingAPI.createPickupLocation(locationData);
+              console.log('Pickup location creation response:', locationResponse);
+            } catch (err) {
+              console.error('Failed to create pickup location:', err);
+            }
             navigate('/listings-overview');
           } else {
             setErrors(prev => ({
@@ -208,6 +225,22 @@ export function ListingForm() {
         console.log('API response:', response); // Debug log
         
         if (response.success) {
+          // Create pickup location after listing is created
+          const locationData = {
+            name: `${formData.name} Pickup Location`,
+            address: userData?.profile?.business_address || 'Unknown Address',
+            instructions: 'Collect at the main counter',
+            contact_person: userData?.profile?.business_name || 'Business Staff',
+            contact_phone: '+27123456789', // Mocked phone
+            latitude: '-26.2041', // Mocked latitude
+            longitude: '28.0473' // Mocked longitude
+          };
+          try {
+            const locationResponse = await schedulingAPI.createPickupLocation(locationData);
+            console.log('Pickup location creation response:', locationResponse);
+          } catch (err) {
+            console.error('Failed to create pickup location:', err);
+          }
           navigate('/listings-overview');
         } else {
           setErrors(prev => ({
