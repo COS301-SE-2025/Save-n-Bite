@@ -1,9 +1,9 @@
 name: frontend
 on:
   push:
-    branches: [frontend]
+    branches: [main]
   pull_request:
-    branches: [frontend]
+    branches: [main]
 env:
   NODE_VERSION: 20
 jobs:
