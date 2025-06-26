@@ -50,7 +50,7 @@ Save n Bite is a digital platform that reduces food waste by connecting food pro
 
 ### 2. Dashboard Overview
 
-[FoodProviderDashboard](Path/to/images/dashboard.png)
+[FoodProviderDashboard](https://github.com/COS301-SE-2025/Save-n-Bite/blob/main/assets/FoodproviderDashboard.jpeg?raw=true)
 
 Your provider dashboard includes:
 - **Active Listings**: Current food items available
@@ -64,7 +64,7 @@ Your provider dashboard includes:
 - From your dashboard, click "Create New Listing"
 - Choose listing type: "Discounted Sale" or "Donation"
 
-[CreateListings](Path/to/images/createListings.png)
+[CreateListings](https://github.com/COS301-SE-2025/Save-n-Bite/blob/main/assets/CreateListing.jpeg?raw=true)
 
 **Step 2: Enter Food Details**
 - **Food Name**: Clear, descriptive name
@@ -82,7 +82,7 @@ Your provider dashboard includes:
 
 ### 4. Managing Your Listings
 
-(add more images where you deem appropriate v)
+[MyListings](https://github.com/COS301-SE-2025/Save-n-Bite/blob/main/assets/My%20Listings.jpeg?raw=true)
 
 **Viewing Listings**
 - Active listings show real-time availability
@@ -192,8 +192,7 @@ Coming soon! (kinda)
 
 ### 2. Finding Food Donations and Discounted Meals
 
-(im sure you know how to add images now :)
-
+[BrowseListing](https://github.com/COS301-SE-2025/Save-n-Bite/blob/main/assets/BrowseListings.jpeg?raw=true)
 **Browsing Donations**
 - View all available donation listings
 - Filter by:
@@ -242,12 +241,14 @@ Coming soon! (kinda)
 
 ### 5. Purchasing Discounted Food
 
+[FoodItem](https://github.com/COS301-SE-2025/Save-n-Bite/blob/main/assets/FoodItem.jpeg?raw=true)
 **Step 1: Select Food Item**
 - Click on discounted food listing to view full details
 - Review food description, price, and pickup details
 - Check provider information and ratings
 - Read recent customer reviews
 
+[Cart](https://github.com/COS301-SE-2025/Save-n-Bite/blob/main/assets/Cart.jpeg?raw=true)
 **Step 2: Add to Cart**
 - Click "Add to Cart" for desired quantity
 - Continue browsing or proceed to checkout
@@ -288,6 +289,7 @@ Coming soon! (kinda)
 
 ### 7. Managing Requests and Purchases
 
+[OrderHistory](https://github.com/COS301-SE-2025/Save-n-Bite/blob/main/assets/OrderHistory.jpeg?raw=true)
 **Request Status Tracking**
 - **Pending**: Waiting for provider approval
 - **Approved**: Confirmed for pickup
@@ -320,7 +322,9 @@ Coming soon! (kinda)
 - Show budget efficiency through discounted food purchases
 
 ### 9. Review and Feedback
+[GeneralReviews](https://github.com/COS301-SE-2025/Save-n-Bite/blob/main/assets/InitialReviewPage.jpeg?raw=true)
 
+[ReviewFoodprovider](https://github.com/COS301-SE-2025/Save-n-Bite/blob/main/assets/ReviewFoodProvider.jpeg?raw=true)
 **Rating Food Providers**
 - Rate your pickup experience (for both donations and purchases)
 - Provide feedback on food quality
