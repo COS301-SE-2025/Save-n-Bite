@@ -4,12 +4,15 @@ import { USER_TYPES } from '../../utils/constants';
 import { useNavigate, Link } from 'react-router-dom';
 import RegisterForm from '../../components/auth/RegisterForm';
 import logo from '../../assets/images/SnB_leaf_icon.png';
+import { UploadIcon, CheckCircleIcon, HelpCircleIcon } from 'lucide-react'
+import RegistrationHelp from '../../components/auth/Help/RegistrationHelpMenu'
 
 
 const Register = () => {
   const [selectedUserType, setSelectedUserType] = useState(USER_TYPES.CUSTOMER);
   const [message, setMessage] = useState('');
-  const [messageType, setMessageType] = useState(''); // 'success' or 'error'
+  const [messageType, setMessageType] = useState(''); 
+  const [isHelpOpen, setIsHelpOpen] = useState(false)
   const navigate = useNavigate();
 
   const handleRegistrationSuccess = (response) => {
@@ -144,10 +147,21 @@ const Register = () => {
              <Link to="/login" className="text-emerald-600 hover:text-emerald-700">
                 Log in
               </Link>
+              <button
+            onClick={() => setIsHelpOpen(true)}
+            className="flex items-center text-emerald-600 hover:text-emerald-700"
+          >
+            <HelpCircleIcon size={18} className="mr-1" />
+            <span>Need help?</span>
+          </button>
             </div>
           </div>
         </div>
       </div>
+      <RegistrationHelp
+        isOpen={isHelpOpen}
+        onClose={() => setIsHelpOpen(false)}
+      />
     </div>
   );
 };

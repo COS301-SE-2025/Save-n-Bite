@@ -4,3 +4,11 @@ node_modules/
 package.json
 yarn.lock  
 package-lock.json
+save-n-bite-backend/test_media/
+
+# Virtual environment
+venv/
+*.pyc
+__pycache__/
+*.swp
+*.swo

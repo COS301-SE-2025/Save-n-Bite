@@ -6,8 +6,9 @@ import PriceDisplay from '../../components/auth/PriceDisplay';
 import RelatedItems from '../../components/auth/RelatedItems';
 import StoreLocation from '../../components/auth/StoreLocation';
 import CustomerNavBar from '../../components/auth/CustomerNavBar';
-import { ShoppingCartIcon } from 'lucide-react';
+import { ShoppingCartIcon, Heart } from 'lucide-react';
 import foodAPI from '../../services/FoodAPI';
+import BusinessAPI from '../../services/BusinessAPI';
 
 const FoodItem = () => {
   const { id } = useParams();
@@ -17,10 +18,21 @@ const FoodItem = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [quantity, setQuantity] = useState(1);
+  
+  // Follow functionality state
+  const [isFollowing, setIsFollowing] = useState(false);
+  const [followLoading, setFollowLoading] = useState(false);
+  const [businessProfile, setBusinessProfile] = useState(null);
 
   useEffect(() => {
     fetchItemDetails();
   }, [id]);
+
+  useEffect(() => {
+    if (item?.provider?.id) {
+      fetchBusinessProfile();
+    }
+  }, [item]);
 
   const fetchItemDetails = async () => {
     try {
@@ -34,6 +46,25 @@ const FoodItem = () => {
       setError('Failed to load food item details');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchBusinessProfile = async () => {
+    try {
+      // The API expects the provider's user ID, which might be different from provider.id
+      // Check if we have provider.user_id or provider.provider_id first
+      const providerId = item.provider.user_id || item.provider.provider_id || item.provider.id;
+      console.log('Fetching business profile for ID:', providerId); // Debug log
+      
+      const response = await BusinessAPI.getBusinessProfile(providerId);
+      if (response.success) {
+        setBusinessProfile(response.data);
+        setIsFollowing(response.data.is_following);
+      } else {
+        console.error('Business profile fetch failed:', response.error);
+      }
+    } catch (err) {
+      console.error('Failed to fetch business profile:', err);
     }
   };
   
@@ -62,6 +93,53 @@ const FoodItem = () => {
     } catch (err) {
       setError('Failed to add item to cart');
       setButtonStatus("idle");
+    }
+  };
+
+  const handleFollowToggle = async (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    // Get the correct provider ID
+    const providerId = item.provider.user_id || item.provider.provider_id || item.provider.id;
+    console.log('Following/unfollowing business ID:', providerId); // Debug log
+    
+    if (!providerId) {
+      setError('Business information not available');
+      return;
+    }
+
+    setFollowLoading(true);
+
+    try {
+      let response;
+      if (isFollowing) {
+        response = await BusinessAPI.unfollowBusiness(providerId);
+      } else {
+        response = await BusinessAPI.followBusiness(providerId);
+      }
+
+      if (response.success) {
+        setIsFollowing(!isFollowing);
+        // Update the business profile follower count if available
+        if (businessProfile) {
+          setBusinessProfile(prev => ({
+            ...prev,
+            follower_count: isFollowing 
+              ? Math.max(0, prev.follower_count - 1)
+              : prev.follower_count + 1
+          }));
+        }
+        console.log('Follow action successful:', response.message); // Debug log
+      } else {
+        setError(response.error || 'Failed to update follow status');
+        console.error('Follow action failed:', response.error);
+      }
+    } catch (err) {
+      setError('Failed to update follow status');
+      console.error('Follow toggle error:', err);
+    } finally {
+      setFollowLoading(false);
     }
   };
 
@@ -150,16 +228,68 @@ const FoodItem = () => {
                     Sold Out
                   </div>
                 )}
+                
+                {/* Follow Button - Positioned over the image */}
+                <button
+                  onClick={handleFollowToggle}
+                  disabled={followLoading}
+                  className={`absolute top-4 left-4 p-3 rounded-full shadow-lg transition-all duration-200 ${
+                    isFollowing 
+                      ? 'bg-red-500 text-white hover:bg-red-600' 
+                      : 'bg-white text-gray-600 hover:bg-gray-50 hover:text-red-500'
+                  } ${followLoading ? 'opacity-50 cursor-not-allowed' : 'hover:scale-105'}`}
+                  title={isFollowing ? `Unfollow ${item.provider.businessName}` : `Follow ${item.provider.businessName}`}
+                >
+                  <Heart 
+                    size={20} 
+                    fill={isFollowing ? 'currentColor' : 'none'}
+                    className={followLoading ? 'animate-pulse' : ''}
+                  />
+                </button>
               </div>
             </div>
 
             {/* Food Details */}
             <div className="md:w-1/2 p-6">
-              <FoodItemHeader 
-                title={item.name} 
-                provider={item.provider.businessName} 
-                type={item.type} 
-              />
+              <div className="flex items-center justify-between mb-4">
+                <FoodItemHeader 
+                  title={item.name} 
+                  provider={item.provider.businessName} 
+                  type={item.type} 
+                />
+              </div>
+
+              {/* Business Info with Follow Button for Desktop
+              <div className="flex items-center justify-between mb-4 p-3 bg-gray-50 rounded-lg">
+                <div className="flex-1">
+                  <h3 className="font-medium text-gray-800">{item.provider.businessName}</h3>
+                  {businessProfile && (
+                    <p className="text-sm text-gray-600">
+                      {businessProfile.follower_count} {businessProfile.follower_count === 1 ? 'follower' : 'followers'}
+                    </p>
+                  )}
+                </div>
+                
+                {/* Follow Button for Desktop */}
+                {/* <button
+                  onClick={handleFollowToggle}
+                  disabled={followLoading}
+                  className={`px-4 py-2 rounded-md text-sm font-medium transition-colors flex items-center space-x-2 ${
+                    isFollowing
+                      ? 'bg-red-500 text-white hover:bg-red-600'
+                      : 'bg-emerald-600 text-white hover:bg-emerald-700'
+                  } ${followLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
+                >
+                  <Heart 
+                    size={16} 
+                    fill={isFollowing ? 'currentColor' : 'none'}
+                    className={followLoading ? 'animate-pulse' : ''}
+                  />
+                  <span>
+                    {followLoading ? 'Loading...' : isFollowing ? 'Following' : 'Follow'}
+                  </span>
+                </button>
+              </div> } */} 
 
               <p className="text-gray-700 mb-6">{item.description}</p>
 

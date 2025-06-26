@@ -4,8 +4,9 @@ import CustomerNavBar from '../../components/auth/CustomerNavBar';
 import OrderCard from '../../components/auth/OrderCard';
 import ImpactSummary from '../../components/auth/ImpactSummary';
 import OrderFilters from '../../components/auth/OrderFilters';
+import { CheckCircleIcon, LeafIcon, ClockIcon, MapPinIcon, AlertCircleIcon } from 'lucide-react'
 
-// Mock order data for both customers and NGOs
+// Mock order data for customers (only purchases)
 const mockCustomerOrders = [
   {
     id: 1,
@@ -70,7 +71,7 @@ const mockCustomerOrders = [
     orderNumber: 'ORD-2024-003',
     date: '2024-05-15',
     type: 'purchase',
-    status: 'pending',
+    status: 'confirmed',
     items: [
       {
         id: 4,
@@ -85,6 +86,7 @@ const mockCustomerOrders = [
     provider: 'Local Grocery',
     pickupTime: '16:00',
     pickupAddress: '789 Pine St, Cape Town',
+    pickupWindow: 'Today, 4 PM - 6 PM',
     impact: {
       mealsSaved: 2,
       co2Reduced: 0.8
@@ -92,7 +94,63 @@ const mockCustomerOrders = [
   }
 ];
 
+// Mock order data for NGOs (both purchases and donations)
 const mockNGOOrders = [
+  // NGO Purchase Orders
+  {
+    id: 1,
+    orderNumber: 'ORD-2024-NGO-001',
+    date: '2024-05-21',
+    type: 'purchase',
+    status: 'completed',
+    items: [
+      {
+        id: 1,
+        title: 'Bulk Meal Kits',
+        image: 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80',
+        provider: 'Community Kitchen',
+        quantity: 20,
+        price: 4.50
+      }
+    ],
+    total: 90.00,
+    provider: 'Community Kitchen',
+    pickupTime: '11:00',
+    pickupAddress: '555 Helper Ave, Cape Town',
+    beneficiaries: 20,
+    impact: {
+      mealsSaved: 20,
+      co2Reduced: 10.0
+    }
+  },
+  {
+    id: 2,
+    orderNumber: 'ORD-2024-NGO-002',
+    date: '2024-05-19',
+    type: 'purchase',
+    status: 'confirmed',
+    items: [
+      {
+        id: 2,
+        title: 'Fresh Produce Box',
+        image: 'https://images.unsplash.com/photo-1542838132-92c53300491e?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80',
+        provider: 'Local Farm',
+        quantity: 5,
+        price: 15.00
+      }
+    ],
+    total: 75.00,
+    provider: 'Local Farm',
+    pickupTime: '09:00',
+    pickupAddress: '888 Farm Road, Cape Town',
+    pickupWindow: 'Tomorrow, 9 AM - 11 AM',
+    beneficiaries: 15,
+    impact: {
+      mealsSaved: 15,
+      co2Reduced: 7.5
+    }
+  },
+  // NGO Donation Requests
   {
     id: 4,
     orderNumber: 'DON-2024-001',
@@ -113,6 +171,7 @@ const mockNGOOrders = [
     provider: 'Community Restaurant',
     pickupTime: '10:00',
     pickupAddress: '321 Community Rd, Cape Town',
+    pickupWindow: 'Today, 10 AM - 12 PM',
     beneficiaries: 25,
     impact: {
       mealsSaved: 25,
@@ -178,6 +237,32 @@ const mockNGOOrders = [
       mealsSaved: 100,
       co2Reduced: 30.0
     }
+  },
+  {
+    id: 7,
+    orderNumber: 'DON-2024-004',
+    date: '2024-05-14',
+    type: 'donation',
+    status: 'pending',
+    items: [
+      {
+        id: 9,
+        title: 'Surplus Sandwiches',
+        image: 'https://images.unsplash.com/photo-1553909489-cd47e0ef937f?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80',
+        provider: 'Deli Corner',
+        quantity: 40,
+        price: 0
+      }
+    ],
+    total: 0,
+    provider: 'Deli Corner',
+    pickupTime: 'TBD',
+    pickupAddress: '123 Deli Street, Cape Town',
+    beneficiaries: 40,
+    impact: {
+      mealsSaved: 40,
+      co2Reduced: 20.0
+    }
   }
 ];
 
@@ -195,16 +280,36 @@ const OrderHistory = () => {
     provider: 'all'
   });
 
-  // Simulate getting user type (in real app, this would come from auth context)
+  // Simulate getting user type from authentication or local storage
   useEffect(() => {
     const storedUserType = localStorage.getItem('userType') || 'customer';
     setUserType(storedUserType);
     
-    // Load appropriate mock data based on user type
-    const mockData = storedUserType === 'ngo' ? mockNGOOrders : mockCustomerOrders;
-    setOrders(mockData);
-    setFilteredOrders(mockData);
+    // Load orders from localStorage for customers, or use mock data for NGOs
+    if (storedUserType === 'customer') {
+      const customerOrders = JSON.parse(localStorage.getItem('customerOrderHistory') || '[]');
+      setOrders(customerOrders);
+      setFilteredOrders(customerOrders);
+    } else {
+      // For NGOs, still use mock data for now
+      setOrders(mockNGOOrders);
+      setFilteredOrders(mockNGOOrders);
+    }
   }, []);
+
+  // Listen for order completion events
+  useEffect(() => {
+    const handleOrderCompleted = () => {
+      if (userType === 'customer') {
+        const customerOrders = JSON.parse(localStorage.getItem('customerOrderHistory') || '[]');
+        setOrders(customerOrders);
+        setFilteredOrders(customerOrders);
+      }
+    };
+
+    window.addEventListener('orderCompleted', handleOrderCompleted);
+    return () => window.removeEventListener('orderCompleted', handleOrderCompleted);
+  }, [userType]);
 
   // Apply filters
   useEffect(() => {
@@ -313,14 +418,99 @@ const OrderHistory = () => {
     );
   }
 
+  // Updated status color function to handle pending status
+  const getStatusColor = (status) => {
+    switch (status) {
+      case 'completed':
+        return 'bg-emerald-100 text-emerald-800';
+      case 'confirmed':
+        return 'bg-blue-100 text-blue-800';
+      case 'pending':
+        return 'bg-yellow-100 text-yellow-800';
+      default:
+        return 'bg-gray-100 text-gray-800';
+    }
+  };
+
+  // Updated action button function to handle all statuses
+  const getActionButton = (order) => {
+    switch (order.status) {
+      case 'completed':
+        return (
+          <button
+            onClick={() => navigate(`/reviews/${order.id}`)}
+            className="px-4 py-2 text-emerald-600 hover:text-emerald-700 font-medium"
+          >
+            Leave a Review
+          </button>
+        );
+      case 'confirmed':
+        return (
+          <div className="space-y-2">
+            <button
+              onClick={() => navigate(`/pickup`)}
+              className="px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 w-full"
+            >
+              View Pickup Instructions
+            </button>
+            <button
+              onClick={() => navigate(`/reviews/${order.id}`)}
+              className="px-4 py-2 text-emerald-600 hover:text-emerald-700 font-medium w-full"
+            >
+              Leave a Review
+            </button>
+          </div>
+        );
+      case 'pending':
+        return (
+          <div className="px-4 py-2 text-yellow-600 font-medium flex items-center">
+            <AlertCircleIcon size={16} className="mr-1" />
+            Awaiting Pickup
+          </div>
+        );
+      default:
+        return null;
+    }
+  };
+
+  // Get status description for better UX
+  const getStatusDescription = (order) => {
+    switch (order.status) {
+      case 'pending':
+        return order.type === 'donation' 
+          ? 'Donation request submitted, waiting for provider approval'
+          : 'Order submitted, waiting for pickup confirmation';
+      case 'confirmed':
+        return order.type === 'donation'
+          ? 'Donation approved, ready for pickup'
+          : 'Order confirmed, ready for pickup';
+      case 'completed':
+        return order.type === 'donation'
+          ? 'Donation collected successfully'
+          : 'Order completed - you can now leave a review';
+      default:
+        return '';
+    }
+  };
+
   return (
     <div className="bg-gray-50 min-h-screen w-full">
       <CustomerNavBar />
       
       <div className="max-w-6xl mx-auto px-4 py-8">
-        <h1 className="text-2xl font-bold mb-8 text-gray-800">
-          {userType === 'ngo' ? 'Donation History' : 'Order History'}
-        </h1>
+        <div className="flex items-center justify-between mb-8">
+          <h1 className="text-2xl font-bold text-gray-800">
+            {userType === 'ngo' ? 'Order & Donation History' : 'Order History'}
+          </h1>
+          {userType === 'ngo' && (
+            <div className="text-sm text-gray-600">
+              <span className="inline-flex items-center px-2 py-1 rounded-full text-xs bg-blue-100 text-blue-800 mr-2">
+                NGO Account
+              </span>
+              Purchases & Donation Requests
+            </div>
+          )}
+        </div>
 
         {/* Impact Summary */}
         <ImpactSummary 
@@ -344,7 +534,7 @@ const OrderHistory = () => {
           <div className="flex-1">
             <div className="flex items-center justify-between mb-6">
               <div className="text-sm text-gray-600">
-                {filteredOrders.length} {userType === 'ngo' ? 'donations' : 'orders'} found
+                {filteredOrders.length} {userType === 'ngo' ? 'items' : 'orders'} found
               </div>
             </div>
 
@@ -356,24 +546,94 @@ const OrderHistory = () => {
                   </svg>
                 </div>
                 <p className="text-xl text-gray-600 mb-4">
-                  No {userType === 'ngo' ? 'donations' : 'orders'} found
+                  No {userType === 'ngo' ? 'orders or donations' : 'orders'} found
                 </p>
                 <button
                   onClick={() => navigate('/browse')}
                   className="inline-block px-6 py-3 bg-emerald-600 text-white rounded-md hover:bg-emerald-700 transition-colors"
                 >
-                  {userType === 'ngo' ? 'Browse Donations' : 'Browse Food'}
+                  {userType === 'ngo' ? 'Browse Food & Donations' : 'Browse Food'}
                 </button>
               </div>
             ) : (
-              <div className="space-y-4">
-                {filteredOrders.map(order => (
-                  <OrderCard
+              /* Orders List */
+              <div className="bg-white rounded-lg shadow-sm">
+                {filteredOrders.map((order, index) => (
+                  <div
                     key={order.id}
-                    order={order}
-                    userType={userType}
-                    onOrderAction={handleOrderAction}
-                  />
+                    className={`p-6 ${index !== filteredOrders.length - 1 ? 'border-b border-gray-100' : ''}`}
+                  >
+                    <div className="flex justify-between items-start mb-4">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2 mb-2">
+                          <h3 className="font-semibold text-gray-800">
+                            {order.items.map(item => item.title).join(', ')}
+                          </h3>
+                          <span
+                            className={`text-xs px-2 py-1 rounded-full ${getStatusColor(order.status)}`}
+                          >
+                            {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
+                          </span>
+                          {order.type === 'donation' && (
+                            <span className="text-xs px-2 py-1 rounded-full bg-purple-100 text-purple-800">
+                              Donation
+                            </span>
+                          )}
+                        </div>
+                        <p className="text-sm text-gray-600 mb-2">
+                          {order.provider}
+                        </p>
+                        <div className="flex items-center text-sm text-gray-500 gap-4 mb-2">
+                          <span className="flex items-center">
+                            <ClockIcon size={16} className="mr-1" />
+                            {new Date(order.date).toLocaleDateString()}
+                          </span>
+                          <span className="flex items-center">
+                            <MapPinIcon size={16} className="mr-1" />
+                            {order.status === 'pending' ? 'Pickup TBD' : 'Local pickup'}
+                          </span>
+                          {userType === 'ngo' && order.beneficiaries && (
+                            <span className="flex items-center">
+                              <LeafIcon size={16} className="mr-1" />
+                              {order.beneficiaries} beneficiaries
+                            </span>
+                          )}
+                        </div>
+                        <p className="text-xs text-gray-500 italic">
+                          {getStatusDescription(order)}
+                        </p>
+                      </div>
+                      <div className="text-right ml-4">
+                        <p className="font-semibold text-emerald-600 mb-2">
+                          {order.type === 'purchase' ? `R${order.total.toFixed(2)}` : 'Free'}
+                        </p>
+                        {getActionButton(order)}
+                      </div>
+                    </div>
+                    {order.status === 'confirmed' && order.pickupWindow && (
+                      <div className="mt-4 p-4 bg-blue-50 rounded-lg">
+                        <p className="text-sm text-blue-800">
+                          <strong>Pickup window:</strong> {order.pickupWindow}
+                        </p>
+                        {/* <p className="text-sm text-blue-600 mt-1">
+                          {order.pickupAddress}
+                        </p> */}
+                      </div>
+                    )}
+                    {order.status === 'pending' && order.type === 'donation' && (
+                      <div className="mt-4 p-4 bg-yellow-50 rounded-lg">
+                        <p className="text-sm text-yellow-800">
+                          <strong>Donation Request:</strong> Waiting for {order.provider} to approve your request
+                        </p>
+                        <p className="text-sm text-yellow-600 mt-1">
+                          You'll be notified once the provider confirms availability
+                        </p>
+                      </div>
+                    )}
+                    <div className="mt-4 text-sm text-gray-600">
+                      <strong>Impact:</strong> {order.impact.mealsSaved} meals saved.
+                    </div>
+                  </div>
                 ))}
               </div>
             )}
