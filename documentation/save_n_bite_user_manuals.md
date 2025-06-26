@@ -50,7 +50,7 @@ Save n Bite is a digital platform that reduces food waste by connecting food pro
 
 ### 2. Dashboard Overview
 
-[FoodProviderDashboard](https://github.com/COS301-SE-2025/Save-n-Bite/blob/main/assets/FoodproviderDashboard.jpeg?raw=true)
+[FoodProviderDashboard](../assets/FoodproviderDashboard.jpeg)
 
 Your provider dashboard includes:
 - **Active Listings**: Current food items available
