@@ -27,7 +27,7 @@ import {
 } from 'lucide-react'
 import { Button } from '../../components/foodProvider/Button'
 import { analyticsAPI, transformAnalyticsData, getAISuggestion } from '../../services/analyticsAPI'
-import SideBar from '../../components/foodProvider/SideBar'
+import SideBar from '../../components/foodProvider/sideBar'
 
 function Dashboard() {
   const [analyticsData, setAnalyticsData] = useState(null)
@@ -161,7 +161,7 @@ function Dashboard() {
         </div>
 
         {/* KPI Cards */}
-        <div className="grid grid-cols-1 gap-5 mb-8 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="grid grid-cols-1 gap-5 mb-8 sm:grid-cols-2 lg:grid-cols-4" data-onboarding="dashboard-stats">
           {/* Total Orders */}
           <div className="bg-white rounded-lg shadow-md p-5">
             <div className="flex justify-between items-start">
@@ -389,7 +389,7 @@ function Dashboard() {
           </div>
 
           {/* Sustainability Metrics */}
-          <div className="bg-white rounded-lg shadow-md p-5">
+          <div className="bg-white rounded-lg shadow-md p-5" data-onboarding="impact-section">
             <div className="flex justify-between items-center mb-4">
               <h3 className="text-lg font-medium">Sustainability Impact</h3>
               <div className="relative group">
