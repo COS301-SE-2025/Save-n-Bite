@@ -257,8 +257,10 @@ R11: **Gamification**
 ## 7. Architectural Requirements
 
 ### 7.1 Architectural Design Strategy
+---
 
 ### 7.2 Architectural Strategies
+---
 
 ### 7.3 Architectural Quality Requirements
 
@@ -414,6 +416,7 @@ System Architecture:
 ---
 
 ### 7.4 Architectural Design and Pattern
+---
 
 ### 7.5 Architectural Constrains
 
