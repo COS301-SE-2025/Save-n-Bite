@@ -6,7 +6,7 @@ from rest_framework.permissions import IsAuthenticated
 from dateutil.relativedelta import relativedelta
 from django.utils import timezone
 
-from interactions.models import Interaction
+from interactions.models import Order
 from notifications.models import BusinessFollower
 from authentication.models import FoodProviderProfile
 
@@ -26,30 +26,28 @@ class BusinessAnalyticsView(APIView):
         start_of_last_month = start_of_month - relativedelta(months=1)
         six_months_ago = start_of_month - relativedelta(months=5)
 
-        # Filtered interactions
-        current_month_interactions = Interaction.objects.filter(
-            business=business, status='completed',
-            created_at__gte=start_of_month, created_at__lt=end_of_month
+        # Filtered orders
+        current_month_orders = Order.objects.filter(
+            interaction__business=business, 
+            status='completed',
+            created_at__gte=start_of_month, 
+            created_at__lt=end_of_month
         )
         
-        last_month_interactions = Interaction.objects.filter(
-            business=business, status='completed',
-            created_at__gte=start_of_last_month, created_at__lt=start_of_month
+        last_month_orders = Order.objects.filter(
+            interaction__business=business, 
+            status='completed',
+            created_at__gte=start_of_last_month, 
+            created_at__lt=start_of_month
         )
 
-        current_orders = Interaction.objects.filter(
-            business=business,
-            status='completed',
-            created_at__gte=start_of_month,
-            created_at__lt=end_of_month
-        ).count()
+        current_orders_count = current_month_orders.count()
+        last_orders_count = last_month_orders.count()
 
-        last_orders = last_month_interactions.count()
+        current_donations = current_month_orders.filter(interaction__interaction_type='Donation').count()
+        last_donations = last_month_orders.filter(interaction__interaction_type='Donation').count()
 
-        current_donations = current_month_interactions.filter(interaction_type='Donation').count()
-        last_donations = last_month_interactions.filter(interaction_type='Donation').count()
-
-        order_change = self._percent_change(current_orders, last_orders)
+        order_change = self._percent_change(current_orders_count, last_orders_count)
         donation_change = self._percent_change(current_donations, last_donations)
 
         current_followers = BusinessFollower.objects.filter(
@@ -66,8 +64,9 @@ class BusinessAnalyticsView(APIView):
         follower_change = self._percent_change(current_followers, last_followers)
 
         # Monthly orders (last 6 months)
-        monthly_orders_qs = Interaction.objects.filter(
-            business=business, status='completed',
+        monthly_orders_qs = Order.objects.filter(
+            interaction__business=business, 
+            status='completed',
             created_at__gte=six_months_ago
         ).annotate(month=TruncMonth('created_at'))\
          .values('month').annotate(count=Count('id')).order_by('month')
@@ -82,9 +81,12 @@ class BusinessAnalyticsView(APIView):
             })
 
         # Sales vs Donations (all-time)
-        all_completed = Interaction.objects.filter(business=business, status='completed')
-        sales_count = all_completed.filter(interaction_type='Purchase').count()
-        donation_count = all_completed.filter(interaction_type='Donation').count()
+        all_completed_orders = Order.objects.filter(
+            interaction__business=business, 
+            status='completed'
+        )
+        sales_count = all_completed_orders.filter(interaction__interaction_type='Purchase').count()
+        donation_count = all_completed_orders.filter(interaction__interaction_type='Donation').count()
 
         # Follower growth
         follower_growth_qs = BusinessFollower.objects.filter(
@@ -110,22 +112,21 @@ class BusinessAnalyticsView(APIView):
         all_businesses = FoodProviderProfile.objects.all()
         order_counts = []
         for b in all_businesses:
-            total_qty = Interaction.objects.filter(
-                business=b,
+            total_qty = Order.objects.filter(
+                interaction__business=b,
                 status='completed',
                 created_at__gte=start_of_month,
                 created_at__lt=end_of_month
-            ).count()  
-
-
-        order_counts.append((b.id, total_qty))
+            ).count()
+            order_counts.append((b.id, total_qty))
+        
         order_counts.sort(key=lambda x: x[1], reverse=True) 
 
         rank = next((i for i, (bid, _) in enumerate(order_counts) if bid == business.id), 0) + 1
         top_percent = round((rank / len(order_counts)) * 100, 2) if order_counts else 100.0
 
         return Response({
-            "total_orders_fulfilled": current_orders,
+            "total_orders_fulfilled": current_orders_count,
             "order_change_percent": order_change,
             "donations": current_donations,
             "donation_change_percent": donation_change,
