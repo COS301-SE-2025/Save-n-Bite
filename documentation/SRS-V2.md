@@ -257,9 +257,11 @@ R11: **Gamification**
 ## 7. Architectural Requirements
 
 ### 7.1 Architectural Design Strategy
+This is a stub section.
 ---
 
 ### 7.2 Architectural Strategies
+This is a stub section.
 ---
 
 ### 7.3 Architectural Quality Requirements
@@ -416,6 +418,7 @@ System Architecture:
 ---
 
 ### 7.4 Architectural Design and Pattern
+This is a stub section.
 ---
 
 ### 7.5 Architectural Constrains
