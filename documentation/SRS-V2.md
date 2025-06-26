@@ -37,8 +37,8 @@ The project will be piloted with **University of Pretoria food outlets** in coll
 |-------------|--------------------|
 | **1. As a Food Provider**, I want to register a profile so that I can list surplus food items for sale or donation. | Given that a user wants to register as a Food Provider, when they select "Register as Food Provider" and enter business details, contact information, and license documents, then a confirmation of successful registration is received. |
 | **2. As an Individual Consumer**, I want to register an account so that I can browse and purchase food. | Given that an Individual Consumer wants to register an account, when they choose "Register as Individual" and provide their name, email, and password, then a confirmation email is sent upon successful registration. |
-| **3. As an Organization**, I want to register to request food donations for our cause. | Given that an Organization wants to register for food donation requests, when they select "Register as Organization" and upload proof of registration, then their status is set to "Verification pending" until approved by an admin. |
-| **4. As a System Administrator**, I want to verify user accounts so that only legitimate providers and organizations are approved. | Given that a System Administrator wants to verify user accounts, when they access the admin dashboard and review uploaded documents, then they can approve or reject users with comments. |
+| **3. As an organisation**, I want to register to request food donations for our cause. | Given that an organisation wants to register for food donation requests, when they select "Register as organisation" and upload proof of registration, then their status is set to "Verification pending" until approved by an admin. |
+| **4. As a System Administrator**, I want to verify user accounts so that only legitimate providers and organisations are approved. | Given that a System Administrator wants to verify user accounts, when they access the admin dashboard and review uploaded documents, then they can approve or reject users with comments. |
 | **5. As any User**, I want to update my profile information so that I can keep my data current. | Given that a user wants to update their profile information, when they edit fields such as email, phone, profile image, and upload updated documents, then their profile information is updated accordingly. |
 | **6. As a System Administrator**, I want to manage user roles and permissions so that appropriate access is granted to each user type. | Given that a System Administrator wants to manage user roles and permissions, when they access role management features, then they can assign roles and restrict access based on the selected role. |
 
@@ -55,7 +55,7 @@ The project will be piloted with **University of Pretoria food outlets** in coll
 | User Stories | Acceptance Criteria |
 |-------------|--------------------|
 | **1. As an Individual Consumer**, I want to search for food items so that I can find meals that meet my needs. | Given that an Individual Consumer is searching for food, when they use the search bar and apply filters by name, type, expiration date, or location, then relevant food items are displayed. |
-| **2. As an Organization**, I want to browse food listings so that I can find donations suitable for our needs. | Given that an Organization is browsing for food donations, when they filter listings by type, quantity, or expiration date, then donation-only items relevant to their needs are shown. |
+| **2. As an organisation**, I want to browse food listings so that I can find donations suitable for our needs. | Given that an organisation is browsing for food donations, when they filter listings by type, quantity, or expiration date, then donation-only items relevant to their needs are shown. |
 | **3. As any User**, I want to view food details so that I can make informed decisions. | Given that any User is viewing a food listing, when they select an item, then the full details including description, images, listing date, and provider details are visible. |
 | **4. As any User**, I want to receive notifications about new listings so that I can act quickly. | Given that any User has enabled notifications, when new listings that match their preferences (e.g., category or area) are posted, then they receive email or in-app alerts. |
 
@@ -64,7 +64,7 @@ The project will be piloted with **University of Pretoria food outlets** in coll
 | User Stories | Acceptance Criteria |
 |-------------|--------------------|
 | **1. As an Individual Consumer**, I want to purchase discounted food items so that I can reduce my food cost. | Given that an Individual Consumer is ready to make a purchase, when they proceed to checkout and complete the payment, then they can review their final order before payment confirmation. |
-| **2. As an Organization**, I want to request food donations so that we can support those in need. | Given that an Organization wants to request a donation, when they submit a request for a specific donation listing, then they receive confirmation and available delivery options. |
+| **2. As an organisation**, I want to request food donations so that we can support those in need. | Given that an organisation wants to request a donation, when they submit a request for a specific donation listing, then they receive confirmation and available delivery options. |
 | **3. As any User**, I want to view my transaction history so that I can track my past activities. | Given that any User wants to review their past transactions, when they access their transaction history, then they can filter by date and type (purchase/donation) and view order details and statuses. |
 
 ### EPIC 5: Pickup Coordination
@@ -87,14 +87,14 @@ The project will be piloted with **University of Pretoria food outlets** in coll
 | User Stories | Acceptance Criteria |
 |-------------|--------------------|
 | **1. As a Food Provider**, I want to view waste reduction metrics so that I can measure our sustainability efforts. | Given that a Food Provider wants to assess their environmental contribution, when they view analytics, then they see metrics such as food saved and CO₂ reduction over time (monthly/yearly). |
-| **2. As an Organisation**, I want to track meals received and distributed so that we can report impact to donors. | Given that an Organization needs to track its operational impact, when they access reports, then they see visual charts of meals received and can export the data for reporting purposes. |
+| **2. As an Organisation**, I want to track meals received and distributed so that we can report impact to donors. | Given that an organisation needs to track its operational impact, when they access reports, then they see visual charts of meals received and can export the data for reporting purposes. |
 
 ### EPIC 8: Blockchain & Rewards System
 
 | User Stories | Acceptance Criteria |
 |-------------|--------------------|
 | **1. As an Individual Consumer**, I want to earn SaveCoins for sustainable actions so that I feel rewarded | Given that an Individual Consumer performs sustainable actions (e.g., donations or purchases), when the action is completed, then SaveCoins are automatically awarded and the balance updates in real-time. |
-| **2. As an Organisation**, I want to redeem rewards so that we can access useful resources or discounts. | Given that an Organization has accumulated SaveCoins, when they view the reward catalog, then they can redeem coins for eligible resources or discounts. |
+| **2. As an Organisation**, I want to redeem rewards so that we can access useful resources or discounts. | Given that an organisation has accumulated SaveCoins, when they view the reward catalog, then they can redeem coins for eligible resources or discounts. |
 
 ### EPIC 9: Education & Community
 
@@ -108,7 +108,7 @@ The project will be piloted with **University of Pretoria food outlets** in coll
 | User Stories | Acceptance Criteria |
 |-------------|--------------------|
 | **1. As a Food Provider**,  I want to earn points for listing items regularly so that I feel recognized. | Given that a Food Provider lists items regularly, when new listings or transactions are completed, then points are awarded and progress toward achievements is visible. |
-| **2. As any User**, I want to view a leaderboard so that I can compare my sustainability impact with others. | Given that any User wants to track their standing, when they view the leaderboard, then they see rankings categorized by user type (individuals, providers, organizations) with weekly and monthly summaries. |
+| **2. As any User**, I want to view a leaderboard so that I can compare my sustainability impact with others. | Given that any User wants to track their standing, when they view the leaderboard, then they see rankings categorized by user type (individuals, providers, organisations) with weekly and monthly summaries. |
 
 ---
 
@@ -188,7 +188,7 @@ R3: **Browse Listings**
 
 R4: **Purchase / Request Food Items**  
 &nbsp;&nbsp;&nbsp;&nbsp;R4.1 Verified individual users should be able to purchase discounted food items.  
-&nbsp;&nbsp;&nbsp;&nbsp;R4.2 Verified organization users should be able to request food items listed as donations.  
+&nbsp;&nbsp;&nbsp;&nbsp;R4.2 Verified organisation users should be able to request food items listed as donations.  
 &nbsp;&nbsp;&nbsp;&nbsp;R4.3 The system should enforce limits to prevent bulk purchasing or hoarding (based on user role and verification status).  
 &nbsp;&nbsp;&nbsp;&nbsp;R4.4 Upon purchase or request, the listing should be updated to reflect new availability.  
 &nbsp;&nbsp;&nbsp;&nbsp;R4.5 A confirmation screen should summarize the transaction (e.g., pickup time, location, item details).  
@@ -253,107 +253,232 @@ R11: **Gamification**
 
 ## 6. Domain Model  
 
-![Domain Model](Save-n-Bite_Domain_Model.png)
+![Domain Model](Save-n-Bite_DomainModel.png)
 
 ---
 
-## 7. Architectural Requirements  
+## 7. Architectural Requirements
 
-### 7.1 Quality Requirements and Constraints 
+### 7.1 Architectural Design Strategy
+This is a stub section.
+---
 
-<div align="center">
- 
-| **Category**               | **Requirement**                                                                 | **Associated Quality Attribute/Constraint**                                                                 |
-|----------------------------|---------------------------------------------------------------------------------|-------------------------------------------------------------------------------------------|
-|                            | Secure verification to prevent misuse                                           |  Security constraint                                                             |
-| **User Access**             | Role-based access (Provider/Organization/Consumer)                             |  Security model                                                                  |
-|                            | Secure login for all users                                                      |  Security standard                                                               |
-| **Security & Compliance**   | Fraud prevention (bulk purchase limits, etc.)                                  |  Security policy                                                                 |
-|                            | Compliance with food safety regulations                                         |  Legal/regulatory constraint                                                     |
-| **Platform UX**             | Responsive web app                                                             |  Usability standard/interoperability                                             |
-|                            | Notifications for popular/upcoming listings                                     |  Performance/usability                                                           |
-|                            | Only verified users access core features                                        |  Security constraint                                                             |
-| **Logistics (Optional)**    | Route optimization for bulk donations                                          |  Performance optimization                                                        |
-| **Analytics (Optional)**    | Impact reporting (meals saved, CO₂ reduced)                                    |  Analytics/scalability                                                           |
-| **Architecture**            | Cloud-hosted deployment (Azure)                                                |  Infrastructure constraint                                                       |
-|                            | Modular system design                                                           |  Maintainability                                                                 |
-|                            | Secure authentication                                                           |  Security                                                                        |
-| **Design**                  | UI/UX best practices                                                           |  Usability                                                                       |
-|                            | First-launch tutorial                                                           |  User onboarding                                                                 | 
+### 7.2 Architectural Strategies
+This is a stub section.
+---
 
- </div>
- 
-### 7.2 Architectural Patterns: Event-Driven Architecture
- 
-#### **Overview**
-We adopt an **event-driven architecture (EDA)** to handle real-time data flows between food providers, consumers, and AI-driven analytics. This pattern decouples system components by treating actions (e.g., new food listings, orders) as **events** that trigger independent processes.
-
-#### **Key Components**
-
-<div align="center">
- 
-| Component          | Role                                                                 | Example Events                          |
-|--------------------|----------------------------------------------------------------------|-----------------------------------------|
-| **Producers**      | Emit events when state changes (e.g., new listing, order placement). | `FoodListingCreated`, `OrderPlaced`     |
-| **Broker**         | Routes events to subscribed consumers (Redis Pub/Sub).               | Manages `food_listings` channel         |
-| **Consumers**      | React to events (AI, UI, notifications).                             | `AI_PredictionService`, `UserInterface` |
-
-</div>
- 
-#### **Reasons for EDA:**
-1. **Real-Time Updates**  
-   - Users instantly see new listings/donations via WebSocket pushes (no page refresh).  
-   - Example: When a restaurant lists surplus food, the UI updates in <500ms.
-
-2. **Decoupled AI/ML**  
-   - The AI model consumes inventory update events to predict surplus trends **asynchronously**, avoiding UI latency.  
-   - Scales independently during demand spikes (e.g., meal rush hours).
-
-3. **Modularity**  
-   - New features (e.g., fraud detection) can subscribe to events without modifying producers.  
-   - Example: A `DonationRequested` event triggers both logistics and impact analytics.
-
-4. **Fault Tolerance**  
-   - If the AI service crashes, orders/listings continue uninterrupted (events persist in Redis).
-
-#### **Tech Stack Alignment**
-**Broker**: Redis Pub/Sub (lightweight, supports WebSocket via Django Channels).
-
-**Frontend**: React listens to WebSocket events for real-time UI updates.
-
-**Backend**: Django emits events on CRUD operations (e.g., post_save signals).
+### 7.3 Architectural Quality Requirements
 
 
-### 7.3 Design Patterns  
+#### **Priority 1: Security - Authentication & Authorization**
+**Description**: Secure user authentication and role-based access control system  
+**Justification**: Critical for food safety compliance, fraud prevention, and user trust  
+**Quantification Metrics**:
+- 100% of protected API endpoints require authentication
+- 4 distinct user roles with specific permissions (customer, provider, organisation, admin)
+- JWT token-based authentication with configurable expiration
+- Password validation with security validators
+- Zero unauthorized access to protected resources
 
-#### 1. Singleton
-- The **verification system** will be created as a singleton class to ensure a single point of control for security-critical operations (e.g., document validation, fraud checks).
-- The **AI model** will be a singleton class to avoid memory watse and guarantees consistent predictions.
+**Implementation Evidence**:
+- Django REST Framework with JWT authentication
+- Role-based permissions implemented across all 7 Django applications
+- Custom user model with user_type field for role differentiation
 
-#### 2. Observer
-- The observer pattern is essential for an event-driven architecture and will be used for decoupling event emitters from subscribers.
-- Producers include events that add food listings to the database while consumers include the AI service, the UI and user notifications subscribing to events.
-
-#### 3. Command 
-- The use of the command pattern will allow us to encapsulate actions as objects that can be queued or undone.
-- Such actions include the ordering of food or sending a donation request.
+**Testing Strategy**:
+- Test suite checks for JWT configuration across apps
+- Tests confirm the precence of security middleware, password validation and authentication
 
 ---
 
-## 8. Technology Choices  
+#### **Priority 2: Reliability - System Availability & Error Handling**
+**Description**: Consistent system availability with graceful error handling
+**Justification**: Maintains user trust and ensures business continuity
+**Quantification Metrics**:
+- Target 99.5% system uptime
+- Automated test coverage >80% across all modules
+- Comprehensive error handling with appropriate HTTP status codes
+- Zero data loss during normal operations
+- Automatic failover for critical system components
 
-<div align="center">
+**Implementation Evidence**:
+- Comprehensive test suite with pytest framework
+- Django's built-in error handling and validation
+- Proper HTTP status code responses (200, 400, 401, 403, 404, 500)
+- Database transaction rollback on failures
+- Logging and monitoring for system health tracking
 
-| Category       | Technologies                               |
-|----------------|--------------------------------------------|
-| **Frontend**   | React, Material UI                         |
-| **Backend**    | Django, Django REST, JWT                   |
-| **Database**   | PostgreSQL, Redis                          |
-| **Cloud**      | Microsoft Azure                            |
-| **DevOps**     | Docker, GitHub Actions                     |
-| **AI/ML**      | Python, Scikit-learn, Pandas               |
+**Error Handling Strategy**:
+- Input validation at API and database levels
+- Graceful degradation for non-critical features
+- User-friendly error messages with actionable guidance
+- Automated error logging and alerting
+- Regular backup and recovery procedures
 
-</div>
+**Testing Strategy**:
+- Unit testing for individual components
+- Integration testing for system workflows
+- Error scenario testing and validation
+- System health monitoring and alerting
+
+---
+
+
+#### **Priority 3: Performance - Database Efficiency**
+**Description**: Optimized database operations and query performance  
+**Justification**: Ensures responsive user experience and system scalability  
+**Quantification Metrics**:
+- API response times under 500ms for 100% of requests
+- Database query optimization with proper indexing
+- ACID compliance for all transactions
+- Efficient connection pooling and resource management
+
+**Implementation Evidence**:
+- PostgreSQL database with ACID transaction support
+- Django ORM with optimized queries and select_related/prefetch_related
+- Database indexes on frequently queried fields
+- Connection pooling for efficient resource utilization
+
+**Performance Optimizations**:
+- Indexed fields: user roles, listing status, creation dates, ratings
+- Efficient foreign key relationships with proper joins
+- Cached user sessions and authentication tokens
+- Optimized serializers for API responses
+
+**Testing Strategy**:
+- Database query performance profiling
+- Response time monitoring and benchmarking
+- Resource utilization tracking
+
+---
+
+#### **Priority 4: Modularity - Component Independence**
+**Description**: Loosely coupled system architecture with clear separation of concerns
+**Justification**: Enables parallel development, easier maintenance, and system scalability
+**Quantification Metrics**:
+- 7 independent Django applications with distinct responsibilities
+- Minimal circular dependencies between modules
+- Each module independently testable and deployable
+- Clear API contracts between components
+- High code cohesion within modules
+
+**Implementation Evidence**:
+```
+System Architecture:
+
+├──save-n-bite-backend
+|   ├── authentication/    
+|   ├── food_listings/     
+|   ├── interactions/      
+|   ├── notifications/     
+|   ├── analytics/         
+|   ├── scheduling/        
+|   └── reviews/  
+```
+
+**Module Responsibilities**:
+- **Authentication**: User registration, login, JWT management, role-based permissions
+- **Food Listings**: Food item management, search, filtering, availability tracking
+- **Interactions**: Shopping cart, purchase flows, order management
+- **Notifications**: User alerts, email notifications, preference management
+- **Analytics**: Business metrics, waste reduction tracking, impact reporting
+- **Scheduling**: Pickup coordination, time slot management, logistics
+- **Reviews**: User feedback, rating system, content moderation
+
+**Testing Strategy**:
+- Independent unit testing per module
+- Integration testing between modules
+- 100% app completedness
+---
+
+#### **Priority 5: Usability - Responsive User Experience**
+**Description**: Intuitive, accessible interface across all device types
+**Justification**: Maximizes user adoption and ensures accessibility compliance
+**Quantification Metrics**:
+- 100% responsive design across device breakpoints
+- Page load times under 3 seconds on standard connections
+- Maximum 3 clicks to reach any core functionality
+- Cross-browser compatibility (Chrome, Firefox, Safari, Edge)
+- Accessible help menu, support centre and FAQs
+
+**Implementation Evidence**:
+- React frontend with responsive component architecture
+- CSS Grid and Flexbox for adaptive layouts
+- Progressive loading strategies for optimal performance
+- Mobile-first design approach
+- Accessible UI components with proper ARIA labels
+
+**Device Support**:
+- Mobile: < 768px (Optimized for smartphone usage)
+- Tablet: 768px - 1024px (Enhanced navigation and content)
+- Desktop: > 1024px (Full feature access and dashboard views)
+
+**Testing Strategy**:
+- Cross-device compatibility testing
+- User journey timing and efficiency measurement
+- Accessibility audit and compliance validation
+
+---
+
+### 7.4 Architectural Design and Pattern
+This is a stub section.
+---
+
+### 7.5 Architectural Constrains
+
+#### **Technical Constraints**:
+- **Database**: PostgreSQL required for ACID compliance and complex food safety queries
+- **Authentication**: JWT tokens for stateless, scalable session management
+- **API Standards**: RESTful design following OpenAPI specifications
+- **Browser Support**: Modern browsers with JavaScript ES6+ support
+
+#### **Business Constraints**:
+- **Food Safety Compliance**: Must track expiration dates, allergen information, and safety metadata
+- **Privacy Regulations**: GDPR/POPIA compliance for user data handling and verification documents
+- **Verification Requirements**: All users must be verified before accessing core platform features
+- **Academic Timeline**: 6-month development window with incremental demo deliveries
+
+#### **Performance Constraints**:
+- **Response Time**: Core API operations must complete within 500ms
+- **Data Retention**: Transaction and audit history must be maintained for compliance
+- **Mobile Compatibility**: Must function on devices with limited processing power and bandwidth
+
+#### **Security Constraints**:
+- **Authentication**: All protected endpoints require valid JWT tokens
+- **Authorization**: Role-based access strictly enforced
+- **Data Protection**: Sensitive information encrypted at rest and in transit
+
+---
+
+### 7.6 Technology Choices
+
+#### **Backend Technology Stack**
+
+| Component | Technology | Alternatives Considered | Justification |
+|-----------|------------|------------------------|---------------|
+| **Web Framework** | Django + Django REST Framework | Node.js/Express, Spring Boot, FastAPI | Built-in security features, rapid development, excellent ORM for complex relationships |
+| **Database** | PostgreSQL | MySQL, MongoDB | ACID compliance for financial transactions, complex query support, JSON field support |
+| **Authentication** | JWT + Django Simple JWT | Session-based auth, Auth0, Firebase Auth | Stateless authentication, scalability, cross-domain support |
+| **API Design** | RESTful APIs | GraphQL, gRPC | Industry standard, excellent tooling, team familiarity |
+
+#### **Frontend Technology Stack**
+
+| Component | Technology | Alternatives Considered | Justification |
+|-----------|------------|------------------------|---------------|
+| **Frontend Framework** | React | Vue.js, Angular, Svelte | Large ecosystem, component reusability, team expertise |
+| **State Management** | React Hooks + Context | Redux, MobX | Simplified state management, reduced complexity |
+| **Styling** | CSS Modules + Bootstrap | Styled Components, Tailwind | Responsive design, component isolation |
+| **Build Tool** | Create React App | Vite, Webpack | Zero configuration, production-ready setup |
+
+#### **Development & DevOps**
+
+| Component | Technology | Alternatives Considered | Justification |
+|-----------|------------|------------------------|---------------|
+| **Testing** | pytest + Jest | unittest, Mocha/Chai | Comprehensive testing features, excellent Django integration |
+| **Version Control** | Git + GitHub | GitLab, Bitbucket | Team familiarity, excellent CI/CD integration |
+| **Dependency Management** | Poetry (Python) + npm | pip + requirements.txt, Yarn | Deterministic builds, lock file support |
+| **Code Quality** | ESLint + Black | Prettier, flake8 | Consistent code formatting, error prevention |
+
 
 ---
 
