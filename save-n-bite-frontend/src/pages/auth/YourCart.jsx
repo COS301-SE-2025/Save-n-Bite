@@ -3,6 +3,30 @@ import { Link, useNavigate } from 'react-router-dom';
 import { ShoppingCartIcon, TrashIcon, CreditCardIcon, ClockIcon } from 'lucide-react';
 import CustomerNavBar from '../../components/auth/CustomerNavBar';
 import foodAPI from '../../services/FoodAPI';
+import schedulingAPI from '../../services/schedulingAPI';
+
+// Helper to generate 30-minute intervals from a pickup window string (e.g., '09:00-15:00')
+function generateTimeIntervals(pickupWindow, intervalMinutes = 30) {
+  if (!pickupWindow) return [];
+  const [start, end] = pickupWindow.split('-');
+  const [startHour, startMinute] = start.split(':').map(Number);
+  const [endHour, endMinute] = end.split(':').map(Number);
+
+  const intervals = [];
+  let current = new Date();
+  current.setHours(startHour, startMinute, 0, 0);
+
+  const endTime = new Date();
+  endTime.setHours(endHour, endMinute, 0, 0);
+
+  while (current <= endTime) {
+    intervals.push(
+      current.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false })
+    );
+    current = new Date(current.getTime() + intervalMinutes * 60000);
+  }
+  return intervals;
+}
 
 const YourCart = () => {
   const navigate = useNavigate();
@@ -11,64 +35,19 @@ const YourCart = () => {
   const [error, setError] = useState(null);
   const [showPayment, setShowPayment] = useState(false);
   const [selectedTimeSlot, setSelectedTimeSlot] = useState('');
-
-  // Generate time slots for today and tomorrow
-  const generateTimeSlots = () => {
-    const slots = [];
-    const now = new Date();
-    const today = new Date();
-    const tomorrow = new Date(today);
-    tomorrow.setDate(tomorrow.getDate() + 1);
-
-    // Helper function to format time
-    const formatTime = (hour, minute) => {
-      const time = new Date();
-      time.setHours(hour, minute, 0, 0);
-      return time.toLocaleTimeString('en-US', { 
-        hour: 'numeric', 
-        minute: '2-digit', 
-        hour12: true 
-      });
-    };
-
-    // Helper function to add slots for a given date
-    const addSlotsForDate = (date, label) => {
-      const isToday = date.toDateString() === today.toDateString();
-      const currentHour = now.getHours();
-      const currentMinute = now.getMinutes();
-
-      // Generate slots from 9 AM to 8 PM in 30-minute intervals
-      for (let hour = 9; hour <= 20; hour++) {
-        for (let minute = 0; minute < 60; minute += 30) {
-          // Skip past time slots for today
-          if (isToday && (hour < currentHour || (hour === currentHour && minute <= currentMinute + 30))) {
-            continue;
-          }
-
-          const timeString = formatTime(hour, minute);
-          const value = `${date.toISOString().split('T')[0]}-${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`;
-          
-          slots.push({
-            value,
-            label: `${label} ${timeString}`,
-            time: timeString,
-            date: label
-          });
-        }
-      }
-    };
-
-    addSlotsForDate(today, 'Today');
-    addSlotsForDate(tomorrow, 'Tomorrow');
-
-    return slots;
-  };
-
-  const timeSlots = generateTimeSlots();
+  const [timeSlots, setTimeSlots] = useState([]);
+  const [slotsLoading, setSlotsLoading] = useState(false);
 
   useEffect(() => {
     fetchCart();
   }, []);
+
+  useEffect(() => {
+    // Fetch time slots when cart items are loaded
+    if (cartItems.length > 0) {
+      fetchTimeSlots();
+    }
+  }, [cartItems]);
 
   const fetchCart = async () => {
     try {
@@ -82,6 +61,76 @@ const YourCart = () => {
       setError('Failed to load cart');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchTimeSlots = async () => {
+    if (cartItems.length === 0) return;
+
+    setSlotsLoading(true);
+    try {
+      const today = new Date().toISOString().split('T')[0];
+      const tomorrow = new Date();
+      tomorrow.setDate(tomorrow.getDate() + 1);
+      const tomorrowStr = tomorrow.toISOString().split('T')[0];
+
+      let allSlots = [];
+      for (const item of cartItems) {
+        const listingId = item.listingId || item.id;
+        if (!listingId) continue;
+        // Only fetch for today for now (can add tomorrow if needed)
+        const todayResponse = await schedulingAPI.getAvailableSlots(listingId, today);
+        let slots = [];
+        if (todayResponse.success) {
+          if (todayResponse.data.available_slots && todayResponse.data.available_slots.length > 0) {
+            // Use available_slots as before
+            todayResponse.data.available_slots.forEach(slot => {
+              slots.push({
+                value: `${slot.date}-${slot.start_time}-${listingId}`,
+                label: `Today ${formatTime(slot.start_time)} (Item: ${item.name})`,
+                time: formatTime(slot.start_time),
+                date: 'Today',
+                slotData: slot,
+                listingId,
+                itemName: item.name
+              });
+            });
+          } else if (todayResponse.data.food_listing && todayResponse.data.food_listing.pickup_window) {
+            // Generate intervals from pickup_window
+            const intervals = generateTimeIntervals(todayResponse.data.food_listing.pickup_window);
+            slots = intervals.map(time => ({
+              value: `${today}-${time}-${listingId}`,
+              label: `Today ${time} (Item: ${item.name})`,
+              time,
+              date: 'Today',
+              slotData: { time },
+              listingId,
+              itemName: item.name
+            }));
+          }
+        }
+        allSlots.push(...slots);
+      }
+      setTimeSlots(allSlots);
+    } catch (err) {
+      setError('Failed to load available time slots');
+    } finally {
+      setSlotsLoading(false);
+    }
+  };
+
+  const formatTime = (timeString) => {
+    try {
+      const [hours, minutes] = timeString.split(':');
+      const date = new Date();
+      date.setHours(parseInt(hours), parseInt(minutes), 0, 0);
+      return date.toLocaleTimeString('en-US', { 
+        hour: 'numeric', 
+        minute: '2-digit', 
+        hour12: true 
+      });
+    } catch (error) {
+      return timeString;
     }
   };
 
@@ -106,25 +155,111 @@ const YourCart = () => {
     }
   };
 
+  function generateOrderNumber() {
+    return 'SNB' + Math.floor(100000 + Math.random() * 900000);
+  }
+  function generateConfirmationCode() {
+    return Math.random().toString(36).substring(2, 8).toUpperCase();
+  }
+
   const handleCheckout = async (paymentDetails) => {
     try {
-      const response = await foodAPI.processCheckout({
-        payment_method: 'card',
-        payment_details: paymentDetails,
-        pickup_time: selectedTimeSlot
-      });
+      // Instead of calling checkout, just navigate to pickup with item id and time slot
+      const selectedSlot = timeSlots.find(slot => slot.value === selectedTimeSlot);
+      // For now, just use the first item in cartItems (single-item flow)
+      const item = cartItems[0];
+  
+      // Prepare all info for PickupPage
+      const orderNumber = generateOrderNumber();
+      const confirmationCode = generateConfirmationCode();
       
-      if (response.success) {
-        navigate('/order-success', { 
-          state: { 
-            orderId: response.data.order_id,
-            total: total,
-            pickupTime: selectedTimeSlot
-          }
-        });
-      } else {
-        setError(response.error);
+      // Get user's email from localStorage
+      const userEmail = localStorage.getItem('userEmail') || 'customer@example.com';
+      
+      // Try to get user's name from stored user data
+      let customerName = 'Customer';
+      try {
+        const userData = JSON.parse(localStorage.getItem('userData') || '{}');
+        if (userData.profile?.full_name) {
+          customerName = userData.profile.full_name;
+        } else if (userData.email) {
+          // Use email prefix as name if no full name is available
+          customerName = userData.email.split('@')[0];
+        }
+      } catch (error) {
+        console.log('Could not parse user data, using default name');
       }
+      
+      // Store order data for PickupCoordination page
+      const orderData = {
+        id: Date.now(), // Simple ID for demo
+        orderNumber,
+        customerName: customerName, // Use actual customer name if available
+        status: 'Active',
+        pickupDate: item.expiryDate || new Date().toISOString().split('T')[0], // Use actual expiry date from listing
+        pickupWindow: selectedSlot ? selectedSlot.label : selectedTimeSlot,
+        items: [item.name],
+        contactPhone: 'N/A',
+        contactEmail: userEmail, // Use the actual user's email
+        confirmationCode,
+        itemName: item.name,
+        itemDescription: item.description,
+        providerName: item.provider?.businessName || item.provider?.business_name || 'Provider',
+        providerAddress: item.provider?.business_address || item.provider?.address || 'Pickup Address',
+        pickupTime: selectedSlot ? selectedSlot.label : selectedTimeSlot,
+        totalAmount: item.price * item.quantity,
+        expiryDate: item.expiryDate // Store the actual expiry date
+      };
+      
+      // Store in localStorage for PickupCoordination to access
+      const existingOrders = JSON.parse(localStorage.getItem('pickupOrders') || '[]');
+      existingOrders.push(orderData);
+      localStorage.setItem('pickupOrders', JSON.stringify(existingOrders));
+      
+      // Add to customer's order history for reviews and feedback
+      const orderHistoryData = {
+        id: Date.now(),
+        orderNumber,
+        date: new Date().toISOString().split('T')[0],
+        type: item.price > 0 ? 'purchase' : 'donation',
+        status: 'completed', // Set as completed for testing review functionality
+        items: [
+          {
+            id: item.id,
+            title: item.name,
+            image: item.image,
+            provider: item.provider?.businessName || item.provider?.business_name || 'Provider',
+            quantity: item.quantity,
+            price: item.price
+          }
+        ],
+        total: item.price * item.quantity,
+        provider: item.provider?.businessName || item.provider?.business_name || 'Provider',
+        pickupTime: selectedSlot ? selectedSlot.label : selectedTimeSlot,
+        pickupAddress: item.provider?.business_address || item.provider?.address || 'Pickup Address',
+        confirmationCode,
+        impact: {
+          mealsSaved: item.quantity,
+          co2Reduced: item.quantity * 0.4 // Rough estimate
+        }
+      };
+      
+      // Store in customer's order history
+      const existingOrderHistory = JSON.parse(localStorage.getItem('customerOrderHistory') || '[]');
+      existingOrderHistory.push(orderHistoryData);
+      localStorage.setItem('customerOrderHistory', JSON.stringify(existingOrderHistory));
+      
+      navigate('/pickup', {
+        state: {
+          itemName: item.name,
+          itemDescription: item.description,
+          providerName: item.provider?.businessName || item.provider?.business_name || 'Provider',
+          providerAddress: item.provider?.business_address || item.provider?.address || 'Pickup Address',
+          pickupTime: selectedSlot ? selectedSlot.label : selectedTimeSlot,
+          orderNumber,
+          confirmationCode
+        }
+      });
     } catch (err) {
       setError('Failed to process payment');
     }
@@ -174,10 +309,6 @@ const YourCart = () => {
         </div>
       </div>
     );
-  }
-
-  const handlePaymentSuccess = () => {
-    navigate('/pickup')
   }
 
   return (
@@ -272,22 +403,34 @@ const YourCart = () => {
                     <ClockIcon size={16} className="inline mr-1" />
                     Select Pickup Time
                   </label>
-                  <select
-                    value={selectedTimeSlot}
-                    onChange={(e) => setSelectedTimeSlot(e.target.value)}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
-                    required
-                  >
-                    <option value="">Choose a time slot...</option>
-                    {timeSlots.map((slot) => (
-                      <option key={slot.value} value={slot.value}>
-                        {slot.label}
-                      </option>
-                    ))}
-                  </select>
+                  {slotsLoading ? (
+                    <div className="flex items-center justify-center py-4">
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-emerald-600"></div>
+                      <span className="ml-2 text-sm text-gray-600">Loading available times...</span>
+                    </div>
+                  ) : (
+                    <select
+                      value={selectedTimeSlot}
+                      onChange={(e) => setSelectedTimeSlot(e.target.value)}
+                      className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                      required
+                    >
+                      <option value="">Choose a time slot...</option>
+                      {timeSlots.map((slot) => (
+                        <option key={slot.value} value={slot.value}>
+                          {slot.label}
+                        </option>
+                      ))}
+                    </select>
+                  )}
                   {selectedTimeSlot && (
                     <p className="text-xs text-gray-500 mt-1">
                       Your order will be ready for pickup at the selected time
+                    </p>
+                  )}
+                  {timeSlots.length === 0 && !slotsLoading && (
+                    <p className="text-xs text-orange-600 mt-1">
+                      No pickup slots available. Please try again later.
                     </p>
                   )}
                 </div>
@@ -295,7 +438,7 @@ const YourCart = () => {
                 <button 
                   onClick={handleProceedToPayment} 
                   className="w-full py-3 bg-emerald-600 text-white rounded-md hover:bg-emerald-700 transition-colors flex items-center justify-center disabled:bg-gray-400 disabled:cursor-not-allowed"
-                  disabled={!selectedTimeSlot}
+                  disabled={!selectedTimeSlot || slotsLoading}
                 >
                   <CreditCardIcon size={20} className="mr-2" />
                   Proceed to Payment
@@ -331,7 +474,6 @@ const YourCart = () => {
                     expiry_date: formData.get('expiry_date'),
                     cvv: formData.get('cvv')
                   });
-                  handlePaymentSuccess()
                 }} 
                 className="space-y-4"
               >

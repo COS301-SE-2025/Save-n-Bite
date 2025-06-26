@@ -91,6 +91,19 @@ const LoginForm = ({ onSuccess, onError }) => {
             localStorage.setItem('authToken', response.token);
             localStorage.setItem('userData', JSON.stringify(response.user));
             
+            // Store user's email for pickup coordination
+            localStorage.setItem('userEmail', formData.email);
+            
+            // Store provider's business name if they are a provider
+            if (response.user.user_type === 'provider' && response.user.profile?.business_name) {
+                localStorage.setItem('providerBusinessName', response.user.profile.business_name);
+            }
+            
+            // Only clear previous pickup orders when a customer logs in (not providers)
+            if (response.user.user_type === 'customer') {
+                localStorage.removeItem('pickupOrders');
+            }
+            
             // Pass the complete response with welcome message
             onSuccess({ 
                 ...response, 

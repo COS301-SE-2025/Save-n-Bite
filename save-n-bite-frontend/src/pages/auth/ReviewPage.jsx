@@ -9,24 +9,27 @@ import ItemReview from '../../components/CustomerFeedback/ItemReview'
 
 // Mock function to get order details (replace with actual API call)
 const getOrderById = (orderId) => {
-  const mockOrders = [
-    {
-      id: 1,
-      orderNumber: 'ORD-2024-001',
-      items: ['Assorted Pastries Box'],
-      provider: 'Sweet Bakery',
-      status: 'completed'
-    },
-    {
-      id: 2,
-      orderNumber: 'ORD-2024-002',
-      items: ['Vegetarian Lunch Box', 'Fresh Bread Assortment'],
-      provider: 'Green Cafe',
-      status: 'completed'
-    }
-  ]
-  // For mock data, just return the first order regardless of ID
-  return mockOrders[0]
+  // Load orders from localStorage
+  const customerOrders = JSON.parse(localStorage.getItem('customerOrderHistory') || '[]');
+  
+  // Find the order by ID
+  const order = customerOrders.find(order => order.id === parseInt(orderId));
+  
+  if (order) {
+    return {
+      id: order.id,
+      orderNumber: order.orderNumber,
+      items: order.items.map(item => item.title),
+      provider: order.provider,
+      status: order.status,
+      date: order.date,
+      total: order.total,
+      pickupTime: order.pickupTime,
+      pickupAddress: order.pickupAddress
+    };
+  }
+  
+  return null;
 }
 
 const ReviewPage = () => {
@@ -39,21 +42,15 @@ const ReviewPage = () => {
   const [isComplete, setIsComplete] = useState(false)
 
   useEffect(() => {
-    // For mock data, just set the first order without checking ID
-    const orderData = getOrderById()
-    setOrder(orderData)
-    
-    // Original code that checks order ID (commented out as requested)
-    /*
-    const orderData = getOrderById(orderId)
+    // Load order data using the order ID from URL params
+    const orderData = getOrderById(orderId);
     if (orderData) {
-      setOrder(orderData)
+      setOrder(orderData);
     } else {
       // Redirect to order history if order not found
-      navigate('/orders')
+      navigate('/orders');
     }
-    */
-  }, [orderId, navigate])
+  }, [orderId, navigate]);
 
   const handleSkip = () => {
     setIsComplete(true)
@@ -181,6 +178,7 @@ const ReviewPage = () => {
                   providerName={order.provider}
                   onClose={() => setShowProviderReview(false)}
                   onComplete={handleReviewComplete}
+                  orderData={order}
                 />
               </div>
             </div>
@@ -193,6 +191,7 @@ const ReviewPage = () => {
                   itemName={order.items[0]} // Using first item, you might want to handle multiple items
                   onClose={() => setShowItemReview(false)}
                   onComplete={handleReviewComplete}
+                  orderData={order}
                 />
               </div>
             </div>

@@ -259,7 +259,7 @@ const FoodItem = () => {
                 />
               </div>
 
-              {/* Business Info with Follow Button for Desktop */}
+              {/* Business Info with Follow Button for Desktop
               <div className="flex items-center justify-between mb-4 p-3 bg-gray-50 rounded-lg">
                 <div className="flex-1">
                   <h3 className="font-medium text-gray-800">{item.provider.businessName}</h3>
@@ -271,7 +271,7 @@ const FoodItem = () => {
                 </div>
                 
                 {/* Follow Button for Desktop */}
-                <button
+                {/* <button
                   onClick={handleFollowToggle}
                   disabled={followLoading}
                   className={`px-4 py-2 rounded-md text-sm font-medium transition-colors flex items-center space-x-2 ${
@@ -289,7 +289,7 @@ const FoodItem = () => {
                     {followLoading ? 'Loading...' : isFollowing ? 'Following' : 'Follow'}
                   </span>
                 </button>
-              </div>
+              </div> } */} 
 
               <p className="text-gray-700 mb-6">{item.description}</p>
 
