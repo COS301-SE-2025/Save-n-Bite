@@ -161,18 +161,21 @@ R2: **Make Listings**
 &nbsp;&nbsp;&nbsp;&nbsp;R2.2 Each listing must include the following details:  
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- Name of the item  
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- Description  
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- Expiry date  
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- Photos (optional)  
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- Quantity available  
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- Price (or mark as donation)  
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- Pickup Options  
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- Food Type  
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- Original Price  
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- Discounted Price 
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- Quantity  
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- Expiry Date  
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- Pickup Window
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- Allergens  
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- Dietery Information 
 &nbsp;&nbsp;&nbsp;&nbsp;R2.3 Business users should be able to indicate whether the listing is for sale at a discounted price or available as a donation.  
 &nbsp;&nbsp;&nbsp;&nbsp;R2.4 Listings should update real-time availability as items are reserved or claimed.  
 &nbsp;&nbsp;&nbsp;&nbsp;R2.5 Businesses should be able to update food listings.  
 &nbsp;&nbsp;&nbsp;&nbsp;R2.6 Businesses should be able to view their own listings.  
 
 R3: **Browse Listings**  
-&nbsp;&nbsp;&nbsp;&nbsp;R3.1 Verified users (individuals and organizations) should be able to view active food listings.  
+&nbsp;&nbsp;&nbsp;&nbsp;R3.1 Verified users (individuals and organisations) should be able to view active food listings.  
 &nbsp;&nbsp;&nbsp;&nbsp;R3.2 Users should be able to search for listings by keyword (e.g., name, category).  
 &nbsp;&nbsp;&nbsp;&nbsp;R3.3 Users should be able to filter listings by:  
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- Availability (in stock)  
@@ -192,9 +195,9 @@ R4: **Purchase / Request Food Items**
 &nbsp;&nbsp;&nbsp;&nbsp;R4.6 Users should be able to cancel purchases if they haven’t paid for them yet.  
 &nbsp;&nbsp;&nbsp;&nbsp;R4.7 Users should be able to view their transaction history.  
 
-R5: **Logistics**  
+R5: **Scheduling and Logistics**  
 &nbsp;&nbsp;&nbsp;&nbsp;R5.1 Businesses must be able to set available pickup times for each listing.  
-&nbsp;&nbsp;&nbsp;&nbsp;R5.2 Organizations must be able to coordinate logistics for food pickups.  
+&nbsp;&nbsp;&nbsp;&nbsp;R5.2 Organisations and Customers must be able to coordinate logistics for food pickups.  
 &nbsp;&nbsp;&nbsp;&nbsp;R5.3 Real-time tracking and status updates must be available for scheduled pickups.  
 &nbsp;&nbsp;&nbsp;&nbsp;R5.4 The system should allow users to receive notifications about pickup schedules and updates.  
 
