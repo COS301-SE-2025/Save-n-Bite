@@ -20,7 +20,7 @@ def analyze_modularity():
     apps = ['authentication', 'food_listings', 'interactions', 
             'notifications', 'analytics', 'scheduling', 'reviews']
     
-    backend_path = "backend/"  # Your Django apps are in backend/settings.py ??
+    backend_path = ""  # Your Django apps are in backend/settings.py ??
     
     total_apps = len(apps)
     implemented_apps = 0
@@ -186,99 +186,104 @@ def measure_db_performance():
     }
 
 def analyze_test_coverage():
-    """Analyze your test coverage - measures your ACTUAL tests"""
+    """Analyze test coverage for Save-n-Bite specific structure"""
     print("🛡️  ANALYZING TEST COVERAGE")
     print("=" * 50)
     
-    # First, let's see if we can find any test files
-    test_files_found = []
-    backend_path = "backend"
+    apps = ['authentication', 'food_listings', 'interactions',
+            'notifications', 'analytics', 'scheduling', 'reviews']
     
-    if os.path.exists(backend_path):
-        for app in ['authentication', 'food_listings', 'interactions', 
-                    'notifications', 'analytics', 'scheduling', 'reviews']:
-            test_file = os.path.join(backend_path, app, "tests.py")
-            if os.path.exists(test_file):
-                test_files_found.append(f"{app}/tests.py")
+    # Your exact project root (adjust if needed)
+    PROJECT_ROOT = "/root/Save-n-Bite/save-n-bite-backend"
     
-    print(f"Found test files: {len(test_files_found)}")
-    for test_file in test_files_found:
-        print(f"   ✅ {test_file}")
+    coverage_results = {}
+    os.chdir(PROJECT_ROOT)  # Change to project root
     
-    if not test_files_found:
-        print("❌ No test files found")
-        return {'coverage_percentage': 0}
+    print(f"🔍 Searching for tests in: {PROJECT_ROOT}")
     
-    try:
-        print("\nRunning test coverage analysis...")
-        print("(This might take a moment...)")
+    for app in apps:
+        test_path = os.path.join(app, "tests.py")
+        if not os.path.exists(test_path):
+            print(f"❌ Test file not found: {test_path}")
+            coverage_results[app] = 0
+            continue
+            
+        print(f"\n📊 Testing {app} at: {test_path}")
         
-        # Try to run pytest with coverage
-        result = subprocess.run([
-            'python', '-m', 'pytest', 
-            '--cov=backend',
-            '--cov-report=term-missing',
-            '--tb=short',
-            '-v'
-        ], capture_output=True, text=True, timeout=120, cwd='.')
-        
-        print("\n--- Test Output ---")
-        if result.stdout:
-            print(result.stdout[-1000:])  # Show last 1000 chars
-        
-        if result.stderr:
-            print("--- Errors ---")
-            print(result.stderr[-500:])  # Show last 500 chars
-        
-        # Try to extract coverage percentage
-        total_coverage = 0
-        lines = result.stdout.split('\n')
-        
-        for line in lines:
-            if 'TOTAL' in line and '%' in line:
-                parts = line.split()
-                for part in parts:
-                    if '%' in part and part != '100%':
-                        try:
-                            total_coverage = int(part.replace('%', ''))
-                        except:
-                            pass
+        try:
+            # Run pytest with coverage for this specific app
+            cmd = [
+                'python', '-m', 'pytest',
+                test_path,
+                '-v',
+                '--tb=short',
+                f'--cov={app}',
+                '--cov-report=term-missing'
+            ]
+            
+            result = subprocess.run(
+                cmd,
+                capture_output=True,
+                text=True,
+                timeout=120
+            )
+            
+            # Show condensed output
+            print("\n--- Test Output ---")
+            if result.stdout:
+                print('\n'.join(result.stdout.split('\n')[-20:]))
+            
+            # Extract coverage
+            coverage = 0
+            for line in result.stdout.split('\n'):
+                if 'TOTAL' in line and '%' in line:
+                    try:
+                        coverage = int(line.split()[-1].replace('%', ''))
                         break
-        
-        print(f"\n🎯 COVERAGE RESULTS:")
-        print(f"   Total Test Coverage: {total_coverage}%")
-        print(f"   Test Files Found: {len(test_files_found)}")
-        
-        # This validates your ">80% test coverage" claim
-        if total_coverage >= 80:
-            print("✅ RELIABILITY REQUIREMENT MET!")
-        elif total_coverage >= 70:
-            print("⚠️  Good coverage, aim for 80%+")
-        elif total_coverage > 0:
-            print("⚠️  Some test coverage, but need more tests")
-        else:
-            print("⚠️  Could not determine coverage percentage")
-        
-        return {'coverage_percentage': total_coverage}
-        
-    except subprocess.TimeoutExpired:
-        print("❌ Tests took too long - might have issues")
-        return {'coverage_percentage': 0}
-    except FileNotFoundError:
-        print("❌ pytest not found. Install with: pip install pytest pytest-cov")
-        return {'coverage_percentage': 0}
-    except Exception as e:
-        print(f"❌ Error running tests: {e}")
-        return {'coverage_percentage': 0}
+                    except (IndexError, ValueError):
+                        continue
+            
+            print(f"✅ {app} coverage: {coverage}%")
+            coverage_results[app] = coverage
+            
+        except subprocess.TimeoutExpired:
+            print(f"⚠️  {app} tests timed out")
+            coverage_results[app] = 0
+        except Exception as e:
+            print(f"❌ Error testing {app}: {str(e)}")
+            coverage_results[app] = 0
+    
+    # Calculate overall coverage
+    valid_apps = [cov for cov in coverage_results.values() if cov > 0]
+    total_coverage = sum(valid_apps)/len(valid_apps) if valid_apps else 0
+    
+    print("\n" + "=" * 50)
+    print("🎯 COVERAGE RESULTS:")
+    for app, cov in coverage_results.items():
+        print(f"   {app:15}: {cov:3}%")
+    print("-" * 30)
+    print(f"   AVERAGE COVERAGE: {total_coverage:.1f}%")
+    
+    if total_coverage >= 80:
+        print("✅ RELIABILITY REQUIREMENT MET!")
+    elif total_coverage >= 50:
+        print("⚠️  Partial coverage - aim for 80%+")
+    else:
+        print("❌ Low test coverage - prioritize testing")
+    
+    return {
+        'coverage_percentage': total_coverage,
+        'app_coverages': coverage_results
+    }
 
 def check_security_implementation():
     """Check your security implementation based on your actual code"""
     print("🔒 ANALYZING SECURITY IMPLEMENTATION")
     print("=" * 50)
     
-    backend_path = "backend"
+    backend_path = "backend/"
     security_score = 0
-    max_score = 5
+    max_score = 4
     
     # Check 1: JWT Configuration
     settings_file = os.path.join(backend_path, "settings.py")
@@ -294,7 +299,7 @@ def check_security_implementation():
     # Check 2: Authentication in apps
     auth_found = 0
     for app in ['authentication', 'food_listings', 'interactions', 'reviews']:
-        views_file = os.path.join(backend_path, app, "views.py")
+        views_file = os.path.join("", app, "views.py")
         if os.path.exists(views_file):
             with open(views_file, 'r') as f:
                 content = f.read()

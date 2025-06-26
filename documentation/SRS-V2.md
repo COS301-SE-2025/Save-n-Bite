@@ -37,8 +37,8 @@ The project will be piloted with **University of Pretoria food outlets** in coll
 |-------------|--------------------|
 | **1. As a Food Provider**, I want to register a profile so that I can list surplus food items for sale or donation. | Given that a user wants to register as a Food Provider, when they select "Register as Food Provider" and enter business details, contact information, and license documents, then a confirmation of successful registration is received. |
 | **2. As an Individual Consumer**, I want to register an account so that I can browse and purchase food. | Given that an Individual Consumer wants to register an account, when they choose "Register as Individual" and provide their name, email, and password, then a confirmation email is sent upon successful registration. |
-| **3. As an Organization**, I want to register to request food donations for our cause. | Given that an Organization wants to register for food donation requests, when they select "Register as Organization" and upload proof of registration, then their status is set to "Verification pending" until approved by an admin. |
-| **4. As a System Administrator**, I want to verify user accounts so that only legitimate providers and organizations are approved. | Given that a System Administrator wants to verify user accounts, when they access the admin dashboard and review uploaded documents, then they can approve or reject users with comments. |
+| **3. As an organisation**, I want to register to request food donations for our cause. | Given that an organisation wants to register for food donation requests, when they select "Register as organisation" and upload proof of registration, then their status is set to "Verification pending" until approved by an admin. |
+| **4. As a System Administrator**, I want to verify user accounts so that only legitimate providers and organisations are approved. | Given that a System Administrator wants to verify user accounts, when they access the admin dashboard and review uploaded documents, then they can approve or reject users with comments. |
 | **5. As any User**, I want to update my profile information so that I can keep my data current. | Given that a user wants to update their profile information, when they edit fields such as email, phone, profile image, and upload updated documents, then their profile information is updated accordingly. |
 | **6. As a System Administrator**, I want to manage user roles and permissions so that appropriate access is granted to each user type. | Given that a System Administrator wants to manage user roles and permissions, when they access role management features, then they can assign roles and restrict access based on the selected role. |
 
@@ -55,7 +55,7 @@ The project will be piloted with **University of Pretoria food outlets** in coll
 | User Stories | Acceptance Criteria |
 |-------------|--------------------|
 | **1. As an Individual Consumer**, I want to search for food items so that I can find meals that meet my needs. | Given that an Individual Consumer is searching for food, when they use the search bar and apply filters by name, type, expiration date, or location, then relevant food items are displayed. |
-| **2. As an Organization**, I want to browse food listings so that I can find donations suitable for our needs. | Given that an Organization is browsing for food donations, when they filter listings by type, quantity, or expiration date, then donation-only items relevant to their needs are shown. |
+| **2. As an organisation**, I want to browse food listings so that I can find donations suitable for our needs. | Given that an organisation is browsing for food donations, when they filter listings by type, quantity, or expiration date, then donation-only items relevant to their needs are shown. |
 | **3. As any User**, I want to view food details so that I can make informed decisions. | Given that any User is viewing a food listing, when they select an item, then the full details including description, images, listing date, and provider details are visible. |
 | **4. As any User**, I want to receive notifications about new listings so that I can act quickly. | Given that any User has enabled notifications, when new listings that match their preferences (e.g., category or area) are posted, then they receive email or in-app alerts. |
 
@@ -64,7 +64,7 @@ The project will be piloted with **University of Pretoria food outlets** in coll
 | User Stories | Acceptance Criteria |
 |-------------|--------------------|
 | **1. As an Individual Consumer**, I want to purchase discounted food items so that I can reduce my food cost. | Given that an Individual Consumer is ready to make a purchase, when they proceed to checkout and complete the payment, then they can review their final order before payment confirmation. |
-| **2. As an Organization**, I want to request food donations so that we can support those in need. | Given that an Organization wants to request a donation, when they submit a request for a specific donation listing, then they receive confirmation and available delivery options. |
+| **2. As an organisation**, I want to request food donations so that we can support those in need. | Given that an organisation wants to request a donation, when they submit a request for a specific donation listing, then they receive confirmation and available delivery options. |
 | **3. As any User**, I want to view my transaction history so that I can track my past activities. | Given that any User wants to review their past transactions, when they access their transaction history, then they can filter by date and type (purchase/donation) and view order details and statuses. |
 
 ### EPIC 5: Pickup Coordination
@@ -87,14 +87,14 @@ The project will be piloted with **University of Pretoria food outlets** in coll
 | User Stories | Acceptance Criteria |
 |-------------|--------------------|
 | **1. As a Food Provider**, I want to view waste reduction metrics so that I can measure our sustainability efforts. | Given that a Food Provider wants to assess their environmental contribution, when they view analytics, then they see metrics such as food saved and CO₂ reduction over time (monthly/yearly). |
-| **2. As an Organisation**, I want to track meals received and distributed so that we can report impact to donors. | Given that an Organization needs to track its operational impact, when they access reports, then they see visual charts of meals received and can export the data for reporting purposes. |
+| **2. As an Organisation**, I want to track meals received and distributed so that we can report impact to donors. | Given that an organisation needs to track its operational impact, when they access reports, then they see visual charts of meals received and can export the data for reporting purposes. |
 
 ### EPIC 8: Blockchain & Rewards System
 
 | User Stories | Acceptance Criteria |
 |-------------|--------------------|
 | **1. As an Individual Consumer**, I want to earn SaveCoins for sustainable actions so that I feel rewarded | Given that an Individual Consumer performs sustainable actions (e.g., donations or purchases), when the action is completed, then SaveCoins are automatically awarded and the balance updates in real-time. |
-| **2. As an Organisation**, I want to redeem rewards so that we can access useful resources or discounts. | Given that an Organization has accumulated SaveCoins, when they view the reward catalog, then they can redeem coins for eligible resources or discounts. |
+| **2. As an Organisation**, I want to redeem rewards so that we can access useful resources or discounts. | Given that an organisation has accumulated SaveCoins, when they view the reward catalog, then they can redeem coins for eligible resources or discounts. |
 
 ### EPIC 9: Education & Community
 
@@ -108,7 +108,7 @@ The project will be piloted with **University of Pretoria food outlets** in coll
 | User Stories | Acceptance Criteria |
 |-------------|--------------------|
 | **1. As a Food Provider**,  I want to earn points for listing items regularly so that I feel recognized. | Given that a Food Provider lists items regularly, when new listings or transactions are completed, then points are awarded and progress toward achievements is visible. |
-| **2. As any User**, I want to view a leaderboard so that I can compare my sustainability impact with others. | Given that any User wants to track their standing, when they view the leaderboard, then they see rankings categorized by user type (individuals, providers, organizations) with weekly and monthly summaries. |
+| **2. As any User**, I want to view a leaderboard so that I can compare my sustainability impact with others. | Given that any User wants to track their standing, when they view the leaderboard, then they see rankings categorized by user type (individuals, providers, organisations) with weekly and monthly summaries. |
 
 ---
 
@@ -172,7 +172,7 @@ R2: **Make Listings**
 &nbsp;&nbsp;&nbsp;&nbsp;R2.6 Businesses should be able to view their own listings.  
 
 R3: **Browse Listings**  
-&nbsp;&nbsp;&nbsp;&nbsp;R3.1 Verified users (individuals and organizations) should be able to view active food listings.  
+&nbsp;&nbsp;&nbsp;&nbsp;R3.1 Verified users (individuals and organisations) should be able to view active food listings.  
 &nbsp;&nbsp;&nbsp;&nbsp;R3.2 Users should be able to search for listings by keyword (e.g., name, category).  
 &nbsp;&nbsp;&nbsp;&nbsp;R3.3 Users should be able to filter listings by:  
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- Availability (in stock)  
@@ -185,7 +185,7 @@ R3: **Browse Listings**
 
 R4: **Purchase / Request Food Items**  
 &nbsp;&nbsp;&nbsp;&nbsp;R4.1 Verified individual users should be able to purchase discounted food items.  
-&nbsp;&nbsp;&nbsp;&nbsp;R4.2 Verified organization users should be able to request food items listed as donations.  
+&nbsp;&nbsp;&nbsp;&nbsp;R4.2 Verified organisation users should be able to request food items listed as donations.  
 &nbsp;&nbsp;&nbsp;&nbsp;R4.3 The system should enforce limits to prevent bulk purchasing or hoarding (based on user role and verification status).  
 &nbsp;&nbsp;&nbsp;&nbsp;R4.4 Upon purchase or request, the listing should be updated to reflect new availability.  
 &nbsp;&nbsp;&nbsp;&nbsp;R4.5 A confirmation screen should summarize the transaction (e.g., pickup time, location, item details).  
@@ -194,7 +194,7 @@ R4: **Purchase / Request Food Items**
 
 R5: **Logistics**  
 &nbsp;&nbsp;&nbsp;&nbsp;R5.1 Businesses must be able to set available pickup times for each listing.  
-&nbsp;&nbsp;&nbsp;&nbsp;R5.2 Organizations must be able to coordinate logistics for food pickups.  
+&nbsp;&nbsp;&nbsp;&nbsp;R5.2 organisations must be able to coordinate logistics for food pickups.  
 &nbsp;&nbsp;&nbsp;&nbsp;R5.3 Real-time tracking and status updates must be available for scheduled pickups.  
 &nbsp;&nbsp;&nbsp;&nbsp;R5.4 The system should allow users to receive notifications about pickup schedules and updates.  
 
@@ -256,66 +256,66 @@ R11: **Gamification**
 
 ## 7. Architectural Requirements
 
-### 7.1 Quality Requirements and Constraints 
+### 7.1 Architectural Design Strategy
+
+### 7.2 Architectural Strategies
+
+### 7.3 Architectural Quality Requirements
+
 
 #### **Priority 1: Security - Authentication & Authorization**
 **Description**: Secure user authentication and role-based access control system  
 **Justification**: Critical for food safety compliance, fraud prevention, and user trust  
 **Quantification Metrics**:
 - 100% of protected API endpoints require authentication
-- 4 distinct user roles with specific permissions (customer, provider, organization, admin)
+- 4 distinct user roles with specific permissions (customer, provider, organisation, admin)
 - JWT token-based authentication with configurable expiration
-- Password validation with 4 security validators
+- Password validation with security validators
 - Zero unauthorized access to protected resources
 
 **Implementation Evidence**:
 - Django REST Framework with JWT authentication
 - Role-based permissions implemented across all 7 Django applications
 - Custom user model with user_type field for role differentiation
-- Comprehensive permission decorators on all sensitive endpoints
 
 **Testing Strategy**:
-- Automated security tests implemented across all unit test suits
+- Test suite checks for JWT configuration across apps
+- Tests confirm the precence of security middleware, password validation and authentication
 
 ---
 
-#### **Priority 2: Modularity - Component Independence**
-**Description**: Loosely coupled system architecture with clear separation of concerns
-**Justification**: Enables parallel development, easier maintenance, and system scalability
+#### **Priority 2: Reliability - System Availability & Error Handling**
+**Description**: Consistent system availability with graceful error handling
+**Justification**: Maintains user trust and ensures business continuity
 **Quantification Metrics**:
-- 7 independent Django applications with distinct responsibilities
-- Minimal circular dependencies between modules
-- Each module independently testable and deployable
-- Clear API contracts between components
-- High code cohesion within modules
+- Target 99.5% system uptime
+- Automated test coverage >80% across all modules
+- Comprehensive error handling with appropriate HTTP status codes
+- Zero data loss during normal operations
+- Automatic failover for critical system components
 
 **Implementation Evidence**:
-```
-System Architecture:
-├── authentication/    
-├── food_listings/     
-├── interactions/      
-├── notifications/     
-├── analytics/         
-├── scheduling/        
-└── reviews/          
-```
+- Comprehensive test suite with pytest framework
+- Django's built-in error handling and validation
+- Proper HTTP status code responses (200, 400, 401, 403, 404, 500)
+- Database transaction rollback on failures
+- Logging and monitoring for system health tracking
 
-**Module Responsibilities**:
-- **Authentication**: User registration, login, JWT management, role-based permissions
-- **Food Listings**: Food item management, search, filtering, availability tracking
-- **Interactions**: Shopping cart, purchase flows, order management
-- **Notifications**: User alerts, email notifications, preference management
-- **Analytics**: Business metrics, waste reduction tracking, impact reporting
-- **Scheduling**: Pickup coordination, time slot management, logistics
-- **Reviews**: User feedback, rating system, content moderation
+**Error Handling Strategy**:
+- Input validation at API and database levels
+- Graceful degradation for non-critical features
+- User-friendly error messages with actionable guidance
+- Automated error logging and alerting
+- Regular backup and recovery procedures
 
 **Testing Strategy**:
-- Independent unit testing per module
-- Integration testing between modules
-- API contract compliance testing
+- Unit testing for individual components
+- Integration testing for system workflows
+- Error scenario testing and validation
+- System health monitoring and alerting
 
 ---
+
 
 #### **Priority 3: Performance - Database Efficiency**
 **Description**: Optimized database operations and query performance  
@@ -348,6 +348,45 @@ System Architecture:
 
 ---
 
+#### **Priority 2: Modularity - Component Independence**
+**Description**: Loosely coupled system architecture with clear separation of concerns
+**Justification**: Enables parallel development, easier maintenance, and system scalability
+**Quantification Metrics**:
+- 7 independent Django applications with distinct responsibilities
+- Minimal circular dependencies between modules
+- Each module independently testable and deployable
+- Clear API contracts between components
+- High code cohesion within modules
+
+**Implementation Evidence**:
+```
+System Architecture:
+
+├──save-n-bite-backend
+|   ├── authentication/    
+|   ├── food_listings/     
+|   ├── interactions/      
+|   ├── notifications/     
+|   ├── analytics/         
+|   ├── scheduling/        
+|   └── reviews/  
+```
+
+**Module Responsibilities**:
+- **Authentication**: User registration, login, JWT management, role-based permissions
+- **Food Listings**: Food item management, search, filtering, availability tracking
+- **Interactions**: Shopping cart, purchase flows, order management
+- **Notifications**: User alerts, email notifications, preference management
+- **Analytics**: Business metrics, waste reduction tracking, impact reporting
+- **Scheduling**: Pickup coordination, time slot management, logistics
+- **Reviews**: User feedback, rating system, content moderation
+
+**Testing Strategy**:
+- Independent unit testing per module
+- Integration testing between modules
+- 100% app completedness
+---
+
 #### **Priority 4: Usability - Responsive User Experience**
 **Description**: Intuitive, accessible interface across all device types
 **Justification**: Maximizes user adoption and ensures accessibility compliance
@@ -378,37 +417,7 @@ System Architecture:
 
 ---
 
-#### **Priority 5: Reliability - System Availability & Error Handling**
-**Description**: Consistent system availability with graceful error handling
-**Justification**: Maintains user trust and ensures business continuity
-**Quantification Metrics**:
-- Target 99.5% system uptime
-- Automated test coverage >80% across all modules
-- Comprehensive error handling with appropriate HTTP status codes
-- Zero data loss during normal operations
-- Automatic failover for critical system components
 
-**Implementation Evidence**:
-- Comprehensive test suite with pytest framework
-- Django's built-in error handling and validation
-- Proper HTTP status code responses (200, 400, 401, 403, 404, 500)
-- Database transaction rollback on failures
-- Logging and monitoring for system health tracking
-
-**Error Handling Strategy**:
-- Input validation at API and database levels
-- Graceful degradation for non-critical features
-- User-friendly error messages with actionable guidance
-- Automated error logging and alerting
-- Regular backup and recovery procedures
-
-**Testing Strategy**:
-- Unit testing for individual components
-- Integration testing for system workflows
-- Error scenario testing and validation
-- System health monitoring and alerting
-
----
 
 ### 7.2 Architectural Patterns
 
