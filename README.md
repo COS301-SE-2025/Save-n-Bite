@@ -129,15 +129,19 @@ main
 ---
 
 ## ✅ Demo 2 Deliverables (27 June 2025)
-1. **Implemented Use Cases:**
+1. **Implemented Use Cases:**   
    - User registration/login (JWT/OAuth2).    
-   - User themes and profile preferences (React + PostgreSQL).
-   - Validation of user input (React + Django validators).
-   - Food listing by businesses (React, Django + Redis).
-   - Browsing food listings (React + Django API, Redis).
-   - Purchase/Request food (React + Django REST, PostgreSQL).
+   - User themes and profile preferences (React + PostgreSQL).  
+   - Validation of user input (React + Django validators).  
+   - Food listing by businesses (React, Django + Redis).  
+   - Browsing food listings (React + Django API, Redis).  
+   - Purchase/Request food (React + Django REST, PostgreSQL).  
+   - Notifications system (Django + WebSocket, Redis for real-time pub/sub)  
+   - Scheduling and Pickup system (React + Django REST, PostgreSQL + Redis caching)  
+   - Feedback and Revies system (React + Django REST, PostgreSQL + moderation)  
+   - Business Analytics system (Django + Pandas, Scikit-learn for ML predictions, PostgreSQL + Redis)  
 
-2. **SRS Document**:  
+3. **SRS Document**:  
    - **📄 [Software Requirements Specification (SRS)](documentation/SRS-V2.md)**  
    - Introduction
    - User stories

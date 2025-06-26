@@ -1,7 +1,7 @@
 # Software Requirements Specification (SRS)  
 **Project Name:** Save n Bite  
-**Version:** 1.0  
-**Date:** [22/05/2025]  
+**Version:** 2.0  
+**Date:** [25/06/2025]  
 **Team:** [Secure Web & Mobile Guild]  
 **GitHub Repository:** [Link to Repo](https://github.com/COS301-SE-2025/Save-n-Bite)
 
@@ -240,7 +240,11 @@ R11: **Gamification**
 
 - [Authentication Service Contract](Authentication_service_contract.md)  
 - [Food Listing Service Contract](Food_Listing_service_contract.md)  
-- [Transactions Service Contract](Transactions_service_contracts.md)
+- [Interactions Service Contract](Interactions_service_contract.md)
+- [Notifications Service Contract](Notifications_service_contract.md)
+- [Scheduling Service Contract](Scheduling_service_contract.md)
+- [Reviews and Feedback Service Contract](Reviews_and_Feedback_service_contract.md)
+- [Analytics Service Contract](Analytics_service_contract.md)
 
 ---
 
@@ -572,7 +576,7 @@ We adopt an **event-driven architecture (EDA)** to handle real-time data flows b
 
 ---
 
-## 8. Technology Requirements  
+## 8. Technology Choices  
 
 <div align="center">
 
@@ -586,5 +590,13 @@ We adopt an **event-driven architecture (EDA)** to handle real-time data flows b
 | **AI/ML**      | Python, Scikit-learn, Pandas               |
 
 </div>
+
+---
+
+## 8. Deployment Model
+
+---
+
+## 9. Live Deployed System
 
 ---
