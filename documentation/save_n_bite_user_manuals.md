@@ -60,11 +60,11 @@ Your provider dashboard includes:
 
 ### 3. Creating Food Listings
 
+[CreateListings](https://github.com/COS301-SE-2025/Save-n-Bite/blob/main/assets/CreateListing.jpeg?raw=true)
+
 **Step 1: Access Listing Creation**
 - From your dashboard, click "Create New Listing"
 - Choose listing type: "Discounted Sale" or "Donation"
-
-[CreateListings](https://github.com/COS301-SE-2025/Save-n-Bite/blob/main/assets/CreateListing.jpeg?raw=true)
 
 **Step 2: Enter Food Details**
 - **Food Name**: Clear, descriptive name
