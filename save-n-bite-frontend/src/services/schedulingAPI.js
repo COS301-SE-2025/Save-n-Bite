@@ -6,7 +6,7 @@ const schedulingAPI = {
   getAvailableSlots: async (foodListingId, date = null, locationId = null) => {
     try {
       const params = new URLSearchParams();
-      params.append('food_listing_id', '9e1f9d7e-6d83-48f0-9bdf-534a5ae2984a');
+      params.append('food_listing_id', '3c16a52b-2b09-41d0-8e7a-6c3c750fa645');
       if (date) params.append('date', date);
       if (locationId) params.append('location_id', locationId);
 
