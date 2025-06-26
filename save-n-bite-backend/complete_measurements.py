@@ -16,11 +16,10 @@ def analyze_modularity():
     print("🏗️  ANALYZING SAVE N BITE MODULARITY")
     print("=" * 50)
     
-    # These are YOUR actual Django apps (from your grep output)
     apps = ['authentication', 'food_listings', 'interactions', 
             'notifications', 'analytics', 'scheduling', 'reviews']
     
-    backend_path = ""  # Your Django apps are in backend/settings.py ??
+    backend_path = ""
     
     total_apps = len(apps)
     implemented_apps = 0
@@ -78,7 +77,6 @@ def analyze_modularity():
         print(f"   Apps with Views: {apps_with_views}")
         print(f"   Apps with URLs: {apps_with_urls}")
         
-        # This proves your "7 independent Django apps" claim
         if implementation_score >= 85:
             print("✅ MODULARITY REQUIREMENT MET!")
         else:
@@ -96,9 +94,9 @@ def measure_db_performance():
     print("⚡ MEASURING DATABASE PERFORMANCE")
     print("=" * 50)
     
-    base_url = "http://127.0.0.1:8000"  # Your Django server
+    base_url = "http://127.0.0.1:8000"  
     
-    # Test YOUR actual endpoints (from your urls.py files)
+    # Test actual endpoints
     test_endpoints = [
         "/api/listings/",           # food_listings app
         "/cart/",                   # interactions app  
@@ -168,7 +166,6 @@ def measure_db_performance():
         print(f"   Requests Under 500ms: {fast_requests}/{len(response_times)} ({fast_percentage:.1f}%)")
         print(f"   Success Rate: {success_rate:.1f}%")
         
-        # This validates your "response times under 500ms for 95% of requests" claim
         if fast_percentage >= 95:
             print("✅ PERFORMANCE REQUIREMENT MET!")
         elif fast_percentage >= 80:
