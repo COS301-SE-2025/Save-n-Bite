@@ -60,7 +60,7 @@ Your provider dashboard includes:
 
 ### 3. Creating Food Listings
 
-[CreateListings](https://github.com/COS301-SE-2025/Save-n-Bite/blob/main/assets/CreateListing.jpeg?raw=true)
+![CreateListings](../assets/CreateListing.jpeg)
 
 **Step 1: Access Listing Creation**
 - From your dashboard, click "Create New Listing"
@@ -82,7 +82,7 @@ Your provider dashboard includes:
 
 ### 4. Managing Your Listings
 
-[MyListings](https://github.com/COS301-SE-2025/Save-n-Bite/blob/main/assets/My%20Listings.jpeg?raw=true)
+![MyListings](../assets/MyListings.jpeg)
 
 **Viewing Listings**
 - Active listings show real-time availability
@@ -192,7 +192,7 @@ Coming soon! (kinda)
 
 ### 2. Finding Food Donations and Discounted Meals
 
-[BrowseListing](https://github.com/COS301-SE-2025/Save-n-Bite/blob/main/assets/BrowseListings.jpeg?raw=true)
+![BrowseListing](../assets/BrowseListings.jpeg)
 **Browsing Donations**
 - View all available donation listings
 - Filter by:
@@ -241,14 +241,14 @@ Coming soon! (kinda)
 
 ### 5. Purchasing Discounted Food
 
-[FoodItem](https://github.com/COS301-SE-2025/Save-n-Bite/blob/main/assets/FoodItem.jpeg?raw=true)
+![FoodItem](../assets/FoodItem.jpeg)
 **Step 1: Select Food Item**
 - Click on discounted food listing to view full details
 - Review food description, price, and pickup details
 - Check provider information and ratings
 - Read recent customer reviews
 
-[Cart](https://github.com/COS301-SE-2025/Save-n-Bite/blob/main/assets/Cart.jpeg?raw=true)
+![Cart](../assets/Cart.jpeg)
 **Step 2: Add to Cart**
 - Click "Add to Cart" for desired quantity
 - Continue browsing or proceed to checkout
@@ -289,7 +289,7 @@ Coming soon! (kinda)
 
 ### 7. Managing Requests and Purchases
 
-[OrderHistory](https://github.com/COS301-SE-2025/Save-n-Bite/blob/main/assets/OrderHistory.jpeg?raw=true)
+![OrderHistory](../assets/OrderHistory.jpeg)
 **Request Status Tracking**
 - **Pending**: Waiting for provider approval
 - **Approved**: Confirmed for pickup
@@ -322,9 +322,9 @@ Coming soon! (kinda)
 - Show budget efficiency through discounted food purchases
 
 ### 9. Review and Feedback
-[GeneralReviews](https://github.com/COS301-SE-2025/Save-n-Bite/blob/main/assets/InitialReviewPage.jpeg?raw=true)
+![GeneralReviews](../assets/InitialReviewPage.jpeg)
 
-[ReviewFoodprovider](https://github.com/COS301-SE-2025/Save-n-Bite/blob/main/assets/ReviewFoodProvider.jpeg?raw=true)
+![ReviewFoodprovider](../assets/ReviewFoodProvider.jpeg)
 **Rating Food Providers**
 - Rate your pickup experience (for both donations and purchases)
 - Provide feedback on food quality
