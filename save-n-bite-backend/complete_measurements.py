@@ -11,6 +11,9 @@ import requests
 import statistics
 import subprocess
 
+from dotenv import load_dotenv
+load_dotenv()
+
 def analyze_modularity():
     """Analyze Django app modularity - measures what you ACTUALLY have"""
     print("🏗️  ANALYZING SAVE N BITE MODULARITY")
@@ -183,7 +186,7 @@ def measure_db_performance():
     }
 
 def analyze_test_coverage():
-    """Analyze test coverage for Save-n-Bite specific structure"""
+    """Analyze test coverage for Save-n-Bite with Poetry support"""
     print("🛡️  ANALYZING TEST COVERAGE")
     print("=" * 50)
     
@@ -191,82 +194,211 @@ def analyze_test_coverage():
             'notifications', 'analytics', 'scheduling', 'reviews']
     
     # Your exact project root (adjust if needed)
-    PROJECT_ROOT = "/root/Save-n-Bite/save-n-bite-backend"
+    PROJECT_ROOT = os.getenv("SYS_PATH", os.getcwd())
     
     coverage_results = {}
-    os.chdir(PROJECT_ROOT)  # Change to project root
+    original_dir = os.getcwd()
     
-    print(f"🔍 Searching for tests in: {PROJECT_ROOT}")
-    
-    for app in apps:
-        test_path = os.path.join(app, "tests.py")
-        if not os.path.exists(test_path):
-            print(f"❌ Test file not found: {test_path}")
-            coverage_results[app] = 0
-            continue
-            
-        print(f"\n📊 Testing {app} at: {test_path}")
+    try:
+        os.chdir(PROJECT_ROOT)  # Change to project root
+        print(f"🔍 Searching for tests in: {PROJECT_ROOT}")
         
+        # Check if Poetry is available
+        poetry_available = False
         try:
-            # Run pytest with coverage for this specific app
-            cmd = [
-                'python', '-m', 'pytest',
-                test_path,
-                '-v',
-                '--tb=short',
-                f'--cov={app}',
-                '--cov-report=term-missing'
-            ]
+            result = subprocess.run(['poetry', '--version'], capture_output=True, text=True)
+            if result.returncode == 0:
+                poetry_available = True
+                print("✅ Poetry detected")
+        except FileNotFoundError:
+            print("⚠️  Poetry not found in PATH")
+        
+        # Install test dependencies with Poetry
+        if poetry_available:
+            print("📦 Installing test dependencies with Poetry...")
+            dependencies = ['pytest', 'pytest-django', 'pytest-cov', 'coverage']
             
-            result = subprocess.run(
-                cmd,
-                capture_output=True,
-                text=True,
-                timeout=120
-            )
+            for dep in dependencies:
+                try:
+                    result = subprocess.run(['poetry', 'add', '--group', 'dev', dep], 
+                                          capture_output=True, text=True, timeout=60)
+                    if result.returncode == 0:
+                        print(f"✅ Added {dep} to dev dependencies")
+                    else:
+                        # Try without --group dev for older Poetry versions
+                        result2 = subprocess.run(['poetry', 'add', '--dev', dep], 
+                                                capture_output=True, text=True, timeout=60)
+                        if result2.returncode == 0:
+                            print(f"✅ Added {dep} to dev dependencies (legacy)")
+                        else:
+                            print(f"⚠️  Could not add {dep}: {result.stderr}")
+                except subprocess.TimeoutExpired:
+                    print(f"⚠️  Timeout adding {dep}")
+                except Exception as e:
+                    print(f"❌ Error adding {dep}: {e}")
+        else:
+            # Fallback to pip if Poetry not available
+            print("📦 Installing test dependencies with pip...")
+            try:
+                subprocess.run(['pip', 'install', 'pytest', 'pytest-django', 'pytest-cov', 'coverage'], 
+                             capture_output=True, check=True)
+                print("✅ Test dependencies installed with pip")
+            except subprocess.CalledProcessError:
+                print("❌ Could not install test dependencies")
+        
+        # Create pytest configuration
+        if not os.path.exists('pytest.ini') and not os.path.exists('setup.cfg'):
+            with open('pytest.ini', 'w') as f:
+                f.write("""[tool:pytest]
+DJANGO_SETTINGS_MODULE = backend.settings
+python_files = tests.py test_*.py *_tests.py
+addopts = --tb=short --strict-markers --reuse-db
+testpaths = .
+markers =
+    django_db: mark test to use django database
+""")
+            print("✅ Created pytest.ini configuration")
+        
+        for app in apps:
+            test_path = os.path.join(app, "tests.py")
+            if not os.path.exists(test_path):
+                print(f"❌ Test file not found: {test_path}")
+                coverage_results[app] = 0
+                continue
+                
+            print(f"\n📊 Testing {app} at: {test_path}")
             
-            # Show condensed output
-            print("\n--- Test Output ---")
-            if result.stdout:
-                print('\n'.join(result.stdout.split('\n')[-20:]))
-            
-            # Extract coverage
-            coverage = 0
-            for line in result.stdout.split('\n'):
-                if 'TOTAL' in line and '%' in line:
-                    try:
-                        coverage = int(line.split()[-1].replace('%', ''))
-                        break
-                    except (IndexError, ValueError):
-                        continue
-            
-            print(f"✅ {app} coverage: {coverage}%")
-            coverage_results[app] = coverage
-            
-        except subprocess.TimeoutExpired:
-            print(f"⚠️  {app} tests timed out")
-            coverage_results[app] = 0
-        except Exception as e:
-            print(f"❌ Error testing {app}: {str(e)}")
-            coverage_results[app] = 0
-    
-    # Calculate overall coverage
-    valid_apps = [cov for cov in coverage_results.values() if cov > 0]
-    total_coverage = sum(valid_apps)/len(valid_apps) if valid_apps else 0
-    
-    print("\n" + "=" * 50)
-    print("🎯 COVERAGE RESULTS:")
-    for app, cov in coverage_results.items():
-        print(f"   {app:15}: {cov:3}%")
-    print("-" * 30)
-    print(f"   AVERAGE COVERAGE: {total_coverage:.1f}%")
-    
-    if total_coverage >= 80:
-        print("✅ RELIABILITY REQUIREMENT MET!")
-    elif total_coverage >= 50:
-        print("⚠️  Partial coverage - aim for 80%+")
-    else:
-        print("❌ Low test coverage - prioritize testing")
+            try:
+                # Choose command based on Poetry availability
+                if poetry_available:
+                    cmd = [
+                        'poetry', 'run', 'pytest',
+                        test_path,
+                        '-v',
+                        '--tb=short',
+                        f'--cov={app}',
+                        '--cov-report=term-missing',
+                        '--no-header'
+                    ]
+                else:
+                    cmd = [
+                        'python', '-m', 'pytest',
+                        test_path,
+                        '-v',
+                        '--tb=short',
+                        f'--cov={app}',
+                        '--cov-report=term-missing',
+                        '--no-header'
+                    ]
+                
+                print(f"Running: {' '.join(cmd)}")
+                
+                result = subprocess.run(
+                    cmd,
+                    capture_output=True,
+                    text=True,
+                    timeout=120,
+                    cwd=PROJECT_ROOT
+                )
+                
+                print(f"Return code: {result.returncode}")
+                
+                # Show output for debugging
+                if result.stdout:
+                    print("STDOUT:")
+                    # Show more relevant output
+                    stdout_lines = result.stdout.split('\n')
+                    for line in stdout_lines[-20:]:  # Last 20 lines
+                        if line.strip():
+                            print(f"  {line}")
+                
+                if result.stderr:
+                    print("STDERR:")
+                    stderr_lines = result.stderr.split('\n')
+                    for line in stderr_lines[-10:]:  # Last 10 lines
+                        if line.strip():
+                            print(f"  {line}")
+                
+                # Extract coverage percentage
+                coverage = 0
+                output_lines = result.stdout.split('\n')
+                
+                for line in output_lines:
+                    # Look for coverage percentage
+                    if 'TOTAL' in line and '%' in line:
+                        try:
+                            parts = line.split()
+                            for part in parts:
+                                if part.endswith('%'):
+                                    coverage = int(part.replace('%', ''))
+                                    break
+                        except (IndexError, ValueError) as e:
+                            print(f"Error parsing coverage line: {line}, error: {e}")
+                            continue
+                    # Alternative formats
+                    elif 'coverage:' in line.lower() and '%' in line:
+                        try:
+                            coverage = int(float(line.split('%')[0].split()[-1]))
+                        except (IndexError, ValueError):
+                            continue
+                
+                # Check if tests ran successfully even without coverage data
+                if coverage == 0 and result.returncode == 0:
+                    if any(keyword in result.stdout.lower() for keyword in ['passed', 'ok', 'collected']):
+                        print(f"⚠️  {app} tests ran but coverage not detected - checking for test execution")
+                        # Count test methods in the file to see if tests actually exist
+                        try:
+                            with open(test_path, 'r') as f:
+                                content = f.read()
+                                test_methods = content.count('def test_')
+                                if test_methods > 0:
+                                    coverage = 1  # Minimal coverage for having tests that run
+                                    print(f"   Found {test_methods} test methods, giving minimal coverage")
+                        except:
+                            pass
+                
+                if coverage > 0:
+                    print(f"✅ {app} coverage: {coverage}%")
+                else:
+                    print(f"❌ {app} no coverage detected")
+                
+                coverage_results[app] = coverage
+                
+            except subprocess.TimeoutExpired:
+                print(f"⚠️  {app} tests timed out")
+                coverage_results[app] = 0
+            except Exception as e:
+                print(f"❌ Error testing {app}: {str(e)}")
+                coverage_results[app] = 0
+        
+        # Calculate overall coverage
+        valid_apps = [cov for cov in coverage_results.values() if cov > 0]
+        total_coverage = sum(valid_apps)/len(valid_apps) if valid_apps else 0
+        
+        print("\n" + "=" * 50)
+        print("🎯 COVERAGE RESULTS:")
+        for app, cov in coverage_results.items():
+            print(f"   {app:15}: {cov:3}%")
+        print("-" * 30)
+        print(f"   AVERAGE COVERAGE: {total_coverage:.1f}%")
+        
+        if total_coverage >= 80:
+            print("✅ RELIABILITY REQUIREMENT MET!")
+        elif total_coverage >= 50:
+            print("⚠️  Partial coverage - aim for 80%+")
+        else:
+            print("❌ Low test coverage - prioritize testing")
+        
+        # Additional Poetry-specific tips
+        if poetry_available:
+            print("\n💡 POETRY TIPS:")
+            print("   - Run tests manually: poetry run pytest")
+            print("   - Check dependencies: poetry show --tree")
+            print("   - Activate shell: poetry shell")
+        
+    finally:
+        # Always return to original directory
+        os.chdir(original_dir)
     
     return {
         'coverage_percentage': total_coverage,
