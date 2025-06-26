@@ -321,10 +321,9 @@ R11: **Gamification**
 **Description**: Optimized database operations and query performance  
 **Justification**: Ensures responsive user experience and system scalability  
 **Quantification Metrics**:
-- API response times under 500ms for 95% of requests
+- API response times under 500ms for 100% of requests
 - Database query optimization with proper indexing
 - ACID compliance for all transactions
-- Support for 50+ concurrent users
 - Efficient connection pooling and resource management
 
 **Implementation Evidence**:
@@ -332,7 +331,6 @@ R11: **Gamification**
 - Django ORM with optimized queries and select_related/prefetch_related
 - Database indexes on frequently queried fields
 - Connection pooling for efficient resource utilization
-- Pagination for large data sets (PAGE_SIZE: 20)
 
 **Performance Optimizations**:
 - Indexed fields: user roles, listing status, creation dates, ratings
@@ -341,14 +339,13 @@ R11: **Gamification**
 - Optimized serializers for API responses
 
 **Testing Strategy**:
-- Load testing with concurrent user simulation
 - Database query performance profiling
 - Response time monitoring and benchmarking
 - Resource utilization tracking
 
 ---
 
-#### **Priority 2: Modularity - Component Independence**
+#### **Priority 4: Modularity - Component Independence**
 **Description**: Loosely coupled system architecture with clear separation of concerns
 **Justification**: Enables parallel development, easier maintenance, and system scalability
 **Quantification Metrics**:
@@ -387,15 +384,15 @@ System Architecture:
 - 100% app completedness
 ---
 
-#### **Priority 4: Usability - Responsive User Experience**
+#### **Priority 5: Usability - Responsive User Experience**
 **Description**: Intuitive, accessible interface across all device types
 **Justification**: Maximizes user adoption and ensures accessibility compliance
 **Quantification Metrics**:
 - 100% responsive design across device breakpoints
 - Page load times under 3 seconds on standard connections
 - Maximum 3 clicks to reach any core functionality
-- WCAG 2.1 AA accessibility compliance target
 - Cross-browser compatibility (Chrome, Firefox, Safari, Edge)
+- Accessible help menu, support centre and FAQs
 
 **Implementation Evidence**:
 - React frontend with responsive component architecture
@@ -411,44 +408,14 @@ System Architecture:
 
 **Testing Strategy**:
 - Cross-device compatibility testing
-- Page speed analysis and optimization
 - User journey timing and efficiency measurement
 - Accessibility audit and compliance validation
 
 ---
 
+### 7.4 Architectural Design and Pattern
 
-
-### 7.2 Architectural Patterns
-
-#### **Primary Pattern: Layered Architecture (MVC)**
-The system follows Django's Model-View-Controller pattern with clear separation between:
-- **Models**: Data layer with Django ORM (PostgreSQL)
-- **Views**: Business logic layer with Django REST Framework
-- **Templates/Frontend**: Presentation layer with React
-
-#### **Secondary Patterns**:
-- **API-First Design**: RESTful API architecture for frontend-backend separation
-- **Repository Pattern**: Django ORM abstracts data access layer
-- **Observer Pattern**: Django signals for event-driven notifications
-- **Factory Pattern**: Django model managers and serializers
-
----
-
-### 7.3 Architectural Design Strategy (take out?)
-
-**Chosen Strategy**: Decomposition by Business Capability
-**Justification**: Aligns with food waste management domain expertise and enables team specialization
-
-**Design Principles**:
-1. **Single Responsibility**: Each Django app handles one business capability
-2. **Open/Closed Principle**: System extensible without modifying existing code
-3. **Interface Segregation**: Clear API contracts between components
-4. **Dependency Inversion**: High-level modules don't depend on low-level details
-
----
-
-### 7.4 Architectural Constraints
+### 7.5 Architectural Constrains
 
 #### **Technical Constraints**:
 - **Database**: PostgreSQL required for ACID compliance and complex food safety queries
@@ -464,19 +431,17 @@ The system follows Django's Model-View-Controller pattern with clear separation 
 
 #### **Performance Constraints**:
 - **Response Time**: Core API operations must complete within 500ms
-- **Concurrent Users**: System must support minimum 50 simultaneous users
-- **Data Retention**: Transaction and audit history maintained for compliance
+- **Data Retention**: Transaction and audit history must be maintained for compliance
 - **Mobile Compatibility**: Must function on devices with limited processing power and bandwidth
 
 #### **Security Constraints**:
 - **Authentication**: All protected endpoints require valid JWT tokens
 - **Authorization**: Role-based access strictly enforced
 - **Data Protection**: Sensitive information encrypted at rest and in transit
-- **Input Validation**: All user inputs validated and sanitized
 
 ---
 
-### 7.5 Technology Choices & Justifications
+### 7.6 Technology Choices
 
 #### **Backend Technology Stack**
 
@@ -505,100 +470,6 @@ The system follows Django's Model-View-Controller pattern with clear separation 
 | **Dependency Management** | Poetry (Python) + npm | pip + requirements.txt, Yarn | Deterministic builds, lock file support |
 | **Code Quality** | ESLint + Black | Prettier, flake8 | Consistent code formatting, error prevention |
 
-
-
-### 7.6 Quality Assurance Strategy
-
-#### **Testing Pyramid**
-- **Unit Tests (70%)**: Individual component functionality
-- **Integration Tests (20%)**: API endpoint workflows and module interactions
-- **End-to-End Tests (10%)**: Complete user journey validation
-
-#### **Continuous Quality Monitoring**
-- **Code Coverage**: Target approx. 90% across all modules
-- **Performance Monitoring**: Response time tracking and alerting
-- **Security Scanning**: Automated vulnerability assessment
-- **User Experience**: Regular usability testing and feedback integration
-
-#### **Quality Gates**
-- All tests must pass before code integration
-- Code review required for all changes
-- Performance benchmarks must be maintained
-- Security vulnerabilities must be addressed before deployment
-
-This architectural foundation ensures Save 'n' Bite meets all quality requirements while maintaining scalability, security, and user experience excellence.
- 
-### 7.2 Architectural Patterns: Event-Driven Architecture
- 
-#### **Overview**
-We adopt an **event-driven architecture (EDA)** to handle real-time data flows between food providers, consumers, and AI-driven analytics. This pattern decouples system components by treating actions (e.g., new food listings, orders) as **events** that trigger independent processes.
-
-#### **Key Components**
-
-<div align="center">
- 
-| Component          | Role                                                                 | Example Events                          |
-|--------------------|----------------------------------------------------------------------|-----------------------------------------|
-| **Producers**      | Emit events when state changes (e.g., new listing, order placement). | `FoodListingCreated`, `OrderPlaced`     |
-| **Broker**         | Routes events to subscribed consumers (Redis Pub/Sub).               | Manages `food_listings` channel         |
-| **Consumers**      | React to events (AI, UI, notifications).                             | `AI_PredictionService`, `UserInterface` |
-
-</div>
- 
-#### **Reasons for EDA:**
-1. **Real-Time Updates**  
-   - Users instantly see new listings/donations via WebSocket pushes (no page refresh).  
-   - Example: When a restaurant lists surplus food, the UI updates in <500ms.
-
-2. **Decoupled AI/ML**  
-   - The AI model consumes inventory update events to predict surplus trends **asynchronously**, avoiding UI latency.  
-   - Scales independently during demand spikes (e.g., meal rush hours).
-
-3. **Modularity**  
-   - New features (e.g., fraud detection) can subscribe to events without modifying producers.  
-   - Example: A `DonationRequested` event triggers both logistics and impact analytics.
-
-4. **Fault Tolerance**  
-   - If the AI service crashes, orders/listings continue uninterrupted (events persist in Redis).
-
-#### **Tech Stack Alignment**
-**Broker**: Redis Pub/Sub (lightweight, supports WebSocket via Django Channels).
-
-**Frontend**: React listens to WebSocket events for real-time UI updates.
-
-**Backend**: Django emits events on CRUD operations (e.g., post_save signals).
-
-
-### 7.3 Design Patterns  
-
-#### 1. Singleton
-- The **verification system** will be created as a singleton class to ensure a single point of control for security-critical operations (e.g., document validation, fraud checks).
-- The **AI model** will be a singleton class to avoid memory watse and guarantees consistent predictions.
-
-#### 2. Observer
-- The observer pattern is essential for an event-driven architecture and will be used for decoupling event emitters from subscribers.
-- Producers include events that add food listings to the database while consumers include the AI service, the UI and user notifications subscribing to events.
-
-#### 3. Command 
-- The use of the command pattern will allow us to encapsulate actions as objects that can be queued or undone.
-- Such actions include the ordering of food or sending a donation request.
-
----
-
-## 8. Technology Choices  
-
-<div align="center">
-
-| Category       | Technologies                               |
-|----------------|--------------------------------------------|
-| **Frontend**   | React, Material UI                         |
-| **Backend**    | Django, Django REST, JWT                   |
-| **Database**   | PostgreSQL, Redis                          |
-| **Cloud**      | Microsoft Azure                            |
-| **DevOps**     | Docker, GitHub Actions                     |
-| **AI/ML**      | Python, Scikit-learn, Pandas               |
-
-</div>
 
 ---
 
