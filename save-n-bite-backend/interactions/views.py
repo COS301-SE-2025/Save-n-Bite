@@ -25,16 +25,47 @@ class CartView(APIView):
     def get(self, request):
         """GET /cart - Retrieve cart items"""
         cart, _ = Cart.objects.get_or_create(user=request.user)
-        serializer = CartResponseSerializer({
-            'cartItems': cart.items.all(),
+        
+        # Build cart items with provider information manually
+        cart_items_data = []
+        for item in cart.items.all():
+            # Get the provider information from the food listing
+            provider_data = None
+            if hasattr(item.food_listing, 'provider') and hasattr(item.food_listing.provider, 'provider_profile'):
+                provider_profile = item.food_listing.provider.provider_profile
+                provider_data = {
+                    'id': str(item.food_listing.provider.id),  # This is the business ID we need!
+                    'business_name': provider_profile.business_name,
+                    'business_address': provider_profile.business_address,
+                }
+            
+            cart_items_data.append({
+                'id': str(item.id),
+                'name': item.food_listing.name,
+                'imageUrl': item.food_listing.images if item.food_listing.images else '',
+                'pricePerItem': float(item.food_listing.discounted_price),
+                'quantity': item.quantity,
+                'totalPrice': float(item.quantity * item.food_listing.discounted_price),
+                'pickupWindow': item.food_listing.pickup_window,
+                'expiryDate': item.food_listing.expiry_date.isoformat() if item.food_listing.expiry_date else None,
+                'provider': provider_data,  # Add provider information
+                'food_listing': {
+                    'id': str(item.food_listing.id),
+                    'provider': provider_data  # Also add it here for fallback
+                }
+            })
+        
+        response_data = {
+            'cartItems': cart_items_data,
             'summary': {
                 'totalItems': cart.total_items,
-                'subtotal': cart.subtotal,
-                'estimatedSavings': 0, #need to implement once we have mock data
-                'totalAmount': cart.subtotal
+                'subtotal': float(cart.subtotal),
+                'estimatedSavings': 0,
+                'totalAmount': float(cart.subtotal)
             }
-        })
-        return Response(serializer.data)
+        }
+        
+        return Response(response_data)
     
 class AddToCartView(APIView):
     permission_classes = [IsAuthenticated]

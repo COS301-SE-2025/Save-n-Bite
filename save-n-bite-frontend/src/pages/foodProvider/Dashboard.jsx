@@ -27,7 +27,7 @@ import {
 } from 'lucide-react'
 import { Button } from '../../components/foodProvider/Button'
 import { analyticsAPI, transformAnalyticsData, getAISuggestion } from '../../services/analyticsAPI'
-import SideBar from '../../components/foodProvider/SideBar'
+import SideBar from '../../components/foodProvider/sideBar'
 
 function Dashboard() {
   const [analyticsData, setAnalyticsData] = useState(null)
@@ -40,10 +40,25 @@ function Dashboard() {
     fetchAnalyticsData()
   }, [])
 
+  // Check if dashboard needs refresh (from PickupCoordination)
+  useEffect(() => {
+    const needsRefresh = localStorage.getItem('dashboardNeedsRefresh');
+    if (needsRefresh === 'true') {
+      const refreshData = async () => {
+        await fetchAnalyticsData();
+        localStorage.removeItem('dashboardNeedsRefresh');
+      };
+      refreshData();
+    }
+  }, []);
+
   const fetchAnalyticsData = async () => {
     try {
       setLoading(true)
-      const data = await analyticsAPI.getBusinessAnalytics()
+      
+      // Get provider-specific analytics data
+      const data = await analyticsAPI.getProviderAnalytics();
+      console.log('Provider Analytics returned:', data)
       setAnalyticsData(data)
       setError(null)
     } catch (err) {
@@ -132,6 +147,13 @@ function Dashboard() {
             <p className="text-gray-600 mt-1">
               Track your performance and impact
             </p>
+            {analyticsData?.total_orders_fulfilled > 0 && (
+              <div className="mt-2 p-2 bg-blue-50 border border-blue-200 rounded-lg">
+                <p className="text-sm text-blue-800">
+                  <strong>Provider Analytics:</strong> Showing data for your completed orders
+                </p>
+              </div>
+            )}
           </div>
           <Button variant="secondary" icon={<DownloadIcon className="h-4 w-4" />}>
             Export Data
@@ -139,7 +161,7 @@ function Dashboard() {
         </div>
 
         {/* KPI Cards */}
-        <div className="grid grid-cols-1 gap-5 mb-8 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="grid grid-cols-1 gap-5 mb-8 sm:grid-cols-2 lg:grid-cols-4" data-onboarding="dashboard-stats">
           {/* Total Orders */}
           <div className="bg-white rounded-lg shadow-md p-5">
             <div className="flex justify-between items-start">
@@ -367,7 +389,7 @@ function Dashboard() {
           </div>
 
           {/* Sustainability Metrics */}
-          <div className="bg-white rounded-lg shadow-md p-5">
+          <div className="bg-white rounded-lg shadow-md p-5" data-onboarding="impact-section">
             <div className="flex justify-between items-center mb-4">
               <h3 className="text-lg font-medium">Sustainability Impact</h3>
               <div className="relative group">
