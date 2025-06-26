@@ -52,9 +52,12 @@ INSTALLED_APPS = [
     'rest_framework_simplejwt',
     'corsheaders',
     'authentication',
-    'transactions',
+    'interactions',
     'food_listings',
     'notifications',
+    'analytics',
+    'scheduling',
+    'reviews',
 ]
 
 MIDDLEWARE = [
@@ -104,8 +107,6 @@ DATABASES = {
     }
 }
 
-print("DB_USER:", os.getenv("DB_USER"))
-print("DB_PASSWORD:", os.getenv("DB_USER_PASSWORD"))
 
 
 # Password validation
@@ -143,8 +144,10 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
 
 STATIC_URL = '/static/'
-STATICFILES_DIRS = [BASE_DIR / "static"]
-STATIC_ROOT = BASE_DIR / "staticfiles"
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')  
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, 'static'),  
+]
 
 
 # Media files
@@ -197,6 +200,7 @@ APPEND_SLASH = False
 
 # Custom user model
 AUTH_USER_MODEL = 'authentication.User'
+LOGIN_URL = '/auth/login/'
 
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.gmail.com'
@@ -204,4 +208,5 @@ EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 EMAIL_HOST_USER = config('EMAIL_HOST_USER', default='savenbite@gmail.com')  # Your Gmail address
 EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD', default='oozb ystb pzir gflo')  # Your Gmail app password
+
 DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL', default='noreply@savenbite.com')

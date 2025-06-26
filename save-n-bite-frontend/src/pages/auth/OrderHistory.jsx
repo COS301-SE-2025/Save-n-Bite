@@ -285,11 +285,31 @@ const OrderHistory = () => {
     const storedUserType = localStorage.getItem('userType') || 'customer';
     setUserType(storedUserType);
     
-    // Load appropriate mock data based on user type
-    const mockData = storedUserType === 'ngo' ? mockNGOOrders : mockCustomerOrders;
-    setOrders(mockData);
-    setFilteredOrders(mockData);
+    // Load orders from localStorage for customers, or use mock data for NGOs
+    if (storedUserType === 'customer') {
+      const customerOrders = JSON.parse(localStorage.getItem('customerOrderHistory') || '[]');
+      setOrders(customerOrders);
+      setFilteredOrders(customerOrders);
+    } else {
+      // For NGOs, still use mock data for now
+      setOrders(mockNGOOrders);
+      setFilteredOrders(mockNGOOrders);
+    }
   }, []);
+
+  // Listen for order completion events
+  useEffect(() => {
+    const handleOrderCompleted = () => {
+      if (userType === 'customer') {
+        const customerOrders = JSON.parse(localStorage.getItem('customerOrderHistory') || '[]');
+        setOrders(customerOrders);
+        setFilteredOrders(customerOrders);
+      }
+    };
+
+    window.addEventListener('orderCompleted', handleOrderCompleted);
+    return () => window.removeEventListener('orderCompleted', handleOrderCompleted);
+  }, [userType]);
 
   // Apply filters
   useEffect(() => {
@@ -417,10 +437,8 @@ const OrderHistory = () => {
     switch (order.status) {
       case 'completed':
         return (
-          // navigate to the review page for that item
-          // navigate(`/reviews/${order.id}`)}
           <button
-            onClick={() => navigate(`/reviews`)}
+            onClick={() => navigate(`/reviews/${order.id}`)}
             className="px-4 py-2 text-emerald-600 hover:text-emerald-700 font-medium"
           >
             Leave a Review
@@ -428,19 +446,26 @@ const OrderHistory = () => {
         );
       case 'confirmed':
         return (
-          // navigate(`/pickup/${order.id}`)}
-          <button
-            onClick={() => navigate(`/pickup`)}
-            className="px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700"
-          >
-            View Pickup Instructions
-          </button>
+          <div className="space-y-2">
+            <button
+              onClick={() => navigate(`/pickup`)}
+              className="px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 w-full"
+            >
+              View Pickup Instructions
+            </button>
+            <button
+              onClick={() => navigate(`/reviews/${order.id}`)}
+              className="px-4 py-2 text-emerald-600 hover:text-emerald-700 font-medium w-full"
+            >
+              Leave a Review
+            </button>
+          </div>
         );
       case 'pending':
         return (
           <div className="px-4 py-2 text-yellow-600 font-medium flex items-center">
             <AlertCircleIcon size={16} className="mr-1" />
-            Awaiting Approval
+            Awaiting Pickup
           </div>
         );
       default:
@@ -454,7 +479,7 @@ const OrderHistory = () => {
       case 'pending':
         return order.type === 'donation' 
           ? 'Donation request submitted, waiting for provider approval'
-          : 'Order pending confirmation';
+          : 'Order submitted, waiting for pickup confirmation';
       case 'confirmed':
         return order.type === 'donation'
           ? 'Donation approved, ready for pickup'
@@ -462,7 +487,7 @@ const OrderHistory = () => {
       case 'completed':
         return order.type === 'donation'
           ? 'Donation collected successfully'
-          : 'Order completed';
+          : 'Order completed - you can now leave a review';
       default:
         return '';
     }

@@ -169,41 +169,45 @@ const foodAPI = {
     },
 
 
-    getCart: async () => {
-        try {
-            const response = await apiClient.get('/cart/');
-            
-            return {
-                success: true,
-                data: {
-                    items: response.data.cartItems.map(item => ({
-                        id: item.id,
-                        name: item.name,
-                        image: item.imageUrl ? item.imageUrl.replace(/[\[\]']/g, '').split(',')[0] : null,
-                        price: parseFloat(item.pricePerItem),
-                        quantity: item.quantity,
-                        totalPrice: item.totalPrice,
-                        provider: item.provider,
-                        pickupWindow: item.pickupWindow,
-                        expiryDate: item.expiryDate
-                    })),
-                    summary: {
-                        totalItems: parseInt(response.data.summary.totalItems),
-                        subtotal: parseFloat(response.data.summary.subtotal),
-                        estimatedSavings: parseFloat(response.data.summary.estimatedSavings),
-                        totalAmount: parseFloat(response.data.summary.totalAmount)
-                    }
+getCart: async () => {
+    try {
+        const response = await apiClient.get('/cart/');
+        
+        return {
+            success: true,
+            data: {
+                items: response.data.cartItems.map(item => ({
+                    id: item.id,
+                    name: item.name,
+                    // Fix the imageUrl handling - check if it's a string before calling replace
+                    image: (item.imageUrl && typeof item.imageUrl === 'string') 
+                        ? item.imageUrl.replace(/[\[\]']/g, '').split(',')[0] 
+                        : null,
+                    price: parseFloat(item.pricePerItem),
+                    quantity: item.quantity,
+                    totalPrice: item.totalPrice,
+                    provider: item.provider,
+                    pickupWindow: item.pickupWindow,
+                    expiryDate: item.expiryDate,
+                    // Add the food listing ID that we need for scheduling
+                    listingId: item.listingId || item.food_listing_id
+                })),
+                summary: {
+                    totalItems: parseInt(response.data.summary.totalItems),
+                    subtotal: parseFloat(response.data.summary.subtotal),
+                    estimatedSavings: parseFloat(response.data.summary.estimatedSavings),
+                    totalAmount: parseFloat(response.data.summary.totalAmount)
                 }
-            };
-        } catch (error) {
-            console.error('Error fetching cart:', error);
-            return {
-                success: false,
-                error: error.response?.data?.message || 'Failed to fetch cart'
-            };
-        }
-    },
-
+            }
+        };
+    } catch (error) {
+        console.error('Error fetching cart:', error);
+        return {
+            success: false,
+            error: error.response?.data?.message || 'Failed to fetch cart'
+        };
+    }
+},
   
     addToCart: async (listingId, quantity = 1) => {
         try {

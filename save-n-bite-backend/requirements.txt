@@ -1,11 +1,37 @@
+# Core Django and API
 django>=5.2.1
 djangorestframework>=3.16.0
-psycopg2-binary>=2.9.10
-redis>=6.1.0
-pandas>=2.2.3
-scikit-learn>=1.6.1
-python-dotenv>=1.1.0
-dj-database-url>=2.3.0
 djangorestframework-simplejwt>=5.5.0
 django-cors-headers>=4.7.0
-pillow>=11.2.1 
+
+# Database
+psycopg2-binary>=2.9.10
+dj-database-url>=2.3.0
+
+# Caching and Task Queue
+redis>=6.1.0
+django-redis>=5.4.0
+celery>=5.4.0
+
+# Image Processing
+pillow>=11.2.1
+
+# Configuration
+python-decouple>=3.8
+python-dotenv>=1.1.0
+
+# QR Code Generation
+qrcode[pil]>=8.2
+
+# Data Science and ML
+scikit-learn>=1.6.1
+pandas>=2.2.3
+numpy>=2.0.0
+matplotlib>=3.9.0
+seaborn>=0.13.0
+
+# Testing (for CI/CD)
+pytest>=8.4.0
+pytest-django>=4.11.1
+pytest-cov>=6.2.0
+
