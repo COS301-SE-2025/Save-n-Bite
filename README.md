@@ -166,7 +166,7 @@ We follow a GitFlow-inspired branching strategy to maintain clean and organized 
    - **📊 [GitHub Project Board](https://github.com/orgs/COS301-SE-2025/projects/177/views/2)**  
 
 6. **Demo 2 Video**
-   [Click here!]([https://www.canva.com/design/DAGowUskyDY/E8nYEYzEWrMe1D13DkMVFw/watch?utm_content=DAGowUskyDY&utm_campaign=designshare&utm_medium=link2&utm_source=uniquelinks&utlId=h3390ca1771](https://www.canva.com/design/DAGriFQ7F2g/6gApEr2CMYT49InocxWEUQ/watch?utm_content=DAGriFQ7F2g&utm_campaign=designshare&utm_medium=link2&utm_source=uniquelinks&utlId=hc89293d863))
+   [Click here!](https://www.canva.com/design/DAGriFQ7F2g/6gApEr2CMYT49InocxWEUQ/watch?utm_content=DAGriFQ7F2g&utm_campaign=designshare&utm_medium=link2&utm_source=uniquelinks&utlId=hc89293d863)
 
 ---
 
