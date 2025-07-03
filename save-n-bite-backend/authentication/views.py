@@ -5,6 +5,7 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework_simplejwt.settings import api_settings
 from django.contrib.auth import authenticate
 from .serializers import (
     CustomerRegistrationSerializer,
@@ -16,10 +17,23 @@ from .serializers import (
 from .models import User
 
 def get_tokens_for_user(user):
-    """Generate JWT tokens for user"""
-    refresh = RefreshToken.for_user(user)
+    """Generate JWT tokens for user with proper UserID handling"""
+    
+    # Create refresh token manually to ensure proper user identification
+    refresh = RefreshToken()
+    
+    # Explicitly set the user ID claim using the UserID field
+    refresh[api_settings.USER_ID_CLAIM] = str(user.UserID)  # Convert UUID to string
+    
+    # Add any additional claims if needed
+    refresh['user_type'] = user.user_type
+    refresh['email'] = user.email
+    
+    # Generate access token from refresh token
+    access_token = refresh.access_token
+    
     return {
-        'token': str(refresh.access_token),
+        'token': str(access_token),
         'refresh_token': str(refresh),
     }
 
