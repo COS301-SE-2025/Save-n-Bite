@@ -258,7 +258,7 @@ Content-Type: application/json
 
 #### 3.4.1 Follow Business
 ```http
-POST /api/notifications/follow/
+POST /api/follow/
 Content-Type: application/json
 
 {
