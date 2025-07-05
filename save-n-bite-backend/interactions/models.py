@@ -113,6 +113,20 @@ class Order(models.Model):
     def __str__(self):
         return f"Order {self.id} - {self.status}"
 
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+
+        if self.status == self.Status.COMPLETED:
+            self.interaction.status = Interaction.Status.COMPLETED
+            self.interaction.completed_at = self.updated_at
+        elif self.status == self.Status.CANCELLED:
+            self.interaction.status = Interaction.Status.CANCELLED
+        elif self.status == self.Status.CONFIRMED and self.interaction.status == Interaction.Status.PENDING:
+            self.interaction.status = Interaction.Status.CONFIRMED
+    
+        self.interaction.save()
+
+
 class Payment(models.Model):
     class PaymentMethod(models.TextChoices):
         CARD = 'card', 'Credit/Debit Card'
