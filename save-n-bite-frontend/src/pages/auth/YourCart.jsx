@@ -40,13 +40,40 @@ const validateExpiryDate = (expiryDate) => {
   
   const [month, year] = expiryDate.split('/');
   const currentDate = new Date();
-  const currentYear = currentDate.getFullYear() % 100;
+  const currentYear = currentDate.getFullYear() % 100; // Get last 2 digits of current year
   const currentMonth = currentDate.getMonth() + 1;
   
   const expYear = parseInt(year, 10);
   const expMonth = parseInt(month, 10);
   
+  // Additional validation for month range (should be caught by regex, but double-check)
+  if (expMonth < 1 || expMonth > 12) {
+    return false;
+  }
+  
+  // Handle year validation - cards typically expire 3-10 years from now
+  // For 2-digit years, we need to handle century rollover
+  let fullExpYear = expYear;
+  if (expYear < 50) {
+    // Years 00-49 are assumed to be 20XX
+    fullExpYear = 2000 + expYear;
+  } else {
+    // Years 50-99 are assumed to be 19XX (though this would be expired)
+    fullExpYear = 1900 + expYear;
+  }
+  
+  const currentFullYear = new Date().getFullYear();
+  const maxValidYear = currentFullYear + 10; 
+
   if (expYear < currentYear || (expYear === currentYear && expMonth < currentMonth)) {
+    return false;
+  }
+  
+  if (fullExpYear > maxValidYear) {
+    return false;
+  }
+  
+  if (fullExpYear < currentFullYear) {
     return false;
   }
   
@@ -93,15 +120,14 @@ const YourCart = () => {
   const [slotsLoading, setSlotsLoading] = useState(false);
   const [processingPayment, setProcessingPayment] = useState(false);
   
-  // Payment form state
+
   const [paymentForm, setPaymentForm] = useState({
     cardNumber: '',
     expiryDate: '',
     cvv: '',
     holderName: ''
   });
-  
-  // Validation state
+
   const [validationErrors, setValidationErrors] = useState({});
   const [touchedFields, setTouchedFields] = useState({});
 
@@ -110,7 +136,7 @@ const YourCart = () => {
   }, []);
 
   useEffect(() => {
-    // Fetch time slots when cart items are loaded
+
     if (cartItems.length > 0) {
       fetchTimeSlots();
     }
@@ -283,8 +309,7 @@ const YourCart = () => {
       ...prev,
       [field]: true
     }));
-    
-    // Validate individual field on blur
+
     const errors = { ...validationErrors };
     
     if (field === 'holderName' && !paymentForm.holderName.trim()) {
