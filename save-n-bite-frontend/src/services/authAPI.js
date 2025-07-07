@@ -50,6 +50,7 @@ const transformFormData = (formData, userType) => {
                 organisation_name: formData.organisationName,
                 organisation_contact: formData.organisationContact,
                 representative_name: formData.representativeName,
+                representative_email: formData.representativeEmail, //added this for representative email
                 organisation_street: formData.addressLine1,
                 organisation_city: formData.city,
                 organisation_province: formData.province,
@@ -57,6 +58,7 @@ const transformFormData = (formData, userType) => {
                 npo_document: formData.npoDocument || '',
                 organisation_logo: formData.logo || '',
             };
+
 
         default:
             return formData;

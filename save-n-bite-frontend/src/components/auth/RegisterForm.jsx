@@ -1,9 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { authAPI } from '../../services/authAPI';
 import { validateEmail, validatePassword, validateRequired, validatePhone } from '../../utils/validators';
 import { USER_TYPES } from '../../utils/constants';
 import { useNavigate, Link } from 'react-router-dom';
-
 
 const RegisterForm = ({ userType = USER_TYPES.CUSTOMER, onSuccess, onError }) => {
     const [formData, setFormData] = useState({
@@ -36,7 +35,7 @@ const RegisterForm = ({ userType = USER_TYPES.CUSTOMER, onSuccess, onError }) =>
         addressLine1: '',
         addressLine2: '',
         zipCode: '',
-        country: 'South Africa', // Default for all forms
+        country: 'South Africa',
     });
 
     const navigate = useNavigate();
@@ -54,11 +53,17 @@ const RegisterForm = ({ userType = USER_TYPES.CUSTOMER, onSuccess, onError }) =>
     ];
 
     const [errors, setErrors] = useState({});
-    const [isLoading, setIsLoading] = useState(false);
     const [validFields, setValidFields] = useState({});
+    const [isLoading, setIsLoading] = useState(false);
     const [serverError, setServerError] = useState('');
     const [touchedFields, setTouchedFields] = useState({});
+    const validatePhone = (phone) => {
+  const cleanedPhone = phone.toString().replace(/\D/g, '');
 
+  const regex = /^0\d{9}$/;
+  
+  return regex.test(cleanedPhone);
+};
     // Real-time validation on field change
     const validateField = (name, value) => {
         let error = '';
@@ -126,7 +131,6 @@ const RegisterForm = ({ userType = USER_TYPES.CUSTOMER, onSuccess, onError }) =>
         return { error, isValid };
     };
 
-    
     const handleInputChange = (e) => {
         const { name, value } = e.target;
         setFormData(prev => ({
@@ -134,10 +138,12 @@ const RegisterForm = ({ userType = USER_TYPES.CUSTOMER, onSuccess, onError }) =>
             [name]: value
         }));
 
+        // Clear server error when user starts typing
         if (serverError) {
             setServerError('');
         }
 
+        // Real-time validation
         const { error, isValid } = validateField(name, value);
         
         setErrors(prev => ({
@@ -151,7 +157,6 @@ const RegisterForm = ({ userType = USER_TYPES.CUSTOMER, onSuccess, onError }) =>
         }));
     };
 
-    
     const handleBlur = (e) => {
         const { name } = e.target;
         setTouchedFields(prev => ({
@@ -160,18 +165,17 @@ const RegisterForm = ({ userType = USER_TYPES.CUSTOMER, onSuccess, onError }) =>
         }));
     };
 
-    
     const handleFileChange = (e) => {
         const { name, files } = e.target;
         if (files && files[0]) {
             const file = files[0];
             
-        
+            // Validate file type and size
             const validTypes = name === 'cipcDocument' || name === 'npoDocument' 
                 ? ['application/pdf', 'image/jpeg', 'image/png', 'image/jpg']
                 : ['image/jpeg', 'image/png', 'image/jpg'];
             
-            const maxSize = 5 * 1024 * 1024; 
+            const maxSize = 5 * 1024 * 1024; // 5MB
             
             if (!validTypes.includes(file.type)) {
                 setErrors(prev => ({
@@ -197,6 +201,7 @@ const RegisterForm = ({ userType = USER_TYPES.CUSTOMER, onSuccess, onError }) =>
                     [name]: dataUrl
                 }));
                 
+                // Clear error and mark as valid
                 setErrors(prev => ({
                     ...prev,
                     [name]: ''
@@ -209,7 +214,8 @@ const RegisterForm = ({ userType = USER_TYPES.CUSTOMER, onSuccess, onError }) =>
             reader.readAsDataURL(file);
         }
     };
-const validateForm = () => {
+
+    const validateForm = () => {
         const newErrors = {};
         const requiredFields = getRequiredFields();
 
@@ -245,7 +251,6 @@ const validateForm = () => {
         return requiredFields.every(field => validFields[field] && !errors[field]);
     };
 
-
     const handleSubmit = async (e) => {
         e.preventDefault();
         if (!validateForm()) return;
@@ -265,7 +270,7 @@ const validateForm = () => {
         }
     };
 
-     const getFieldClassName = (fieldName) => {
+    const getFieldClassName = (fieldName) => {
         const baseClass = "w-full px-4 py-2 border rounded-md focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-colors";
         
         if (errors[fieldName] && touchedFields[fieldName]) {
