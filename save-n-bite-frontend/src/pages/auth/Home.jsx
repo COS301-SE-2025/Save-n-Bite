@@ -67,7 +67,7 @@ const HomePage = () => {
         </div>
       </section>
       {/* What is Save n Bite Section */}
-      <section className="py-16 px-6 bg-gray-50">
+      <section className="py-16 px-6 bg-gray-50" id="about">
         <div className="max-w-4xl mx-auto text-center">
           <h2 className="text-3xl font-bold mb-6 text-gray-800">
             What is Save n Bite?
@@ -83,7 +83,7 @@ const HomePage = () => {
         </div>
       </section>
       {/* How It Works Section */}
-      <section className="py-16 px-6">
+      <section className="py-16 px-6" id="how-it-works">
         <div className="max-w-6xl mx-auto">
           <h2 className="text-3xl font-bold mb-12 text-center text-gray-800">
             How It Works
