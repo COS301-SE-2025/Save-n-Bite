@@ -88,9 +88,7 @@ const Navigation = () => {
             <Link to="/about" className="text-gray-600 dark:text-gray-300 hover:text-emerald-600 dark:hover:text-emerald-500 py-2">
               About
             </Link>
-            <Link to="/browse" className="text-gray-600 dark:text-gray-300 hover:text-emerald-600 dark:hover:text-emerald-500 py-2">
-              Browse Food
-            </Link>
+            
             <Link to="/how-it-works" className="text-gray-600 dark:text-gray-300 hover:text-emerald-600 dark:hover:text-emerald-500 py-2">
               How It Works
             </Link>
