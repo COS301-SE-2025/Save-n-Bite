@@ -1,4 +1,5 @@
 import React from 'react'
+import CustomerNavBar from '../../components/auth/CustomerNavBar';
 import { useLocation, useNavigate } from 'react-router-dom'
 import {
   CheckCircle,
@@ -19,6 +20,7 @@ const DonationConfirmationPage = () => {
   }
   return (
     <div className="min-h-screen bg-gray-50 p-4">
+      <CustomerNavBar/>
       <div className="max-w-2xl mx-auto">
          <button
                     onClick={() => navigate('/food-listing')}
@@ -36,7 +38,7 @@ const DonationConfirmationPage = () => {
                 Donation Request Submitted
               </h1>
               <p className="text-gray-600">
-                Your donation request has been sent to {listing.provider}
+                Your donation request has been sent to {listing.provider?.business_name}
               </p>
             </div>
           </div>
