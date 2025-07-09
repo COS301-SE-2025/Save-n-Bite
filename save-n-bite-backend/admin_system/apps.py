@@ -3,7 +3,7 @@ from django.apps import AppConfig
 
 class AdminPanelConfig(AppConfig):
     default_auto_field = 'django.db.models.BigAutoField'
-    name = 'admin_panel'
+    name = 'admin_system'
     verbose_name = 'Admin Panel'
 
     def ready(self):

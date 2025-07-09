@@ -58,6 +58,7 @@ INSTALLED_APPS = [
     'analytics',
     'scheduling',
     'reviews',
+    'admin_system',
 ]
 
 MIDDLEWARE = [
@@ -69,6 +70,8 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'authentication.middleware.PasswordChangeMiddleware',  
+
 ]
 
 ROOT_URLCONF = 'backend.urls'
