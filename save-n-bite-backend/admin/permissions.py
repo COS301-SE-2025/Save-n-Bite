@@ -50,7 +50,6 @@ class CanManageUsers(BasePermission):
 class CanViewAuditLogs(BasePermission):
     """
     Permission to view audit logs.
-    Might want to restrict this to senior admins only.
     """
     
     def has_permission(self, request, view):
@@ -63,7 +62,7 @@ class CanViewAuditLogs(BasePermission):
 class CanManageSystemSettings(BasePermission):
     """
     Permission for system settings management.
-    Highest level permission - consider restricting to superusers.
+    Highest level permission - restrict to superusers.
     """
     
     def has_permission(self, request, view):
