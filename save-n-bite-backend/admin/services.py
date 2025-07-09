@@ -286,7 +286,7 @@ class DashboardService:
         
         # The following is mocked and requires calculations 
         # Calculate percentage changes (mock data for now)
-        user_growth = 12.5  # You can calculate this based on previous period
+        user_growth = 12.5  # calculate this based on previous period
         listing_growth = 23.1
         transaction_growth = -4.5
         
