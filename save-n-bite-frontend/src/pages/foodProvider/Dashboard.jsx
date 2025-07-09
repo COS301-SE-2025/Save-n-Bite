@@ -27,7 +27,7 @@ import {
 } from 'lucide-react'
 import { Button } from '../../components/foodProvider/Button'
 import { analyticsAPI, transformAnalyticsData, getAISuggestion } from '../../services/analyticsAPI'
-import SideBar from '../../components/foodProvider/sideBar'
+import SideBar from '../../components/foodProvider/SideBar'
 
 function Dashboard() {
   const [analyticsData, setAnalyticsData] = useState(null)

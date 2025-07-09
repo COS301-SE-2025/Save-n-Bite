@@ -4,13 +4,8 @@ import SideBar from '../../components/foodProvider/SideBar';
 import { useNavigate } from 'react-router-dom';
 
 const CreateListing = () => {
-  const navigate = useNavigate();
+  
 
-  const handleLogout = () => {
-    localStorage.removeItem('authToken');
-    localStorage.removeItem('userData');
-    navigate('/login');
-  };
 
   return (
     <div className="flex h-screen bg-gray-50"> 
@@ -24,12 +19,7 @@ const CreateListing = () => {
                 List your surplus food items for sale or donation
               </p>
             </div>
-            <button
-              onClick={handleLogout}
-              className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
-            >
-              Logout
-            </button>
+            
           </div>
           <div className="bg-white rounded-lg shadow-sm p-6">
             <ListingForm />

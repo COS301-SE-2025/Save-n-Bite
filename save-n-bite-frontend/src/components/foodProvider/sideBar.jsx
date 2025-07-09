@@ -15,6 +15,8 @@ import { OnboardingProvider } from './OnboardingWalkthrough/OnboardingContext'
 import { Onboarding } from './OnboardingWalkthrough/Onboarding'
 import { HelpMenu } from './HelpMenu'
 
+
+
 const navigationItems = [
   {
     name: 'Dashboard',
@@ -56,6 +58,12 @@ const navigationItems = [
 
 const SideBar = ({ currentPage }) => { 
   const navigate = useNavigate(); 
+ 
+const handleLogout = () => {
+    localStorage.removeItem('authToken');
+    localStorage.removeItem('userData');
+    navigate('/login');
+  };
 
   const handleNavigation = (path) => {
     navigate(path); 
@@ -110,6 +118,15 @@ const SideBar = ({ currentPage }) => {
               <HelpIcon className="w-5 h-5 mr-3" />
               Help Center
             </button>
+            
+            <button
+          onClick={handleLogout}
+          className="w-full flex justify-center items-center px-4 py-3 rounded-lg bg-red-600 text-white hover:bg-red-800 transition-colors"
+        >
+          Logout
+        </button>
+
+
           </div>
         </nav>
       </div>
