@@ -15,4 +15,9 @@ urlpatterns = [
     path('auth/profile/update/', views.update_user_profile, name='update_user_profile'),
     path('auth/business/<uuid:business_id>/', views.get_business_profile, name='get_business_profile'),
     path('auth/businesses/search/', views.search_businesses, name='search_businesses'),
+
+    # Password management
+    path('login/', views.login_view, name='login'),
+    path('change-password/', views.change_password, name='change_password'),
+    path('password-status/', views.check_password_status, name='password_status'),
 ]

@@ -2,10 +2,13 @@
 
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.settings import api_settings
+from django.contrib.auth import authenticate, login
+from django.utils import timezone
 from django.contrib.auth import authenticate
 from .serializers import (
     CustomerRegistrationSerializer,
@@ -408,3 +411,169 @@ def search_businesses(request):
                 'details': str(e)
             }
         }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    
+
+# ====================Admin Code===============
+
+def get_client_ip(request):
+    """Helper function to get client IP address"""
+    x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
+    if x_forwarded_for:
+        ip = x_forwarded_for.split(',')[0]
+    else:
+        ip = request.META.get('REMOTE_ADDR')
+    return ip
+
+@api_view(['POST'])
+def login_view(request):
+    """Enhanced login view with admin functionality support"""
+    email = request.data.get('email')
+    password = request.data.get('password')
+    
+    if not email or not password:
+        return Response({
+            'error': {
+                'code': 'MISSING_CREDENTIALS',
+                'message': 'Email and password are required'
+            }
+        }, status=status.HTTP_400_BAD_REQUEST)
+    
+    try:
+        user = User.objects.get(email=email)
+        
+        # Check if user can login
+        can_login, message = user.can_login()
+        if not can_login:
+            return Response({
+                'error': {
+                    'code': 'LOGIN_BLOCKED',
+                    'message': message
+                }
+            }, status=status.HTTP_403_FORBIDDEN)
+        
+        # Authenticate user
+        authenticated_user = authenticate(request, email=email, password=password)
+        
+        if authenticated_user:
+            # Reset failed login attempts
+            user.reset_failed_login_attempts()
+            
+            # Update last login IP
+            user.last_login_ip = get_client_ip(request)
+            user.save()
+            
+            # Login user
+            login(request, authenticated_user)
+            
+            # Check if password must be changed
+            if user.password_must_change:
+                return Response({
+                    'message': 'Login successful but password change required',
+                    'password_change_required': True,
+                    'user': {
+                        'id': str(user.UserID),
+                        'email': user.email,
+                        'user_type': user.user_type
+                    }
+                }, status=status.HTTP_200_OK)
+            
+            return Response({
+                'message': 'Login successful',
+                'user': {
+                    'id': str(user.UserID),
+                    'email': user.email,
+                    'user_type': user.user_type,
+                    'admin_rights': user.admin_rights
+                }
+            }, status=status.HTTP_200_OK)
+        
+        else:
+            # Increment failed login attempts
+            user.increment_failed_login()
+            
+            return Response({
+                'error': {
+                    'code': 'INVALID_CREDENTIALS',
+                    'message': 'Invalid email or password'
+                }
+            }, status=status.HTTP_401_UNAUTHORIZED)
+    
+    except User.DoesNotExist:
+        return Response({
+            'error': {
+                'code': 'INVALID_CREDENTIALS',
+                'message': 'Invalid email or password'
+            }
+        }, status=status.HTTP_401_UNAUTHORIZED)
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def change_password(request):
+    """Change password (especially for temporary passwords)"""
+    current_password = request.data.get('current_password')
+    new_password = request.data.get('new_password')
+    confirm_password = request.data.get('confirm_password')
+    
+    if not all([current_password, new_password, confirm_password]):
+        return Response({
+            'error': {
+                'code': 'MISSING_FIELDS',
+                'message': 'Current password, new password, and confirmation are required'
+            }
+        }, status=status.HTTP_400_BAD_REQUEST)
+    
+    if new_password != confirm_password:
+        return Response({
+            'error': {
+                'code': 'PASSWORD_MISMATCH',
+                'message': 'New passwords do not match'
+            }
+        }, status=status.HTTP_400_BAD_REQUEST)
+    
+    # Check current password
+    if not request.user.check_password(current_password):
+        return Response({
+            'error': {
+                'code': 'INVALID_CURRENT_PASSWORD',
+                'message': 'Current password is incorrect'
+            }
+        }, status=status.HTTP_400_BAD_REQUEST)
+    
+    # Validate new password 
+    if len(new_password) < 8:
+        return Response({
+            'error': {
+                'code': 'WEAK_PASSWORD',
+                'message': 'Password must be at least 8 characters long'
+            }
+        }, status=status.HTTP_400_BAD_REQUEST)
+    
+    # Set new password
+    request.user.set_password(new_password)
+    
+    # Complete password change process
+    request.user.complete_password_change()
+    
+    return Response({
+        'message': 'Password changed successfully'
+    }, status=status.HTTP_200_OK)
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def check_password_status(request):
+    """Check if user needs to change password"""
+    user = request.user
+    
+    password_status = {
+        'must_change': user.password_must_change,
+        'is_temporary': user.has_temporary_password,
+        'created_at': user.temp_password_created_at.isoformat() if user.temp_password_created_at else None
+    }
+    
+    # Check if temporary password is expired
+    if user.has_temporary_password and user.temp_password_created_at:
+        time_since_reset = timezone.now() - user.temp_password_created_at
+        password_status['expired'] = time_since_reset.total_seconds() > 86400
+        password_status['hours_remaining'] = max(0, 24 - (time_since_reset.total_seconds() / 3600))
+    
+    return Response(password_status, status=status.HTTP_200_OK)
