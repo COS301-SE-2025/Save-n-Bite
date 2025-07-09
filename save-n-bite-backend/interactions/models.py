@@ -6,6 +6,7 @@ from food_listings.models import FoodListing
 from django.contrib.postgres.fields import ArrayField
 import uuid
 from django.contrib.auth import get_user_model
+from .utils import StatusTransition
 
 User = get_user_model()  # Gets the active user model
 
@@ -43,16 +44,33 @@ class Interaction(models.Model):
     def clean(self):
         if self.pk and Interaction.objects.filter(pk=self.pk).exists():
             original = Interaction.objects.get(pk=self.pk)
-            if original.status in ['completed', 'cancelled'] and self.status != original.status:
-                raise ValidationError(f"Cannot change status from {original.status}")
-            
-            # Add any other status transition rules here
-            if original.status == 'completed' and self.status != 'completed':
-                raise ValidationError("Cannot change status from completed")
+            if original.status != self.status:
+                try:
+                    StatusTransition.validate_transition('Interaction', original.status, self.status)
+                except ValidationError as e:
+                    raise ValidationError({'status': str(e)})
+    
+    def update_status(self, new_status, commit=True):
+        """Helper method to safely update status"""
+        self.status = new_status
+        if commit:
+            self.save()
     
     def save(self, *args, **kwargs):
-        self.full_clean()  # Ensure validation runs on save
+        self.full_clean()
         super().save(*args, **kwargs)
+        
+        # Create status history
+        if self.pk:
+            original = Interaction.objects.get(pk=self.pk)
+            if original.status != self.status:
+                InteractionStatusHistory.objects.create(
+                    interaction=self,
+                    old_status=original.status,
+                    new_status=self.status,
+                    changed_by=getattr(self, 'changed_by', None)
+                )
+
 class Cart(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='cart')
@@ -113,18 +131,28 @@ class Order(models.Model):
     def __str__(self):
         return f"Order {self.id} - {self.status}"
 
-    def save(self, *args, **kwargs):
-        super().save(*args, **kwargs)
-
-        if self.status == self.Status.COMPLETED:
-            self.interaction.status = Interaction.Status.COMPLETED
-            self.interaction.completed_at = self.updated_at
-        elif self.status == self.Status.CANCELLED:
-            self.interaction.status = Interaction.Status.CANCELLED
-        elif self.status == self.Status.CONFIRMED and self.interaction.status == Interaction.Status.PENDING:
-            self.interaction.status = Interaction.Status.CONFIRMED
+    def clean(self):
+        if self.pk and Order.objects.filter(pk=self.pk).exists():
+            original = Order.objects.get(pk=self.pk)
+            if original.status != self.status:
+                try:
+                    StatusTransition.validate_transition('Order', original.status, self.status)
+                except ValidationError as e:
+                    raise ValidationError({'status': str(e)})
     
-        self.interaction.save()
+    def save(self, *args, **kwargs):
+        self.full_clean()
+        super().save(*args, **kwargs)
+        
+        # Update interaction status based on order status
+        if self.status == self.Status.COMPLETED:
+            self.interaction.update_status(Interaction.Status.COMPLETED)
+            self.interaction.completed_at = self.updated_at
+            self.interaction.save()
+        elif self.status == self.Status.CANCELLED:
+            self.interaction.update_status(Interaction.Status.CANCELLED)
+        elif self.status == self.Status.CONFIRMED and self.interaction.status == Interaction.Status.PENDING:
+            self.interaction.update_status(Interaction.Status.CONFIRMED)
 
 
 class Payment(models.Model):
@@ -150,6 +178,27 @@ class Payment(models.Model):
 
     def __str__(self):
         return f"Payment {self.id} - {self.method} - {self.status}"
+    
+    def clean(self):
+        if self.pk and Payment.objects.filter(pk=self.pk).exists():
+            original = Payment.objects.get(pk=self.pk)
+            if original.status != self.status:
+                try:
+                    StatusTransition.validate_transition('Payment', original.status, self.status)
+                except ValidationError as e:
+                    raise ValidationError({'status': str(e)})
+    
+    def save(self, *args, **kwargs):
+        self.full_clean()
+        super().save(*args, **kwargs)
+        
+        # Update interaction status based on payment status
+        if self.status == self.Status.COMPLETED and self.interaction.status == Interaction.Status.PENDING:
+            self.interaction.update_status(Interaction.Status.CONFIRMED)
+        elif self.status == self.Status.FAILED:
+            self.interaction.update_status(Interaction.Status.FAILED)
+        elif self.status == self.Status.REFUNDED:
+            self.interaction.update_status(Interaction.Status.CANCELLED)
 
 class InteractionItem(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
