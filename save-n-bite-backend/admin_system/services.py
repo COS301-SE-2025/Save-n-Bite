@@ -51,60 +51,74 @@ class VerificationService:
     @transaction.atomic
     def update_verification_status(admin_user, profile_type, profile_id, new_status, reason="", ip_address=None):
         """Update verification status for NGO or Business profiles"""
-        
+
         if profile_type == 'ngo':
             try:
-                profile = NGOProfile.objects.select_for_update().get(id=profile_id)
+                # Try to find by profile ID first
+                try:
+                    profile = NGOProfile.objects.select_for_update().get(id=profile_id)
+                except NGOProfile.DoesNotExist:
+                    # If not found, try to find by user ID
+                    profile = NGOProfile.objects.select_for_update().get(user__UserID=profile_id)
+
                 old_status = profile.status
                 profile.status = new_status
                 profile.save()
-                
+
                 # Log the action
                 AdminService.log_admin_action(
                     admin_user=admin_user,
                     action_type='user_verification',
                     target_type='ngo_profile',
-                    target_id=profile_id,
+                    target_id=profile.id,  # Use the actual profile ID
                     description=f"Changed NGO verification status from {old_status} to {new_status}. Reason: {reason}",
                     metadata={
                         'old_status': old_status,
                         'new_status': new_status,
                         'reason': reason,
-                        'organisation_name': profile.organisation_name
+                        'organisation_name': profile.organisation_name,
+                        'user_id': str(profile.user.UserID)
                     },
                     ip_address=ip_address
                 )
-                
+
                 return profile
-                
+
             except NGOProfile.DoesNotExist:
                 raise ValueError(f"NGO profile with ID {profile_id} not found")
-                
+
         elif profile_type == 'provider':
             try:
-                profile = FoodProviderProfile.objects.select_for_update().get(id=profile_id)
+                # Try to find by profile ID first
+                try:
+                    profile = FoodProviderProfile.objects.select_for_update().get(id=profile_id)
+                except FoodProviderProfile.DoesNotExist:
+                    # If not found, try to find by user ID
+                    profile = FoodProviderProfile.objects.select_for_update().get(user__UserID=profile_id)
+
                 old_status = profile.status
                 profile.status = new_status
                 profile.save()
-                
+
                 # Log the action
                 AdminService.log_admin_action(
                     admin_user=admin_user,
                     action_type='user_verification',
                     target_type='provider_profile',
-                    target_id=profile_id,
+                    target_id=profile.id,  # Use the actual profile ID
                     description=f"Changed Provider verification status from {old_status} to {new_status}. Reason: {reason}",
                     metadata={
                         'old_status': old_status,
                         'new_status': new_status,
                         'reason': reason,
-                        'business_name': profile.business_name
+                        'business_name': profile.business_name,
+                        'user_id': str(profile.user.UserID)
                     },
                     ip_address=ip_address
                 )
-                
+
                 return profile
-                
+
             except FoodProviderProfile.DoesNotExist:
                 raise ValueError(f"Provider profile with ID {profile_id} not found")
         else:
