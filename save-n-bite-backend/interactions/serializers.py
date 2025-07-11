@@ -3,6 +3,28 @@ from food_listings.models import FoodListing
 from authentication.models import FoodProviderProfile
 from interactions.models import Cart, CartItem, Order, Payment, Interaction, InteractionItem, InteractionStatusHistory
 
+# Add this to your serializers.py file (add to the end of the file)
+
+class UpdateInteractionStatusSerializer(serializers.Serializer):
+    status = serializers.ChoiceField(
+        choices=['pending', 'confirmed', 'completed', 'cancelled', 'failed'],
+        required=True,
+        help_text="New status for the interaction"
+    )
+    notes = serializers.CharField(
+        max_length=500, 
+        required=False, 
+        allow_blank=True,
+        help_text="Optional notes about the status change"
+    )
+    
+    def validate_status(self, value):
+        """Additional status validation"""
+        valid_statuses = ['pending', 'confirmed', 'completed', 'cancelled', 'failed']
+        if value not in valid_statuses:
+            raise serializers.ValidationError(f"Invalid status. Must be one of: {', '.join(valid_statuses)}")
+        return value
+
 class FoodProviderSerializer(serializers.ModelSerializer):
     class Meta:
         model = FoodProviderProfile
