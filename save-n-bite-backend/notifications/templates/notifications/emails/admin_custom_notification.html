@@ -1,0 +1,24 @@
+<!-- notifications/templates/notifications/emails/admin_custom_notification.html -->
+{% extends "notifications/emails/base.html" %}
+
+{% block content %}
+<h2>{{ subject }}</h2>
+
+<p>Hi {{ user_name }},</p>
+
+<div style="background-color: #e8f5e8; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #4CAF50;">
+    {{ body|linebreaks }}
+</div>
+
+<div style="background-color: #f8f9fa; padding: 15px; border-radius: 4px; margin: 15px 0; font-size: 14px; color: #666;">
+    <p style="margin: 0;"><strong>Message from:</strong> {{ admin_name }}<br>
+    <strong>Save n Bite Administration Team</strong></p>
+</div>
+
+<p>If you have any questions or need assistance, please don't hesitate to contact our support team.</p>
+
+<p>Thank you for being part of our mission to reduce food waste!</p>
+
+<p>Best regards,</p>
+<p>The Save n Bite Team</p>
+{% endblock %}

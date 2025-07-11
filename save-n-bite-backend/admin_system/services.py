@@ -3,6 +3,9 @@ from django.db import transaction
 from django.contrib.auth import get_user_model
 from django.utils import timezone
 from django.core.mail import send_mail
+from django.template.loader import render_to_string
+from django.utils.html import strip_tags
+from django.conf import settings
 from django.conf import settings
 from django.db.models import Count, Q, Avg
 from datetime import datetime, timedelta
@@ -10,6 +13,9 @@ import secrets
 import string
 import logging
 
+
+from notifications.services import NotificationService
+from notifications.models import NotificationPreferences
 from authentication.models import NGOProfile, FoodProviderProfile
 from .models import AdminActionLog, SystemAnnouncement, PasswordReset, DocumentAccessLog, SystemLogEntry
 
@@ -142,18 +148,31 @@ class VerificationService:
         }
 
 class PasswordResetService:
-    """Handle admin-initiated password resets"""
+    """Enhanced password reset service using existing notification system"""
     
     @staticmethod
     def generate_temporary_password(length=12):
         """Generate a secure temporary password"""
+        import string
+        import secrets
         alphabet = string.ascii_letters + string.digits + "!@#$%"
         return ''.join(secrets.choice(alphabet) for _ in range(length))
     
     @staticmethod
     @transaction.atomic
     def reset_user_password(admin_user, target_user, ip_address=None):
-        """Reset user password and send temporary password via email"""
+        """
+        Reset user password and send email using existing notification system
+        
+        Args:
+            admin_user: Admin user performing the reset
+            target_user: User whose password is being reset
+            ip_address: IP address for logging
+            
+        Returns:
+            dict with reset details
+        """
+        from datetime import timedelta
         
         # Generate temporary password
         temp_password = PasswordResetService.generate_temporary_password()
@@ -161,73 +180,117 @@ class PasswordResetService:
         # Set expiry time (24 hours)
         expires_at = timezone.now() + timedelta(hours=24)
         
-        # Update user password
+        # Update user password and set flags for temporary password
         target_user.set_password(temp_password)
+        
+        # Set temporary password flags if they exist on your User model
+        if hasattr(target_user, 'password_must_change'):
+            target_user.password_must_change = True
+        if hasattr(target_user, 'has_temporary_password'):
+            target_user.has_temporary_password = True
+        if hasattr(target_user, 'temp_password_created_at'):
+            target_user.temp_password_created_at = timezone.now()
+        
         target_user.save()
         
-        # Create password reset record
-        password_reset = PasswordReset.objects.create(
-            target_user=target_user,
-            reset_by=admin_user,
-            temporary_password_hash=target_user.password,
-            expires_at=expires_at
+        # Create password reset record if you have this model
+        password_reset_data = {
+            'target_user': target_user,
+            'reset_by': admin_user,
+            'expires_at': expires_at,
+            'temp_password': temp_password  # Don't store this in production!
+        }
+        
+        # Prepare email context
+        from django.conf import settings
+        context = {
+            'user_name': NotificationService._get_user_display_name(target_user),
+            'temp_password': temp_password,
+            'login_url': f"{getattr(settings, 'FRONTEND_URL', 'http://localhost:3000')}/login",
+            'expires_at': expires_at,
+            'admin_name': admin_user.get_full_name() or admin_user.username
+        }
+        
+        # Create in-app notification first
+        notification = NotificationService.create_notification(
+            recipient=target_user,
+            notification_type='password_reset',
+            title='Password Reset',
+            message=f'Your password has been reset by an administrator. Please check your email for the temporary password.',
+            sender=admin_user,
+            data={
+                'expires_at': expires_at.isoformat(),
+                'reset_by_admin': True
+            }
         )
         
-        # Send email with temporary password
+        # Send email using existing notification system
         try:
-            send_mail(
+            email_sent = NotificationService.send_email_notification(
+                user=target_user,
                 subject='Password Reset - Save n Bite',
-                message=f'''
-Hello {target_user.get_full_name() or target_user.username},
-
-Your password has been reset by an administrator.
-
-Temporary Password: {temp_password}
-
-IMPORTANT: 
-- You must change this password when you log in
-- This temporary password will expire in 24 hours
-- Login at: {settings.FRONTEND_URL}/login
-
-Best regards,
-Save n Bite Team
-                ''',
-                from_email=settings.DEFAULT_FROM_EMAIL,
-                recipient_list=[target_user.email],
-                fail_silently=False,
+                template_name='password_reset',
+                context=context,
+                notification=notification
             )
             
-            # Log successful action
-            AdminService.log_admin_action(
-                admin_user=admin_user,
-                action_type='password_reset',
-                target_type='user',
-                target_id=target_user.UserID,
-                description=f"Password reset for user {target_user.username}. Email sent successfully.",
-                metadata={
-                    'target_email': target_user.email,
-                    'expires_at': expires_at.isoformat()
-                },
-                ip_address=ip_address
-            )
-            
-            return password_reset
+            if email_sent:
+                # Log successful action using your existing AdminService
+                try:
+                    from .services import AdminService
+                    AdminService.log_admin_action(
+                        admin_user=admin_user,
+                        action_type='password_reset',
+                        target_type='user',
+                        target_id=target_user.UserID,
+                        description=f"Password reset for user {target_user.username}. Email sent successfully.",
+                        metadata={
+                            'target_email': target_user.email,
+                            'expires_at': expires_at.isoformat(),
+                            'email_sent': True
+                        },
+                        ip_address=ip_address
+                    )
+                except Exception as e:
+                    logger.warning(f"Failed to log admin action: {str(e)}")
+                
+                logger.info(f"Password reset email sent successfully to {target_user.email}")
+                
+            else:
+                raise Exception("Email sending returned False")
             
         except Exception as e:
-            # Log failed email
-            AdminService.log_admin_action(
-                admin_user=admin_user,
-                action_type='password_reset',
-                target_type='user',
-                target_id=target_user.UserID,
-                description=f"Password reset for user {target_user.username}. Email failed to send.",
-                metadata={
-                    'target_email': target_user.email,
-                    'error': str(e)
-                },
-                ip_address=ip_address
-            )
-            raise Exception(f"Failed to send email: {str(e)}")
+            # Log failed email attempt
+            logger.error(f"Failed to send password reset email to {target_user.email}: {str(e)}")
+            
+            try:
+                from .services import AdminService
+                AdminService.log_admin_action(
+                    admin_user=admin_user,
+                    action_type='password_reset',
+                    target_type='user',
+                    target_id=target_user.UserID,
+                    description=f"Password reset for user {target_user.username}. Email failed to send: {str(e)}",
+                    metadata={
+                        'target_email': target_user.email,
+                        'expires_at': expires_at.isoformat(),
+                        'email_sent': False,
+                        'error': str(e)
+                    },
+                    ip_address=ip_address
+                )
+            except Exception as log_error:
+                logger.warning(f"Failed to log admin action: {str(log_error)}")
+            
+            # Re-raise the exception so the view can handle it
+            raise Exception(f"Failed to send password reset email: {str(e)}")
+        
+        return {
+            'user': target_user,
+            'expires_at': expires_at,
+            'email_sent': email_sent,
+            'temp_password': temp_password  # Only for testing - remove in production
+        }
 
 class UserManagementService:
     """Handle user management operations"""
@@ -422,3 +485,168 @@ class SystemLogService:
             return log_entry
         except SystemLogEntry.DoesNotExist:
             raise ValueError(f"System log with ID {log_id} not found")
+        
+class AdminNotificationService:
+    """Service for admin-initiated custom notifications using existing notification system"""
+    
+    @staticmethod
+    @transaction.atomic
+    def send_custom_notification(admin_user, subject, body, target_audience, ip_address=None):
+        """
+        Send custom notification to specified user groups using existing NotificationService
+        
+        Args:
+            admin_user: The admin user sending the notification
+            subject: Email subject line
+            body: Email/notification body content
+            target_audience: 'all', 'customers', 'businesses', 'organisations'
+            ip_address: Admin's IP address for logging
+        
+        Returns:
+            dict: Statistics about the notification sending
+        """
+        
+        # Get target users based on audience selection
+        target_users = AdminNotificationService._get_target_users(target_audience)
+        
+        stats = {
+            'total_users': len(target_users),
+            'notifications_sent': 0,
+            'emails_sent': 0,
+            'emails_failed': 0,
+            'target_audience': target_audience
+        }
+        
+        # Log the admin action using your existing AdminService
+        try:
+            from .services import AdminService  # Import your existing AdminService
+            AdminService.log_admin_action(
+                admin_user=admin_user,
+                action_type='custom_notification',
+                target_type='notification',
+                target_id=None,
+                description=f"Sent custom notification to {target_audience}: {subject}",
+                metadata={
+                    'subject': subject,
+                    'target_audience': target_audience,
+                    'total_recipients': stats['total_users']
+                },
+                ip_address=ip_address
+            )
+        except Exception as e:
+            logger.warning(f"Failed to log admin action: {str(e)}")
+        
+        # Send notifications to each target user using existing NotificationService
+        for user in target_users:
+            try:
+                # Create in-app notification using existing service
+                notification = NotificationService.create_notification(
+                    recipient=user,
+                    notification_type='admin_announcement',
+                    title=subject,
+                    message=body,
+                    sender=admin_user,
+                    data={
+                        'is_admin_message': True,
+                        'target_audience': target_audience,
+                        'sent_at': timezone.now().isoformat()
+                    }
+                )
+                stats['notifications_sent'] += 1
+                
+                # Send email using existing email notification system
+                try:
+                    email_sent = NotificationService.send_email_notification(
+                        user=user,
+                        subject=f"Save n Bite - {subject}",
+                        template_name='admin_custom_notification',
+                        context={
+                            'user_name': NotificationService._get_user_display_name(user),
+                            'subject': subject,
+                            'body': body,
+                            'admin_name': admin_user.get_full_name() or admin_user.username,
+                            'user_type': user.user_type
+                        },
+                        notification=notification
+                    )
+                    
+                    if email_sent:
+                        stats['emails_sent'] += 1
+                    else:
+                        stats['emails_failed'] += 1
+                        logger.warning(f"Email sending returned False for user {user.email}")
+                        
+                except Exception as e:
+                    logger.error(f"Failed to send email to {user.email}: {str(e)}")
+                    stats['emails_failed'] += 1
+                    
+            except Exception as e:
+                logger.error(f"Failed to create notification for {user.email}: {str(e)}")
+                stats['emails_failed'] += 1
+        
+        logger.info(f"Custom notification sent by {admin_user.email}. Stats: {stats}")
+        return stats
+    
+    @staticmethod
+    def _get_target_users(target_audience):
+        """Get list of users based on target audience"""
+        
+        if target_audience == 'all':
+            return User.objects.filter(is_active=True).exclude(user_type='admin')
+        
+        elif target_audience == 'customers':
+            return User.objects.filter(
+                user_type='customer',
+                is_active=True
+            )
+        
+        elif target_audience == 'businesses':
+            return User.objects.filter(
+                user_type='provider',
+                is_active=True
+            )
+        
+        elif target_audience == 'organisations':
+            return User.objects.filter(
+                user_type='ngo',
+                is_active=True
+            )
+        
+        else:
+            raise ValueError(f"Invalid target audience: {target_audience}")
+    
+    @staticmethod
+    def get_notification_statistics(target_audience=None):
+        """Get statistics about notification delivery for a specific audience"""
+        
+        from notifications.models import Notification, EmailNotificationLog
+        
+        # Base queryset for admin notifications
+        notifications_query = Notification.objects.filter(
+            notification_type='admin_announcement'
+        )
+        
+        emails_query = EmailNotificationLog.objects.filter(
+            template_name='admin_custom_notification'
+        )
+        
+        # Filter by audience if specified
+        if target_audience and target_audience != 'all':
+            if target_audience == 'customers':
+                notifications_query = notifications_query.filter(recipient__user_type='customer')
+                emails_query = emails_query.filter(recipient_user__user_type='customer')
+            elif target_audience == 'businesses':
+                notifications_query = notifications_query.filter(recipient__user_type='provider')
+                emails_query = emails_query.filter(recipient_user__user_type='provider')
+            elif target_audience == 'organisations':
+                notifications_query = notifications_query.filter(recipient__user_type='ngo')
+                emails_query = emails_query.filter(recipient_user__user_type='ngo')
+        
+        return {
+            'total_notifications': notifications_query.count(),
+            'read_notifications': notifications_query.filter(is_read=True).count(),
+            'total_emails': emails_query.count(),
+            'successful_emails': emails_query.filter(status='sent').count(),
+            'failed_emails': emails_query.filter(status='failed').count(),
+            'recent_notifications': notifications_query.order_by('-created_at')[:10]
+        }

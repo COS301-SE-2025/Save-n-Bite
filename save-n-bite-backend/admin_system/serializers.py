@@ -182,3 +182,72 @@ class DataExportSerializer(serializers.Serializer):
     date_to = serializers.DateField(required=False)
     format = serializers.ChoiceField(choices=['csv', 'excel'], default='csv')
     filters = serializers.DictField(required=False)
+
+class CustomNotificationSerializer(serializers.Serializer):
+    """Serializer for creating custom admin notifications"""
+    
+    subject = serializers.CharField(
+        max_length=255,
+        help_text="Email subject line and notification title"
+    )
+    
+    body = serializers.CharField(
+        max_length=2000,
+        help_text="Main message content for both email and in-app notification"
+    )
+    
+    target_audience = serializers.ChoiceField(
+        choices=[
+            ('all', 'All Users'),
+            ('customers', 'Customers Only'),
+            ('businesses', 'Businesses Only'),
+            ('organisations', 'Organisations Only')
+        ],
+        help_text="Target audience for the notification"
+    )
+    
+    def validate_subject(self, value):
+        """Validate subject line"""
+        if not value.strip():
+            raise serializers.ValidationError("Subject cannot be empty")
+        return value.strip()
+    
+    def validate_body(self, value):
+        """Validate body content"""
+        if not value.strip():
+            raise serializers.ValidationError("Message body cannot be empty")
+        if len(value.strip()) < 10:
+            raise serializers.ValidationError("Message body must be at least 10 characters long")
+        return value.strip()
+
+class NotificationStatsSerializer(serializers.Serializer):
+    """Serializer for notification delivery statistics"""
+    
+    total_users = serializers.IntegerField()
+    notifications_sent = serializers.IntegerField()
+    emails_sent = serializers.IntegerField()
+    emails_failed = serializers.IntegerField()
+    target_audience = serializers.CharField()
+
+class NotificationAnalyticsSerializer(serializers.Serializer):
+    """Serializer for notification analytics data"""
+    
+    total_notifications = serializers.IntegerField()
+    read_notifications = serializers.IntegerField()
+    total_emails = serializers.IntegerField()
+    successful_emails = serializers.IntegerField()
+    failed_emails = serializers.IntegerField()
+    read_rate = serializers.SerializerMethodField()
+    email_success_rate = serializers.SerializerMethodField()
+    
+    def get_read_rate(self, obj):
+        """Calculate notification read rate percentage"""
+        if obj['total_notifications'] > 0:
+            return round((obj['read_notifications'] / obj['total_notifications']) * 100, 2)
+        return 0.0
+    
+    def get_email_success_rate(self, obj):
+        """Calculate email delivery success rate percentage"""
+        if obj['total_emails'] > 0:
+            return round((obj['successful_emails'] / obj['total_emails']) * 100, 2)
+        return 0.0

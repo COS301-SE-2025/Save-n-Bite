@@ -27,4 +27,10 @@ urlpatterns = [
     
     # ==================== DATA EXPORT ====================
     path('export/', views.export_data, name='export_data'),
+
+    # ==================== CUSTOM NOTIFICATIONS ====================
+    path('notifications/send/', views.send_custom_notification, name='send_custom_notification'),
+    path('notifications/analytics/', views.get_notification_analytics, name='get_notification_analytics'),
+    path('notifications/audience-counts/', views.get_audience_counts, name='get_audience_counts'),
+    
 ]

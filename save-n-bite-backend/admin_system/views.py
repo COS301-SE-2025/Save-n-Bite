@@ -14,14 +14,17 @@ import logging
 from .permissions import IsSystemAdmin, CanModerateContent, CanManageUsers
 from .services import (
     AdminService, VerificationService, PasswordResetService, 
-    UserManagementService, DashboardService, SystemLogService
+    UserManagementService, DashboardService, SystemLogService, AdminNotificationService
 )
 from .serializers import (
     AdminDashboardSerializer, RecentActivitySerializer, UserListSerializer,
     VerificationRequestSerializer, VerificationUpdateSerializer, PasswordResetSerializer,
     UserToggleSerializer, AdminActionLogSerializer, SystemAnnouncementSerializer,
     CreateAnnouncementSerializer, SystemLogSerializer, ResolveSystemLogSerializer,
-    SimpleAnalyticsSerializer, DataExportSerializer
+    SimpleAnalyticsSerializer, DataExportSerializer,
+    CustomNotificationSerializer, 
+    NotificationStatsSerializer,
+    NotificationAnalyticsSerializer
 )
 from .models import AdminActionLog, SystemAnnouncement, SystemLogEntry
 from authentication.models import NGOProfile, FoodProviderProfile
@@ -194,7 +197,8 @@ def toggle_user_status(request):
 @api_view(['POST'])
 @permission_classes([CanManageUsers])
 def reset_user_password(request):
-    """Reset user password and send temporary password via email"""
+    """Reset user password using existing notification system"""
+    
     serializer = PasswordResetSerializer(data=request.data)
     
     if not serializer.is_valid():
@@ -209,21 +213,85 @@ def reset_user_password(request):
     try:
         target_user = User.objects.get(UserID=serializer.validated_data['user_id'])
         
-        # Reset password
-        password_reset = PasswordResetService.reset_user_password(
-            admin_user=request.user,
-            target_user=target_user,
-            ip_address=get_client_ip(request)
+        # Generate temporary password
+        import string
+        import secrets
+        alphabet = string.ascii_letters + string.digits + "!@#$%"
+        temp_password = ''.join(secrets.choice(alphabet) for _ in range(12))
+        
+        # Set expiry time (24 hours)
+        from datetime import timedelta
+        expires_at = timezone.now() + timedelta(hours=24)
+        
+        # Update user password
+        target_user.set_password(temp_password)
+        target_user.password_must_change = True
+        target_user.has_temporary_password = True
+        target_user.temp_password_created_at = timezone.now() 
+        target_user.save()
+        
+        # Import your existing NotificationService
+        from notifications.services import NotificationService
+        
+        # Create in-app notification
+        notification = NotificationService.create_notification(
+            recipient=target_user,
+            notification_type='password_reset',
+            title='Password Reset',
+            message='Your password has been reset by an administrator. Please check your email for the temporary password.',
+            sender=request.user,
+            data={
+                'expires_at': expires_at.isoformat(),
+                'reset_by_admin': True
+            }
         )
         
-        return Response({
-            'message': f"Password reset for {target_user.username}. Temporary password sent to {target_user.email}",
-            'reset_info': {
-                'user_email': target_user.email,
-                'expires_at': password_reset.expires_at.isoformat()
-            }
-        }, status=status.HTTP_200_OK)
+        # Prepare email context
+        from django.conf import settings
+        context = {
+            'user_name': target_user.get_full_name() or target_user.username,
+            'temp_password': temp_password,
+            'login_url': f"{getattr(settings, 'FRONTEND_URL', 'http://localhost:3000')}/login",
+            'expires_at': expires_at,
+            'admin_name': request.user.get_full_name() or request.user.username
+        }
         
+        # Send email using existing notification system
+        email_sent = NotificationService.send_email_notification(
+            user=target_user,
+            subject='Password Reset - Save n Bite',
+            template_name='password_reset',
+            context=context,
+            notification=notification
+        )
+        
+        if email_sent:
+            # Log successful action
+            AdminService.log_admin_action(
+                admin_user=request.user,
+                action_type='password_reset',
+                target_type='user',
+                target_id=target_user.UserID,
+                description=f"Password reset for user {target_user.username}. Email sent successfully.",
+                metadata={
+                    'target_email': target_user.email,
+                    'expires_at': expires_at.isoformat(),
+                    'email_sent': True
+                },
+                ip_address=get_client_ip(request)
+            )
+            
+            return Response({
+                'message': f"Password reset for {target_user.username}. Email sent successfully to {target_user.email}",
+                'reset_info': {
+                    'user_email': target_user.email,
+                    'expires_at': expires_at.isoformat(),
+                    'email_sent': True
+                }
+            }, status=status.HTTP_200_OK)
+        else:
+            raise Exception("Email sending returned False")
+            
     except User.DoesNotExist:
         return Response({
             'error': {
@@ -231,12 +299,13 @@ def reset_user_password(request):
                 'message': 'User not found'
             }
         }, status=status.HTTP_404_NOT_FOUND)
+        
     except Exception as e:
         logger.error(f"Password reset error: {str(e)}")
         return Response({
             'error': {
                 'code': 'PASSWORD_RESET_ERROR',
-                'message': str(e)
+                'message': f'Failed to reset password: {str(e)}'
             }
         }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
@@ -710,5 +779,144 @@ def export_data(request):
             'error': {
                 'code': 'EXPORT_ERROR',
                 'message': 'Failed to export data'
+            }
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    
+@api_view(['POST'])
+@permission_classes([IsSystemAdmin])
+def send_custom_notification(request):
+    """Send custom notification to specified user groups using existing notification system"""
+    
+    serializer = CustomNotificationSerializer(data=request.data)
+    
+    if not serializer.is_valid():
+        return Response({
+            'error': {
+                'code': 'VALIDATION_ERROR',
+                'message': 'Invalid data provided',
+                'details': serializer.errors
+            }
+        }, status=status.HTTP_400_BAD_REQUEST)
+    
+    try:
+        # Send the notification using existing system
+        stats = AdminNotificationService.send_custom_notification(
+            admin_user=request.user,
+            subject=serializer.validated_data['subject'],
+            body=serializer.validated_data['body'],
+            target_audience=serializer.validated_data['target_audience'],
+            ip_address=get_client_ip(request)
+        )
+        
+        # Serialize response stats
+        stats_serializer = NotificationStatsSerializer(stats)
+        
+        return Response({
+            'message': 'Notification sent successfully using existing notification system',
+            'stats': stats_serializer.data
+        }, status=status.HTTP_200_OK)
+        
+    except ValueError as e:
+        return Response({
+            'error': {
+                'code': 'INVALID_AUDIENCE',
+                'message': str(e)
+            }
+        }, status=status.HTTP_400_BAD_REQUEST)
+        
+    except Exception as e:
+        logger.error(f"Custom notification error: {str(e)}")
+        return Response({
+            'error': {
+                'code': 'NOTIFICATION_ERROR',
+                'message': 'Failed to send notification'
+            }
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    
+@api_view(['GET'])
+@permission_classes([IsSystemAdmin])
+def get_notification_analytics(request):
+    """Get analytics data for admin notifications"""
+    
+    try:
+        target_audience = request.GET.get('target_audience')
+        
+        analytics_data = AdminNotificationService.get_notification_statistics(
+            target_audience=target_audience
+        )
+        
+        serializer = NotificationAnalyticsSerializer(analytics_data)
+        
+        return Response({
+            'analytics': serializer.data,
+            'filters': {
+                'target_audience': target_audience or 'all'
+            }
+        }, status=status.HTTP_200_OK)
+        
+    except Exception as e:
+        logger.error(f"Notification analytics error: {str(e)}")
+        return Response({
+            'error': {
+                'code': 'ANALYTICS_ERROR',
+                'message': 'Failed to retrieve notification analytics'
+            }
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+@api_view(['GET'])
+@permission_classes([IsSystemAdmin])
+def get_audience_counts(request):
+    """Get user counts for each audience type"""
+    
+    try:
+        from django.contrib.auth import get_user_model
+        User = get_user_model()
+        
+        audience_counts = {
+            'all': User.objects.filter(is_active=True).exclude(user_type='admin').count(),
+            'customers': User.objects.filter(user_type='customer', is_active=True).count(),
+            'businesses': User.objects.filter(user_type='provider', is_active=True).count(),
+            'organisations': User.objects.filter(user_type='ngo', is_active=True).count()
+        }
+        
+        return Response({
+            'audience_counts': audience_counts
+        }, status=status.HTTP_200_OK)
+        
+    except Exception as e:
+        logger.error(f"Audience counts error: {str(e)}")
+        return Response({
+            'error': {
+                'code': 'AUDIENCE_COUNT_ERROR',
+                'message': 'Failed to retrieve audience counts'
+            }
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+@api_view(['GET'])
+@permission_classes([IsSystemAdmin])
+def get_audience_counts(request):
+    """Get user counts for each audience type"""
+    
+    try:
+        from django.contrib.auth import get_user_model
+        User = get_user_model()
+        
+        audience_counts = {
+            'all': User.objects.filter(is_active=True).exclude(user_type='admin').count(),
+            'customers': User.objects.filter(user_type='customer', is_active=True).count(),
+            'businesses': User.objects.filter(user_type='provider', is_active=True).count(),
+            'organisations': User.objects.filter(user_type='ngo', is_active=True).count()
+        }
+        
+        return Response({
+            'audience_counts': audience_counts
+        }, status=status.HTTP_200_OK)
+        
+    except Exception as e:
+        logger.error(f"Audience counts error: {str(e)}")
+        return Response({
+            'error': {
+                'code': 'AUDIENCE_COUNT_ERROR',
+                'message': 'Failed to retrieve audience counts'
             }
         }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
