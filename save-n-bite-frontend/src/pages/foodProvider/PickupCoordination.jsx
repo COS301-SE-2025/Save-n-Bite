@@ -27,6 +27,7 @@ function PickupCoordination() {
   const [showQRCode, setShowQRCode] = useState(null);
   const [viewMode, setViewMode] = useState('list');
   const [currentDate, setCurrentDate] = useState(new Date());
+  const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]); // NEW: Selected date for API call
   const [showSuccessMessage, setShowSuccessMessage] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
   const [loading, setLoading] = useState(true);
@@ -34,13 +35,13 @@ function PickupCoordination() {
   const [verifyingCode, setVerifyingCode] = useState(false);
   const [showVerifyModal, setShowVerifyModal] = useState(false);
   const [verificationCode, setVerificationCode] = useState('');
-  const [customerDetails, setCustomerDetails] = useState({}); // Store customer details by pickup ID
-  const [completingPickup, setCompletingPickup] = useState(null); // Track which pickup is being completed
+  const [customerDetails, setCustomerDetails] = useState({}); 
+  const [completingPickup, setCompletingPickup] = useState(null);
 
-  // Load pickup data on component mount
+  // Load pickup data on component mount and when date changes
   useEffect(() => {
     loadScheduleData();
-  }, []);
+  }, [selectedDate]); // Add selectedDate as dependency
 
   // Auto-hide success message after 3 seconds
   useEffect(() => {
@@ -57,11 +58,13 @@ function PickupCoordination() {
     setLoading(true);
     setError(null);
     try {
-      // Get today's date for the API call
-      const today = new Date().toISOString().split('T')[0];
+      // Use selected date instead of hardcoded date
+      const apiDate = selectedDate; // Already in YYYY-MM-DD format
+      
+      console.log('Loading schedule for date:', apiDate);
       
       // Fetch schedule overview from API
-      const response = await schedulingAPI.getScheduleOverview(today);
+      const response = await schedulingAPI.getScheduleOverview(apiDate);
       
       if (response.success) {
         const overview = response.data.schedule_overview;
@@ -77,16 +80,15 @@ function PickupCoordination() {
                 ...pickup,
                 hour: hour,
                 status: pickup.status === 'pending' ? 'scheduled' : pickup.status,
-                // Add missing fields with reasonable defaults
                 customerName: pickup.customer_name,
-                customerEmail: pickup.customer_email || 'N/A', // Will be available if API is enhanced
-                customerPhone: pickup.customer_phone || 'N/A', // Will be available if API is enhanced
-                orderNumber: `PU-${pickup.id.split('-')[0]}`, // Generate order number from ID
+                customerEmail: pickup.customer_email || 'N/A',
+                customerPhone: pickup.customer_phone || 'N/A',
+                orderNumber: `PU-${pickup.id.split('-')[0]}`,
                 pickupDate: overview.date,
-                pickupWindow: `${pickup.time} - ${pickup.time}`, // Will be enhanced with end time
-                items: [pickup.food_listing_name], // Convert single item to array
+                pickupWindow: `${pickup.time}:00 - ${pickup.time}:00`,
+                items: [pickup.food_listing_name],
                 confirmationCode: pickup.confirmation_code,
-                type: 'Sale', // Default type, could be determined from other data
+                type: 'Sale',
                 amount: 'N/A'
               });
             });
@@ -94,6 +96,7 @@ function PickupCoordination() {
         }
         
         setPickups(allPickups);
+        console.log(`Loaded ${allPickups.length} pickups for ${apiDate}`);
       } else {
         setError(response.error);
       }
@@ -162,46 +165,88 @@ function PickupCoordination() {
      
       const response = await schedulingAPI.verifyPickupCode(confirmationCode.trim());
       
-        if (!response.success) {
-    alert('Invalid confirmation code or pickup not found');
-    return;
-  }
+      if (!response.success) {
+        alert('Invalid confirmation code or pickup not found');
+        return;
+      }
 
-
-        const pickupData = response.data.pickup;
-         const completeResponse = await schedulingAPI.completePickup(pickup.id);
+      const pickupData = response.data.pickup;
+      const completeResponse = await schedulingAPI.completePickup(pickup.id);
       
-         
-  if (!completeResponse.success) {
-    alert('Failed to complete pickup');
-    return;
-  }
-        // Store customer details for display
-        setCustomerDetails(prev => ({
-          ...prev,
-          [pickup.id]: {
-            name: pickupData.customer.name,
-            email: pickupData.customer.email,
-            notes: pickupData.customer_notes
-          }
-        }));
-        
-        // Update local state to mark as completed
-        setPickups(pickups.map(p =>
-          p.id === pickup.id
-            ? { ...p, status: status, pickupStatus: status === 'completed' ? 'On Time' : 'No Show' }
-            : p
-        ));
-        
-        // Show success message
-        const statusText = status === 'completed' ? 'completed' : 'marked as no-show';
-        setShowSuccessMessage(true);
-        setSuccessMessage(`Pickup ${statusText} for ${pickupData.customer.name}`);
-        await loadScheduleData();
+      if (!completeResponse.success) {
+        alert('Failed to complete pickup');
+        return;
+      }
+      
+      // Store customer details for display
+      setCustomerDetails(prev => ({
+        ...prev,
+        [pickup.id]: {
+          name: pickupData.customer.name,
+          email: pickupData.customer.email,
+          notes: pickupData.customer_notes
+        }
+      }));
+      
+      // Update local state to mark as completed
+      setPickups(pickups.map(p =>
+        p.id === pickup.id
+          ? { ...p, status: status, pickupStatus: status === 'completed' ? 'On Time' : 'No Show' }
+          : p
+      ));
+      
+      // Show success message
+      const statusText = status === 'completed' ? 'completed' : 'marked as no-show';
+      setShowSuccessMessage(true);
+      setSuccessMessage(`Pickup ${statusText} for ${pickupData.customer.name}`);
+      
+      // Dispatch event to notify other components
+      window.dispatchEvent(new CustomEvent('orderCompleted', {
+        detail: { pickup, status }
+      }));
+      
+      await loadScheduleData();
    
     } catch (error) {
       console.error('Error completing pickup:', error);
       alert('Failed to verify confirmation code');
+    } finally {
+      setCompletingPickup(null);
+    }
+  };
+
+  // NEW: Add missing handleMarkAsNoShow function
+  const handleMarkAsNoShow = async (pickup) => {
+    if (!confirm(`Mark pickup for ${pickup.customerName} as no-show?`)) {
+      return;
+    }
+
+    try {
+      setCompletingPickup(pickup.id);
+      
+      // Update pickup status to missed/no-show
+      const response = await schedulingAPI.updatePickupStatus(pickup.id, 'missed', {
+        business_notes: 'Customer did not show up for pickup'
+      });
+      
+      if (response.success) {
+        // Update local state
+        setPickups(pickups.map(p =>
+          p.id === pickup.id
+            ? { ...p, status: 'missed', pickupStatus: 'No Show' }
+            : p
+        ));
+        
+        setShowSuccessMessage(true);
+        setSuccessMessage(`Pickup marked as no-show for ${pickup.customerName}`);
+        
+        await loadScheduleData();
+      } else {
+        alert('Failed to mark as no-show: ' + response.error);
+      }
+    } catch (error) {
+      console.error('Error marking as no-show:', error);
+      alert('Failed to mark pickup as no-show');
     } finally {
       setCompletingPickup(null);
     }
@@ -218,36 +263,28 @@ function PickupCoordination() {
       const response = await schedulingAPI.verifyPickupCode(verificationCode.trim());
       
       if (!response.success) {
-  alert('Invalid confirmation code or pickup not found');
-  return;
-}
-        const pickup = response.data.pickup;
-        
-        // Store customer details for this pickup
-        setCustomerDetails(prev => ({
-          ...prev,
-          [pickup.id]: {
-            name: pickup.customer.full_name,
-            email: pickup.customer.email,
-            notes: pickup.customer_notes
-          }
-        }));
-        
-        setShowSuccessMessage(true);
-        setSuccessMessage(`Verification successful for ${pickup.customer.full_name}'s pickup`);
-        setShowVerifyModal(false);
-        setVerificationCode('');
-        
-        // Optionally auto-complete the pickup
-        // if (confirm(`Code verified for ${pickup.customer.full_name}.\nPhone: ${pickup.customer.phone || 'N/A'}\nEmail: ${pickup.customer.email}\n\nMark as completed?`)) {
-        //   // Find the pickup by confirmation code
-        //   const matchingPickup = pickups.find(p => p.confirmationCode === pickup.confirmation_code);
-        //   if (matchingPickup) {
-        //     await handleCompletePickup(matchingPickup);
-        //   }
-        // }
-
-        await loadScheduleData();
+        alert('Invalid confirmation code or pickup not found');
+        return;
+      }
+      
+      const pickup = response.data.pickup;
+      
+      // Store customer details for this pickup
+      setCustomerDetails(prev => ({
+        ...prev,
+        [pickup.id]: {
+          name: pickup.customer.full_name,
+          email: pickup.customer.email,
+          notes: pickup.customer_notes
+        }
+      }));
+      
+      setShowSuccessMessage(true);
+      setSuccessMessage(`Verification successful for ${pickup.customer.full_name}'s pickup`);
+      setShowVerifyModal(false);
+      setVerificationCode('');
+      
+      await loadScheduleData();
   
     } catch (error) {
       console.error('Error verifying code:', error);
@@ -298,10 +335,35 @@ function PickupCoordination() {
 
   const refreshPickupData = async () => {
     await loadScheduleData();
-    // Reset filters
+    // Reset filters but keep selected date
     setDateFilter('all');
     setStatusFilter('all');
     setSearchQuery('');
+  };
+
+  // NEW: Handle date change
+  const handleDateChange = (newDate) => {
+    setSelectedDate(newDate);
+    // Clear any existing customer details when changing dates
+    setCustomerDetails({});
+  };
+
+  // NEW: Quick date selection functions
+  const setToday = () => {
+    const today = new Date().toISOString().split('T')[0];
+    setSelectedDate(today);
+  };
+
+  const setYesterday = () => {
+    const yesterday = new Date();
+    yesterday.setDate(yesterday.getDate() - 1);
+    setSelectedDate(yesterday.toISOString().split('T')[0]);
+  };
+
+  const setTomorrow = () => {
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    setSelectedDate(tomorrow.toISOString().split('T')[0]);
   };
 
   if (loading) {
@@ -351,6 +413,57 @@ function PickupCoordination() {
           <p className="text-gray-600 mt-1">
             Manage food pickups and coordinate with customers
           </p>
+          
+          {/* Date Selection Section */}
+          <div className="mt-4 bg-white rounded-lg shadow-sm border p-4">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
+              <div className="flex items-center gap-2">
+                <Calendar className="h-5 w-5 text-gray-500" />
+                <label className="text-sm font-medium text-gray-700">Viewing pickups for:</label>
+              </div>
+              
+              <div className="flex items-center gap-2">
+                <input
+                  type="date"
+                  value={selectedDate}
+                  onChange={(e) => handleDateChange(e.target.value)}
+                  className="px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                />
+                
+                {/* Quick date buttons */}
+                <div className="flex gap-1">
+                  <button
+                    onClick={setYesterday}
+                    className="px-2 py-1 text-xs bg-gray-100 text-gray-700 rounded hover:bg-gray-200 transition-colors"
+                  >
+                    Yesterday
+                  </button>
+                  <button
+                    onClick={setToday}
+                    className="px-2 py-1 text-xs bg-blue-100 text-blue-700 rounded hover:bg-blue-200 transition-colors"
+                  >
+                    Today
+                  </button>
+                  <button
+                    onClick={setTomorrow}
+                    className="px-2 py-1 text-xs bg-gray-100 text-gray-700 rounded hover:bg-gray-200 transition-colors"
+                  >
+                    Tomorrow
+                  </button>
+                </div>
+              </div>
+              
+              {/* Display formatted date */}
+              <div className="text-sm text-gray-600">
+                {new Date(selectedDate + 'T00:00:00').toLocaleDateString('en-US', {
+                  weekday: 'long',
+                  year: 'numeric',
+                  month: 'long',
+                  day: 'numeric'
+                })}
+              </div>
+            </div>
+          </div>
           
           {/* Schedule Overview Stats */}
           {scheduleOverview && (
@@ -584,7 +697,7 @@ function PickupCoordination() {
 
                   <div className="border-t border-gray-200 pt-4">
                     <div className="flex flex-wrap items-center justify-between gap-2">
-            { pickup.status === 'confirmed' || pickup.status === 'scheduled'? (
+                      {pickup.status === 'confirmed' || pickup.status === 'scheduled' ? (
                         <div className="flex items-center space-x-2">
                           <Button
                             variant="success"
