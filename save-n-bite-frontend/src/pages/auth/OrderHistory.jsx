@@ -3,7 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import CustomerNavBar from '../../components/auth/CustomerNavBar';
 import OrderCard from '../../components/auth/OrderCard';
 import ImpactSummary from '../../components/auth/ImpactSummary';
-import schedulingAPI from '../../services/schedulingAPI'; // Use schedulingAPI instead of direct apiClient
+import schedulingAPI from '../../services/schedulingAPI'; // Keep using schedulingAPI for pickups
+import reviewsAPI from '../../services/reviewsAPI'; // Use reviewsAPI only for interaction status
 import { 
   CheckCircleIcon, 
   LeafIcon, 
@@ -290,8 +291,11 @@ const OrderHistory = () => {
     try {
       const response = await schedulingAPI.getMyPickups();
       if (response.success) {
-        // Handle the nested structure: results.pickups
         const pickups = response.data.results?.pickups || response.data.results || [];
+        
+        // Check for completed pickups and sync interaction status
+        await syncCompletedInteractions(pickups);
+        
         setOrders(pickups);
         setFilteredOrders(pickups);
       } else {
@@ -306,6 +310,34 @@ const OrderHistory = () => {
       setFilteredOrders([]);
     } finally {
       setLoading(false);
+    }
+  };
+
+  // New function to sync interaction status for completed pickups
+  const syncCompletedInteractions = async (pickups) => {
+    const completedPickups = pickups.filter(pickup => pickup.status === 'completed');
+    
+    for (const pickup of completedPickups) {
+      try {
+        // Check if interaction is already marked as completed by checking review status
+        const reviewStatus = await reviewsAPI.checkReviewStatus(pickup.interaction_id);
+        
+        if (reviewStatus.success && reviewStatus.data.interaction_status !== 'completed') {
+          // Interaction not yet marked as completed, so update it
+          const updateResult = await reviewsAPI.markAsCompleted(
+            pickup.interaction_id,
+            'Order completed by food provider'
+          );
+          
+          if (updateResult.success) {
+            console.log(`Interaction ${pickup.interaction_id} marked as completed`);
+          } else {
+            console.error(`Failed to mark interaction ${pickup.interaction_id} as completed:`, updateResult.error);
+          }
+        }
+      } catch (error) {
+        console.error(`Error syncing interaction for pickup ${pickup.id}:`, error);
+      }
     }
   };
 
@@ -386,7 +418,7 @@ const OrderHistory = () => {
   };
 
   // Handle status update
-  const handleStatusUpdate = () => {
+  const handleStatusUpdate = async () => {
     loadOrders(); // Refresh orders after status update
   };
 
@@ -491,7 +523,7 @@ const OrderHistory = () => {
           <button
             onClick={(e) => {
               e.stopPropagation();
-              navigate(`/reviews/${order.id}`);
+              navigate(`/reviews/${order.interaction_id}`);
             }}
             className="px-4 py-2 text-emerald-600 hover:text-emerald-700 font-medium"
           >
@@ -511,6 +543,7 @@ const OrderHistory = () => {
             >
               View Details
             </button>
+            
             {(order.can_cancel || order.status === 'scheduled') && (
               <button
                 onClick={async (e) => {
@@ -519,9 +552,7 @@ const OrderHistory = () => {
                     try {
                       const response = await schedulingAPI.cancelPickup(order.id, 'Cancelled by customer', true);
                       if (response.success) {
-                        // Show success message
                         alert(response.data.message || 'Pickup cancelled successfully');
-                        // Refresh orders
                         handleStatusUpdate();
                       } else {
                         alert('Failed to cancel pickup: ' + response.error);
