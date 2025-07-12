@@ -444,3 +444,86 @@ def get_interaction_review(request, interaction_id):
         }
     }, status=status.HTTP_200_OK)
 
+class DonationRequestView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        if request.user.user_type != 'ngo':
+            return Response({'error': 'Only NGOs can request donations.'}, status=403)
+
+        data = request.data
+        food_listing = get_object_or_404(FoodListing, id=data.get("listingId"))
+        provider_profile = food_listing.provider.provider_profile
+
+        interaction = Interaction.objects.create(
+            user=request.user,
+            business=provider_profile,
+            interaction_type=Interaction.InteractionType.DONATION,
+            quantity=data.get("quantity", 1),
+            total_amount=0.00,  # No charge
+            special_instructions=data.get("specialInstructions", ""),
+            motivation_message=data.get("motivationMessage", ""),
+            verification_documents=data.get("verificationDocuments", [])
+        )
+
+        # Create InteractionItem (similar to purchase)
+        InteractionItem.objects.create(
+            interaction=interaction,
+            food_listing=food_listing,
+            name=food_listing.name,
+            quantity=data.get("quantity", 1),
+            price_per_item=0.00,
+            total_price=0.00,
+            expiry_date=food_listing.expiry_date,
+            image_url=food_listing.images
+        )
+
+        Order.objects.create(
+            interaction=interaction,
+            pickup_window=food_listing.pickup_window,
+            pickup_code=str(uuid.uuid4())[:6].upper()
+        )
+
+        return Response({'message': 'Donation request submitted'}, status=201)
+    
+class AcceptDonationView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, interaction_id):
+        interaction = get_object_or_404(
+            Interaction, id=interaction_id, business=request.user.provider_profile,
+            interaction_type=Interaction.InteractionType.DONATION
+        )
+
+        if interaction.status != Interaction.Status.PENDING:
+            return Response({'error': 'Only pending donations can be accepted.'}, status=400)
+
+        interaction.status = Interaction.Status.READY_FOR_PICKUP
+        interaction.save()
+
+        # Optionally: trigger notification to NGO
+
+        return Response({'message': 'Donation accepted and marked as ready for pickup'}, status=200)
+    
+class RejectDonationView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, interaction_id):
+        interaction = get_object_or_404(
+            Interaction, id=interaction_id, business=request.user.provider_profile,
+            interaction_type=Interaction.InteractionType.DONATION
+        )
+
+        if interaction.status != Interaction.Status.PENDING:
+            return Response({'error': 'Only pending donations can be rejected.'}, status=400)
+
+        reason = request.data.get('rejectionReason', '')
+        interaction.status = Interaction.Status.REJECTED
+        interaction.rejection_reason = reason
+        interaction.save()
+
+        # Optionally: trigger notification to NGO
+
+        return Response({'message': 'Donation request rejected'}, status=200)
+
+

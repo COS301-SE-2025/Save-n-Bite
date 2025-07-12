@@ -16,10 +16,12 @@ class Interaction(models.Model):
 
     class Status(models.TextChoices):
         PENDING = 'pending', 'Pending'
+        READY_FOR_PICKUP = 'ready', 'Ready for Pickup'
         CONFIRMED = 'confirmed', 'Confirmed'
         COMPLETED = 'completed', 'Completed'
         CANCELLED = 'cancelled', 'Cancelled'
         FAILED = 'failed', 'Failed'
+        REJECTED = 'rejected', 'Rejected'
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     interaction_type = models.CharField(max_length=10, choices=InteractionType.choices)
@@ -31,6 +33,9 @@ class Interaction(models.Model):
     completed_at = models.DateTimeField(null=True, blank=True)
     verification_code = models.CharField(max_length=20, blank=True)
     special_instructions = models.TextField(blank=True)
+    motivation_message = models.TextField(blank=True)  # For NGO requests
+    verification_documents = ArrayField(models.URLField(), blank=True, default=list)  # Can be link(s) to documents
+    rejection_reason = models.TextField(blank=True)  # Set by food provider if rejected
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='interactions')
     business = models.ForeignKey(FoodProviderProfile, on_delete=models.CASCADE, related_name='interactions')
 
@@ -41,6 +46,10 @@ class Interaction(models.Model):
         return f"{self.interaction_type} - {self.status} - {self.total_amount}"
     
     def clean(self):
+        if self.interaction_type == self.InteractionType.DONATION:
+            if self.status == self.Status.REJECTED and not self.rejection_reason:
+                raise ValidationError("Rejection reason required when status is rejected.")
+            
         if self.pk and Interaction.objects.filter(pk=self.pk).exists():
             original = Interaction.objects.get(pk=self.pk)
             if original.status in ['completed', 'cancelled'] and self.status != original.status:
