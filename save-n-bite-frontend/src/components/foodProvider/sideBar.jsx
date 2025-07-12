@@ -7,6 +7,7 @@ import {
   PackageIcon,
   ShoppingCartIcon,
   SettingsIcon,
+  HeartHandshakeIcon ,
   HelpCircle as HelpIcon,
 } from 'lucide-react'
 import logo from '../../assets/images/SnB_leaf_icon.png';
@@ -48,6 +49,13 @@ const navigationItems = [
     route: 'orders-and-feedback',
     path: '/orders-and-feedback'
   },
+  {
+  name: 'Manage Donations',
+  icon: HeartHandshakeIcon, 
+  route: 'donations',
+  path: '/donations'
+},
+
   {
     name: 'Settings',
     icon: SettingsIcon,
