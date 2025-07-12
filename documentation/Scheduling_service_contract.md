@@ -95,27 +95,68 @@ Authorization: Bearer <jwt_token>
 
 #### 3.2.1 Manage Pickup Locations
 ```http
-GET /api/scheduling/pickup-locations/
+POST | GET /api/scheduling/pickup-locations/
+```
+```json
+{
+  "food_listing_id": "f681aa25-ef1f-4d78-beff-b75765172af3",
+  "location_id": "f6fa273b-0359-45bd-8559-9e2842f0c0c3", 
+  "pickup_window": "17:00-20:00",
+  "total_slots": 4,
+  "max_orders_per_slot": 5,
+  "slot_buffer_minutes": 5
+}
 ```
 
 **Response (200 OK):**
 ```json
 {
-    "count": 3,
-    "results": [
-        {
-            "id": "uuid",
-            "name": "Main Counter",
-            "address": "123 Main Street, Pretoria, 0001",
-            "instructions": "Enter through main entrance, ask for pickup at counter",
-            "contact_person": "John Doe",
-            "contact_phone": "+27123456789",
-            "latitude": "-25.7479",
-            "longitude": "28.2293",
-            "is_active": true,
-            "created_at": "2025-06-01T08:00:00Z"
-        }
-    ]
+    "message": "Pickup schedule created successfully",
+    "pickup_schedule": {
+        "id": "cb521766-c330-4245-8e61-5183674e9e1a",
+        "food_listing": "f681aa25-ef1f-4d78-beff-b75765172af3",
+        "food_listing_name": "Yummy Sushi",
+        "location": "f6fa273b-0359-45bd-8559-9e2842f0c0c3",
+        "location_name": "Sushi Pickup Location",
+        "business_name": "Saber's Snacks",
+        "pickup_window": "17:00-20:00",
+        "total_slots": 4,
+        "max_orders_per_slot": 5,
+        "slot_buffer_minutes": 5,
+        "is_active": true,
+        "start_time": "17:00:00",
+        "end_time": "20:00:00",
+        "window_duration_minutes": 180,
+        "slot_duration_minutes": 41,
+        "generated_slots": [
+            {
+                "slot_number": 1,
+                "start_time": "17:00:00",
+                "end_time": "17:41:00",
+                "max_orders": 5
+            },
+            {
+                "slot_number": 2,
+                "start_time": "17:46:00",
+                "end_time": "18:27:00",
+                "max_orders": 5
+            },
+            {
+                "slot_number": 3,
+                "start_time": "18:32:00",
+                "end_time": "19:13:00",
+                "max_orders": 5
+            },
+            {
+                "slot_number": 4,
+                "start_time": "19:18:00",
+                "end_time": "19:59:00",
+                "max_orders": 5
+            }
+        ],
+        "created_at": "2025-07-04T15:38:43.503651Z",
+        "updated_at": "2025-07-04T15:38:43.503651Z"
+    }
 }
 ```
 
@@ -125,10 +166,10 @@ POST /api/scheduling/pickup-locations/
 Content-Type: application/json
 
 {
-    "name": "Side Entrance",
-    "address": "123 Main Street, Side Door, Pretoria, 0001",
-    "instructions": "Use side entrance for after-hours pickup",
-    "contact_person": "Jane Smith",
+    "name": "Back Entrance",
+    "address": "123 Main Street, Back Door, Pretoria, 0001",
+    "instructions": "Use sibacke entrance for after-hours pickup",
+    "contact_person": "Capleton Smith",
     "contact_phone": "+27123456790",
     "latitude": "-25.7480",
     "longitude": "28.2295"
@@ -138,20 +179,20 @@ Content-Type: application/json
 **Response (201 Created):**
 ```json
 {
-    "id": "uuid",
-    "name": "Side Entrance",
-    "address": "123 Main Street, Side Door, Pretoria, 0001",
-    "instructions": "Use side entrance for after-hours pickup",
-    "contact_person": "Jane Smith",
-    "contact_phone": "+27123456790",
-    "latitude": "-25.7480",
-    "longitude": "28.2295",
-    "is_active": true,
-    "business": {
-        "id": "uuid",
-        "name": "Mario's Restaurant"
-    },
-    "created_at": "2025-06-25T14:30:00Z"
+    "message": "Pickup location created successfully",
+    "location": {
+        "id": "0e6bf4ce-e344-415a-a032-852e14420bdd",
+        "name": "Back Entrance",
+        "address": "123 Main Street, Back Door, Pretoria, 0001",
+        "instructions": "Use back entrance for after-hours pickup",
+        "contact_person": "Capleton Smith",
+        "contact_phone": "+27123456790",
+        "latitude": "-25.74800000",
+        "longitude": "28.22950000",
+        "is_active": true,
+        "created_at": "2025-07-04T15:10:05.188161Z",
+        "updated_at": "2025-07-04T15:10:05.188161Z"
+    }
 }
 ```
 
@@ -167,30 +208,183 @@ Query Parameters:
 **Response (200 OK):**
 ```json
 {
-    "count": 5,
-    "results": [
+    "pickup_schedules": [
         {
-            "id": "uuid",
-            "food_listing": {
-                "id": "uuid",
-                "name": "Margherita Pizza",
-                "status": "active",
-                "expiry_date": "2025-06-26T18:00:00Z"
-            },
-            "location": {
-                "id": "uuid",
-                "name": "Main Counter",
-                "address": "123 Main Street, Pretoria"
-            },
+            "id": "62086e8d-180d-45ca-ad47-7be710f773ee",
+            "food_listing": "2cae9cf3-e4e6-4164-82ab-5dcafb65d58f",
+            "food_listing_name": "Delicious Cake",
+            "location": "53346cb7-c483-468b-838f-170a79e3860a",
+            "location_name": "Updated Main Counter",
+            "business_name": "Saber's Snacks",
+            "pickup_window": "17:00-19:00",
+            "total_slots": 4,
+            "max_orders_per_slot": 5,
+            "slot_buffer_minutes": 10,
+            "is_active": true,
+            "start_time": "17:00:00",
+            "end_time": "19:00:00",
+            "window_duration_minutes": 120,
+            "slot_duration_minutes": 22,
+            "generated_slots": [
+                {
+                    "slot_number": 1,
+                    "start_time": "17:00:00",
+                    "end_time": "17:22:00",
+                    "max_orders": 5
+                },
+                {
+                    "slot_number": 2,
+                    "start_time": "17:32:00",
+                    "end_time": "17:54:00",
+                    "max_orders": 5
+                },
+                {
+                    "slot_number": 3,
+                    "start_time": "18:04:00",
+                    "end_time": "18:26:00",
+                    "max_orders": 5
+                },
+                {
+                    "slot_number": 4,
+                    "start_time": "18:36:00",
+                    "end_time": "18:58:00",
+                    "max_orders": 5
+                }
+            ],
+            "created_at": "2025-06-25T13:15:58.759753Z",
+            "updated_at": "2025-06-25T13:15:58.759753Z"
+        },
+        {
+            "id": "bc38ae81-7aac-4a08-9505-95d35698090c",
+            "food_listing": "9d81c854-0fb8-4066-88a7-dfb8cd5c8c3d",
+            "food_listing_name": "Juicy Burger",
+            "location": "53346cb7-c483-468b-838f-170a79e3860a",
+            "location_name": "Updated Main Counter",
+            "business_name": "Saber's Snacks",
             "pickup_window": "17:00-19:00",
             "total_slots": 4,
             "max_orders_per_slot": 5,
             "slot_buffer_minutes": 5,
-            "slot_duration_minutes": 25,
             "is_active": true,
-            "created_at": "2025-06-25T10:00:00Z"
+            "start_time": "17:00:00",
+            "end_time": "19:00:00",
+            "window_duration_minutes": 120,
+            "slot_duration_minutes": 26,
+            "generated_slots": [
+                {
+                    "slot_number": 1,
+                    "start_time": "17:00:00",
+                    "end_time": "17:26:00",
+                    "max_orders": 5
+                },
+                {
+                    "slot_number": 2,
+                    "start_time": "17:31:00",
+                    "end_time": "17:57:00",
+                    "max_orders": 5
+                },
+                {
+                    "slot_number": 3,
+                    "start_time": "18:02:00",
+                    "end_time": "18:28:00",
+                    "max_orders": 5
+                },
+                {
+                    "slot_number": 4,
+                    "start_time": "18:33:00",
+                    "end_time": "18:59:00",
+                    "max_orders": 5
+                }
+            ],
+            "created_at": "2025-06-25T10:11:13.435786Z",
+            "updated_at": "2025-06-25T10:11:13.435786Z"
+        },
+        {
+            "id": "adf29483-fa1c-41ae-a19d-a04bfa937a15",
+            "food_listing": "1fd369a3-f8b6-4ab6-8dcf-cf13d7af21d0",
+            "food_listing_name": "Fresh Sandwiches",
+            "location": "53346cb7-c483-468b-838f-170a79e3860a",
+            "location_name": "Updated Main Counter",
+            "business_name": "Saber's Snacks",
+            "pickup_window": "17:00-19:00",
+            "total_slots": 3,
+            "max_orders_per_slot": 5,
+            "slot_buffer_minutes": 10,
+            "is_active": true,
+            "start_time": "17:00:00",
+            "end_time": "19:00:00",
+            "window_duration_minutes": 120,
+            "slot_duration_minutes": 33,
+            "generated_slots": [
+                {
+                    "slot_number": 1,
+                    "start_time": "17:00:00",
+                    "end_time": "17:33:00",
+                    "max_orders": 5
+                },
+                {
+                    "slot_number": 2,
+                    "start_time": "17:43:00",
+                    "end_time": "18:16:00",
+                    "max_orders": 5
+                },
+                {
+                    "slot_number": 3,
+                    "start_time": "18:26:00",
+                    "end_time": "18:59:00",
+                    "max_orders": 5
+                }
+            ],
+            "created_at": "2025-06-25T09:13:24.713256Z",
+            "updated_at": "2025-06-25T09:13:24.713256Z"
+        },
+        {
+            "id": "83d0527b-7689-471a-97a3-3817bb21337a",
+            "food_listing": "c61f459a-789c-4aa9-8246-4e7d6e5ab5cf",
+            "food_listing_name": "Yummy Pizza",
+            "location": "53346cb7-c483-468b-838f-170a79e3860a",
+            "location_name": "Updated Main Counter",
+            "business_name": "Saber's Snacks",
+            "pickup_window": "17:00-19:00",
+            "total_slots": 4,
+            "max_orders_per_slot": 5,
+            "slot_buffer_minutes": 5,
+            "is_active": true,
+            "start_time": "17:00:00",
+            "end_time": "19:00:00",
+            "window_duration_minutes": 120,
+            "slot_duration_minutes": 26,
+            "generated_slots": [
+                {
+                    "slot_number": 1,
+                    "start_time": "17:00:00",
+                    "end_time": "17:26:00",
+                    "max_orders": 5
+                },
+                {
+                    "slot_number": 2,
+                    "start_time": "17:31:00",
+                    "end_time": "17:57:00",
+                    "max_orders": 5
+                },
+                {
+                    "slot_number": 3,
+                    "start_time": "18:02:00",
+                    "end_time": "18:28:00",
+                    "max_orders": 5
+                },
+                {
+                    "slot_number": 4,
+                    "start_time": "18:33:00",
+                    "end_time": "18:59:00",
+                    "max_orders": 5
+                }
+            ],
+            "created_at": "2025-06-25T09:09:17.469695Z",
+            "updated_at": "2025-06-25T09:09:17.469695Z"
         }
-    ]
+    ],
+    "count": 4
 }
 ```
 
@@ -208,32 +402,74 @@ Content-Type: application/json
 **Response (201 Created):**
 ```json
 {
-    "message": "Time slots generated successfully",
-    "food_listing_id": "uuid",
-    "date": "2025-06-26",
-    "slots_created": 4,
-    "slots": [
+    "message": "Generated 4 time slots",
+    "time_slots": [
         {
-            "id": "uuid",
+            "id": "113fe73e-0b94-4546-96c7-5ac5d53c2f9b",
+            "pickup_schedule": "62086e8d-180d-45ca-ad47-7be710f773ee",
             "slot_number": 1,
-            "start_time": "17:00",
-            "end_time": "17:25",
+            "start_time": "17:00:00",
+            "end_time": "17:22:00",
             "max_orders_per_slot": 5,
+            "date": "2025-07-11",
             "current_bookings": 0,
+            "is_active": true,
+            "food_listing_name": "Delicious Cake",
+            "location_name": "Updated Main Counter",
+            "is_available": true,
             "available_spots": 5,
-            "is_available": true
+            "created_at": "2025-07-04T15:13:04.218115Z"
         },
         {
-            "id": "uuid",
+            "id": "fd49539d-a0ab-40d6-96aa-e80af1d03414",
+            "pickup_schedule": "62086e8d-180d-45ca-ad47-7be710f773ee",
             "slot_number": 2,
-            "start_time": "17:30",
-            "end_time": "17:55",
+            "start_time": "17:32:00",
+            "end_time": "17:54:00",
             "max_orders_per_slot": 5,
-            "current_bookings": 2,
-            "available_spots": 3,
-            "is_available": true
+            "date": "2025-07-11",
+            "current_bookings": 0,
+            "is_active": true,
+            "food_listing_name": "Delicious Cake",
+            "location_name": "Updated Main Counter",
+            "is_available": true,
+            "available_spots": 5,
+            "created_at": "2025-07-04T15:13:04.222300Z"
+        },
+        {
+            "id": "7a6bd390-abf8-42f8-9c29-a3fed8982bf3",
+            "pickup_schedule": "62086e8d-180d-45ca-ad47-7be710f773ee",
+            "slot_number": 3,
+            "start_time": "18:04:00",
+            "end_time": "18:26:00",
+            "max_orders_per_slot": 5,
+            "date": "2025-07-11",
+            "current_bookings": 0,
+            "is_active": true,
+            "food_listing_name": "Delicious Cake",
+            "location_name": "Updated Main Counter",
+            "is_available": true,
+            "available_spots": 5,
+            "created_at": "2025-07-04T15:13:04.223309Z"
+        },
+        {
+            "id": "e16cec08-c2a7-4403-9141-c84c64b3e446",
+            "pickup_schedule": "62086e8d-180d-45ca-ad47-7be710f773ee",
+            "slot_number": 4,
+            "start_time": "18:36:00",
+            "end_time": "18:58:00",
+            "max_orders_per_slot": 5,
+            "date": "2025-07-11",
+            "current_bookings": 0,
+            "is_active": true,
+            "food_listing_name": "Delicious Cake",
+            "location_name": "Updated Main Counter",
+            "is_available": true,
+            "available_spots": 5,
+            "created_at": "2025-07-04T15:13:04.224035Z"
         }
-    ]
+    ],
+    "count": 4
 }
 ```
 
@@ -356,7 +592,7 @@ Content-Type: application/json
 
 #### 3.3.1 Get Available Slots
 ```http
-GET /api/scheduling/available-slots/
+GET /api/scheduling/available-slots/?food_listing_id="uuid"
 Query Parameters:
 - food_listing_id: uuid
 - date: 2025-06-26 (optional, defaults to today)
@@ -366,38 +602,103 @@ Query Parameters:
 **Response (200 OK):**
 ```json
 {
-    "food_listing": {
-        "id": "uuid",
-        "name": "Margherita Pizza",
-        "business": {
-            "name": "Mario's Restaurant",
-            "address": "123 Main Street, Pretoria"
-        }
-    },
-    "date": "2025-06-26",
     "available_slots": [
         {
-            "id": "uuid",
-            "start_time": "17:00",
-            "end_time": "17:25",
-            "available_spots": 3,
-            "total_capacity": 5,
-            "location": {
-                "id": "uuid",
-                "name": "Main Counter",
-                "address": "123 Main Street, Pretoria",
-                "instructions": "Enter through main entrance",
-                "contact_person": "John Doe",
-                "contact_phone": "+27123456789",
-                "latitude": "-25.7479",
-                "longitude": "28.2293"
+            "id": "36f9123a-0aa7-490d-ae76-bdf32a2395bb",
+            "slot_number": 1,
+            "start_time": "17:00:00",
+            "end_time": "17:22:00",
+            "date": "2025-07-04",
+            "available_spots": 5,
+            "food_listing": {
+                "id": "2cae9cf3-e4e6-4164-82ab-5dcafb65d58f",
+                "name": "Delicious Cake",
+                "description": "Delicious cake with chocolate",
+                "pickup_window": "17:00-19:00"
             },
-            "estimated_wait_time": "5 minutes",
-            "popularity_score": 0.8
+            "location": {
+                "id": "53346cb7-c483-468b-838f-170a79e3860a",
+                "name": "Updated Main Counter",
+                "address": "123 Main Street, City Center",
+                "instructions": "Enter through the main entrance and go to the counter",
+                "contact_person": "Chisom Emekpo",
+                "contact_phone": "+1234567899"
+            }
+        },
+        {
+            "id": "cd3c1ddd-d2cc-40e2-bfe6-7487ebdd4ccf",
+            "slot_number": 2,
+            "start_time": "17:32:00",
+            "end_time": "17:54:00",
+            "date": "2025-07-04",
+            "available_spots": 5,
+            "food_listing": {
+                "id": "2cae9cf3-e4e6-4164-82ab-5dcafb65d58f",
+                "name": "Delicious Cake",
+                "description": "Delicious cake with chocolate",
+                "pickup_window": "17:00-19:00"
+            },
+            "location": {
+                "id": "53346cb7-c483-468b-838f-170a79e3860a",
+                "name": "Updated Main Counter",
+                "address": "123 Main Street, City Center",
+                "instructions": "Enter through the main entrance and go to the counter",
+                "contact_person": "Chisom Emekpo",
+                "contact_phone": "+1234567899"
+            }
+        },
+        {
+            "id": "9cafa950-be18-45ec-95b0-80edb044b429",
+            "slot_number": 3,
+            "start_time": "18:04:00",
+            "end_time": "18:26:00",
+            "date": "2025-07-04",
+            "available_spots": 5,
+            "food_listing": {
+                "id": "2cae9cf3-e4e6-4164-82ab-5dcafb65d58f",
+                "name": "Delicious Cake",
+                "description": "Delicious cake with chocolate",
+                "pickup_window": "17:00-19:00"
+            },
+            "location": {
+                "id": "53346cb7-c483-468b-838f-170a79e3860a",
+                "name": "Updated Main Counter",
+                "address": "123 Main Street, City Center",
+                "instructions": "Enter through the main entrance and go to the counter",
+                "contact_person": "Chisom Emekpo",
+                "contact_phone": "+1234567899"
+            }
+        },
+        {
+            "id": "cfbd5343-68d8-4329-a63c-a0e22ee7b503",
+            "slot_number": 4,
+            "start_time": "18:36:00",
+            "end_time": "18:58:00",
+            "date": "2025-07-04",
+            "available_spots": 5,
+            "food_listing": {
+                "id": "2cae9cf3-e4e6-4164-82ab-5dcafb65d58f",
+                "name": "Delicious Cake",
+                "description": "Delicious cake with chocolate",
+                "pickup_window": "17:00-19:00"
+            },
+            "location": {
+                "id": "53346cb7-c483-468b-838f-170a79e3860a",
+                "name": "Updated Main Counter",
+                "address": "123 Main Street, City Center",
+                "instructions": "Enter through the main entrance and go to the counter",
+                "contact_person": "Chisom Emekpo",
+                "contact_phone": "+1234567899"
+            }
         }
     ],
-    "total_available_slots": 3,
-    "next_available_date": "2025-06-27"
+    "count": 4,
+    "date": "2025-07-04",
+    "food_listing": {
+        "id": "2cae9cf3-e4e6-4164-82ab-5dcafb65d58f",
+        "name": "Delicious Cake",
+        "pickup_window": "17:00-19:00"
+    }
 }
 ```
 
