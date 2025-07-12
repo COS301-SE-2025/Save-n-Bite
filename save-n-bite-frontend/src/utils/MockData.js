@@ -179,7 +179,7 @@ export const pickupsData = [
     confirmationCode: 'PICK9012',
     qrCodeData: 'ORD-2023-003-PICK9012',
     pickupStatus: 'On Time',
-    contactPhone: '555-345-6789',
+    contactPhone: '071 234 5678',
     contactEmail: 'sarah.w@example.com'
   },
   {
@@ -195,7 +195,7 @@ export const pickupsData = [
     confirmationCode: 'PICK3456',
     qrCodeData: 'ORD-2023-004-PICK3456',
     pickupStatus: 'Late Pickup',
-    contactPhone: '555-456-7890',
+    contactPhone: '071 234 5678',
     contactEmail: 'david.m@example.com'
   },
   {
@@ -211,7 +211,7 @@ export const pickupsData = [
     confirmationCode: 'PICK7890',
     qrCodeData: 'ORD-2023-005-PICK7890',
     pickupStatus: 'No Show',
-    contactPhone: '555-567-8901',
+    contactPhone: '071 234 5678',
     contactEmail: 'jennifer.a@example.com'
   }
 ];
@@ -223,7 +223,7 @@ export const donationRequestsData = [
     itemName: "Fresh Bread Assortment",
     ngoName: "Community Food Bank",
     ngoLogo: "https://images.unsplash.com/photo-1589829545856-d10d557cf95f?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80",
-    ngoContact: "contact@communityfoodbank.org | 555-123-4567",
+    ngoContact: "contact@communityfoodbank.org | 071 234 5678",
     ngoDescription: "Local food bank serving underprivileged families in the community.",
     requestDate: "2023-10-15",
     status: "Pending",
@@ -243,7 +243,7 @@ export const donationRequestsData = [
     itemName: "Organic Vegetables Bundle",
     ngoName: "Green Earth Initiative",
     ngoLogo: "https://images.unsplash.com/photo-1589829545856-d10d557cf95f?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80",
-    ngoContact: "info@greenearthinitiative.org | 555-987-6543",
+    ngoContact: "info@greenearthinitiative.org | 071 234 5678",
     ngoDescription: "Environmental NGO focused on sustainable food practices and community gardens.",
     requestDate: "2023-10-14",
     status: "Ready for Pickup",
@@ -264,7 +264,7 @@ export const donationRequestsData = [
     itemName: "Pastry Box",
     ngoName: "Helping Hands Shelter",
     ngoLogo: "https://images.unsplash.com/photo-1589829545856-d10d557cf95f?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80",
-    ngoContact: "coordinator@helpinghands.org | 555-456-7890",
+    ngoContact: "coordinator@helpinghands.org | 071 234 5678",
     ngoDescription: "Shelter providing temporary housing and meals for homeless individuals.",
     requestDate: "2023-10-13",
     status: "Pending",
@@ -284,7 +284,7 @@ export const donationRequestsData = [
     itemName: "Fruit Basket",
     ngoName: "Children's Hope Foundation",
     ngoLogo: "https://images.unsplash.com/photo-1589829545856-d10d557cf95f?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80",
-    ngoContact: "programs@childrenshope.org | 555-789-0123",
+    ngoContact: "programs@childrenshope.org | 071 234 5678",
     ngoDescription: "Foundation supporting underprivileged children with education and nutrition programs.",
     requestDate: "2023-10-16",
     status: "Ready for Pickup",
@@ -306,7 +306,7 @@ export const donationRequestsData = [
     itemName: "Dairy Products Bundle",
     ngoName: "Senior Care Network",
     ngoLogo: "https://images.unsplash.com/photo-1589829545856-d10d557cf95f?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80",
-    ngoContact: "outreach@seniorcare.org | 555-234-5678",
+    ngoContact: "outreach@seniorcare.org | 071 234 5678",
     ngoDescription: "Organization providing support services for elderly individuals in the community.",
     requestDate: "2023-10-12",
     status: "Completed",
@@ -328,7 +328,7 @@ export const donationRequestsData = [
     itemName: "Sandwich Ingredients",
     ngoName: "Youth Outreach Program",
     ngoLogo: "https://images.unsplash.com/photo-1589829545856-d10d557cf95f?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80",
-    ngoContact: "director@youthoutreach.org | 555-345-6789",
+    ngoContact: "director@youthoutreach.org | 071 234 5678",
     ngoDescription: "Program providing meals and support services for at-risk youth.",
     requestDate: "2023-10-11",
     status: "Completed",
