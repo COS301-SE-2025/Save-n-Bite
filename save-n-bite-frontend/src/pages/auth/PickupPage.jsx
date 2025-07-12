@@ -1,6 +1,6 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import CustomerNavBar from '../../components/auth/CustomerNavBar'
-
+import { useLocation, useNavigate } from 'react-router-dom'
 
 import {
   QrCodeIcon,
@@ -11,21 +11,6 @@ import {
 } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import StarRating from "../../components/CustomerFeedback/StarRating";
-
-// Mock pickup data
-const pickups = [
-  {
-    id: 1,
-    orderNumber: 'SNB1234',
-    items: ['Assorted Pastries Box'],
-    provider: 'Sweet Bakery',
-    address: '123 Main St, Eco City',
-    pickupTime: 'Today, 5 PM - 8 PM',
-    qrCode:
-      'https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=SNB1234',
-    status: 'Ready for pickup',
-  },
-]
 
 // Simple feedback modal for pickup page only
 const SimplePickupFeedback = ({ orderNumber, providerName, onClose }) => {
@@ -136,97 +121,115 @@ const SimplePickupFeedback = ({ orderNumber, providerName, onClose }) => {
 }
 
 const PickupPage = () => {
+  const location = useLocation();
+  const navigate = useNavigate();
+  const {
+    itemName,
+    itemDescription,
+    providerName,
+    providerAddress,
+    pickupTime,
+    orderNumber,
+    confirmationCode
+  } = location.state || {};
   const [showFeedback, setShowFeedback] = useState(false);
-  const [pickedUp, setPickedUp] = useState(false);
-  
-  const handleMarkAsPickedUp = () => {
-    setPickedUp(true); 
-    setTimeout(() => {
-      setShowFeedback(true); 
-    }, 300); 
-  };
+
+  if (!itemName || !providerName || !pickupTime || !orderNumber || !confirmationCode) {
+    return (
+      <div className="bg-gray-50 min-h-screen w-full">
+        <CustomerNavBar />
+        <div className="flex items-center justify-center min-h-[60vh]">
+          <div className="text-center">
+            <p className="text-gray-600">No pickup information found. Please return to your cart.</p>
+            <button
+              onClick={() => navigate('/cart')}
+              className="mt-4 px-4 py-2 bg-emerald-600 text-white rounded-md"
+            >
+              Back to Cart
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 w-full py-8">
-        <CustomerNavBar/>
+      <CustomerNavBar />
       <div className="max-w-4xl mx-auto px-4">
         <h1 className="text-2xl font-bold mb-8 text-gray-800">
           Pickup Instructions
         </h1>
-        {pickups.map((pickup) => (
-          <div
-            key={pickup.id}
-            className="bg-white rounded-lg shadow-sm overflow-hidden"
-          >
-            <div className="p-6 border-b border-gray-100">
-              <div className="flex justify-between items-start mb-4">
-                <div>
-                  <h2 className="text-lg font-semibold text-gray-800">
-                    Order #{pickup.orderNumber}
-                  </h2>
-                  <p className="text-gray-600">{pickup.items.join(', ')}</p>
-                </div>
-                <span className="bg-emerald-100 text-emerald-800 px-3 py-1 rounded-full text-sm">
-                  {pickup.status}
-                </span>
+        <div className="bg-white rounded-lg shadow-sm overflow-hidden">
+          <div className="p-6 border-b border-gray-100">
+            <div className="flex justify-between items-start mb-4">
+              <div>
+               <p className="text-sm text-emerald-700 mb-1">Order Number</p>
+                  <p className="text-xl font-bold text-emerald-800 tracking-wider">
+                    #{orderNumber}
+                  </p>
+                <p className="text-gray-600">{itemDescription}</p>
               </div>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="flex items-start">
-                  <MapPinIcon
-                    size={20}
-                    className="mr-2 text-emerald-600 mt-1"
-                  />
-                  <div>
-                    <p className="font-medium text-gray-800">
-                      {pickup.provider}
-                    </p>
-                    <p className="text-sm text-gray-600">{pickup.address}</p>
-                  </div>
-                </div>
-                <div className="flex items-start">
-                  <ClockIcon size={20} className="mr-2 text-emerald-600 mt-1" />
-                  <div>
-                    <p className="font-medium text-gray-800">Selected pickup time slot</p>
-                    <p className="text-sm text-gray-600">{pickup.pickupTime}</p>
-                  </div>
-                </div>
-                <div className="flex items-start">
-                  <QrCodeIcon
-                    size={20}
-                    className="mr-2 text-emerald-600 mt-1"
-                  />
-                  <div>
-                    <p className="font-medium text-gray-800">
-                      Show this confirmation code at pickup
-                    </p>
-                    {/* place the confirmation code here */}
-                    <p className="text-sm text-gray-600">
-                      Order confirmation code
-                    </p>
-                  </div>
-                </div>
-              </div>
+              <span className="bg-emerald-100 text-emerald-800 px-3 py-1 rounded-full text-sm">
+                Ready for pickup
+              </span>
             </div>
-            <div className="p-6 bg-gray-50 flex flex-col items-center">
-              <img
-                src={pickups[0].qrCode}
-                alt="QR Code"
-                className="w-32 h-32 mb-4"
-              />
-              <button
-                onClick={handleMarkAsPickedUp}
-                className={`px-4 py-2 rounded-md transition-colors ${
-                  pickedUp
-                    ? 'bg-gray-300 text-gray-700 cursor-not-allowed'
-                    : 'bg-emerald-600 text-white hover:bg-emerald-700'
-                }`}
-                disabled={pickedUp}
-              >
-                {pickedUp ? 'Marked as Picked Up' : 'Mark as Picked Up'}
-              </button>
+            
+    
+            
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="flex items-start">
+                <MapPinIcon
+                  size={20}
+                  className="mr-2 text-emerald-600 mt-1"
+                />
+                <div>
+                  <p className="font-medium text-gray-800">
+                    {providerName}
+                  </p>
+                  <p className="text-sm text-gray-600">{providerAddress}</p>
+                </div>
+              </div>
+              <div className="flex items-start">
+                <ClockIcon size={20} className="mr-2 text-emerald-600 mt-1" />
+                <div>
+                  <p className="font-medium text-gray-800">Selected pickup time slot</p>
+                  <p className="text-sm text-gray-600">{pickupTime}</p>
+                </div>
+              </div>
+              <div className="flex items-start">
+                <QrCodeIcon
+                  size={20}
+                  className="mr-2 text-emerald-600 mt-1"
+                />
+                <div>
+                  <p className="font-medium text-gray-800">
+                    Show this confirmation code at pickup
+                  </p>
+                  <p className="text-sm text-gray-600">
+                    {confirmationCode}
+                  </p>
+                </div>
+              </div>
             </div>
           </div>
-        ))}
+          <div className="p-6 bg-gray-50 flex flex-col items-center">
+            <img
+              src={`https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${orderNumber}`}
+              alt="QR Code"
+              className="w-32 h-32 mb-4"
+            />
+            <div className="text-center">
+              <p className="text-sm text-gray-600 mb-2">Confirmation Code</p>
+              <p className="text-2xl font-bold text-emerald-600 tracking-wider">
+                {confirmationCode}
+              </p>
+              <p className="text-xs text-gray-500 mt-2">
+                Show this code to the provider when picking up your order
+              </p>
+            </div>
+          </div>
+        </div>
         <div className="mt-8 p-4 bg-blue-50 rounded-lg">
           <h3 className="font-medium text-blue-800 mb-2">Reminder</h3>
           <p className="text-blue-600 text-sm">
@@ -237,15 +240,15 @@ const PickupPage = () => {
       </div>
       {showFeedback && (
         <SimplePickupFeedback
-          orderNumber={pickups[0].orderNumber}
-          providerName={pickups[0].provider}
+          orderNumber={orderNumber}
+          providerName={providerName}
           onClose={() => {
             setShowFeedback(false);
           }}
         />
       )}
     </div>
-  )
+  );
 }
 
 export default PickupPage

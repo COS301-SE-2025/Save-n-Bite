@@ -187,7 +187,7 @@ POST /api/notifications/mark-all-read/
 
 #### 3.2.5 Delete Notification
 ```http
-DELETE /api/notifications/{notification_id}/
+DELETE /api/notifications/{notification_id}/delete/
 ```
 
 **Response (200 OK):**
@@ -211,11 +211,7 @@ GET /api/notifications/preferences/
         "email_notifications": true,
         "new_listing_notifications": true,
         "promotional_notifications": false,
-        "weekly_digest": true,
-        "push_notifications": true,
-        "pickup_reminders": true,
-        "business_updates": true,
-        "system_announcements": true
+        "weekly_digest": true
     }
 }
 ```
@@ -227,14 +223,11 @@ Content-Type: application/json
 
 {
     "email_notifications": true,
-    "new_listing_notifications": false,
-    "promotional_notifications": true,
-    "weekly_digest": false,
-    "push_notifications": true,
-    "pickup_reminders": true,
-    "business_updates": false,
-    "system_announcements": true
+    "new_listing_notifications": true,
+    "promotional_notifications": false,
+    "weekly_digest": false
 }
+
 ```
 
 **Response (200 OK):**
@@ -243,13 +236,9 @@ Content-Type: application/json
     "message": "Notification preferences updated successfully",
     "preferences": {
         "email_notifications": true,
-        "new_listing_notifications": false,
-        "promotional_notifications": true,
-        "weekly_digest": false,
-        "push_notifications": true,
-        "pickup_reminders": true,
-        "business_updates": false,
-        "system_announcements": true
+        "new_listing_notifications": true,
+        "promotional_notifications": false,
+        "weekly_digest": false
     }
 }
 ```
@@ -258,7 +247,7 @@ Content-Type: application/json
 
 #### 3.4.1 Follow Business
 ```http
-POST /api/notifications/follow/
+POST /api/follow/
 Content-Type: application/json
 
 {
@@ -282,7 +271,7 @@ Content-Type: application/json
 
 #### 3.4.2 Unfollow Business
 ```http
-DELETE /api/notifications/follow/{business_id}/
+DELETE /api/unfollow/{business_id}/
 ```
 
 **Response (200 OK):**
@@ -294,7 +283,7 @@ DELETE /api/notifications/follow/{business_id}/
 
 #### 3.4.3 Get Following List
 ```http
-GET /api/notifications/following/
+GET /api/following/
 Query Parameters:
 - page: 1
 - page_size: 20
@@ -324,7 +313,7 @@ Query Parameters:
 
 #### 3.4.4 Get Business Followers (Business Only)
 ```http
-GET /api/notifications/followers/
+GET /api/followers/
 Query Parameters:
 - page: 1
 - page_size: 50
@@ -346,138 +335,6 @@ Query Parameters:
             },
             "followed_at": "2025-06-15T10:30:00Z",
             "engagement_score": 8.5
-        }
-    ]
-}
-```
-
-### 3.5 Push Notification Endpoints
-
-#### 3.5.1 Register Device
-```http
-POST /api/notifications/device/register/
-Content-Type: application/json
-
-{
-    "device_token": "fcm_token_string",
-    "device_type": "ios|android|web",
-    "device_info": {
-        "model": "iPhone 14",
-        "os_version": "16.4",
-        "app_version": "1.2.0"
-    }
-}
-```
-
-**Response (201 Created):**
-```json
-{
-    "message": "Device registered successfully",
-    "device_id": "uuid"
-}
-```
-
-#### 3.5.2 Update Device Token
-```http
-PUT /api/notifications/device/{device_id}/
-Content-Type: application/json
-
-{
-    "device_token": "new_fcm_token_string"
-}
-```
-
-### 3.6 Admin Notification Endpoints
-
-#### 3.6.1 Send Bulk Notification
-```http
-POST /api/admin/notifications/broadcast/
-Content-Type: application/json
-
-{
-    "title": "System Maintenance Notice",
-    "message": "Scheduled maintenance on June 30th from 2-4 AM",
-    "notification_type": "system_announcement",
-    "target_audience": {
-        "user_types": ["customer", "provider", "ngo"],
-        "regions": ["gauteng", "western_cape"],
-        "business_followers": ["uuid1", "uuid2"]
-    },
-    "channels": ["in_app", "email", "push"],
-    "scheduled_at": "2025-06-29T18:00:00Z",
-    "template_id": "system_announcement_template"
-}
-```
-
-**Response (201 Created):**
-```json
-{
-    "campaign_id": "uuid",
-    "message": "Bulk notification campaign created",
-    "estimated_recipients": 1250,
-    "scheduled_at": "2025-06-29T18:00:00Z",
-    "status": "scheduled"
-}
-```
-
-#### 3.6.2 Get Notification Analytics
-```http
-GET /api/admin/notifications/analytics/
-Query Parameters:
-- date_from: 2025-06-01
-- date_to: 2025-06-30
-- notification_type: all|new_listing|system_announcement
-- channel: all|in_app|email|push
-```
-
-**Response (200 OK):**
-```json
-{
-    "period": {
-        "from": "2025-06-01",
-        "to": "2025-06-30"
-    },
-    "summary": {
-        "total_sent": 15420,
-        "total_delivered": 14890,
-        "total_read": 12340,
-        "delivery_rate": 96.6,
-        "read_rate": 82.9
-    },
-    "by_channel": {
-        "in_app": {
-            "sent": 15420,
-            "delivered": 15420,
-            "read": 12340,
-            "read_rate": 80.0
-        },
-        "email": {
-            "sent": 8950,
-            "delivered": 8650,
-            "opened": 5420,
-            "clicked": 1230,
-            "delivery_rate": 96.6,
-            "open_rate": 62.7,
-            "click_rate": 22.7
-        },
-        "push": {
-            "sent": 12340,
-            "delivered": 11890,
-            "opened": 3450,
-            "delivery_rate": 96.4,
-            "open_rate": 29.0
-        }
-    },
-    "by_type": [
-        {
-            "type": "new_listing",
-            "count": 8950,
-            "read_rate": 85.2
-        },
-        {
-            "type": "pickup_reminder",
-            "count": 3420,
-            "read_rate": 92.1
         }
     ]
 }
