@@ -127,3 +127,15 @@ class InteractionSerializer(serializers.ModelSerializer):
         fields = ['id', 'interaction_type', 'status', 'quantity', 'total_amount',
                  'created_at', 'completed_at', 'verification_code',
                  'special_instructions', 'items', 'payment', 'order']
+
+class DonationRequestSerializer(serializers.Serializer):
+    listingId = serializers.UUIDField()
+    quantity = serializers.IntegerField(min_value=1)
+    specialInstructions = serializers.CharField(allow_blank=True, required=False)
+    motivationMessage = serializers.CharField()
+    verificationDocuments = serializers.ListField(
+        child=serializers.URLField(), allow_empty=False
+    )
+
+class DonationDecisionSerializer(serializers.Serializer):
+    rejectionReason = serializers.CharField(allow_blank=True, required=False)
