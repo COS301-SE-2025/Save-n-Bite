@@ -1,129 +1,122 @@
 import React, { useState } from 'react'
-import { Search as SearchIcon, Calendar as CalendarIcon } from 'lucide-react'
-import { DonationTabs } from '../Donations/DonationTabs'
-import { Button } from '../Button'
-import { donationRequestsData } from '../../../utils/MockData'
+import { PendingDonationsTable } from './PendingDonationsTable'
+import { ActiveDonationsTable } from './ActiveDonationsTable'
+import { CompletedDonationsTable } from './CompletedDonationsTable'
+import { ViewDonationRequestModal } from './ViewDonationRequestModal'
 
-function ManageDonations() {
-  const [searchQuery, setSearchQuery] = useState('')
-  const [filterNGO, setFilterNGO] = useState('all')
-  const [filterStatus, setFilterStatus] = useState('all')
-  
-  const filteredDonations = donationRequestsData.filter((donation) => {
-    const matchesNGO =
-      filterNGO === 'all' ||
-      donation.ngoName.toLowerCase() === filterNGO.toLowerCase()
-    const matchesStatus =
-      filterStatus === 'all' ||
-      donation.status.toLowerCase() === filterStatus.toLowerCase()
-    const matchesSearch =
-      donation.itemName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      donation.ngoName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      donation.requestId.toLowerCase().includes(searchQuery.toLowerCase())
-    return matchesNGO && matchesStatus && matchesSearch
-  })
- 
-  const ngoOptions = Array.from(
-    new Set(donationRequestsData.map((donation) => donation.ngoName)),
+export function DonationTabs({ donations }) {
+  const [activeTab, setActiveTab] = useState('pending')
+  const [activeSubTab, setActiveSubTab] = useState('active')
+  const [selectedDonation, setSelectedDonation] = useState(null)
+
+  const pendingDonations = donations.filter(
+    (donation) => donation.status === 'Pending',
   )
+  const activeDonations = donations.filter(
+    (donation) => donation.status === 'Ready for Pickup',
+  )
+  const completedDonations = donations.filter(
+    (donation) => donation.status === 'Completed',
+  )
+
+  const handleViewRequest = (donation) => {
+    setSelectedDonation(donation)
+  }
+
+  const handleCloseModal = () => {
+    setSelectedDonation(null)
+  }
+
+  const handleAcceptRequest = (donationId) => {
+    console.log('Accepting donation request:', donationId)
+    handleCloseModal()
+    alert('Donation request accepted successfully!')
+  }
+
+  const handleRejectRequest = (donationId, reason) => {
+    console.log('Rejecting donation request:', donationId, 'Reason:', reason)
+    handleCloseModal()
+    alert('Donation request rejected successfully!')
+  }
+
   return (
-    <div className="w-full">
-      <div className="flex justify-between items-center mb-6">
+    <div className="bg-white rounded-lg shadow-md overflow-hidden">
+      <div className="flex border-b">
+        <button
+          className={`px-6 py-4 text-sm font-medium ${
+            activeTab === 'pending'
+              ? 'text-blue-600 border-b-2 border-blue-600'
+              : 'text-gray-500 hover:text-gray-700'
+          }`}
+          onClick={() => setActiveTab('pending')}
+        >
+          Pending Donation Requests
+          {pendingDonations.length > 0 && (
+            <span className="ml-2 px-2 py-0.5 text-xs bg-yellow-100 text-yellow-800 rounded-full">
+              {pendingDonations.length}
+            </span>
+          )}
+        </button>
+        <button
+          className={`px-6 py-4 text-sm font-medium ${
+            activeTab === 'active-completed'
+              ? 'text-blue-600 border-b-2 border-blue-600'
+              : 'text-gray-500 hover:text-gray-700'
+          }`}
+          onClick={() => setActiveTab('active-completed')}
+        >
+          Active & Completed Donations
+        </button>
+      </div>
+      {activeTab === 'pending' ? (
+        <PendingDonationsTable
+          donations={pendingDonations}
+          onViewRequest={handleViewRequest}
+        />
+      ) : (
         <div>
-          <h1 className="text-2xl font-bold">Manage Donations</h1>
-          <p className="text-gray-600 mt-1">
-            Review, approve and track donations to nonprofit organizations
-          </p>
+          <div className="flex px-6 pt-4 border-b">
+            <button
+              className={`px-4 py-2 text-sm font-medium ${
+                activeSubTab === 'active'
+                  ? 'text-blue-600 border-b-2 border-blue-600'
+                  : 'text-gray-500 hover:text-gray-700'
+              }`}
+              onClick={() => setActiveSubTab('active')}
+            >
+              Active Donations
+              {activeDonations.length > 0 && (
+                <span className="ml-2 px-2 py-0.5 text-xs bg-green-100 text-green-800 rounded-full">
+                  {activeDonations.length}
+                </span>
+              )}
+            </button>
+            <button
+              className={`px-4 py-2 text-sm font-medium ${
+                activeSubTab === 'completed'
+                  ? 'text-blue-600 border-b-2 border-blue-600'
+                  : 'text-gray-500 hover:text-gray-700'
+              }`}
+              onClick={() => setActiveSubTab('completed')}
+            >
+              Completed Donations
+            </button>
+          </div>
+          {activeSubTab === 'active' ? (
+            <ActiveDonationsTable donations={activeDonations} />
+          ) : (
+            <CompletedDonationsTable donations={completedDonations} />
+          )}
         </div>
-      </div>
-      {/* Donation Statistics Bar */}
-      <div className="bg-white rounded-lg shadow-md p-4 mb-6">
-        <div className="grid grid-cols-4 gap-6">
-          <div className="text-center">
-            <div className="text-2xl font-bold text-gray-900">
-              {
-                donationRequestsData.filter(
-                  (donation) => donation.status === 'Pending',
-                ).length
-              }
-            </div>
-            <p className="text-sm text-gray-500">Pending Requests</p>
-          </div>
-          <div className="text-center">
-            <div className="text-2xl font-bold text-gray-900">
-              {
-                donationRequestsData.filter(
-                  (donation) => donation.status === 'Ready for Pickup',
-                ).length
-              }
-            </div>
-            <p className="text-sm text-gray-500">Ready for Pickup</p>
-          </div>
-          <div className="text-center">
-            <div className="text-2xl font-bold text-gray-900">
-              {
-                donationRequestsData.filter(
-                  (donation) => donation.status === 'Completed',
-                ).length
-              }
-            </div>
-            <p className="text-sm text-gray-500">Completed Donations</p>
-          </div>
-          <div className="text-center">
-            <div className="text-2xl font-bold text-green-600">
-              {donationRequestsData.filter(
-                (donation) => donation.status === 'Completed',
-              ).length * 4}{' '}
-              kg
-            </div>
-            <p className="text-sm text-gray-500">Food Waste Saved</p>
-          </div>
-        </div>
-      </div>
-      <div className="mb-6">
-        <div className="flex items-center gap-4 mb-4">
-          <div className="relative flex-1">
-            <SearchIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
-            <input
-              type="text"
-              placeholder="Search by request ID, item or NGO..."
-              className="pl-10 pr-4 py-2 border border-gray-300 rounded-md w-full"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-            />
-          </div>
-          <select
-            className="px-4 py-2 border border-gray-300 rounded-md bg-white"
-            value={filterNGO}
-            onChange={(e) => setFilterNGO(e.target.value)}
-          >
-            <option value="all">All NGOs</option>
-            {ngoOptions.map((ngo) => (
-              <option key={ngo} value={ngo}>
-                {ngo}
-              </option>
-            ))}
-          </select>
-          <select
-            className="px-4 py-2 border border-gray-300 rounded-md bg-white"
-            value={filterStatus}
-            onChange={(e) => setFilterStatus(e.target.value)}
-          >
-            <option value="all">All Statuses</option>
-            <option value="pending">Pending</option>
-            <option value="ready for pickup">Ready for Pickup</option>
-            <option value="completed">Completed</option>
-          </select>
-          <Button
-            variant="secondary"
-            icon={<CalendarIcon className="h-4 w-4" />}
-          >
-            Date Range
-          </Button>
-        </div>
-      </div>
-      <DonationTabs donations={filteredDonations} />
+      )}
+      {selectedDonation && (
+        <ViewDonationRequestModal
+          donation={selectedDonation}
+          onClose={handleCloseModal}
+          onAccept={handleAcceptRequest}
+          onReject={handleRejectRequest}
+        />
+      )}
     </div>
   )
 }
-export default ManageDonations

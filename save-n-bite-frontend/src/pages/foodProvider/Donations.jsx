@@ -1,8 +1,10 @@
 import React, { useState } from 'react'
 import { Search as SearchIcon, Calendar as CalendarIcon } from 'lucide-react'
-import { DonationTabs } from '../Donations/DonationTabs'
-import { Button } from '../Button'
-import { donationRequestsData } from '../../../utils/MockData'
+import { DonationTabs } from '../../components/foodProvider/Donations/DonationTabs'
+import { Button } from '../../components/foodProvider/Button'
+import { donationRequestsData } from '../../utils/MockData'
+import SideBar from '../../components/foodProvider/SideBar';
+
 function ManageDonations() {
   const [searchQuery, setSearchQuery] = useState('')
   const [filterNGO, setFilterNGO] = useState('all')
@@ -21,12 +23,16 @@ function ManageDonations() {
       donation.requestId.toLowerCase().includes(searchQuery.toLowerCase())
     return matchesNGO && matchesStatus && matchesSearch
   })
- 
-  const ngoOptions = Array.from(
-    new Set(donationRequestsData.map((donation) => donation.ngoName)),
-  )
+
+
+
   return (
-    <div className="w-full">
+   <div className="flex w-full min-h-screen">
+    {/* Sidebar on the left */}
+    <SideBar currentPage="ManageDonations" />
+
+    {/* Main content on the right */}
+    <div className="flex-1 p-6">
       <div className="flex justify-between items-center mb-6">
         <div>
           <h1 className="text-2xl font-bold">Manage Donations</h1>
@@ -35,14 +41,15 @@ function ManageDonations() {
           </p>
         </div>
       </div>
-      {/* Donation Statistics Bar */}
+
+      {/* Donation Statistics Bar -- Can change based on the stats we have available in the back*/}
       <div className="bg-white rounded-lg shadow-md p-4 mb-6">
         <div className="grid grid-cols-4 gap-6">
           <div className="text-center">
             <div className="text-2xl font-bold text-gray-900">
               {
                 donationRequestsData.filter(
-                  (donation) => donation.status === 'Pending',
+                  (donation) => donation.status === 'Pending'
                 ).length
               }
             </div>
@@ -52,7 +59,7 @@ function ManageDonations() {
             <div className="text-2xl font-bold text-gray-900">
               {
                 donationRequestsData.filter(
-                  (donation) => donation.status === 'Ready for Pickup',
+                  (donation) => donation.status === 'Ready for Pickup'
                 ).length
               }
             </div>
@@ -62,7 +69,7 @@ function ManageDonations() {
             <div className="text-2xl font-bold text-gray-900">
               {
                 donationRequestsData.filter(
-                  (donation) => donation.status === 'Completed',
+                  (donation) => donation.status === 'Completed'
                 ).length
               }
             </div>
@@ -70,15 +77,18 @@ function ManageDonations() {
           </div>
           <div className="text-center">
             <div className="text-2xl font-bold text-green-600">
-              {donationRequestsData.filter(
-                (donation) => donation.status === 'Completed',
-              ).length * 4}{' '}
+              {
+                donationRequestsData.filter(
+                  (donation) => donation.status === 'Completed'
+                ).length * 4
+              }{' '}
               kg
             </div>
             <p className="text-sm text-gray-500">Food Waste Saved</p>
           </div>
         </div>
       </div>
+
       <div className="mb-6">
         <div className="flex items-center gap-4 mb-4">
           <div className="relative flex-1">
@@ -91,37 +101,13 @@ function ManageDonations() {
               onChange={(e) => setSearchQuery(e.target.value)}
             />
           </div>
-          <select
-            className="px-4 py-2 border border-gray-300 rounded-md bg-white"
-            value={filterNGO}
-            onChange={(e) => setFilterNGO(e.target.value)}
-          >
-            <option value="all">All NGOs</option>
-            {ngoOptions.map((ngo) => (
-              <option key={ngo} value={ngo}>
-                {ngo}
-              </option>
-            ))}
-          </select>
-          <select
-            className="px-4 py-2 border border-gray-300 rounded-md bg-white"
-            value={filterStatus}
-            onChange={(e) => setFilterStatus(e.target.value)}
-          >
-            <option value="all">All Statuses</option>
-            <option value="pending">Pending</option>
-            <option value="ready for pickup">Ready for Pickup</option>
-            <option value="completed">Completed</option>
-          </select>
-          <Button
-            variant="secondary"
-            icon={<CalendarIcon className="h-4 w-4" />}
-          >
-            Date Range
-          </Button>
+
+    
         </div>
       </div>
+
       <DonationTabs donations={filteredDonations} />
+    </div>
     </div>
   )
 }
