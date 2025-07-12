@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { CalendarIcon, ImageIcon, ClockIcon } from 'lucide-react';
+import { CalendarIcon, ImageIcon, ClockIcon, MapPinIcon, PhoneIcon, UserIcon } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import foodListingsAPI from '../../services/foodListingsAPI';
 import schedulingAPI from '../../services/schedulingAPI';
@@ -18,6 +18,14 @@ export function ListingForm() {
     if (storedUserData) {
       const user = JSON.parse(storedUserData);
       setUserData(user);
+      
+      // Pre-populate pickup location fields with user data
+      setFormData(prev => ({
+        ...prev,
+        pickup_address: user.profile?.business_address || '',
+        pickup_contact_person: user.profile?.business_name || '',
+        pickup_contact_phone: user.profile?.phone || user.profile?.contact_phone || ''
+      }));
       
       // Check provider status
       if (user.user_type !== 'provider') {
@@ -46,14 +54,27 @@ export function ListingForm() {
     original_price: '',
     discounted_price: '',
     expiry_date: '',
-    pickup_window: '',
-    image: null
+    pickup_start_time: '',
+    pickup_end_time: '',
+    image: null,
+    // New pickup location fields
+    pickup_address: '',
+    pickup_instructions: 'Collect at the main counter',
+    pickup_contact_person: '',
+    pickup_contact_phone: '',
+    pickup_latitude: '',
+    pickup_longitude: '',
+    // New scheduling fields
+    total_slots: '4',
+    max_orders_per_slot: '2',
+    slot_buffer_minutes: '10'
   });
 
   const [imagePreview, setImagePreview] = useState(null);
 
   const validateField = (name, value) => {
-    if (!value) {
+    // Don't require coordinates as they're optional
+    if (!value && !['pickup_latitude', 'pickup_longitude'].includes(name)) {
       setErrors(prev => ({
         ...prev,
         [name]: 'This field is required'
@@ -123,15 +144,10 @@ export function ListingForm() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log('Form submitted'); // Debug log
-    console.log('Form data:', formData); // Debug log
-    console.log('User data:', userData); // Debug log
-    
     setIsSubmitting(true);
 
     // Check if user is a verified provider
     if (!userData || userData.user_type !== 'provider') {
-      console.log('User is not a provider'); // Debug log
       setErrors(prev => ({
         ...prev,
         submit: 'Only verified providers can create listings. Please contact support if you believe this is an error.'
@@ -150,66 +166,91 @@ export function ListingForm() {
       return;
     }
 
-    // Validate all required fields
-    const requiredFields = ['name', 'description', 'quantity', 'expiry_date', 'pickup_window'];
-    const isValid = requiredFields.every(field => validateField(field, formData[field]));
-    console.log('Form validation:', isValid); // Debug log
+    if (userData.profile?.status === 'verified') {
+      // Validate all required fields including new pickup location fields
+      const requiredFields = [
+        'name', 'description', 'quantity', 'expiry_date', 'pickup_start_time', 'pickup_end_time',
+        'pickup_address', 'pickup_contact_person', 'pickup_contact_phone'
+      ];
+      const isValid = requiredFields.every(field => validateField(field, formData[field]));
+      console.log('Form validation:', isValid);
 
-    if (!isValid) {
-      setIsSubmitting(false);
-      return;
-    }
+      if (!isValid) {
+        setIsSubmitting(false);
+        return;
+      }
 
-    try {
-      // Format the date to YYYY-MM-DD
-      const expiryDate = new Date(formData.expiry_date);
-      const formattedDate = expiryDate.toISOString().split('T')[0];
+      // Create pickup_window from start and end times
+      const pickup_window = `${formData.pickup_start_time}-${formData.pickup_end_time}`;
 
-      // Format the data according to the API's expected structure
-      const listingData = {
-        name: formData.name,
-        description: formData.description,
-        food_type: 'ready_to_eat',
-        original_price: isDonation ? 0 : parseFloat(formData.original_price),
-        discounted_price: isDonation ? 0 : parseFloat(formData.discounted_price),
-        quantity: parseInt(formData.quantity),
-        expiry_date: formattedDate,
-        pickup_window: formData.pickup_window,
-        allergens: [],
-        dietary_info: [],
-        is_available: true,
-        status: 'active'
-      };
+      try {
+        // Format the date to YYYY-MM-DD
+        const expiryDate = new Date(formData.expiry_date);
+        const formattedDate = expiryDate.toISOString().split('T')[0];
 
-      // If there's an image, convert it to base64
-      if (formData.image) {
-        const reader = new FileReader();
-        reader.readAsDataURL(formData.image);
-        reader.onloadend = async () => {
-          const base64data = reader.result;
-          listingData.imageUrl = base64data;
-          
-          console.log('Sending listing data:', listingData); // Debug log
-          const response = await foodListingsAPI.createListing(listingData);
-          console.log('API response:', response); // Debug log
+        // Format the data according to the API's expected structure
+        const listingData = {
+          name: formData.name,
+          description: formData.description,
+          food_type: 'ready_to_eat',
+          original_price: isDonation ? 0 : parseFloat(formData.original_price),
+          discounted_price: isDonation ? 0 : parseFloat(formData.discounted_price),
+          quantity: parseInt(formData.quantity),
+          expiry_date: formattedDate,
+          pickup_window: pickup_window,
+          allergens: [],
+          dietary_info: [],
+          is_available: true,
+          status: 'active'
+        };
+
+        const processListing = async (listingDataWithImage) => {
+          const response = await foodListingsAPI.createListing(listingDataWithImage);
+          console.log('API response:', response);
           
           if (response.success) {
-            // Create pickup location after listing is created
+            // Use the actual listing ID from the response
+            const createdListingId = response.data.id;
+            
+            // Create pickup location with real data from form
             const locationData = {
               name: `${formData.name} Pickup Location`,
-              address: userData?.profile?.business_address || 'Unknown Address',
-              instructions: 'Collect at the main counter',
-              contact_person: userData?.profile?.business_name || 'Business Staff',
-              contact_phone: '+27123456789', // Mocked phone
-              latitude: '-26.2041', // Mocked latitude
-              longitude: '28.0473' // Mocked longitude
+              address: formData.pickup_address,
+              instructions: formData.pickup_instructions,
+              contact_person: formData.pickup_contact_person,
+              contact_phone: formData.pickup_contact_phone,
+              latitude: formData.pickup_latitude || '-26.2041', // Default if not provided
+              longitude: formData.pickup_longitude || '28.0473' // Default if not provided
             };
+
             try {
               const locationResponse = await schedulingAPI.createPickupLocation(locationData);
               console.log('Pickup location creation response:', locationResponse);
+              
+              if (locationResponse.success) {
+                // Use the actual location ID from the response
+                const createdLocationId = locationResponse.data.location.id;
+                
+                const scheduleData = {
+                  food_listing_id: createdListingId,
+                  location_id: createdLocationId,
+                  pickup_window: pickup_window,
+                  total_slots: parseInt(formData.total_slots),
+                  max_orders_per_slot: parseInt(formData.max_orders_per_slot),
+                  slot_buffer_minutes: parseInt(formData.slot_buffer_minutes)
+                };
+
+                try {
+                  const scheduleResponse = await schedulingAPI.createPickupSchedule(scheduleData);
+                  console.log("The pickup schedule has been created successfully:", scheduleResponse);
+                } catch (error) {
+                  console.error('Failed to create schedule for the pickup:', error);
+                }
+              }
             } catch (err) {
               console.error('Failed to create pickup location:', err);
             }
+
             navigate('/listings-overview');
           } else {
             setErrors(prev => ({
@@ -219,63 +260,28 @@ export function ListingForm() {
           }
           setIsSubmitting(false);
         };
-      } else {
-        console.log('Sending listing data:', listingData); // Debug log
-        const response = await foodListingsAPI.createListing(listingData);
-        console.log('API response:', response); // Debug log
-        
-        if (response.success) {
-          // Create pickup location after listing is created
-          const locationData = {
-            name: `${formData.name} Pickup Location`,
-            address: userData?.profile?.business_address || 'Unknown Address',
-            instructions: 'Collect at the main counter',
-            contact_person: userData?.profile?.business_name || 'Business Staff',
-            contact_phone: '+27123456789', // Mocked phone
-            latitude: '-26.2041', // Mocked latitude
-            longitude: '28.0473' // Mocked longitude
+
+        // If there's an image, convert it to base64
+        if (formData.image) {
+          const reader = new FileReader();
+          reader.readAsDataURL(formData.image);
+          reader.onloadend = async () => {
+            const base64data = reader.result;
+            listingData.imageUrl = base64data;
+            await processListing(listingData);
           };
-          try {
-            const locationResponse = await schedulingAPI.createPickupLocation(locationData);
-            console.log('Pickup location creation response:', locationResponse);
-          } catch (err) {
-            console.error('Failed to create pickup location:', err);
-          }
-          navigate('/listings-overview');
         } else {
-          setErrors(prev => ({
-            ...prev,
-            submit: response.error || 'Failed to create listing. Please try again.'
-          }));
+          await processListing(listingData);
         }
+      } catch (error) {
+        console.error('Error creating listing:', error);
+        setErrors(prev => ({
+          ...prev,
+          submit: error.response?.data?.message || 'Failed to create listing. Please try again.'
+        }));
         setIsSubmitting(false);
       }
-    } catch (error) {
-      console.error('Error creating listing:', error);
-      setErrors(prev => ({
-        ...prev,
-        submit: error.response?.data?.message || 'Failed to create listing. Please try again.'
-      }));
-      setIsSubmitting(false);
     }
-  };
-
-  // Format price to display with R symbol
-  const formatPrice = (price) => {
-    if (price === undefined || price === null) return 'R0.00';
-    return `R${parseFloat(price).toFixed(2)}`;
-  };
-
-  // Format date to display in South African format
-  const formatDate = (dateString) => {
-    if (!dateString) return 'No date';
-    const date = new Date(dateString);
-    if (isNaN(date.getTime())) return 'Invalid date';
-    return date.toLocaleDateString('en-ZA', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric'
-    });
   };
 
   return (
@@ -349,18 +355,6 @@ export function ListingForm() {
                   Mark as Donation
                 </span>
               </label>
-              {!isDonation && (
-                <input
-                  type="number"
-                  name="original_price"
-                  value={formData.original_price}
-                  onChange={handleInputChange}
-                  className={`w-full p-2 border rounded-lg ${errors.original_price ? 'border-red-500' : 'border-gray-300'}`}
-                  placeholder="0.00"
-                  step="0.00"
-                  min="0"
-                />
-              )}
             </div>
           </div>
         </div>
@@ -409,35 +403,218 @@ export function ListingForm() {
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Expiration Date
             </label>
-            <div className="relative">
-              <input
-                type="date"
-                name="expiry_date"
-                value={formData.expiry_date}
-                onChange={handleInputChange}
-                className={`w-full p-2 border rounded-lg ${errors.expiry_date ? 'border-red-500' : 'border-gray-300'}`}
-                min={new Date().toISOString().split('T')[0]} // Set minimum date to today
-              />
-              <CalendarIcon className="absolute right-3 top-2.5 w-5 h-5 text-gray-400" />
-            </div>
+            <input
+              type="date"
+              name="expiry_date"
+              value={formData.expiry_date}
+              onChange={handleInputChange}
+              className={`w-full p-2 border rounded-lg ${errors.expiry_date ? 'border-red-500' : 'border-gray-300'}`}
+              min={new Date().toISOString().split('T')[0]} // Set minimum date to today
+            />
             {errors.expiry_date && <p className="text-red-500 text-sm mt-1">{errors.expiry_date}</p>}
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Pickup Time Range
             </label>
-            <div className="relative">
+            <div className="grid grid-cols-2 gap-2">
+              <div className="relative">
+                <input
+                  type="time"
+                  name="pickup_start_time"
+                  value={formData.pickup_start_time}
+                  onChange={handleInputChange}
+                  className={`w-full p-2 border rounded-lg ${errors.pickup_window ? 'border-red-500' : 'border-gray-300'}`}
+                />
+                <span className="absolute left-2 top-2.5 text-xs text-gray-500">From</span>
+              </div>
+              <div className="relative">
+                <input
+                  type="time"
+                  name="pickup_end_time"
+                  value={formData.pickup_end_time}
+                  onChange={handleInputChange}
+                  className={`w-full p-2 border rounded-lg ${errors.pickup_window ? 'border-red-500' : 'border-gray-300'}`}
+                />
+                <span className="absolute left-2 top-2.5 text-xs text-gray-500">To</span>
+              </div>
+            </div>
+            {formData.pickup_start_time && formData.pickup_end_time && (
+              <p className="text-sm text-gray-600 mt-1">
+                Pickup window: {formData.pickup_start_time}-{formData.pickup_end_time}
+              </p>
+            )}
+            {errors.pickup_window && <p className="text-red-500 text-sm mt-1">{errors.pickup_window}</p>}
+          </div>
+        </div>
+
+        {/* NEW PICKUP LOCATION SECTION */}
+        <div className="border-t pt-6">
+          <h3 className="text-lg font-medium text-gray-900 mb-4 flex items-center">
+            <MapPinIcon className="w-5 h-5 mr-2 text-blue-600" />
+            Pickup Location Details
+          </h3>
+          
+          <div className="space-y-4">
+            {/* Address */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Pickup Address
+              </label>
               <input
                 type="text"
-                name="pickup_window"
-                value={formData.pickup_window}
+                name="pickup_address"
+                value={formData.pickup_address}
                 onChange={handleInputChange}
-                className={`w-full p-2 border rounded-lg ${errors.pickup_window ? 'border-red-500' : 'border-gray-300'}`}
-                placeholder="e.g., 9:00 AM - 12:00 PM"
+                className={`w-full p-2 border rounded-lg ${errors.pickup_address ? 'border-red-500' : 'border-gray-300'}`}
+                placeholder="Complete pickup address"
               />
-              <ClockIcon className="absolute right-3 top-2.5 w-5 h-5 text-gray-400" />
+              {errors.pickup_address && <p className="text-red-500 text-sm mt-1">{errors.pickup_address}</p>}
             </div>
-            {errors.pickup_window && <p className="text-red-500 text-sm mt-1">{errors.pickup_window}</p>}
+
+            {/* Instructions */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Pickup Instructions
+              </label>
+              <textarea
+                name="pickup_instructions"
+                value={formData.pickup_instructions}
+                onChange={handleInputChange}
+                className="w-full p-2 border rounded-lg border-gray-300"
+                placeholder="Special instructions for pickup (e.g., 'Use back entrance', 'Ask at counter')"
+                rows="2"
+              />
+            </div>
+
+            {/* Contact Info Row */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Contact Person
+                </label>
+                <div className="relative">
+                  <input
+                    type="text"
+                    name="pickup_contact_person"
+                    value={formData.pickup_contact_person}
+                    onChange={handleInputChange}
+                    className={`w-full p-2 border rounded-lg ${errors.pickup_contact_person ? 'border-red-500' : 'border-gray-300'}`}
+                    placeholder="Contact person name"
+                  />
+                  <UserIcon className="absolute right-3 top-2.5 w-5 h-5 text-gray-400" />
+                </div>
+                {errors.pickup_contact_person && <p className="text-red-500 text-sm mt-1">{errors.pickup_contact_person}</p>}
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Contact Phone
+                </label>
+                <div className="relative">
+                  <input
+                    type="tel"
+                    name="pickup_contact_phone"
+                    value={formData.pickup_contact_phone}
+                    onChange={handleInputChange}
+                    className={`w-full p-2 border rounded-lg ${errors.pickup_contact_phone ? 'border-red-500' : 'border-gray-300'}`}
+                    placeholder="+27123456789"
+                  />
+                  <PhoneIcon className="absolute right-3 top-2.5 w-5 h-5 text-gray-400" />
+                </div>
+                {errors.pickup_contact_phone && <p className="text-red-500 text-sm mt-1">{errors.pickup_contact_phone}</p>}
+              </div>
+            </div>
+
+            {/* Coordinates (Optional) */}
+            {/* <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Latitude (Optional)
+                </label>
+                <input
+                  type="text"
+                  name="pickup_latitude"
+                  value={formData.pickup_latitude}
+                  onChange={handleInputChange}
+                  className="w-full p-2 border rounded-lg border-gray-300"
+                  placeholder="e.g., -26.2041"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Longitude (Optional)
+                </label>
+                <input
+                  type="text"
+                  name="pickup_longitude"
+                  value={formData.pickup_longitude}
+                  onChange={handleInputChange}
+                  className="w-full p-2 border rounded-lg border-gray-300"
+                  placeholder="e.g., 28.0473"
+                />
+              </div>
+            </div> */}
+          </div>
+        </div>
+
+        {/* NEW SCHEDULING SECTION */}
+        <div className="border-t pt-6">
+          <h3 className="text-lg font-medium text-gray-900 mb-4 flex items-center">
+            <ClockIcon className="w-5 h-5 mr-2 text-blue-600" />
+            Scheduling Settings
+          </h3>
+          
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Total Time Slots
+              </label>
+              <select
+                name="total_slots"
+                value={formData.total_slots}
+                onChange={handleInputChange}
+                className="w-full p-2 border rounded-lg border-gray-300"
+              >
+                <option value="2">2 slots</option>
+                <option value="3">3 slots</option>
+                <option value="4">4 slots</option>
+                <option value="5">5 slots</option>
+                <option value="6">6 slots</option>
+              </select>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Max Orders per Slot
+              </label>
+              <select
+                name="max_orders_per_slot"
+                value={formData.max_orders_per_slot}
+                onChange={handleInputChange}
+                className="w-full p-2 border rounded-lg border-gray-300"
+              >
+                <option value="1">1 order</option>
+                <option value="2">2 orders</option>
+                <option value="3">3 orders</option>
+                <option value="5">5 orders</option>
+                <option value="10">10 orders</option>
+              </select>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Buffer Time (minutes)
+              </label>
+              <select
+                name="slot_buffer_minutes"
+                value={formData.slot_buffer_minutes}
+                onChange={handleInputChange}
+                className="w-full p-2 border rounded-lg border-gray-300"
+              >
+                <option value="5">5 minutes</option>
+                <option value="10">10 minutes</option>
+                <option value="15">15 minutes</option>
+                <option value="20">20 minutes</option>
+              </select>
+            </div>
           </div>
         </div>
 

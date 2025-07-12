@@ -1,10 +1,12 @@
 import React, { useState } from 'react'
 import { motion } from 'framer-motion'
 import { XIcon } from 'lucide-react'
+import { useParams, useNavigate } from 'react-router-dom'
 import StarRating from './StarRating'
-import { createReview } from '../../services/reviewsAPI'
+import reviewsAPI from '../../services/reviewsAPI'
 
 const ItemReview = ({ itemName, onClose, onComplete, orderData }) => {
+  const { orderId } = useParams() 
   const [rating, setRating] = useState(0)
   const [comment, setComment] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -15,18 +17,20 @@ const ItemReview = ({ itemName, onClose, onComplete, orderData }) => {
     setIsSubmitting(true)
     
     try {
-      // Use mock function since backend expects Interaction model records
-      const { createReviewMock } = await import('../../services/reviewsAPI');
-      await createReviewMock({
-        itemName: itemName,
-        providerName: orderData?.provider,
-        rating: rating,
-        comment: comment,
-        reviewType: 'item',
-        orderId: orderData?.id,
-        orderNumber: orderData?.orderNumber
-      });
-      onComplete();
+      const response = await reviewsAPI.createReview({
+        interaction_id: orderId, // Use the real interaction ID
+        general_rating: rating,
+        general_comment: comment,
+        food_review: comment, // Use the same comment for food review
+        business_review: '', // Empty for item-focused review
+        review_source: 'popup'
+      })
+
+      if (response.success) {
+        onComplete();
+      } else {
+        alert('Failed to submit review: ' + response.error);
+      }
     } catch (error) {
       console.error('Failed to submit review:', error);
       alert('Failed to submit review. Please try again.');
@@ -45,7 +49,7 @@ const ItemReview = ({ itemName, onClose, onComplete, orderData }) => {
       <div className="p-6 space-y-6">
         <div className="flex justify-between items-center">
           <h3 className="text-xl font-semibold text-gray-800">
-            Review {itemName}
+            Review Food Items
           </h3>
           <button
             onClick={onClose}
@@ -56,7 +60,7 @@ const ItemReview = ({ itemName, onClose, onComplete, orderData }) => {
         </div>
 
         <div className="space-y-4">
-          <p className="font-medium text-gray-700">Rate this item</p>
+          <p className="font-medium text-gray-700">Rate the food quality</p>
           <div className="flex justify-center">
             <StarRating rating={rating} setRating={setRating} />
           </div>

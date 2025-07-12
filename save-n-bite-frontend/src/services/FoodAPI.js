@@ -190,7 +190,7 @@ getCart: async () => {
                     pickupWindow: item.pickupWindow,
                     expiryDate: item.expiryDate,
                     // Add the food listing ID that we need for scheduling
-                    listingId: item.listingId || item.food_listing_id
+                    listingId: item.food_listing.id || item.food_listing_id
                 })),
                 summary: {
                     totalItems: parseInt(response.data.summary.totalItems),

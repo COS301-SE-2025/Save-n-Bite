@@ -1,3 +1,5 @@
+# Updated urls.py file
+
 from django.urls import path
 from .views import (
     CartView,
@@ -6,6 +8,7 @@ from .views import (
     CheckoutView,
     OrderListView,
     OrderDetailView,
+    UpdateInteractionStatusView,  # Add this import
     check_interaction_review_status,
     get_interaction_review
 )
@@ -19,4 +22,5 @@ urlpatterns = [
     path('orders/<uuid:order_id>/', OrderDetailView.as_view(), name='order-detail'),
     path('interactions/<uuid:interaction_id>/review-status/', check_interaction_review_status, name='check_interaction_review_status'),
     path('interactions/<uuid:interaction_id>/review/', get_interaction_review, name='get_interaction_review'),
+    path('interactions/<uuid:interaction_id>/status/', UpdateInteractionStatusView.as_view(), name='update_interaction_status'),  # Updated this line
 ]

@@ -6,51 +6,50 @@ import CustomerNavBar from '../../components/auth/CustomerNavBar'
 import StarRating from '../../components/CustomerFeedback/StarRating'
 import ProviderReview from '../../components/CustomerFeedback/ProviderReview'
 import ItemReview from '../../components/CustomerFeedback/ItemReview'
-
-// Mock function to get order details (replace with actual API call)
-const getOrderById = (orderId) => {
-  // Load orders from localStorage
-  const customerOrders = JSON.parse(localStorage.getItem('customerOrderHistory') || '[]');
-  
-  // Find the order by ID
-  const order = customerOrders.find(order => order.id === parseInt(orderId));
-  
-  if (order) {
-    return {
-      id: order.id,
-      orderNumber: order.orderNumber,
-      items: order.items.map(item => item.title),
-      provider: order.provider,
-      status: order.status,
-      date: order.date,
-      total: order.total,
-      pickupTime: order.pickupTime,
-      pickupAddress: order.pickupAddress
-    };
-  }
-  
-  return null;
-}
+import reviewsAPI from '../../services/reviewsAPI'
 
 const ReviewPage = () => {
-  const { orderId } = useParams()
+  const { orderId } = useParams() // This is actually the interaction ID from our order history
   const navigate = useNavigate()
-  const [order, setOrder] = useState(null)
+  const [interaction, setInteraction] = useState(null)
+  const [reviewStatus, setReviewStatus] = useState(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
   const [step, setStep] = useState(1)
   const [showProviderReview, setShowProviderReview] = useState(false)
   const [showItemReview, setShowItemReview] = useState(false)
   const [isComplete, setIsComplete] = useState(false)
 
   useEffect(() => {
-    // Load order data using the order ID from URL params
-    const orderData = getOrderById(orderId);
-    if (orderData) {
-      setOrder(orderData);
-    } else {
-      // Redirect to order history if order not found
-      navigate('/orders');
+    loadInteractionData()
+  }, [orderId])
+
+  const loadInteractionData = async () => {
+    setLoading(true)
+    setError(null)
+    
+    try {
+      // Get interaction details
+   
+        
+        // Check review status
+        const reviewResponse = await reviewsAPI.checkReviewStatus(orderId)
+        if (reviewResponse.success) {
+          setReviewStatus(reviewResponse.data)
+          
+          // If already reviewed, show completion immediately
+          if (reviewResponse.data.has_review) {
+            setIsComplete(true)
+          }
+        }
+    
+    } catch (error) {
+      console.error('Error loading interaction data:', error)
+      setError('Failed to load interaction details')
+    } finally {
+      setLoading(false)
     }
-  }, [orderId, navigate]);
+  }
 
   const handleSkip = () => {
     setIsComplete(true)
@@ -68,18 +67,53 @@ const ReviewPage = () => {
     }, 2000)
   }
 
-  if (!order) {
+  if (loading) {
     return (
       <div className="bg-gray-50 min-h-screen w-full">
         <CustomerNavBar />
         <div className="flex items-center justify-center min-h-[60vh]">
           <div className="text-center">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-600 mx-auto mb-4"></div>
-            <p className="text-gray-600">Loading order details...</p>
+            <p className="text-gray-600">Loading interaction details...</p>
           </div>
         </div>
       </div>
     )
+  }
+
+  if (error ) {
+    return (
+      <div className="bg-gray-50 min-h-screen w-full">
+        <CustomerNavBar />
+        <div className="max-w-2xl mx-auto px-4 py-8">
+          <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-md">
+            <p className="font-medium">Error</p>
+            <p className="text-sm">{error || 'Interaction not found'}</p>
+            <button 
+              onClick={() => navigate('/orders')}
+              className="mt-2 text-sm underline hover:no-underline"
+            >
+              Back to Order History
+            </button>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  // Transform interaction data to match existing review component expectations
+  const orderData = {
+    // id: interaction.id,
+    // orderNumber: `#${interaction.id.split('-')[0]}`, // Generate order number from ID
+    // items: interaction.items ? interaction.items.map(item => item.name) : ['Food Items'],
+    // provider: interaction.business?.name || 'Unknown Business',
+    // status: interaction.status,
+    // date: interaction.created_at,
+    // total: interaction.order?.total_amount || '0.00',
+    // pickupTime: interaction.pickup_details?.scheduled_time || null,
+    // pickupAddress: interaction.business?.address || 'Pickup Location',
+    // Add interaction ID for review API calls
+    interactionId: orderId
   }
 
   return (
@@ -101,6 +135,19 @@ const ReviewPage = () => {
         </div>
 
         <div className="bg-white rounded-lg shadow-sm p-6">
+          {/* Interaction Details */}
+          <div className="mb-6 p-4 bg-gray-50 rounded-lg">
+            <h3 className="font-semibold text-gray-800 mb-2">Order Details</h3>
+            <div className="text-sm text-gray-600 space-y-1">
+              {/* <p><strong>Business:</strong> {interaction.business?.name}</p>
+              <p><strong>Type:</strong> {interaction.type}</p>
+              <p><strong>Items:</strong> {interaction.items_count || 1} item(s)</p>
+              <p><strong>Amount:</strong> {interaction.order?.total_amount ? `R${interaction.order.total_amount}` : 'Free'}</p>
+              <p><strong>Date:</strong> {new Date(interaction.created_at).toLocaleDateString()}</p>
+              <p><strong>Status:</strong> {interaction.status}</p> */}
+            </div>
+          </div>
+
           <AnimatePresence mode="wait">
             {step === 1 && !isComplete && (
               <motion.div
@@ -109,45 +156,63 @@ const ReviewPage = () => {
                 exit={{ opacity: 0, y: -20 }}
                 className="space-y-6"
               >
-                <div className="text-center space-y-2">
-                  <h2 className="text-xl font-semibold text-gray-800">
-                    Would you like to leave a review?
-                  </h2>
-                  <p className="text-gray-600">
-                    Order #{order.orderNumber} from {order.provider}
-                  </p>
-                  <p className="text-sm text-gray-500">
-                    Your feedback helps us and our providers improve.
-                  </p>
-                </div>
+                {reviewStatus?.has_review ? (
+                  <div className="text-center space-y-4">
+                    <CheckCircleIcon size={48} className="text-green-500 mx-auto" />
+                    <h2 className="text-xl font-semibold text-gray-800">
+                      Review Already Submitted
+                    </h2>
+                    <p className="text-gray-600">
+                      Thank you for your feedback on this order!
+                    </p>
+                  </div>
+                ) : reviewStatus?.can_review ? (
+                  <>
+                    <div className="text-center space-y-2">
+                      <h2 className="text-xl font-semibold text-gray-800">
+                        Would you like to leave a review?
+                      </h2>
+                      <p className="text-gray-600">
+                        Order from 
+                      </p>
+                      <p className="text-sm text-gray-500">
+                        Your feedback helps us and our providers improve.
+                      </p>
+                    </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <button
-                    onClick={() => setShowProviderReview(true)}
-                    className="p-6 border-2 border-gray-200 rounded-lg hover:border-emerald-500 hover:text-emerald-600 transition-colors text-center"
-                  >
-                    <div className="text-2xl mb-2">🏪</div>
-                    <h3 className="font-medium mb-1">Review Food Provider</h3>
-                    {/* <p className="text-sm text-gray-500">Rate {order.provider}</p> */}
-                  </button>
-                  <button
-                    onClick={() => setShowItemReview(true)}
-                    className="p-6 border-2 border-gray-200 rounded-lg hover:border-emerald-500 hover:text-emerald-600 transition-colors text-center"
-                  >
-                    <div className="text-2xl mb-2">🍽️</div>
-                    <h3 className="font-medium mb-1">Review Items</h3>
-                    {/* <p className="text-sm text-gray-500">Rate the food quality</p> */}
-                  </button>
-                </div>
-
-                {/* <div className="flex justify-center pt-4">
-                  <button
-                    onClick={handleSkip}
-                    className="px-6 py-2 text-gray-600 hover:text-gray-800"
-                  >
-                    Maybe later
-                  </button>
-                </div> */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <button
+                        onClick={() => setShowProviderReview(true)}
+                        className="p-6 border-2 border-gray-200 rounded-lg hover:border-emerald-500 hover:text-emerald-600 transition-colors text-center"
+                      >
+                        <div className="text-2xl mb-2">🏪</div>
+                        <h3 className="font-medium mb-1">Review Food Provider</h3>
+                      </button>
+                      <button
+                        onClick={() => setShowItemReview(true)}
+                        className="p-6 border-2 border-gray-200 rounded-lg hover:border-emerald-500 hover:text-emerald-600 transition-colors text-center"
+                      >
+                        <div className="text-2xl mb-2">🍽️</div>
+                        <h3 className="font-medium mb-1">Review Items</h3>
+                      </button>
+                    </div>
+                  </>
+                ) : (
+                  <div className="text-center space-y-4">
+                    <div className="text-yellow-600">
+                      <XIcon size={48} className="mx-auto mb-4" />
+                    </div>
+                    <h2 className="text-xl font-semibold text-gray-800">
+                      Review Not Available
+                    </h2>
+                    <p className="text-gray-600">
+                      This order cannot be reviewed at this time.
+                    </p>
+                    <p className="text-sm text-gray-500">
+                      Reviews are only available for completed orders.
+                    </p>
+                  </div>
+                )}
               </motion.div>
             )}
 
@@ -159,7 +224,7 @@ const ReviewPage = () => {
               >
                 <CheckCircleIcon size={48} className="text-emerald-500 mx-auto" />
                 <h2 className="text-xl font-semibold text-gray-800">
-                  Thanks for your review!
+                  {reviewStatus?.has_review ? 'Review Already Submitted!' : 'Thanks for your review!'}
                 </h2>
                 <p className="text-gray-600">
                   Your feedback helps us improve our service.
@@ -175,10 +240,10 @@ const ReviewPage = () => {
             <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
               <div className="bg-white w-full max-w-md rounded-xl shadow-xl">
                 <ProviderReview
-                  providerName={order.provider}
+                  providerName={orderData.provider}
                   onClose={() => setShowProviderReview(false)}
                   onComplete={handleReviewComplete}
-                  orderData={order}
+                  orderData={orderData}
                 />
               </div>
             </div>
@@ -188,10 +253,10 @@ const ReviewPage = () => {
             <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
               <div className="bg-white w-full max-w-md rounded-xl shadow-xl">
                 <ItemReview
-                  itemName={order.items[0]} // Using first item, you might want to handle multiple items
+                  // itemName={orderData.items[0]} // Using first item, you might want to handle multiple items
                   onClose={() => setShowItemReview(false)}
                   onComplete={handleReviewComplete}
-                  orderData={order}
+                  orderData={orderData}
                 />
               </div>
             </div>

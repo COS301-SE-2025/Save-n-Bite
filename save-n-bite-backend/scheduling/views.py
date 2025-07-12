@@ -664,7 +664,7 @@ def customer_pickups(request):
     
     pickups = ScheduledPickup.objects.filter(
         order__interaction__user=request.user
-    ).select_related('food_listing', 'location', 'order').order_by('-scheduled_date', '-scheduled_start_time')
+    ).select_related('food_listing', 'location', 'order', 'order__interaction').order_by('-scheduled_date', '-scheduled_start_time')
     
     if status_filter:
         pickups = pickups.filter(status=status_filter)
@@ -683,6 +683,7 @@ def customer_pickups(request):
     for pickup in paginated_pickups:
         pickup_data.append({
             'id': str(pickup.id),
+            'interaction_id': str(pickup.order.interaction.id),  # Added this line
             'scheduled_date': pickup.scheduled_date,
             'scheduled_start_time': pickup.scheduled_start_time,
             'scheduled_end_time': pickup.scheduled_end_time,

@@ -1,12 +1,13 @@
+# Updated views.py - CLEANED VERSION
+
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
 from django.shortcuts import render
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from django.shortcuts import get_object_or_404
-from .models import Cart, CartItem, Interaction, Order, Payment, InteractionItem
+from .models import Cart, CartItem, Interaction, Order, Payment, InteractionItem, InteractionStatusHistory
 from food_listings.models import FoodListing
 from .serializers import (
     CartResponseSerializer,
@@ -14,10 +15,12 @@ from .serializers import (
     RemoveCartItemSerializer,
     CheckoutSerializer,
     OrderSerializer,
-    CheckoutResponseSerializer
+    CheckoutResponseSerializer,
+    UpdateInteractionStatusSerializer  # Already imported here
 )
 from django.db import transaction as db_transaction
 import uuid
+from django.utils import timezone
 
 class CartView(APIView):
     permission_classes = [IsAuthenticated]
@@ -34,7 +37,7 @@ class CartView(APIView):
             if hasattr(item.food_listing, 'provider') and hasattr(item.food_listing.provider, 'provider_profile'):
                 provider_profile = item.food_listing.provider.provider_profile
                 provider_data = {
-                    'id': str(item.food_listing.provider.id),  # This is the business ID we need!
+                    'id': str(item.food_listing.provider.id),
                     'business_name': provider_profile.business_name,
                     'business_address': provider_profile.business_address,
                 }
@@ -48,10 +51,10 @@ class CartView(APIView):
                 'totalPrice': float(item.quantity * item.food_listing.discounted_price),
                 'pickupWindow': item.food_listing.pickup_window,
                 'expiryDate': item.food_listing.expiry_date.isoformat() if item.food_listing.expiry_date else None,
-                'provider': provider_data,  # Add provider information
+                'provider': provider_data,
                 'food_listing': {
                     'id': str(item.food_listing.id),
-                    'provider': provider_data  # Also add it here for fallback
+                    'provider': provider_data
                 }
             })
         
@@ -78,7 +81,7 @@ class AddToCartView(APIView):
         cart, _ = Cart.objects.get_or_create(user=request.user)
         food_listing = get_object_or_404(FoodListing, id=serializer.validated_data['listingId'])
 
-        #Check if item already in cart
+        # Check if item already in cart
         cart_item, created = CartItem.objects.get_or_create(
             cart=cart,
             food_listing=food_listing,
@@ -123,6 +126,107 @@ class RemoveCartItemView(APIView):
             }
         }, status=status.HTTP_200_OK)
 
+
+class UpdateInteractionStatusView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def patch(self, request, interaction_id):
+        """PATCH /interactions/{id}/status/ - Update interaction status"""
+        
+        # Get the interaction
+        try:
+            interaction = Interaction.objects.get(id=interaction_id)
+        except Interaction.DoesNotExist:
+            return Response({
+                'error': {
+                    'code': 'NOT_FOUND',
+                    'message': 'Interaction not found'
+                }
+            }, status=status.HTTP_404_NOT_FOUND)
+        
+        # Check permissions - either the customer who made the order or the business owner
+        if not (interaction.user == request.user or 
+                (hasattr(request.user, 'provider_profile') and 
+                 interaction.business == request.user.provider_profile)):
+            return Response({
+                'error': {
+                    'code': 'PERMISSION_DENIED',
+                    'message': 'You do not have permission to update this interaction'
+                }
+            }, status=status.HTTP_403_FORBIDDEN)
+        
+        # Validate request data using serializer (already imported)
+        serializer = UpdateInteractionStatusSerializer(data=request.data)
+        if not serializer.is_valid():
+            return Response({
+                'error': {
+                    'code': 'VALIDATION_ERROR',
+                    'message': 'Invalid data provided',
+                    'details': serializer.errors
+                }
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
+        new_status = serializer.validated_data['status']
+        notes = serializer.validated_data.get('notes', '')
+        
+        # Store old status
+        old_status = interaction.status
+        
+        # Business logic validation
+        if old_status in ['completed', 'cancelled'] and new_status != old_status:
+            return Response({
+                'error': {
+                    'code': 'STATUS_LOCKED',
+                    'message': f'Cannot change status from {old_status}'
+                }
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
+        # Update the interaction
+        try:
+            with db_transaction.atomic():
+                # Update status
+                interaction.status = new_status
+                
+                # Set completed_at timestamp if status is completed
+                if new_status == 'completed' and old_status != 'completed':
+                    interaction.completed_at = timezone.now()
+                
+                interaction.save()
+                
+                # Create status history record
+                InteractionStatusHistory.objects.create(
+                    Interaction=interaction,
+                    old_status=old_status,
+                    new_status=new_status,
+                    changed_by=request.user,
+                    notes=notes
+                )
+                
+                # If completing the interaction, also update any related order status
+                if new_status == 'completed' and hasattr(interaction, 'order'):
+                    interaction.order.status = 'completed'
+                    interaction.order.save()
+            
+            return Response({
+                'interaction_id': str(interaction_id),
+                'old_status': old_status,
+                'new_status': new_status,
+                'updated_at': interaction.updated_at.isoformat(),
+                'completed_at': interaction.completed_at.isoformat() if interaction.completed_at else None,
+                'notes': notes,
+                'message': f'Interaction status updated from {old_status} to {new_status}'
+            }, status=status.HTTP_200_OK)
+            
+        except Exception as e:
+            return Response({
+                'error': {
+                    'code': 'UPDATE_FAILED',
+                    'message': 'Failed to update interaction status',
+                    'details': str(e)
+                }
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
 class CheckoutView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -148,7 +252,7 @@ class CheckoutView(APIView):
             # 1. Create Interaction
             interaction = Interaction.objects.create(
                 user=request.user,
-                business=provider_profile,  # Use provider_profile instead of user
+                business=provider_profile,
                 interaction_type='Purchase',
                 quantity=cart.total_items,
                 total_amount=cart.subtotal,
@@ -192,13 +296,14 @@ class CheckoutView(APIView):
             'orders': [order],
             'summary': {
                 'totalAmount': cart.subtotal,
-                'totalSavings': 0,  # Implement your savings calculation
+                'totalSavings': 0,
                 'paymentStatus': payment.status
             }
         }).data
 
         return Response(response_data, status=status.HTTP_201_CREATED)
     
+
 class OrderListView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -207,6 +312,7 @@ class OrderListView(APIView):
         orders = Order.objects.filter(interaction__user=request.user)
         serializer = OrderSerializer(orders, many=True)
         return Response(serializer.data)
+
 
 class OrderDetailView(APIView):
     permission_classes = [IsAuthenticated]
@@ -220,136 +326,9 @@ class OrderDetailView(APIView):
         )
         serializer = OrderSerializer(order)
         return Response(serializer.data)
-# Create your views here.
-
-# ========================Review Functions=====================:
-
-@api_view(['GET'])
-@permission_classes([IsAuthenticated])
-def check_interaction_review_status(request, interaction_id):
-    """Check if an interaction can be reviewed or already has a review"""
-    
-    # Check if interaction exists and belongs to current user
-    try:
-        interaction = Interaction.objects.get(id=interaction_id, user=request.user)
-    except Interaction.DoesNotExist:
-        return Response({
-            'error': {
-                'code': 'NOT_FOUND',
-                'message': 'Interaction not found or does not belong to you'
-            }
-        }, status=status.HTTP_404_NOT_FOUND)
-    
-    # Check if user can review (only customers and NGOs)
-    can_review = (
-        interaction.status == 'completed' and 
-        request.user.user_type in ['customer', 'ngo']
-    )
-    
-    # Check if review already exists
-    has_review = hasattr(interaction, 'review')
-    review_id = str(interaction.review.id) if has_review else None
-    
-    return Response({
-        'interaction_id': str(interaction_id),
-        'can_review': can_review,
-        'has_review': has_review,
-        'review_id': review_id,
-        'interaction_status': interaction.status,
-        'completed_at': interaction.completed_at.isoformat() if interaction.completed_at else None
-    }, status=status.HTTP_200_OK)
 
 
-@api_view(['GET'])
-@permission_classes([IsAuthenticated])
-def get_interaction_review(request, interaction_id):
-    """Get the review for a specific interaction (business owner only)"""
-    
-    # Only food providers can access this endpoint
-    if request.user.user_type != 'provider':
-        return Response({
-            'error': {
-                'code': 'PERMISSION_DENIED',
-                'message': 'Only food providers can view interaction reviews'
-            }
-        }, status=status.HTTP_403_FORBIDDEN)
-    
-    # Check if provider profile exists
-    if not hasattr(request.user, 'provider_profile'):
-        return Response({
-            'error': {
-                'code': 'PROFILE_NOT_FOUND',
-                'message': 'Provider profile not found'
-            }
-        }, status=status.HTTP_404_NOT_FOUND)
-    
-    # Get interaction for this business
-    try:
-        interaction = Interaction.objects.get(
-            id=interaction_id,
-            business=request.user.provider_profile
-        )
-    except Interaction.DoesNotExist:
-        return Response({
-            'error': {
-                'code': 'NOT_FOUND',
-                'message': 'Interaction not found for your business'
-            }
-        }, status=status.HTTP_404_NOT_FOUND)
-    
-    # Check if review exists
-    if not hasattr(interaction, 'review'):
-        return Response({
-            'has_review': False,
-            'interaction_id': str(interaction_id),
-            'interaction_status': interaction.status,
-            'total_amount': float(interaction.total_amount),
-            'completed_at': interaction.completed_at.isoformat() if interaction.completed_at else None
-        }, status=status.HTTP_200_OK)
-    
-    # Return review data
-    review = interaction.review
-    
-    # Only show active reviews to business
-    if review.status != 'active':
-        return Response({
-            'has_review': False,
-            'interaction_id': str(interaction_id),
-            'message': 'Review exists but is not active'
-        }, status=status.HTTP_200_OK)
-    
-    # Get reviewer name
-    reviewer_name = review.reviewer.email
-    if review.reviewer.user_type == 'customer' and hasattr(review.reviewer, 'customer_profile'):
-        reviewer_name = review.reviewer.customer_profile.full_name
-    elif review.reviewer.user_type == 'ngo' and hasattr(review.reviewer, 'ngo_profile'):
-        reviewer_name = review.reviewer.ngo_profile.organisation_name
-    
-    return Response({
-        'has_review': True,
-        'interaction_id': str(interaction_id),
-        'review': {
-            'id': str(review.id),
-            'general_rating': review.general_rating,
-            'general_comment': review.general_comment,
-            'food_review': review.food_review,
-            'business_review': review.business_review,
-            'review_source': review.review_source,
-            'created_at': review.created_at.isoformat(),
-            'reviewer': {
-                'name': reviewer_name,
-                'user_type': review.reviewer.user_type
-            },
-            'interaction_details': {
-                'type': review.interaction_type,
-                'total_amount': float(review.interaction_total_amount),
-                'food_items': review.food_items_snapshot
-            }
-        }
-    }, status=status.HTTP_200_OK)
-
-
-# ========================Review Functions=====================:
+# ======================== Review Functions =====================
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
@@ -474,4 +453,3 @@ def get_interaction_review(request, interaction_id):
             }
         }
     }, status=status.HTTP_200_OK)
-
