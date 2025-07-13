@@ -64,9 +64,14 @@ const navigationItems = [
   },
 ]
 
-const SideBar = ({ currentPage }) => { 
+const SideBar = ({ currentPage, pendingCount }) => { 
   const navigate = useNavigate(); 
  
+  SideBar.propTypes = {
+  currentPage: PropTypes.string.isRequired,
+  pendingCount: PropTypes.number,
+}
+
 const handleLogout = () => {
     localStorage.removeItem('authToken');
     localStorage.removeItem('userData');
@@ -96,25 +101,33 @@ const handleLogout = () => {
         </div>
         <nav className="flex-1 p-4 flex flex-col justify-between h-[calc(100vh-104px)]">
           <ul className="space-y-2">
-            {navigationItems.map((item) => {
-              const Icon = item.icon
-              return (
-                <li key={item.route}>
-                  <button
-                    onClick={() => handleNavigation(item.path)}
-                    className={`w-full flex items-center px-4 py-3 rounded-lg transition-colors ${
-                      currentPage === item.route
-                        ? 'bg-blue-700 text-white'
-                        : 'text-blue-200 hover:bg-blue-800 hover:text-white'
-                    }`}
-                    data-onboarding={`nav-${item.route.toLowerCase()}`}
-                  >
-                    <Icon className="w-5 h-5 mr-3" />
-                    {item.name}
-                  </button>
-                </li>
-              )
-            })}
+          {navigationItems.map((item) => {
+          const Icon = item.icon
+          return (
+            <li key={item.route}>
+              <button
+                onClick={() => handleNavigation(item.path)}
+                className={`w-full flex items-center px-4 py-3 rounded-lg transition-colors ${
+                  currentPage === item.route
+                    ? 'bg-blue-700 text-white'
+                    : 'text-blue-200 hover:bg-blue-800 hover:text-white'
+                }`}
+                data-onboarding={`nav-${item.route.toLowerCase()}`}
+              >
+                <Icon className="w-5 h-5 mr-3" />
+                <span className="flex-1 text-left">{item.name}</span>
+
+                {/* Notification badge for donations */}
+                {item.name === 'Manage Donations' && pendingCount > 0 && (
+                  <span className="ml-auto bg-green-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                    {pendingCount}
+                  </span>
+                )}
+              </button>
+            </li>
+          )
+        })}
+
           </ul>
           <div className="mt-4">
             <button
