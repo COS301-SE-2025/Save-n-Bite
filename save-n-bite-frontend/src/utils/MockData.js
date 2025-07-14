@@ -179,7 +179,7 @@ export const pickupsData = [
     confirmationCode: 'PICK9012',
     qrCodeData: 'ORD-2023-003-PICK9012',
     pickupStatus: 'On Time',
-    contactPhone: '555-345-6789',
+    contactPhone: '071 234 5678',
     contactEmail: 'sarah.w@example.com'
   },
   {
@@ -195,7 +195,7 @@ export const pickupsData = [
     confirmationCode: 'PICK3456',
     qrCodeData: 'ORD-2023-004-PICK3456',
     pickupStatus: 'Late Pickup',
-    contactPhone: '555-456-7890',
+    contactPhone: '071 234 5678',
     contactEmail: 'david.m@example.com'
   },
   {
@@ -211,7 +211,138 @@ export const pickupsData = [
     confirmationCode: 'PICK7890',
     qrCodeData: 'ORD-2023-005-PICK7890',
     pickupStatus: 'No Show',
-    contactPhone: '555-567-8901',
+    contactPhone: '071 234 5678',
     contactEmail: 'jennifer.a@example.com'
+  }
+];
+
+export const donationRequestsData = [
+  {
+    id: 1,
+    requestId: "DON-2023-001",
+    itemName: "Fresh Bread Assortment",
+    ngoName: "Community Food Bank",
+    ngoLogo: "https://images.unsplash.com/photo-1589829545856-d10d557cf95f?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80",
+    ngoContact: "contact@communityfoodbank.org | 071 234 5678",
+    ngoDescription: "Local food bank serving underprivileged families in the community.",
+    requestDate: "2023-10-15",
+    status: "Pending",
+    quantity: "15 loaves",
+    expiryDate: "2023-10-18",
+    description: "Assortment of fresh bread loaves including whole wheat, sourdough, and multigrain.",
+    imageUrl: "https://images.unsplash.com/photo-1608198093002-ad4e005484ec?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2532&q=80",
+    motivationMessage: "We are organizing a community breakfast for 50 homeless individuals this weekend. Your bread donation would significantly help us provide nutritious meals.",
+    documents: [
+      { name: "NGO_Certification.pdf", url: "#" },
+      { name: "Event_Details.pdf", url: "#" }
+    ]
+  },
+  {
+    id: 2,
+    requestId: "DON-2023-002",
+    itemName: "Organic Vegetables Bundle",
+    ngoName: "Green Earth Initiative",
+    ngoLogo: "https://images.unsplash.com/photo-1589829545856-d10d557cf95f?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80",
+    ngoContact: "info@greenearthinitiative.org | 071 234 5678",
+    ngoDescription: "Environmental NGO focused on sustainable food practices and community gardens.",
+    requestDate: "2023-10-14",
+    status: "Ready for Pickup",
+    pickupDate: "2023-10-16",
+    pickupWindow: "10:00 AM - 12:00 PM",
+    quantity: "10 kg assorted",
+    expiryDate: "2023-10-19",
+    description: "Assortment of organic vegetables including carrots, potatoes, tomatoes, and leafy greens.",
+    imageUrl: "https://images.unsplash.com/photo-1566385101042-1a0aa0c1268c?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2532&q=80",
+    motivationMessage: "We're teaching a cooking class for underprivileged youth to learn about nutrition and healthy eating. These vegetables will be used in the class.",
+    documents: [
+      { name: "Organization_Certificate.pdf", url: "#" }
+    ]
+  },
+  {
+    id: 3,
+    requestId: "DON-2023-003",
+    itemName: "Pastry Box",
+    ngoName: "Helping Hands Shelter",
+    ngoLogo: "https://images.unsplash.com/photo-1589829545856-d10d557cf95f?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80",
+    ngoContact: "coordinator@helpinghands.org | 071 234 5678",
+    ngoDescription: "Shelter providing temporary housing and meals for homeless individuals.",
+    requestDate: "2023-10-13",
+    status: "Pending",
+    quantity: "24 pastries",
+    expiryDate: "2023-10-17",
+    description: "Box of assorted pastries including croissants, danish, and muffins.",
+    imageUrl: "https://images.unsplash.com/photo-1600326145359-3a44909d1a39?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2532&q=80",
+    motivationMessage: "We're hosting a special breakfast for our shelter residents who are celebrating job placements this month. These pastries would make their celebration more special.",
+    documents: [
+      { name: "Shelter_License.pdf", url: "#" },
+      { name: "Donation_Request_Form.pdf", url: "#" }
+    ]
+  },
+  {
+    id: 4,
+    requestId: "DON-2023-004",
+    itemName: "Fruit Basket",
+    ngoName: "Children's Hope Foundation",
+    ngoLogo: "https://images.unsplash.com/photo-1589829545856-d10d557cf95f?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80",
+    ngoContact: "programs@childrenshope.org | 071 234 5678",
+    ngoDescription: "Foundation supporting underprivileged children with education and nutrition programs.",
+    requestDate: "2023-10-16",
+    status: "Ready for Pickup",
+    pickupDate: "2023-10-17",
+    pickupWindow: "1:00 PM - 3:00 PM",
+    quantity: "15 kg mixed fruits",
+    expiryDate: "2023-10-21",
+    description: "Assorted fresh fruits including apples, oranges, bananas, and seasonal berries.",
+    imageUrl: "https://images.unsplash.com/photo-1610832958506-aa56368176cf?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2532&q=80",
+    motivationMessage: "We run an after-school program for children from low-income families. These fruits will be part of our healthy snack program to ensure kids have proper nutrition.",
+    documents: [
+      { name: "Foundation_Certificate.pdf", url: "#" },
+      { name: "Program_Details.pdf", url: "#" }
+    ]
+  },
+  {
+    id: 5,
+    requestId: "DON-2023-005",
+    itemName: "Dairy Products Bundle",
+    ngoName: "Senior Care Network",
+    ngoLogo: "https://images.unsplash.com/photo-1589829545856-d10d557cf95f?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80",
+    ngoContact: "outreach@seniorcare.org | 071 234 5678",
+    ngoDescription: "Organization providing support services for elderly individuals in the community.",
+    requestDate: "2023-10-12",
+    status: "Completed",
+    pickupDate: "2023-10-13",
+    pickupWindow: "11:00 AM - 1:00 PM",
+    completionDate: "2023-10-13",
+    quantity: "20 items",
+    expiryDate: "2023-10-18",
+    description: "Assortment of dairy products including milk, yogurt, and cheese.",
+    imageUrl: "https://images.unsplash.com/photo-1628088062854-d1870b4553da?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80",
+    motivationMessage: "Many seniors in our program have limited access to nutritious food. These dairy products will help us provide essential calcium and protein in our meal deliveries.",
+    documents: [
+      { name: "Organization_ID.pdf", url: "#" }
+    ]
+  },
+  {
+    id: 6,
+    requestId: "DON-2023-006",
+    itemName: "Sandwich Ingredients",
+    ngoName: "Youth Outreach Program",
+    ngoLogo: "https://images.unsplash.com/photo-1589829545856-d10d557cf95f?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80",
+    ngoContact: "director@youthoutreach.org | 071 234 5678",
+    ngoDescription: "Program providing meals and support services for at-risk youth.",
+    requestDate: "2023-10-11",
+    status: "Completed",
+    pickupDate: "2023-10-12",
+    pickupWindow: "2:00 PM - 4:00 PM",
+    completionDate: "2023-10-12",
+    quantity: "Ingredients for 50 sandwiches",
+    expiryDate: "2023-10-16",
+    description: "Bread, sliced meats, cheese, and vegetables for making sandwiches.",
+    imageUrl: "https://images.unsplash.com/photo-1528736235302-52922df5c122?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80",
+    motivationMessage: "We're organizing a street outreach event this weekend to provide meals to homeless youth. These ingredients will help us prepare sandwiches for distribution.",
+    documents: [
+      { name: "Program_License.pdf", url: "#" },
+      { name: "Event_Plan.pdf", url: "#" }
+    ]
   }
 ];

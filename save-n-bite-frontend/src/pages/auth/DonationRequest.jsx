@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Clock, MapPin, Truck, Store } from 'lucide-react';
 import foodListingsAPI from '../../services/foodListingsAPI';
+import CustomerNavBar from '../../components/auth/CustomerNavBar';
 import { useAuth } from '../../context/AuthContext';
 
 const DonationRequestPage = () => {
@@ -40,10 +41,12 @@ const DonationRequestPage = () => {
             title: response.data.name || response.data.title || 'Unknown Item',
             description: response.data.description || 'No description available',
             image: response.data.images?.[0] || response.data.image || response.data.imageUrl || '/placeholder-food.jpg',
-            provider: response.data.provider?.businessName || 
-                     response.data.provider_name || 
-                     response.data.provider || 
-                     'Unknown Provider',
+           provider: {
+  id: response.data.provider?.id || null,
+  business_name: response.data.provider?.business_name || 
+                 response.data.provider_name || 
+                 'Unknown Provider'
+},
             expirationTime: response.data.expiry_date || 
                            response.data.expiryDate || 
                            response.data.expirationTime || 
@@ -162,6 +165,7 @@ const DonationRequestPage = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 p-4">
+      <CustomerNavBar/>
       <div className="max-w-3xl mx-auto">
         <button
           onClick={() => navigate(-1)}
@@ -195,7 +199,7 @@ const DonationRequestPage = () => {
             
             <div className="flex items-center text-gray-600 mb-4">
               <MapPin size={16} className="mr-1" />
-              <span>{listing.provider}</span>
+              <span>{listing.provider?.business_name}</span>
             </div>
             
             <div className="flex items-center text-gray-600 mb-4">
