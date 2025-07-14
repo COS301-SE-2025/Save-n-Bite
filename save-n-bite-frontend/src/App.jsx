@@ -20,6 +20,7 @@ import OrdersAndFeedback from './pages/foodProvider/OrdersAndFeedback';
 import PickupCoordination from './pages/foodProvider/PickupCoordination';
 import ManageDonations from './pages/foodProvider/Donations';
 import AdminLogin from './pages/SystemAdmin/AdminLogin'
+import AdminDashboard from './pages/SystemAdmin/AdminDashboard'
 
 
 function App() {
@@ -50,7 +51,7 @@ function App() {
           <Route path="/pickup-coordination" element={<PickupCoordination />} />
           <Route path="/donations" element={<ManageDonations />} />
           <Route path="/admin-login" element={<AdminLogin />} />
-
+          <Route path="/admin-dashboard" element={<AdminDashboard />} />
       </Routes>
     </Router>
   );
