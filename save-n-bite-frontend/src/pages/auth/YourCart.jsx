@@ -5,29 +5,6 @@ import CustomerNavBar from '../../components/auth/CustomerNavBar';
 import foodAPI from '../../services/FoodAPI';
 import schedulingAPI from '../../services/schedulingAPI';
 
-// Helper to generate 30-minute intervals from a pickup window string (e.g., '09:00-15:00')
-function generateTimeIntervals(pickupWindow, intervalMinutes = 30) {
-  if (!pickupWindow) return [];
-  const [start, end] = pickupWindow.split('-');
-  const [startHour, startMinute] = start.split(':').map(Number);
-  const [endHour, endMinute] = end.split(':').map(Number);
-
-  const intervals = [];
-  let current = new Date();
-  current.setHours(startHour, startMinute, 0, 0);
-
-  const endTime = new Date();
-  endTime.setHours(endHour, endMinute, 0, 0);
-
-  while (current <= endTime) {
-    intervals.push(
-      current.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false })
-    );
-    current = new Date(current.getTime() + intervalMinutes * 60000);
-  }
-  return intervals;
-}
-
 const YourCart = () => {
   const navigate = useNavigate();
   const [cartItems, setCartItems] = useState([]);
@@ -37,6 +14,7 @@ const YourCart = () => {
   const [selectedTimeSlot, setSelectedTimeSlot] = useState('');
   const [timeSlots, setTimeSlots] = useState([]);
   const [slotsLoading, setSlotsLoading] = useState(false);
+  const [selectedItemSlots, setSelectedItemSlots] = useState({}); // Track slots per item
 
   useEffect(() => {
     fetchCart();
@@ -70,49 +48,53 @@ const YourCart = () => {
     setSlotsLoading(true);
     try {
       const today = new Date().toISOString().split('T')[0];
-      const tomorrow = new Date();
-      tomorrow.setDate(tomorrow.getDate() + 1);
-      const tomorrowStr = tomorrow.toISOString().split('T')[0];
-
       let allSlots = [];
+      const itemSlotsMap = {};
+
       for (const item of cartItems) {
-        const listingId = item.listingId || item.id;
-        if (!listingId) continue;
-        // Only fetch for today for now (can add tomorrow if needed)
-        const todayResponse = await schedulingAPI.getAvailableSlots(listingId, today);
-        let slots = [];
-        if (todayResponse.success) {
-          if (todayResponse.data.available_slots && todayResponse.data.available_slots.length > 0) {
-            // Use available_slots as before
-            todayResponse.data.available_slots.forEach(slot => {
-              slots.push({
-                value: `${slot.date}-${slot.start_time}-${listingId}`,
-                label: `Today ${formatTime(slot.start_time)} (Item: ${item.name})`,
-                time: formatTime(slot.start_time),
-                date: 'Today',
-                slotData: slot,
-                listingId,
-                itemName: item.name
-              });
-            });
-          } else if (todayResponse.data.food_listing && todayResponse.data.food_listing.pickup_window) {
-            // Generate intervals from pickup_window
-            const intervals = generateTimeIntervals(todayResponse.data.food_listing.pickup_window);
-            slots = intervals.map(time => ({
-              value: `${today}-${time}-${listingId}`,
-              label: `Today ${time} (Item: ${item.name})`,
-              time,
-              date: 'Today',
-              slotData: { time },
-              listingId,
-              itemName: item.name
-            }));
-          }
+        // Use the correct food listing ID - check multiple possible fields
+        const listingId = item.food_listing_id || item.listingId || item.listing_id || item.id;
+        
+        console.log('Cart item structure:', item);
+        console.log(`Trying to fetch slots for listing ID: ${listingId}`);
+        
+        if (!listingId) {
+          console.warn('No listing ID found for cart item:', item);
+          continue;
         }
-        allSlots.push(...slots);
+
+        const slotsResponse = await schedulingAPI.getAvailableTimeSlots(listingId);
+        
+        if (slotsResponse.success && slotsResponse.data.available_slots) {
+          const itemSlots = slotsResponse.data.available_slots.map(slot => ({
+            value: `${slot.date}-${slot.start_time}-${listingId}-${slot.id}`,
+            label: `${formatDate(slot.date)} ${formatTime(slot.start_time)} - ${formatTime(slot.end_time)} (${slot.available_spots} spots)`,
+            time: formatTime(slot.start_time),
+            date: formatDate(slot.date),
+            slotData: slot,
+            listingId,
+            itemName: item.name,
+            available_spots: slot.available_spots,
+            location: slot.location // Include location info
+          }));
+          
+          // Store slots for this specific item
+          itemSlotsMap[listingId] = itemSlots;
+          allSlots.push(...itemSlots);
+          
+          console.log(`Found ${itemSlots.length} slots for ${item.name}`);
+        } else {
+          console.log(`No slots found for ${item.name}:`, slotsResponse.error);
+          // Set empty array for items with no slots
+          itemSlotsMap[listingId] = [];
+        }
       }
+      
       setTimeSlots(allSlots);
+      setSelectedItemSlots(itemSlotsMap);
+      
     } catch (err) {
+      console.error('Error fetching time slots:', err);
       setError('Failed to load available time slots');
     } finally {
       setSlotsLoading(false);
@@ -134,6 +116,28 @@ const YourCart = () => {
     }
   };
 
+  const formatDate = (dateString) => {
+    try {
+      const date = new Date(dateString);
+      const today = new Date();
+      const tomorrow = new Date(today);
+      tomorrow.setDate(tomorrow.getDate() + 1);
+      
+      if (date.toDateString() === today.toDateString()) {
+        return 'Today';
+      } else if (date.toDateString() === tomorrow.toDateString()) {
+        return 'Tomorrow';
+      } else {
+        return date.toLocaleDateString('en-US', { 
+          month: 'short', 
+          day: 'numeric' 
+        });
+      }
+    } catch (error) {
+      return dateString;
+    }
+  };
+
   const updateQuantity = (itemId, newQuantity) => {
     if (newQuantity < 1) return;
     
@@ -147,6 +151,14 @@ const YourCart = () => {
       const response = await foodAPI.removeFromCart(itemId);
       if (response.success) {
         setCartItems(cartItems.filter(item => item.id !== itemId));
+        // Clear selected time slot if it was for this item
+        const removedItem = cartItems.find(item => item.id === itemId);
+        if (removedItem) {
+          const listingId = removedItem.food_listing_id || removedItem.listingId || removedItem.listing_id || removedItem.id;
+          if (selectedTimeSlot.includes(listingId)) {
+            setSelectedTimeSlot('');
+          }
+        }
       } else {
         setError(response.error);
       }
@@ -158,110 +170,151 @@ const YourCart = () => {
   function generateOrderNumber() {
     return 'SNB' + Math.floor(100000 + Math.random() * 900000);
   }
+
   function generateConfirmationCode() {
     return Math.random().toString(36).substring(2, 8).toUpperCase();
   }
 
-  const handleCheckout = async (paymentDetails) => {
+const handleCheckout = async (paymentDetails) => {
     try {
-      // Instead of calling checkout, just navigate to pickup with item id and time slot
       const selectedSlot = timeSlots.find(slot => slot.value === selectedTimeSlot);
-      // For now, just use the first item in cartItems (single-item flow)
-      const item = cartItems[0];
-  
-      // Prepare all info for PickupPage
-      const orderNumber = generateOrderNumber();
-      const confirmationCode = generateConfirmationCode();
-      
-      // Get user's email from localStorage
-      const userEmail = localStorage.getItem('userEmail') || 'customer@example.com';
-      
-      // Try to get user's name from stored user data
-      let customerName = 'Customer';
-      try {
-        const userData = JSON.parse(localStorage.getItem('userData') || '{}');
-        if (userData.profile?.full_name) {
-          customerName = userData.profile.full_name;
-        } else if (userData.email) {
-          // Use email prefix as name if no full name is available
-          customerName = userData.email.split('@')[0];
-        }
-      } catch (error) {
-        console.log('Could not parse user data, using default name');
+      if (!selectedSlot) {
+        setError('Please select a valid time slot');
+        return;
       }
+
+      // Get the item corresponding to the selected slot
+      const item = cartItems.find(cartItem => {
+        const cartListingId = cartItem.food_listing_id || cartItem.listingId || cartItem.listing_id || cartItem.id;
+        return cartListingId === selectedSlot.listingId;
+      });
+
+      if (!item) {
+        setError('Item not found for selected time slot');
+        return;
+      }
+
+      console.log('Starting checkout process...');
       
-      // Store order data for PickupCoordination page
-      const orderData = {
-        id: Date.now(), // Simple ID for demo
-        orderNumber,
-        customerName: customerName, // Use actual customer name if available
-        status: 'Active',
-        pickupDate: item.expiryDate || new Date().toISOString().split('T')[0], // Use actual expiry date from listing
-        pickupWindow: selectedSlot ? selectedSlot.label : selectedTimeSlot,
-        items: [item.name],
-        contactPhone: 'N/A',
-        contactEmail: userEmail, // Use the actual user's email
-        confirmationCode,
-        itemName: item.name,
-        itemDescription: item.description,
-        providerName: item.provider?.businessName || item.provider?.business_name || 'Provider',
-        providerAddress: item.provider?.business_address || item.provider?.address || 'Pickup Address',
-        pickupTime: selectedSlot ? selectedSlot.label : selectedTimeSlot,
-        totalAmount: item.price * item.quantity,
-        expiryDate: item.expiryDate // Store the actual expiry date
+      // Step 1: Process checkout and create order
+      const checkoutData = {
+        paymentMethod: "card",
+        paymentDetails: {
+          cardNumber: paymentDetails.card_number,
+          expiryDate: paymentDetails.expiry_date,
+          cvv: paymentDetails.cvv,
+          cardholderName: "Customer" // You can get this from user profile
+        },
+        specialInstructions: "Order from web app"
       };
+
+      const checkoutResponse = await schedulingAPI.checkoutCart(checkoutData);
       
-      // Store in localStorage for PickupCoordination to access
-      const existingOrders = JSON.parse(localStorage.getItem('pickupOrders') || '[]');
-      existingOrders.push(orderData);
-      localStorage.setItem('pickupOrders', JSON.stringify(existingOrders));
+      if (!checkoutResponse.success) {
+        setError(`Checkout failed: ${checkoutResponse.error}`);
+        return;
+      }
+
+      console.log('Checkout successful:', checkoutResponse.data);
       
-      // Add to customer's order history for reviews and feedback
-      const orderHistoryData = {
-        id: Date.now(),
-        orderNumber,
-        date: new Date().toISOString().split('T')[0],
-        type: item.price > 0 ? 'purchase' : 'donation',
-        status: 'completed', // Set as completed for testing review functionality
-        items: [
-          {
-            id: item.id,
-            title: item.name,
-            image: item.image,
-            provider: item.provider?.businessName || item.provider?.business_name || 'Provider',
-            quantity: item.quantity,
-            price: item.price
-          }
-        ],
-        total: item.price * item.quantity,
-        provider: item.provider?.businessName || item.provider?.business_name || 'Provider',
-        pickupTime: selectedSlot ? selectedSlot.label : selectedTimeSlot,
-        pickupAddress: item.provider?.business_address || item.provider?.address || 'Pickup Address',
-        confirmationCode,
-        impact: {
-          mealsSaved: item.quantity,
-          co2Reduced: item.quantity * 0.4 // Rough estimate
-        }
+      // Extract order information from checkout response
+      const order = checkoutResponse.data.orders[0]; // Assuming single order for now
+      if (!order) {
+        setError('No order created during checkout');
+        return;
+      }
+
+      // Step 2: Get detailed slot information before scheduling
+      console.log('Fetching detailed slot information...');
+      const detailedSlotsResponse = await schedulingAPI.getAvailableTimeSlots(selectedSlot.listingId);
+      
+      if (!detailedSlotsResponse.success) {
+        setError('Failed to fetch detailed slot information');
+        return;
+      }
+
+      // Find the specific slot with full details
+      const detailedSlot = detailedSlotsResponse.data.available_slots.find(
+        slot => slot.id === selectedSlot.slotData.id
+      );
+
+      if (!detailedSlot) {
+        setError('Selected time slot no longer available');
+        return;
+      }
+
+      // Step 3: Schedule pickup using the order ID and selected slot
+      const scheduleData = {
+        order_id: order.id,
+        food_listing_id: selectedSlot.listingId,
+        time_slot_id: selectedSlot.slotData.id,
+        date: selectedSlot.slotData.date,
+        customer_notes: "Scheduled via web app"
       };
+
+      console.log('Scheduling pickup with data:', scheduleData);
       
-      // Store in customer's order history
-      const existingOrderHistory = JSON.parse(localStorage.getItem('customerOrderHistory') || '[]');
-      existingOrderHistory.push(orderHistoryData);
-      localStorage.setItem('customerOrderHistory', JSON.stringify(existingOrderHistory));
+      const scheduleResponse = await schedulingAPI.schedulePickup(scheduleData);
       
+      if (!scheduleResponse.success) {
+        setError(`Pickup scheduling failed: ${scheduleResponse.error}`);
+        return;
+      }
+
+      console.log('Pickup scheduled successfully:', scheduleResponse.data);
+      
+      // Extract all the real data from API responses
+      const pickup = scheduleResponse.data.pickup;
+      const qrCode = scheduleResponse.data.qr_code;
+      
+      // Navigate to pickup page with comprehensive data
       navigate('/pickup', {
         state: {
-          itemName: item.name,
-          itemDescription: item.description,
-          providerName: item.provider?.businessName || item.provider?.business_name || 'Provider',
-          providerAddress: item.provider?.business_address || item.provider?.address || 'Pickup Address',
-          pickupTime: selectedSlot ? selectedSlot.label : selectedTimeSlot,
-          orderNumber,
-          confirmationCode
+          // Order information
+          orderId: order.id,
+          orderNumber: order.id,
+          
+          // Pickup confirmation details
+          confirmationCode: pickup.confirmation_code,
+          pickupId: pickup.id,
+          pickupStatus: pickup.status,
+          
+          // Food item details
+          itemName: detailedSlot.food_listing.name,
+          itemDescription: detailedSlot.food_listing.description,
+          pickupWindow: detailedSlot.food_listing.pickup_window,
+          
+          // Business/Provider information
+          businessName: detailedSlot.location.contact_person, // or use provider info if available
+          
+          // Location details
+          locationName: detailedSlot.location.name,
+          locationAddress: detailedSlot.location.address,
+          locationInstructions: detailedSlot.location.instructions,
+          contactPerson: detailedSlot.location.contact_person,
+          contactPhone: detailedSlot.location.contact_phone,
+          
+          // Timing information
+          pickupDate: pickup.scheduled_date,
+          pickupStartTime: pickup.scheduled_start_time,
+          pickupEndTime: pickup.scheduled_end_time,
+          formattedPickupTime: `${formatDate(pickup.scheduled_date)} ${formatTime(pickup.scheduled_start_time)} - ${formatTime(pickup.scheduled_end_time)}`,
+          
+          // QR Code data
+          qrCodeData: qrCode,
+          
+          // Additional slot details
+          slotNumber: detailedSlot.slot_number,
+          availableSpots: detailedSlot.available_spots,
+          
+          // Customer notes
+          customerNotes: pickup.customer_notes
         }
       });
+
     } catch (err) {
-      setError('Failed to process payment');
+      console.error('Checkout error:', err);
+      setError(`Failed to process payment: ${err.message}`);
     }
   };
 
@@ -300,7 +353,10 @@ const YourCart = () => {
             <p className="font-medium">Error loading cart</p>
             <p className="text-sm">{error}</p>
             <button 
-              onClick={fetchCart}
+              onClick={() => {
+                setError(null);
+                fetchCart();
+              }}
               className="mt-2 text-sm underline hover:no-underline"
             >
               Try again
@@ -328,49 +384,61 @@ const YourCart = () => {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             <div className="md:col-span-2">
-              {cartItems.map(item => (
-                <div key={item.id} className="bg-white rounded-lg shadow-sm p-4 mb-4">
-                  <div className="flex items-center">
-                    <img 
-                      src={item.image} 
-                      alt={item.name} 
-                      className="w-20 h-20 object-cover rounded-md" 
-                    />
-                    <div className="ml-4 flex-grow">
-                      <h3 className="font-semibold text-gray-800">
-                        {item.name}
-                      </h3>
-                      <p className="text-sm text-gray-600">{item.provider?.business_name}</p>
-                      <p className="text-emerald-600 font-semibold mt-1">
-                        R{item.price.toFixed(2)}
-                      </p>
-                    </div>
+              {cartItems.map(item => {
+                const listingId = item.food_listing_id || item.listingId || item.listing_id || item.id;
+                const itemSlots = selectedItemSlots[listingId] || [];
+                
+                return (
+                  <div key={item.id} className="bg-white rounded-lg shadow-sm p-4 mb-4">
                     <div className="flex items-center">
-                      <button 
-                        onClick={() => updateQuantity(item.id, item.quantity - 1)} 
-                        className="px-2 py-1 border border-gray-300 rounded-l-md hover:bg-gray-50"
-                      >
-                        -
-                      </button>
-                      <span className="px-4 py-1 border-t border-b border-gray-300">
-                        {item.quantity}
-                      </span>
-                      <button 
-                        onClick={() => updateQuantity(item.id, item.quantity + 1)} 
-                        className="px-2 py-1 border border-gray-300 rounded-r-md hover:bg-gray-50"
-                      >
-                        +
-                      </button>
-                      <button 
-                        onClick={() => removeItem(item.id)} 
-                        className="ml-4 text-gray-400 hover:text-red-500"
-                      >
-                        <TrashIcon size={18} />
-                      </button>
+                      <img 
+                        src={item.image} 
+                        alt={item.name} 
+                        className="w-20 h-20 object-cover rounded-md" 
+                      />
+                      <div className="ml-4 flex-grow">
+                        <h3 className="font-semibold text-gray-800">
+                          {item.name}
+                        </h3>
+                        <p className="text-sm text-gray-600">{item.provider?.business_name}</p>
+                        <p className="text-emerald-600 font-semibold mt-1">
+                          R{item.price.toFixed(2)}
+                        </p>
+                        {/* Show available slots for this item */}
+                        <p className="text-xs text-gray-500 mt-1">
+                          {itemSlots.length > 0 
+                            ? `${itemSlots.length} pickup slots available`
+                            : 'No pickup slots available'
+                          }
+                        </p>
+                      </div>
+                      <div className="flex items-center">
+                        <button 
+                          onClick={() => updateQuantity(item.id, item.quantity - 1)} 
+                          className="px-2 py-1 border border-gray-300 rounded-l-md hover:bg-gray-50"
+                        >
+                          -
+                        </button>
+                        <span className="px-4 py-1 border-t border-b border-gray-300">
+                          {item.quantity}
+                        </span>
+                        <button 
+                          onClick={() => updateQuantity(item.id, item.quantity + 1)} 
+                          className="px-2 py-1 border border-gray-300 rounded-r-md hover:bg-gray-50"
+                        >
+                          +
+                        </button>
+                        <button 
+                          onClick={() => removeItem(item.id)} 
+                          className="ml-4 text-gray-400 hover:text-red-500"
+                        >
+                          <TrashIcon size={18} />
+                        </button>
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
 
             <div className="md:col-span-1">
@@ -418,19 +486,21 @@ const YourCart = () => {
                       <option value="">Choose a time slot...</option>
                       {timeSlots.map((slot) => (
                         <option key={slot.value} value={slot.value}>
-                          {slot.label}
+                          {slot.itemName}: {slot.label}
                         </option>
                       ))}
                     </select>
                   )}
                   {selectedTimeSlot && (
-                    <p className="text-xs text-gray-500 mt-1">
-                      Your order will be ready for pickup at the selected time
-                    </p>
+                    <div className="text-xs text-gray-500 mt-2 p-2 bg-gray-50 rounded">
+                      <p><strong>Location:</strong> {timeSlots.find(s => s.value === selectedTimeSlot)?.location?.address}</p>
+                      <p><strong>Contact:</strong> {timeSlots.find(s => s.value === selectedTimeSlot)?.location?.contact_person}</p>
+                      <p><strong>Instructions:</strong> {timeSlots.find(s => s.value === selectedTimeSlot)?.location?.instructions}</p>
+                    </div>
                   )}
                   {timeSlots.length === 0 && !slotsLoading && (
                     <p className="text-xs text-orange-600 mt-1">
-                      No pickup slots available. Please try again later.
+                      No pickup slots available for items in cart.
                     </p>
                   )}
                 </div>
@@ -462,6 +532,9 @@ const YourCart = () => {
                   <p className="text-sm text-emerald-800">
                     <ClockIcon size={14} className="inline mr-1" />
                     Pickup: {timeSlots.find(slot => slot.value === selectedTimeSlot)?.label}
+                  </p>
+                  <p className="text-xs text-emerald-700 mt-1">
+                    {timeSlots.find(slot => slot.value === selectedTimeSlot)?.location?.address}
                   </p>
                 </div>
               )}

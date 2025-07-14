@@ -73,39 +73,45 @@ apiClient.interceptors.response.use(
 
 
 const transformListingData = (backendListing) => {
+    // Handle both response structures:
+    // 1. Direct listing data: { id, name, description, ... }
+    // 2. Wrapped response: { message, listing: { id, name, ... } }
+    
+    const listing = backendListing.listing || backendListing;
+    
     return {
-        id: backendListing.id,
-        name: backendListing.name,
-        title: backendListing.name, // Map name to title for compatibility
-        description: backendListing.description,
-        image: backendListing.imageUrl || 'https://images.unsplash.com/photo-1546833999-b9f581a1996d?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80', // fallback image
-        imageUrl: backendListing.imageUrl,
+        id: listing.id,
+        name: listing.name,
+        title: listing.name, // Map name to title for compatibility
+        description: listing.description,
+        image: listing.imageUrl || 'https://images.unsplash.com/photo-1546833999-b9f581a1996d?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80', // fallback image
+        imageUrl: listing.imageUrl,
         provider: {
-            id: backendListing.provider?.id,
-            business_name: backendListing.provider?.business_name || 'Unknown Provider',
+            id: listing.provider?.id,
+            business_name: listing.provider?.business_name || 'Unknown Provider',
         },
-        provider_name: backendListing.provider?.business_name,
-        provider_address: backendListing.provider?.business_address,
-        provider_logo: backendListing.provider?.logo,
-        originalPrice: parseFloat(backendListing.original_price || 0),
-        discountPrice: parseFloat(backendListing.discounted_price || 0),
-        discountedPrice: parseFloat(backendListing.discounted_price || 0),
-        savings: backendListing.savings || 0,
-        discountPercentage: backendListing.discount_percentage || 0,
-        quantity: backendListing.quantity || 0,
-        quantityAvailable: backendListing.quantity_available || 0,
-        expiryDate: backendListing.expiry_date,
-        expirationTime: formatExpirationTime(backendListing.expiry_date),
-        pickupWindow: backendListing.pickup_window,
-        allergens: backendListing.allergens || [],
-        dietaryInfo: backendListing.dietary_info || [],
-        foodType: backendListing.food_type,
-        status: backendListing.status,
-        isAvailable: backendListing.is_available,
-        type: backendListing.discounted_price > 0 ? 'Discount' : 'Donation',
+        provider_name: listing.provider?.business_name,
+        provider_address: listing.provider?.business_address,
+        provider_logo: listing.provider?.logo,
+        originalPrice: parseFloat(listing.original_price || listing.price || 0),
+        discountPrice: parseFloat(listing.discounted_price || listing.price || 0),
+        discountedPrice: parseFloat(listing.discounted_price || listing.price || 0),
+        savings: listing.savings || 0,
+        discountPercentage: listing.discount_percentage || 0,
+        quantity: listing.quantity || 0,
+        quantityAvailable: listing.quantity_available || listing.quantity || 0,
+        expiryDate: listing.expiry_date,
+        expirationTime: formatExpirationTime(listing.expiry_date),
+        pickupWindow: listing.pickup_window,
+        allergens: listing.allergens || [],
+        dietaryInfo: listing.dietary_info || [],
+        foodType: listing.food_type,
+        status: listing.status,
+        isAvailable: listing.is_available,
+        type: (listing.discounted_price || listing.price) > 0 ? 'Discount' : 'Donation',
         distance: '0.5 km', // This would come from geolocation calculation
-        createdAt: backendListing.created_at,
-        updatedAt: backendListing.updated_at
+        createdAt: listing.created_at || listing.createdAt,
+        updatedAt: listing.updated_at || listing.updatedAt
     };
 };
 
@@ -274,7 +280,7 @@ const foodListingsAPI = {
             
             return {
                 success: true,
-                data: transformListingData(response.data)
+                data: response.data
             };
         } catch (error) {
             console.error('Error fetching food listing details:', error);
@@ -318,22 +324,37 @@ const foodListingsAPI = {
         }
     },
 
-    async createFoodListing(listingData) {
-        try {
-            const response = await apiClient.post('/api/provider/listings/create/', listingData);
-            
-            return {
-                success: true,
-                data: transformListingData(response.data)
-            };
-        } catch (error) {
-            console.error('Error creating food listing:', error);
-            return {
-                success: false,
-                error: error.response?.data || 'Failed to create listing'
-            };
-        }
-    },
+// Replace your createListing method in foodListingsAPI.js with this:
+
+async createListing(listingData) {
+    try {
+        // If listingData is FormData, don't set Content-Type header
+        const config = listingData instanceof FormData ? {
+            headers: {
+                'Content-Type': 'multipart/form-data'
+            }
+        } : {};
+
+        const response = await apiClient.post('/api/provider/listings/create/', listingData, config);
+        
+        console.log('=== RAW BACKEND RESPONSE ===');
+        console.log('Raw response.data:', response.data);
+        console.log('Raw response.data.listing:', response.data.listing);
+        
+        // Don't transform the data here - return the raw backend response
+        // so we can access response.data.listing.id in the frontend
+        return {
+            success: true,
+            data: response.data, // Return the raw backend response structure
+        };
+    } catch (error) {
+        console.error('Error creating food listing:', error);
+        return {
+            success: false,
+            error: error.response?.data?.message || 'Failed to create listing'
+        };
+    }
+},
 
     async updateFoodListing(listingId, listingData) {
         try {
@@ -421,9 +442,12 @@ const foodListingsAPI = {
             } : {};
 
             const response = await apiClient.post('/api/provider/listings/create/', listingData, config);
+            
+            console.log( response);
             return {
                 success: true,
-                data: transformListingData(response.data)
+                data: transformListingData(response.data),
+
             };
         } catch (error) {
             console.error('Error creating food listing:', error);

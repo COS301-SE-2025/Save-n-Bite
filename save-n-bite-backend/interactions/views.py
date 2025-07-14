@@ -1,3 +1,5 @@
+# Updated views.py - CLEANED VERSION
+
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
 from django.shortcuts import render
@@ -6,7 +8,7 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
-from .models import Cart, CartItem, Interaction, Order, Payment, InteractionItem
+from .models import Cart, CartItem, Interaction, Order, Payment, InteractionItem, InteractionStatusHistory
 from food_listings.models import FoodListing
 from .serializers import (
     CartResponseSerializer,
@@ -14,7 +16,8 @@ from .serializers import (
     RemoveCartItemSerializer,
     CheckoutSerializer,
     OrderSerializer,
-    CheckoutResponseSerializer
+    CheckoutResponseSerializer,
+    UpdateInteractionStatusSerializer  # Already imported here
 )
 from django.db import transaction as db_transaction
 import uuid
@@ -78,6 +81,8 @@ class AddToCartView(APIView):
         cart, _ = Cart.objects.get_or_create(user=request.user)
         food_listing = get_object_or_404(FoodListing, id=serializer.validated_data['listingId'])
 
+        # Check if item already in cart
+
         cart_item, created = CartItem.objects.get_or_create(
             cart=cart,
             food_listing=food_listing,
@@ -121,6 +126,107 @@ class RemoveCartItemView(APIView):
                 'totalAmount': float(cart.subtotal)
             }
         }, status=status.HTTP_200_OK)
+
+
+class UpdateInteractionStatusView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def patch(self, request, interaction_id):
+        """PATCH /interactions/{id}/status/ - Update interaction status"""
+        
+        # Get the interaction
+        try:
+            interaction = Interaction.objects.get(id=interaction_id)
+        except Interaction.DoesNotExist:
+            return Response({
+                'error': {
+                    'code': 'NOT_FOUND',
+                    'message': 'Interaction not found'
+                }
+            }, status=status.HTTP_404_NOT_FOUND)
+        
+        # Check permissions - either the customer who made the order or the business owner
+        if not (interaction.user == request.user or 
+                (hasattr(request.user, 'provider_profile') and 
+                 interaction.business == request.user.provider_profile)):
+            return Response({
+                'error': {
+                    'code': 'PERMISSION_DENIED',
+                    'message': 'You do not have permission to update this interaction'
+                }
+            }, status=status.HTTP_403_FORBIDDEN)
+        
+        # Validate request data using serializer (already imported)
+        serializer = UpdateInteractionStatusSerializer(data=request.data)
+        if not serializer.is_valid():
+            return Response({
+                'error': {
+                    'code': 'VALIDATION_ERROR',
+                    'message': 'Invalid data provided',
+                    'details': serializer.errors
+                }
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
+        new_status = serializer.validated_data['status']
+        notes = serializer.validated_data.get('notes', '')
+        
+        # Store old status
+        old_status = interaction.status
+        
+        # Business logic validation
+        if old_status in ['completed', 'cancelled'] and new_status != old_status:
+            return Response({
+                'error': {
+                    'code': 'STATUS_LOCKED',
+                    'message': f'Cannot change status from {old_status}'
+                }
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
+        # Update the interaction
+        try:
+            with db_transaction.atomic():
+                # Update status
+                interaction.status = new_status
+                
+                # Set completed_at timestamp if status is completed
+                if new_status == 'completed' and old_status != 'completed':
+                    interaction.completed_at = timezone.now()
+                
+                interaction.save()
+                
+                # Create status history record
+                InteractionStatusHistory.objects.create(
+                    Interaction=interaction,
+                    old_status=old_status,
+                    new_status=new_status,
+                    changed_by=request.user,
+                    notes=notes
+                )
+                
+                # If completing the interaction, also update any related order status
+                if new_status == 'completed' and hasattr(interaction, 'order'):
+                    interaction.order.status = 'completed'
+                    interaction.order.save()
+            
+            return Response({
+                'interaction_id': str(interaction_id),
+                'old_status': old_status,
+                'new_status': new_status,
+                'updated_at': interaction.updated_at.isoformat(),
+                'completed_at': interaction.completed_at.isoformat() if interaction.completed_at else None,
+                'notes': notes,
+                'message': f'Interaction status updated from {old_status} to {new_status}'
+            }, status=status.HTTP_200_OK)
+            
+        except Exception as e:
+            return Response({
+                'error': {
+                    'code': 'UPDATE_FAILED',
+                    'message': 'Failed to update interaction status',
+                    'details': str(e)
+                }
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
 
 class CheckoutView(APIView):
     permission_classes = [IsAuthenticated]
@@ -210,6 +316,7 @@ class CheckoutView(APIView):
 
         return Response(response_data, status=status.HTTP_201_CREATED)
     
+
 class OrderListView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -218,6 +325,7 @@ class OrderListView(APIView):
         orders = Order.objects.filter(interaction__user=request.user)
         serializer = OrderSerializer(orders, many=True)
         return Response(serializer.data)
+
 
 class OrderDetailView(APIView):
     permission_classes = [IsAuthenticated]

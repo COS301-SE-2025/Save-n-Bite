@@ -8,88 +8,40 @@ import {
   Mail,
   Clock,
   RefreshCw,
+  CheckCircle,
+  XCircle,
+  AlertTriangle,
 } from 'lucide-react';
 import {StatusBadge} from '../../components/foodProvider/StatusBadge';
 import { Button } from '../../components/foodProvider/Button'
 import CalendarView from '../../components/foodProvider/CalendarView';
 import SideBar from '../../components/foodProvider/SideBar';
-import { analyticsAPI } from '../../services/analyticsAPI';
-
-// Mock data for demonstration
-const mockPickupsData = [
-  {
-    id: 1,
-    orderNumber: 'ORD-2025-001',
-    customerName: 'Sarah Johnson',
-    status: 'Active',
-    pickupDate: new Date().toISOString().split('T')[0],
-    pickupWindow: '12:00 PM - 1:00 PM',
-    items: ['Vegetable Curry', 'Rice', 'Naan Bread'],
-    contactPhone: '072 345 6789',
-    contactEmail: 'sarah.j@email.com',
-    confirmationCode: 'ABC123',
-  },
-  {
-    id: 2,
-    orderNumber: 'ORD-2025-002',
-    customerName: 'Michael Chen',
-    status: 'Upcoming',
-    pickupDate: new Date().toISOString().split('T')[0],
-    pickupWindow: '2:00 PM - 3:00 PM',
-    items: ['Chicken Stir Fry', 'Steamed Rice'],
-    contactPhone: '071 987 6543',
-    contactEmail: 'michael.chen@email.com',
-    confirmationCode: 'DEF456',
-  },
-  {
-    id: 3,
-    orderNumber: 'ORD-2025-003',
-    customerName: 'Emma Davis',
-    status: 'Completed',
-    pickupStatus: 'On Time',
-    pickupDate: new Date(Date.now() - 86400000).toISOString().split('T')[0],
-    pickupWindow: '11:00 AM - 12:00 PM',
-    items: ['Beef Stew', 'Mashed Potatoes'],
-    contactPhone: '072 111 2222',
-    contactEmail: 'emma.davis@email.com',
-    confirmationCode: 'GHI789',
-  },
-  {
-    id: 4,
-    orderNumber: 'ORD-2025-004',
-    customerName: 'James Wilson',
-    status: 'Upcoming',
-    pickupDate: new Date(Date.now() + 86400000).toISOString().split('T')[0],
-    pickupWindow: '1:00 PM - 2:00 PM',
-    items: ['Fish & Chips', 'Coleslaw'],
-    contactPhone: '071 333 4444',
-    contactEmail: 'james.wilson@email.com',
-    confirmationCode: 'JKL012',
-  },
-];
+import schedulingAPI from '../../services/schedulingAPI';
 
 function PickupCoordination() {
   const [pickups, setPickups] = useState([]);
-  const [currentProvider, setCurrentProvider] = useState(null);
+  const [scheduleOverview, setScheduleOverview] = useState(null);
   const [dateFilter, setDateFilter] = useState('all');
   const [statusFilter, setStatusFilter] = useState('all');
-  const [typeFilter, setTypeFilter] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [showQRCode, setShowQRCode] = useState(null);
   const [viewMode, setViewMode] = useState('list');
   const [currentDate, setCurrentDate] = useState(new Date());
+  const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]); // NEW: Selected date for API call
   const [showSuccessMessage, setShowSuccessMessage] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [verifyingCode, setVerifyingCode] = useState(false);
+  const [showVerifyModal, setShowVerifyModal] = useState(false);
+  const [verificationCode, setVerificationCode] = useState('');
+  const [customerDetails, setCustomerDetails] = useState({}); 
+  const [completingPickup, setCompletingPickup] = useState(null);
 
-  // Load pickup data on component mount
+  // Load pickup data on component mount and when date changes
   useEffect(() => {
-    const initializeData = async () => {
-      await loadPickupData();
-      loadProviderInfo();
-    };
-    
-    initializeData();
-  }, []);
+    loadScheduleData();
+  }, [selectedDate]); // Add selectedDate as dependency
 
   // Auto-hide success message after 3 seconds
   useEffect(() => {
@@ -102,105 +54,64 @@ function PickupCoordination() {
     }
   }, [showSuccessMessage]);
 
-  const loadPickupData = async () => {
+  const loadScheduleData = async () => {
+    setLoading(true);
+    setError(null);
     try {
-      // Get real orders from localStorage (added by YourCart)
-      const realOrders = JSON.parse(localStorage.getItem('pickupOrders') || '[]');
+      // Use selected date instead of hardcoded date
+      const apiDate = selectedDate; // Already in YYYY-MM-DD format
       
-      // Get current provider's business name
-      const currentProviderBusinessName = localStorage.getItem('providerBusinessName');
+      console.log('Loading schedule for date:', apiDate);
       
-      // Fetch listings data directly from API to determine donation vs sale
-      let listingsData = [];
-      try {
-        const response = await fetch('http://localhost:8000/api/food-listings/');
-        if (response.ok) {
-          const data = await response.json();
-          listingsData = data.listings || [];
+      // Fetch schedule overview from API
+      const response = await schedulingAPI.getScheduleOverview(apiDate);
+      
+      if (response.success) {
+        const overview = response.data.schedule_overview;
+        setScheduleOverview(overview);
+        
+        // Transform the hourly pickups data into a flat array for easier handling
+        const allPickups = [];
+        
+        if (overview.pickups_by_hour) {
+          Object.entries(overview.pickups_by_hour).forEach(([hour, hourPickups]) => {
+            hourPickups.forEach(pickup => {
+              allPickups.push({
+                ...pickup,
+                hour: hour,
+                status: pickup.status === 'pending' ? 'scheduled' : pickup.status,
+                customerName: pickup.customer_name,
+                customerEmail: pickup.customer_email || 'N/A',
+                customerPhone: pickup.customer_phone || 'N/A',
+                orderNumber: `PU-${pickup.id.split('-')[0]}`,
+                pickupDate: overview.date,
+                pickupWindow: `${pickup.time}:00 - ${pickup.time}:00`,
+                items: [pickup.food_listing_name],
+                confirmationCode: pickup.confirmation_code,
+                type: 'Sale',
+                amount: 'N/A'
+              });
+            });
+          });
         }
-      } catch (error) {
-        console.error('Error fetching listings:', error);
+        
+        setPickups(allPickups);
+        console.log(`Loaded ${allPickups.length} pickups for ${apiDate}`);
+      } else {
+        setError(response.error);
       }
-      
-      // Helper function to find listing and determine type
-      const getOrderType = (order) => {
-        // Try to find the listing by item name
-        const matchingListing = listingsData.find(listing => 
-          listing.name === order.itemName || 
-          listing.title === order.itemName ||
-          (order.items && order.items.some(item => item.includes(listing.name)))
-        );
-        
-        if (matchingListing) {
-          // Use the listing's discounted_price to determine type
-          const discountedPrice = parseFloat(matchingListing.discounted_price || matchingListing.discountedPrice || 0);
-          return {
-            type: discountedPrice > 0 ? "Sale" : "Donation",
-            amount: discountedPrice > 0 ? `R${discountedPrice}` : "N/A"
-          };
-        }
-        
-        // Fallback: check if order has price information
-        const price = order.price || order.amount || 0;
-        const isDonation = price === 0 || price === "0" || price === "N/A" || price === "Free";
-        
-        return {
-          type: isDonation ? "Donation" : "Sale",
-          amount: isDonation ? "N/A" : `R${price}`
-        };
-      };
-      
-      // Filter real orders to only show orders for this provider
-      const filteredRealOrders = currentProviderBusinessName 
-        ? realOrders.filter(order => {
-            // More flexible matching - check if provider name contains or matches
-            const orderProviderName = order.providerName || '';
-            const currentProviderName = currentProviderBusinessName || '';
-            
-            return orderProviderName.toLowerCase().includes(currentProviderName.toLowerCase()) ||
-                   currentProviderName.toLowerCase().includes(orderProviderName.toLowerCase()) ||
-                   orderProviderName.toLowerCase() === currentProviderName.toLowerCase();
-          })
-        : realOrders; // Show all orders if no provider business name is stored
-      
-      // Add type information to real orders
-      const enhancedRealOrders = filteredRealOrders.map(order => {
-        const orderTypeInfo = getOrderType(order);
-        return {
-          ...order,
-          type: orderTypeInfo.type,
-          amount: orderTypeInfo.amount
-        };
-      });
-      
-      // Combine enhanced real orders with mock data
-      const allPickups = [...mockPickupsData, ...enhancedRealOrders];
-      
-      setPickups(allPickups);
     } catch (error) {
-      console.error('Error loading pickup data:', error);
-      setPickups(mockPickupsData);
+      console.error('Error loading schedule data:', error);
+      setError('Failed to load pickup schedule');
+    } finally {
+      setLoading(false);
     }
   };
 
-  const loadProviderInfo = () => {
-    try {
-      const providerBusinessName = localStorage.getItem('providerBusinessName');
-      if (providerBusinessName) {
-        setCurrentProvider(providerBusinessName);
-      }
-    } catch (error) {
-      console.error('Error loading provider info:', error);
-    }
-  };
-
-  const getTimeRemaining = (pickupWindow, pickupDate, expiryDate) => {
-    const [startTime, endTime] = pickupWindow.split(' - ');
+  const getTimeRemaining = (pickupWindow, pickupDate) => {
+    const [startTime] = pickupWindow.split(' - ');
     const today = new Date().toLocaleDateString();
-    
-    // Use expiry date if available, otherwise fall back to pickup date
-    const actualDate = expiryDate || pickupDate;
-    const pickupDateObj = new Date(actualDate);
+    const pickupDateObj = new Date(pickupDate);
     const formattedPickupDate = pickupDateObj.toLocaleDateString();
 
     if (formattedPickupDate < today) {
@@ -209,25 +120,19 @@ function PickupCoordination() {
 
     if (formattedPickupDate > today) {
       const daysRemaining = Math.ceil(
-        (pickupDateObj - new Date()) / (1000 * 60 * 60 * 24),
+        (pickupDateObj - new Date()) / (1000 * 60 * 60 * 24)
       );
       return `${daysRemaining} day${daysRemaining > 1 ? 's' : ''}`;
     }
 
+    // For today, calculate time remaining until pickup
     const now = new Date();
-    const [startHour, startMinutes] = startTime.split(':');
-    const startDate = new Date();
-    startDate.setHours(
-      parseInt(startHour),
-      parseInt(startMinutes.split(' ')[0]),
-      0,
-    );
+    const [timeStr] = startTime.split(':');
+    const hour = parseInt(timeStr);
+    const pickupTime = new Date();
+    pickupTime.setHours(hour, 0, 0, 0);
 
-    if (startTime.includes('PM') && !startTime.includes('12:')) {
-      startDate.setHours(startDate.getHours() + 12);
-    }
-
-    const diffMs = startDate - now;
+    const diffMs = pickupTime - now;
     const diffMins = Math.round(diffMs / 60000);
 
     if (diffMins < 0) {
@@ -250,248 +155,433 @@ function PickupCoordination() {
     return false;
   };
 
-  const handleMarkAsPickedUp = async (id, status = 'On Time') => {
+  const handleMarkAsPickedUp = async (pickup, status = 'completed') => {
+    // Prompt for confirmation code
+    const confirmationCode = prompt(`Please enter confirmation code for ${pickup.customerName}:`);
+    if (!confirmationCode) return;
+
     try {
-      // Use the analytics API to mark order as completed
-      const success = analyticsAPI.markOrderAsCompleted(id, status);
+      setCompletingPickup(pickup.id);
+     
+      const response = await schedulingAPI.verifyPickupCode(confirmationCode.trim());
       
-      if (success) {
-        // Update local state to reflect the change
-        setPickups(
-          pickups.map((pickup) =>
-            pickup.id === id
-              ? {
-                  ...pickup,
-                  status: 'Completed',
-                  pickupStatus: status,
-                }
-              : pickup,
-          ),
-        );
+      if (!response.success) {
+        alert('Invalid confirmation code or pickup not found');
+        return;
+      }
+
+      const pickupData = response.data.pickup;
+      const completeResponse = await schedulingAPI.completePickup(pickup.id);
+      
+      if (!completeResponse.success) {
+        alert('Failed to complete pickup');
+        return;
+      }
+      
+      // Store customer details for display
+      setCustomerDetails(prev => ({
+        ...prev,
+        [pickup.id]: {
+          name: pickupData.customer.name,
+          email: pickupData.customer.email,
+          notes: pickupData.customer_notes
+        }
+      }));
+      
+      // Update local state to mark as completed
+      setPickups(pickups.map(p =>
+        p.id === pickup.id
+          ? { ...p, status: status, pickupStatus: status === 'completed' ? 'On Time' : 'No Show' }
+          : p
+      ));
+      
+      // Show success message
+      const statusText = status === 'completed' ? 'completed' : 'marked as no-show';
+      setShowSuccessMessage(true);
+      setSuccessMessage(`Pickup ${statusText} for ${pickupData.customer.name}`);
+      
+      // Dispatch event to notify other components
+      window.dispatchEvent(new CustomEvent('orderCompleted', {
+        detail: { pickup, status }
+      }));
+      
+      await loadScheduleData();
+   
+    } catch (error) {
+      console.error('Error completing pickup:', error);
+      alert('Failed to verify confirmation code');
+    } finally {
+      setCompletingPickup(null);
+    }
+  };
+
+  // NEW: Add missing handleMarkAsNoShow function
+  const handleMarkAsNoShow = async (pickup) => {
+    if (!confirm(`Mark pickup for ${pickup.customerName} as no-show?`)) {
+      return;
+    }
+
+    try {
+      setCompletingPickup(pickup.id);
+      
+      // Update pickup status to missed/no-show
+      const response = await schedulingAPI.updatePickupStatus(pickup.id, 'missed', {
+        business_notes: 'Customer did not show up for pickup'
+      });
+      
+      if (response.success) {
+        // Update local state
+        setPickups(pickups.map(p =>
+          p.id === pickup.id
+            ? { ...p, status: 'missed', pickupStatus: 'No Show' }
+            : p
+        ));
         
-        // Update customer's order history to mark order as completed
-        const customerOrderHistory = JSON.parse(localStorage.getItem('customerOrderHistory') || '[]');
-        const updatedOrderHistory = customerOrderHistory.map(order => {
-          if (order.id === id) {
-            return {
-              ...order,
-              status: 'confirmed'
-            };
-          }
-          return order;
-        });
-        localStorage.setItem('customerOrderHistory', JSON.stringify(updatedOrderHistory));
-        
-        // Dispatch event to notify OrderHistory component
-        window.dispatchEvent(new CustomEvent('orderCompleted'));
-        
-        // Show success message
         setShowSuccessMessage(true);
-        setSuccessMessage(`Order ${id} marked as completed with status: ${status}`);
+        setSuccessMessage(`Pickup marked as no-show for ${pickup.customerName}`);
         
-        // Notify Dashboard that data has been updated
-        // This will trigger a refresh when the user navigates to Dashboard
-        localStorage.setItem('dashboardNeedsRefresh', 'true');
-        
-        console.log(`Order ${id} marked as completed with status: ${status}`);
+        await loadScheduleData();
       } else {
-        console.error('Failed to mark order as completed');
+        alert('Failed to mark as no-show: ' + response.error);
       }
     } catch (error) {
-      console.error('Error marking pickup as completed:', error);
+      console.error('Error marking as no-show:', error);
+      alert('Failed to mark pickup as no-show');
+    } finally {
+      setCompletingPickup(null);
+    }
+  };
+
+  const handleVerifyCode = async () => {
+    if (!verificationCode.trim()) {
+      alert('Please enter a confirmation code');
+      return;
+    }
+
+    setVerifyingCode(true);
+    try {
+      const response = await schedulingAPI.verifyPickupCode(verificationCode.trim());
+      
+      if (!response.success) {
+        alert('Invalid confirmation code or pickup not found');
+        return;
+      }
+      
+      const pickup = response.data.pickup;
+      
+      // Store customer details for this pickup
+      setCustomerDetails(prev => ({
+        ...prev,
+        [pickup.id]: {
+          name: pickup.customer.full_name,
+          email: pickup.customer.email,
+          notes: pickup.customer_notes
+        }
+      }));
+      
+      setShowSuccessMessage(true);
+      setSuccessMessage(`Verification successful for ${pickup.customer.full_name}'s pickup`);
+      setShowVerifyModal(false);
+      setVerificationCode('');
+      
+      await loadScheduleData();
+  
+    } catch (error) {
+      console.error('Error verifying code:', error);
+      alert('Failed to verify confirmation code');
+    } finally {
+      setVerifyingCode(false);
     }
   };
 
   const filteredPickups = pickups.filter((pickup) => {
     const matchesSearch =
       pickup.orderNumber.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      pickup.customerName.toLowerCase().includes(searchQuery.toLowerCase());
+      pickup.customerName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      pickup.confirmationCode.toLowerCase().includes(searchQuery.toLowerCase());
 
     const matchesStatus =
       statusFilter === 'all' ||
-      (statusFilter === 'active' && pickup.status === 'Active') ||
-      (statusFilter === 'upcoming' && pickup.status === 'Upcoming') ||
-      (statusFilter === 'completed' && pickup.status === 'Completed') ||
-      (statusFilter === 'late' && pickup.pickupStatus === 'Late Pickup') ||
-      (statusFilter === 'noshow' && pickup.pickupStatus === 'No Show');
-
-    const matchesType =
-      typeFilter === 'all' ||
-      (typeFilter === 'sale' && pickup.type === 'Sale') ||
-      (typeFilter === 'donation' && pickup.type === 'Donation');
+      (statusFilter === 'scheduled' && pickup.status === 'scheduled') ||
+      (statusFilter === 'completed' && pickup.status === 'completed') ||
+      (statusFilter === 'missed' && pickup.status === 'missed');
 
     const matchesDate =
       dateFilter === 'all' ||
       (dateFilter === 'today' &&
-        new Date(pickup.expiryDate || pickup.pickupDate).toLocaleDateString() ===
+        new Date(pickup.pickupDate).toLocaleDateString() ===
           new Date().toLocaleDateString()) ||
-      (dateFilter === 'tomorrow' &&
-        new Date(pickup.expiryDate || pickup.pickupDate).toLocaleDateString() ===
-          new Date(
-            new Date().setDate(new Date().getDate() + 1),
-          ).toLocaleDateString()) ||
       (dateFilter === 'past' &&
-        new Date(pickup.expiryDate || pickup.pickupDate) < new Date().setHours(0, 0, 0, 0));
+        new Date(pickup.pickupDate) < new Date().setHours(0, 0, 0, 0));
 
-    return matchesSearch && matchesStatus && matchesType && matchesDate;
+    return matchesSearch && matchesStatus && matchesDate;
   });
 
   const sortedPickups = [...filteredPickups].sort((a, b) => {
-    if (a.status === 'Active' && b.status !== 'Active') return -1;
-    if (a.status !== 'Active' && b.status === 'Active') return 1;
-
-    if (a.status === 'Upcoming' && b.status !== 'Upcoming') return -1;
-    if (a.status !== 'Upcoming' && b.status === 'Upcoming') return 1;
-
-    const aDate = a.expiryDate || a.pickupDate;
-    const bDate = b.expiryDate || b.pickupDate;
+    // Sort by hour (time) first
+    const aHour = parseInt(a.hour);
+    const bHour = parseInt(b.hour);
     
-    if (aDate !== bDate) {
-      return new Date(aDate) - new Date(bDate);
+    if (aHour !== bHour) {
+      return aHour - bHour;
     }
-
-    return a.pickupWindow.localeCompare(b.pickupWindow);
+    
+    // Then by status (scheduled first)
+    if (a.status === 'scheduled' && b.status !== 'scheduled') return -1;
+    if (a.status !== 'scheduled' && b.status === 'scheduled') return 1;
+    
+    return 0;
   });
 
-  const handleMonthChange = (direction) => {
-    setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() + direction, 1));
-  };
-
   const refreshPickupData = async () => {
-    await loadPickupData();
-    loadProviderInfo();
-    // Reset filters
+    await loadScheduleData();
+    // Reset filters but keep selected date
     setDateFilter('all');
     setStatusFilter('all');
-    setTypeFilter('all');
     setSearchQuery('');
   };
 
-  return (
-        <div className="w-full flex min-h-screen">
-                 <SideBar onNavigate={() => {}} currentPage="dashboard" />
-                     <div className="flex-1 p-6 overflow-auto">
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold">Pickup Coordination</h1>
-        <p className="text-gray-600 mt-1">
-          Manage food pickups and coordinate with customers
-        </p>
-        {currentProvider && (
-          <div className="mt-2 p-3 bg-emerald-50 border border-emerald-200 rounded-lg">
-            <p className="text-sm text-emerald-800">
-              <strong>Current Provider:</strong> {currentProvider}
-            </p>
-            <p className="text-xs text-emerald-600 mt-1">
-              Showing orders for your business only
-            </p>
+  // NEW: Handle date change
+  const handleDateChange = (newDate) => {
+    setSelectedDate(newDate);
+    // Clear any existing customer details when changing dates
+    setCustomerDetails({});
+  };
+
+  // NEW: Quick date selection functions
+  const setToday = () => {
+    const today = new Date().toISOString().split('T')[0];
+    setSelectedDate(today);
+  };
+
+  const setYesterday = () => {
+    const yesterday = new Date();
+    yesterday.setDate(yesterday.getDate() - 1);
+    setSelectedDate(yesterday.toISOString().split('T')[0]);
+  };
+
+  const setTomorrow = () => {
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    setSelectedDate(tomorrow.toISOString().split('T')[0]);
+  };
+
+  if (loading) {
+    return (
+      <div className="w-full flex min-h-screen">
+        <SideBar onNavigate={() => {}} currentPage="dashboard" />
+        <div className="flex-1 p-6 overflow-auto">
+          <div className="flex items-center justify-center min-h-[60vh]">
+            <div className="text-center">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-600 mx-auto mb-4"></div>
+              <p className="text-gray-600">Loading pickup schedule...</p>
+            </div>
           </div>
-        )}
-        
-        {/* Success Message */}
-        {showSuccessMessage && (
-          <div className="mt-4 p-4 bg-green-50 border border-green-200 rounded-lg">
-            <div className="flex items-center">
-              <div className="flex-shrink-0">
-                <svg className="h-5 w-5 text-green-400" viewBox="0 0 20 20" fill="currentColor">
-                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                </svg>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="w-full flex min-h-screen">
+        <SideBar onNavigate={() => {}} currentPage="dashboard" />
+        <div className="flex-1 p-6 overflow-auto">
+          <div className="max-w-4xl mx-auto">
+            <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-md">
+              <p className="font-medium">Error loading pickup schedule</p>
+              <p className="text-sm">{error}</p>
+              <button 
+                onClick={loadScheduleData}
+                className="mt-2 text-sm underline hover:no-underline"
+              >
+                Try again
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="w-full flex min-h-screen">
+      <SideBar onNavigate={() => {}} currentPage="dashboard" />
+      <div className="flex-1 p-6 overflow-auto">
+        <div className="mb-6">
+          <h1 className="text-2xl font-bold">Pickup Coordination</h1>
+          <p className="text-gray-600 mt-1">
+            Manage food pickups and coordinate with customers
+          </p>
+          
+          {/* Date Selection Section */}
+          <div className="mt-4 bg-white rounded-lg shadow-sm border p-4">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
+              <div className="flex items-center gap-2">
+                <Calendar className="h-5 w-5 text-gray-500" />
+                <label className="text-sm font-medium text-gray-700">Viewing pickups for:</label>
               </div>
-              <div className="ml-3">
-                <p className="text-sm text-green-800">
-                  {successMessage}
-                </p>
-                <p className="text-xs text-green-600 mt-1">
-                  Dashboard statistics have been updated
-                </p>
+              
+              <div className="flex items-center gap-2">
+                <input
+                  type="date"
+                  value={selectedDate}
+                  onChange={(e) => handleDateChange(e.target.value)}
+                  className="px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                />
+                
+                {/* Quick date buttons */}
+                <div className="flex gap-1">
+                  <button
+                    onClick={setYesterday}
+                    className="px-2 py-1 text-xs bg-gray-100 text-gray-700 rounded hover:bg-gray-200 transition-colors"
+                  >
+                    Yesterday
+                  </button>
+                  <button
+                    onClick={setToday}
+                    className="px-2 py-1 text-xs bg-blue-100 text-blue-700 rounded hover:bg-blue-200 transition-colors"
+                  >
+                    Today
+                  </button>
+                  <button
+                    onClick={setTomorrow}
+                    className="px-2 py-1 text-xs bg-gray-100 text-gray-700 rounded hover:bg-gray-200 transition-colors"
+                  >
+                    Tomorrow
+                  </button>
+                </div>
+              </div>
+              
+              {/* Display formatted date */}
+              <div className="text-sm text-gray-600">
+                {new Date(selectedDate + 'T00:00:00').toLocaleDateString('en-US', {
+                  weekday: 'long',
+                  year: 'numeric',
+                  month: 'long',
+                  day: 'numeric'
+                })}
               </div>
             </div>
           </div>
-        )}
-      </div>
-
-      <div className="bg-white rounded-lg shadow-md p-4 mb-6">
-        <div className="flex items-center gap-4">
-          <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
-            <input
-              type="text"
-              placeholder="Search by order or customer..."
-              className="pl-10 pr-4 py-2 border border-gray-300 rounded-md w-full"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-            />
-          </div>
-          <select
-            className="px-4 py-2 border border-gray-300 rounded-md bg-white"
-            value={dateFilter}
-            onChange={(e) => setDateFilter(e.target.value)}
-          >
-            <option value="all">All Dates</option>
-            <option value="today">Today</option>
-            <option value="tomorrow">Tomorrow</option>
-            <option value="past">Past Pickups</option>
-          </select>
-          <select
-            className="px-4 py-2 border border-gray-300 rounded-md bg-white"
-            value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value)}
-          >
-            <option value="all">All Statuses</option>
-            <option value="active">Active</option>
-            <option value="upcoming">Upcoming</option>
-            <option value="completed">Completed</option>
-            <option value="late">Late Pickup</option>
-            <option value="noshow">No Show</option>
-          </select>
-          <select
-            className="px-4 py-2 border border-gray-300 rounded-md bg-white"
-            value={typeFilter}
-            onChange={(e) => setTypeFilter(e.target.value)}
-          >
-            <option value="all">All Types</option>
-            <option value="sale">Sale</option>
-            <option value="donation">Donation</option>
-          </select>
-          <Button
-            variant={viewMode === 'calendar' ? 'primary' : 'secondary'}
-            icon={<Calendar className="h-4 w-4" />}
-            onClick={() => setViewMode(viewMode === 'calendar' ? 'list' : 'calendar')}
-          >
-            {viewMode === 'calendar' ? 'List View' : 'Calendar View'}
-          </Button>
-          <Button
-            variant="secondary"
-            icon={<RefreshCw className="h-4 w-4" />}
-            onClick={refreshPickupData}
-          >
-            Refresh
-          </Button>
+          
+          {/* Schedule Overview Stats */}
+          {scheduleOverview && (
+            <div className="mt-4 grid grid-cols-1 md:grid-cols-4 gap-4">
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                <div className="flex items-center">
+                  <Calendar className="h-8 w-8 text-blue-600" />
+                  <div className="ml-3">
+                    <p className="text-sm font-medium text-blue-800">Total Pickups</p>
+                    <p className="text-2xl font-bold text-blue-900">{scheduleOverview.total_pickups}</p>
+                  </div>
+                </div>
+              </div>
+              <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                <div className="flex items-center">
+                  <CheckCircle className="h-8 w-8 text-green-600" />
+                  <div className="ml-3">
+                    <p className="text-sm font-medium text-green-800">Completed</p>
+                    <p className="text-2xl font-bold text-green-900">{scheduleOverview.completed_pickups}</p>
+                  </div>
+                </div>
+              </div>
+              <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                <div className="flex items-center">
+                  <Clock className="h-8 w-8 text-yellow-600" />
+                  <div className="ml-3">
+                    <p className="text-sm font-medium text-yellow-800">Pending</p>
+                    <p className="text-2xl font-bold text-yellow-900">{scheduleOverview.pending_pickups}</p>
+                  </div>
+                </div>
+              </div>
+              <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+                <div className="flex items-center">
+                  <XCircle className="h-8 w-8 text-red-600" />
+                  <div className="ml-3">
+                    <p className="text-sm font-medium text-red-800">Missed</p>
+                    <p className="text-2xl font-bold text-red-900">{scheduleOverview.missed_pickups}</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+          
+          {/* Success Message */}
+          {showSuccessMessage && (
+            <div className="mt-4 p-4 bg-green-50 border border-green-200 rounded-lg">
+              <div className="flex items-center">
+                <CheckCircle className="h-5 w-5 text-green-400" />
+                <div className="ml-3">
+                  <p className="text-sm text-green-800">{successMessage}</p>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
-      </div>
 
-      {viewMode === 'calendar' ? (
-        <CalendarView 
-          currentDate={currentDate} 
-          pickups={pickups} 
-          onMonthChange={handleMonthChange} 
-        />
-      ) : (
+        {/* Filters and Controls */}
+        <div className="bg-white rounded-lg shadow-md p-4 mb-6">
+          <div className="flex items-center gap-4 flex-wrap">
+            <div className="relative flex-1 min-w-64">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
+              <input
+                type="text"
+                placeholder="Search by order, customer, or confirmation code..."
+                className="pl-10 pr-4 py-2 border border-gray-300 rounded-md w-full"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
+            </div>
+            <select
+              className="px-4 py-2 border border-gray-300 rounded-md bg-white"
+              value={dateFilter}
+              onChange={(e) => setDateFilter(e.target.value)}
+            >
+              <option value="all">All Dates</option>
+              <option value="today">Today</option>
+              <option value="past">Past Pickups</option>
+            </select>
+            <select
+              className="px-4 py-2 border border-gray-300 rounded-md bg-white"
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+            >
+              <option value="all">All Statuses</option>
+              <option value="scheduled">Scheduled</option>
+              <option value="completed">Completed</option>
+              <option value="missed">Missed</option>
+            </select>
+            <Button
+              variant="primary"
+              onClick={() => setShowVerifyModal(true)}
+            >
+              Verify Code
+            </Button>
+            <Button
+              variant="secondary"
+              icon={<RefreshCw className="h-4 w-4" />}
+              onClick={refreshPickupData}
+            >
+              Refresh
+            </Button>
+          </div>
+        </div>
+
+        {/* Pickup List */}
         <div className="space-y-4">
           {sortedPickups.map((pickup) => {
-            const timeRemaining = getTimeRemaining(
-              pickup.pickupWindow,
-              pickup.pickupDate,
-              pickup.expiryDate
-            );
+            const timeRemaining = getTimeRemaining(pickup.pickupWindow, pickup.pickupDate);
             const isUrgent = isPickupUrgent(timeRemaining);
 
             return (
               <div
                 key={pickup.id}
                 className={`bg-white rounded-lg shadow-md overflow-hidden border-l-4 ${
-                  pickup.status === 'Active' ? 'border-blue-500' :
-                  pickup.status === 'Completed' ? 'border-green-500' :
-                  isUrgent ? 'border-amber-500' : 'border-purple-500'
+                  pickup.status === 'scheduled' 
+                    ? isUrgent ? 'border-amber-500' : 'border-blue-500'
+                    : pickup.status === 'completed' ? 'border-green-500' 
+                    : 'border-red-500'
                 }`}
               >
                 <div className="p-5">
@@ -501,33 +591,21 @@ function PickupCoordination() {
                         {pickup.orderNumber}
                       </h3>
                       <p className="text-gray-600">{pickup.customerName}</p>
-                      {pickup.type && (
-                        <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium mt-1 ${
-                          pickup.type === 'Sale' 
-                            ? 'bg-blue-100 text-blue-800' 
-                            : 'bg-green-100 text-green-800'
-                        }`}>
-                          {pickup.type}
-                          {pickup.amount && pickup.type === 'Sale' && (
-                            <span className="ml-1 text-xs">• {pickup.amount}</span>
-                          )}
-                        </span>
-                      )}
                     </div>
                     <div className="flex items-center space-x-2">
                       <StatusBadge status={pickup.status} />
-                      {isUrgent && pickup.status !== 'Completed' && (
+                      {isUrgent && pickup.status === 'scheduled' && (
                         <span className="bg-amber-100 text-amber-800 px-2 py-1 rounded-full text-xs font-medium flex items-center">
-                          <Clock className="h-3 w-3 mr-1" />
+                          <AlertTriangle className="h-3 w-3 mr-1" />
                           Urgent
                         </span>
                       )}
                     </div>
                   </div>
 
-                  {isUrgent && pickup.status !== 'Completed' && (
+                  {isUrgent && pickup.status === 'scheduled' && (
                     <div className="bg-amber-50 border-l-4 border-amber-400 p-3 mb-3 flex items-center">
-                      <div className="h-5 w-5 text-amber-500 mr-2" />
+                      <AlertTriangle className="h-5 w-5 text-amber-500 mr-2" />
                       <p className="text-sm text-amber-700">
                         {timeRemaining === 'Active'
                           ? 'Pickup window is active now!'
@@ -536,147 +614,144 @@ function PickupCoordination() {
                     </div>
                   )}
 
-                  <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-4">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
                     <div>
-                      <h4 className="text-sm font-medium text-gray-500 mb-1">
-                        Items:
-                      </h4>
+                      <h4 className="text-sm font-medium text-gray-500 mb-1">Items:</h4>
                       <ul className="list-disc list-inside">
                         {pickup.items.map((item, idx) => (
-                          <li key={idx} className="text-gray-800 text-sm">
-                            {item}
-                          </li>
+                          <li key={idx} className="text-gray-800 text-sm">{item}</li>
                         ))}
                       </ul>
                     </div>
                     <div>
-                      <h4 className="text-sm font-medium text-gray-500 mb-1">
-                        Pickup Window:
-                      </h4>
+                      <h4 className="text-sm font-medium text-gray-500 mb-1">Pickup Time:</h4>
                       <div className="flex items-center">
                         <Clock4 className="h-4 w-4 text-gray-400 mr-1" />
                         <div>
-                          <p className="text-gray-800">{pickup.pickupWindow}</p>
+                          <p className="text-gray-800">{pickup.time}:00</p>
                           <p className="text-xs text-gray-500">
-                            {new Date(pickup.expiryDate || pickup.pickupDate).toLocaleDateString()}
-                            {pickup.expiryDate && (
-                              <span className="ml-1 text-orange-600">(Expiry)</span>
-                            )}
+                            {new Date(pickup.pickupDate).toLocaleDateString()}
                           </p>
                         </div>
                       </div>
-                      {pickup.status !== 'Completed' && (
+                      {pickup.status === 'scheduled' && (
                         <div className="mt-1 flex items-center">
                           <Clock className="h-4 w-4 text-blue-500 mr-1" />
-                          <span
-                            className={`text-xs ${
-                              isUrgent ? 'text-amber-600 font-medium' : 'text-blue-600'
-                            }`}
-                          >
-                            {timeRemaining === 'Active'
-                              ? 'Active now'
-                              : `${timeRemaining} remaining`}
+                          <span className={`text-xs ${isUrgent ? 'text-amber-600 font-medium' : 'text-blue-600'}`}>
+                            {timeRemaining === 'Active' ? 'Active now' : `${timeRemaining} remaining`}
                           </span>
                         </div>
                       )}
                     </div>
                     <div>
-                      <h4 className="text-sm font-medium text-gray-500 mb-1">
-                        Customer Contact:
-                      </h4>
-                      <div className="flex space-x-2 mb-1">
-                        <a
-                          href={`tel:${pickup.contactPhone}`}
-                          className="text-blue-600 hover:text-blue-800 flex items-center text-sm"
-                        >
-                          <Phone className="h-3 w-3 mr-1" />
-                          {pickup.contactPhone}
-                        </a>
-                      </div>
-                      <div className="flex space-x-2">
-                        <a
-                          href={`mailto:${pickup.contactEmail}`}
-                          className="text-blue-600 hover:text-blue-800 flex items-center text-sm"
-                        >
-                          <Mail className="h-3 w-3 mr-1" />
-                          {pickup.contactEmail}
-                        </a>
+                      <h4 className="text-sm font-medium text-gray-500 mb-1">Customer & Code:</h4>
+                      
+                      {/* Customer Contact Info (shown after verification) */}
+                      {customerDetails[pickup.id] ? (
+                        <div className="space-y-2 mb-3">
+                          <div className="p-2 bg-green-50 border border-green-200 rounded-md">
+                            <p className="text-xs font-medium text-green-800 mb-1">Verified Customer:</p>
+                            <p className="text-sm font-medium text-gray-900">{customerDetails[pickup.id].name}</p>
+                            <div className="flex flex-col gap-1 mt-1">
+                              <a
+                                href={`mailto:${customerDetails[pickup.id].email}`}
+                                className="text-blue-600 hover:text-blue-800 flex items-center text-xs"
+                              >
+                                <Mail className="h-3 w-3 mr-1" />
+                                {customerDetails[pickup.id].email}
+                              </a>
+                              {customerDetails[pickup.id].phone && customerDetails[pickup.id].phone !== 'N/A' && (
+                                <a
+                                  href={`tel:${customerDetails[pickup.id].phone}`}
+                                  className="text-blue-600 hover:text-blue-800 flex items-center text-xs"
+                                >
+                                  <Phone className="h-3 w-3 mr-1" />
+                                  {customerDetails[pickup.id].phone}
+                                </a>
+                              )}
+                            </div>
+                            {customerDetails[pickup.id].notes && (
+                              <p className="text-xs text-gray-600 mt-1 italic">
+                                Note: {customerDetails[pickup.id].notes}
+                              </p>
+                            )}
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="mb-3">
+                          <p className="text-xs text-gray-500 mb-2">Contact info available after verification</p>
+                        </div>
+                      )}
+                      
+                      {/* Confirmation Code */}
+                      <div>
+                        <p className="text-xs font-medium text-gray-500 mb-1">Confirmation Code:</p>
+                        <div className="bg-gray-100 px-2 py-1 rounded-md inline-block">
+                          <span className="text-sm font-mono bg-white px-2 py-0.5 border border-gray-300 rounded">
+                            {pickup.confirmationCode}
+                          </span>
+                        </div>
                       </div>
                     </div>
                   </div>
 
                   <div className="border-t border-gray-200 pt-4">
                     <div className="flex flex-wrap items-center justify-between gap-2">
-                      {pickup.status !== 'Completed' ? (
+                      {pickup.status === 'confirmed' || pickup.status === 'scheduled' ? (
                         <div className="flex items-center space-x-2">
                           <Button
                             variant="success"
                             size="sm"
-                            onClick={() => handleMarkAsPickedUp(pickup.id, 'On Time')}
+                            onClick={() => handleMarkAsPickedUp(pickup)}
+                            disabled={completingPickup === pickup.id}
                           >
-                            Mark as Picked Up
+                            {completingPickup === pickup.id ? 'Completing...' : 'Mark as Completed'}
                           </Button>
                           <Button
                             variant="danger"
                             size="sm"
-                            onClick={() => handleMarkAsPickedUp(pickup.id, 'No Show')}
+                            onClick={() => handleMarkAsNoShow(pickup)}
+                            disabled={completingPickup === pickup.id}
                           >
-                            Mark as No Show
+                            {completingPickup === pickup.id ? 'Processing...' : 'Mark as No Show'}
                           </Button>
                         </div>
                       ) : (
-                        <div
-                          className={`px-3 py-2 rounded-md flex items-center ${
-                            pickup.pickupStatus === 'On Time'
-                              ? 'bg-green-50 text-green-700'
-                              : pickup.pickupStatus === 'Late Pickup'
-                                ? 'bg-amber-50 text-amber-700'
-                                : 'bg-red-50 text-red-700'
-                          }`}
-                        >
+                        <div className={`px-3 py-2 rounded-md flex items-center ${
+                          pickup.status === 'completed' 
+                            ? 'bg-green-50 text-green-700' 
+                            : pickup.status === 'confirmed'
+                            ? 'bg-blue-50 text-blue-700'
+                            : 'bg-red-50 text-red-700'
+                        }`}>
                           <span className="text-sm font-medium">
-                            {pickup.pickupStatus === 'On Time'
-                              ? 'Picked up on time'
-                              : pickup.pickupStatus === 'Late Pickup'
-                                ? 'Picked up late'
-                                : 'Customer did not show'}
+                            {pickup.status === 'completed' ? 'Pickup completed' : 
+                             pickup.status === 'confirmed' ? 'Code verified - ready for pickup' :
+                             'Customer no-show'}
                           </span>
                         </div>
                       )}
-                      <div className="flex items-center space-x-2">
-                        <div className="bg-gray-100 px-3 py-1 rounded-md flex items-center">
-                          <span className="text-sm font-medium text-gray-700 mr-2">
-                            Confirmation Code:
-                          </span>
-                          <span className="text-sm font-mono bg-white px-2 py-0.5 border border-gray-300 rounded">
-                            {pickup.confirmationCode}
-                          </span>
-                        </div>
-                        <Button
-                          variant="secondary"
-                          size="sm"
-                          icon={<QrCode className="h-4 w-4" />}
-                          onClick={() =>
-                            setShowQRCode(
-                              pickup.id === showQRCode ? null : pickup.id,
-                            )
-                          }
-                        >
-                          {pickup.id === showQRCode ? 'Hide QR' : 'Show QR'}
-                        </Button>
-                      </div>
+                      
+                      <Button
+                        variant="secondary"
+                        size="sm"
+                        icon={<QrCode className="h-4 w-4" />}
+                        onClick={() => setShowQRCode(pickup.id === showQRCode ? null : pickup.id)}
+                      >
+                        {pickup.id === showQRCode ? 'Hide QR' : 'Show QR'}
+                      </Button>
                     </div>
 
                     {pickup.id === showQRCode && (
                       <div className="mt-4 flex justify-center">
                         <div className="bg-white p-4 border border-gray-200 rounded-md">
-                          <div className="w-32 h-32 bg-gray-800 flex items-center justify-center text-white text-xs">
-                            QR Code for
-                            <br />
-                            {pickup.confirmationCode}
-                          </div>
+                          <img
+                            src={`https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${pickup.confirmationCode}`}
+                            alt={`QR Code for ${pickup.confirmationCode}`}
+                            className="w-32 h-32"
+                          />
                           <p className="text-xs text-center mt-2 text-gray-500">
-                            Scan to verify pickup
+                            Scan to verify pickup: {pickup.confirmationCode}
                           </p>
                         </div>
                       </div>
@@ -684,24 +759,67 @@ function PickupCoordination() {
                   </div>
                 </div>
               </div>
-            )
+            );
           })}
         </div>
-      )}
 
-      {sortedPickups.length === 0 && viewMode === 'list' && (
-        <div className="bg-white rounded-lg shadow-md p-8 text-center">
-          <h3 className="text-lg font-medium text-gray-900 mb-2">
-            No pickups match your filters
-          </h3>
-          <p className="text-gray-600">
-            Try adjusting your search criteria or date filters.
-          </p>
-        </div>
-      )}
-    </div>
+        {sortedPickups.length === 0 && (
+          <div className="bg-white rounded-lg shadow-md p-8 text-center">
+            <h3 className="text-lg font-medium text-gray-900 mb-2">
+              No pickups match your filters
+            </h3>
+            <p className="text-gray-600">
+              Try adjusting your search criteria or date filters.
+            </p>
+          </div>
+        )}
+
+        {/* Verify Code Modal */}
+        {showVerifyModal && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+            <div className="bg-white rounded-lg max-w-md w-full p-6">
+              <h2 className="text-xl font-semibold mb-4">Verify Pickup Code</h2>
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Confirmation Code
+                  </label>
+                  <input
+                    type="text"
+                    value={verificationCode}
+                    onChange={(e) => setVerificationCode(e.target.value.toUpperCase())}
+                    placeholder="Enter confirmation code"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                    maxLength={6}
+                  />
+                </div>
+                <div className="flex gap-3">
+                  <Button
+                    variant="primary"
+                    onClick={handleVerifyCode}
+                    disabled={verifyingCode}
+                    className="flex-1"
+                  >
+                    {verifyingCode ? 'Verifying...' : 'Verify'}
+                  </Button>
+                  <Button
+                    variant="secondary"
+                    onClick={() => {
+                      setShowVerifyModal(false);
+                      setVerificationCode('');
+                    }}
+                    className="flex-1"
+                  >
+                    Cancel
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
 }
 
-export default  PickupCoordination;
+export default PickupCoordination;

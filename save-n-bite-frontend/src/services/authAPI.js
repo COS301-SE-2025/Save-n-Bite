@@ -50,6 +50,7 @@ const transformFormData = (formData, userType) => {
                 organisation_name: formData.organisationName,
                 organisation_contact: formData.organisationContact,
                 representative_name: formData.representativeName,
+                representative_email: 'john@gmail.com',
                 organisation_street: formData.addressLine1,
                 organisation_city: formData.city,
                 organisation_province: formData.province,

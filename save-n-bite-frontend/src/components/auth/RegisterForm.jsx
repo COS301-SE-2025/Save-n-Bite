@@ -29,6 +29,7 @@ const RegisterForm = ({ userType = USER_TYPES.CUSTOMER, onSuccess, onError }) =>
         organisationContact: '',
         organisationEmail: '',
         representativeName: '',
+        representative_email: '',
         representativeSurname: '',
         npoDocument: null,
         
