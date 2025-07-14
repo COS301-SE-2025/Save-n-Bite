@@ -60,7 +60,7 @@ const Sidebar = ({ isOpen }) => {
             isOpen={isOpen}
           />
           <NavItem
-            to="/reviews"
+            to="/admin-reviews"
             icon={<MessageSquareIcon size={20} />}
             label="Review Moderation"
             isOpen={isOpen}
