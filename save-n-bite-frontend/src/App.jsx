@@ -24,6 +24,7 @@ import Layout from './components/SystemAdmin/Layout/Layout'
 import AdminLogin from './pages/SystemAdmin/AdminLogin'
 import AdminDashboard from './pages/SystemAdmin/AdminDashboard'
 import Users from './pages/SystemAdmin/Users'
+import Verifications from './pages/SystemAdmin/Verifications'
 
 
 
@@ -59,6 +60,7 @@ function App() {
           <Route path="/admin-login" element={<AdminLogin />} />
           <Route path="/admin-dashboard" element={<AdminDashboard />} />
           <Route path="/users" element={<Users />} />
+          <Route path="/verifications" element={<Verifications />} />
         </Route>
 
 
