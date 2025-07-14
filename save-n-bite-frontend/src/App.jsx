@@ -25,7 +25,7 @@ import AdminLogin from './pages/SystemAdmin/AdminLogin'
 import AdminDashboard from './pages/SystemAdmin/AdminDashboard'
 import Users from './pages/SystemAdmin/Users'
 import Verifications from './pages/SystemAdmin/Verifications'
-
+import Listings from './pages/SystemAdmin/Listings'
 
 
 function App() {
@@ -61,6 +61,7 @@ function App() {
           <Route path="/admin-dashboard" element={<AdminDashboard />} />
           <Route path="/users" element={<Users />} />
           <Route path="/verifications" element={<Verifications />} />
+          <Route path="/listings" element={<Listings />} />
         </Route>
 
 
