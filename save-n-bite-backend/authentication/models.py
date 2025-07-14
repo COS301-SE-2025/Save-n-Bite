@@ -26,6 +26,26 @@ class User(AbstractUser):
     role = models.CharField(max_length=10, choices=ROLE_CHOICES, default='normal')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+        # Password reset functionality
+    has_temporary_password = models.BooleanField(default=False)
+    password_must_change = models.BooleanField(default=False)
+    temp_password_created_at = models.DateTimeField(null=True, blank=True)
+    
+    # Account status tracking
+    last_login_ip = models.GenericIPAddressField(null=True, blank=True)
+    account_locked_until = models.DateTimeField(null=True, blank=True)
+    failed_login_attempts = models.IntegerField(default=0)
+        # Admin-specific fields
+    admin_notes = models.TextField(blank=True, help_text="Admin notes about this user")
+    deactivation_reason = models.CharField(max_length=255, blank=True)
+    deactivated_by = models.ForeignKey(
+        'self', 
+        on_delete=models.SET_NULL, 
+        null=True, 
+        blank=True, 
+        related_name='deactivated_users'
+    )
+    deactivated_at = models.DateTimeField(null=True, blank=True)
     
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['username']
@@ -40,6 +60,84 @@ class User(AbstractUser):
     def id(self):
         """Alias for UserID to maintain compatibility"""
         return self.UserID
+    
+    def get_full_name(self):
+        """Get user's full name based on user type"""
+        if self.user_type == 'customer' and hasattr(self, 'customer_profile'):
+            return self.customer_profile.full_name
+        elif self.user_type == 'ngo' and hasattr(self, 'ngo_profile'):
+            return self.ngo_profile.representative_name
+        elif self.user_type == 'provider' and hasattr(self, 'provider_profile'):
+            return self.provider_profile.business_name
+        return self.username
+    
+    def can_login(self):
+        """Check if user can login (not locked, active, etc.)"""
+        from django.utils import timezone
+        
+        # Check if account is active
+        if not self.is_active:
+            return False, "Account is deactivated"
+        
+        # Check if account is temporarily locked
+        if self.account_locked_until and self.account_locked_until > timezone.now():
+            return False, "Account is temporarily locked"
+        
+        # Check if password must be changed
+        if self.password_must_change:
+            return True, "Password must be changed"  # Allow login but force change
+        
+        return True, "OK"
+    
+    def increment_failed_login(self):
+        """Increment failed login attempts and lock if needed"""
+        from django.utils import timezone
+        self.failed_login_attempts += 1
+        
+        # Lock account after 5 failed attempts for 30 minutes
+        if self.failed_login_attempts >= 5:
+            self.account_locked_until = timezone.now() + timezone.timedelta(minutes=30)
+        
+        self.save()
+    
+    def reset_failed_login_attempts(self):
+        """Reset failed login attempts after successful login"""
+        self.failed_login_attempts = 0
+        self.account_locked_until = None
+        self.save()
+    
+    def set_temporary_password(self, temp_password):
+        """Set a temporary password that must be changed"""
+        from django.utils import timezone
+        self.set_password(temp_password)
+        self.has_temporary_password = True
+        self.password_must_change = True
+        self.temp_password_created_at = timezone.now()
+        self.save()
+    
+    def complete_password_change(self):
+        """Mark temporary password as changed"""
+        self.has_temporary_password = False
+        self.password_must_change = False
+        self.temp_password_created_at = None
+        self.save()
+    
+    def deactivate_account(self, admin_user, reason=""):
+        """Deactivate account with admin tracking"""
+        from django.utils import timezone
+        self.is_active = False
+        self.deactivation_reason = reason
+        self.deactivated_by = admin_user
+        self.deactivated_at = timezone.now()
+        self.save()
+    
+    def reactivate_account(self):
+        """Reactivate account"""
+        self.is_active = True
+        self.deactivation_reason = ""
+        self.deactivated_by = None
+        self.deactivated_at = None
+        self.save()
 
 class CustomerProfile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='customer_profile', db_column='user_id', to_field='UserID')

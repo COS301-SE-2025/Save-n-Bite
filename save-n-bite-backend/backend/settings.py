@@ -58,6 +58,7 @@ INSTALLED_APPS = [
     'analytics',
     'scheduling',
     'reviews',
+    'admin_system',
 ]
 
 MIDDLEWARE = [
@@ -69,6 +70,8 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'authentication.middleware.PasswordChangeMiddleware',  
+
 ]
 
 ROOT_URLCONF = 'backend.urls'
@@ -101,7 +104,7 @@ DATABASES = {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': os.environ.get('DB_NAME'),
         'USER': os.environ.get('DB_USER'),
-        'PASSWORD': os.environ.get('DB_PASSWORD'),  
+        'PASSWORD': os.getenv('DB_PASSWORD', '').strip('"').strip("'"),  
         'HOST': os.environ.get('DB_HOST'),
         'PORT': os.environ.get('DB_PORT'),
     }
