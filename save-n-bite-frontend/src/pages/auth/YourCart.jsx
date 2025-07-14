@@ -1,113 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { ShoppingCartIcon, TrashIcon, CreditCardIcon, ClockIcon, AlertCircleIcon, CheckCircleIcon } from 'lucide-react';
+import { ShoppingCartIcon, TrashIcon, CreditCardIcon, ClockIcon } from 'lucide-react';
 import CustomerNavBar from '../../components/auth/CustomerNavBar';
 import foodAPI from '../../services/FoodAPI';
 import schedulingAPI from '../../services/schedulingAPI';
-
-// Helper to generate 30-minute intervals from a pickup window string (e.g., '09:00-15:00')
-function generateTimeIntervals(pickupWindow, intervalMinutes = 30) {
-  if (!pickupWindow) return [];
-  const [start, end] = pickupWindow.split('-');
-  const [startHour, startMinute] = start.split(':').map(Number);
-  const [endHour, endMinute] = end.split(':').map(Number);
-
-  const intervals = [];
-  let current = new Date();
-  current.setHours(startHour, startMinute, 0, 0);
-
-  const endTime = new Date();
-  endTime.setHours(endHour, endMinute, 0, 0);
-
-  while (current <= endTime) {
-    intervals.push(
-      current.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false })
-    );
-    current = new Date(current.getTime() + intervalMinutes * 60000);
-  }
-  return intervals;
-}
-
-// Card validation utilities
-const validateCardNumber = (cardNumber) => {
-  const cleaned = cardNumber.replace(/\s+/g, '');
-  return /^\d{16}$/.test(cleaned);
-};
-
-const validateExpiryDate = (expiryDate) => {
-  const regex = /^(0[1-9]|1[0-2])\/\d{2}$/;
-  if (!regex.test(expiryDate)) return false;
-  
-  const [month, year] = expiryDate.split('/');
-  const currentDate = new Date();
-  const currentYear = currentDate.getFullYear() % 100; // Get last 2 digits of current year
-  const currentMonth = currentDate.getMonth() + 1;
-  
-  const expYear = parseInt(year, 10);
-  const expMonth = parseInt(month, 10);
-  
-  // Additional validation for month range (should be caught by regex, but double-check)
-  if (expMonth < 1 || expMonth > 12) {
-    return false;
-  }
-  
-  // Handle year validation - cards typically expire 3-10 years from now
-  // For 2-digit years, we need to handle century rollover
-  let fullExpYear = expYear;
-  if (expYear < 50) {
-    // Years 00-49 are assumed to be 20XX
-    fullExpYear = 2000 + expYear;
-  } else {
-    // Years 50-99 are assumed to be 19XX (though this would be expired)
-    fullExpYear = 1900 + expYear;
-  }
-  
-  const currentFullYear = new Date().getFullYear();
-  const maxValidYear = currentFullYear + 10; 
-
-  if (expYear < currentYear || (expYear === currentYear && expMonth < currentMonth)) {
-    return false;
-  }
-  
-  if (fullExpYear > maxValidYear) {
-    return false;
-  }
-  
-  if (fullExpYear < currentFullYear) {
-    return false;
-  }
-  
-  return true;
-};
-
-const validateCVV = (cvv) => {
-  return /^\d{3}$/.test(cvv);
-};
-
-const formatCardNumber = (value) => {
-  const cleaned = value.replace(/\s+/g, '').replace(/[^0-9]/gi, '');
-  const matches = cleaned.match(/\d{4,16}/g);
-  const match = matches && matches[0] || '';
-  const parts = [];
-  
-  for (let i = 0, len = match.length; i < len; i += 4) {
-    parts.push(match.substring(i, i + 4));
-  }
-  
-  if (parts.length) {
-    return parts.join(' ');
-  } else {
-    return cleaned;
-  }
-};
-
-const formatExpiryDate = (value) => {
-  const cleaned = value.replace(/\D/g, '');
-  if (cleaned.length >= 2) {
-    return cleaned.substring(0, 2) + '/' + cleaned.substring(2, 4);
-  }
-  return cleaned;
-};
 
 const YourCart = () => {
   const navigate = useNavigate();
@@ -118,25 +14,14 @@ const YourCart = () => {
   const [selectedTimeSlot, setSelectedTimeSlot] = useState('');
   const [timeSlots, setTimeSlots] = useState([]);
   const [slotsLoading, setSlotsLoading] = useState(false);
-  const [processingPayment, setProcessingPayment] = useState(false);
-  
-
-  const [paymentForm, setPaymentForm] = useState({
-    cardNumber: '',
-    expiryDate: '',
-    cvv: '',
-    holderName: ''
-  });
-
-  const [validationErrors, setValidationErrors] = useState({});
-  const [touchedFields, setTouchedFields] = useState({});
+  const [selectedItemSlots, setSelectedItemSlots] = useState({}); // Track slots per item
 
   useEffect(() => {
     fetchCart();
   }, []);
 
   useEffect(() => {
-
+    // Fetch time slots when cart items are loaded
     if (cartItems.length > 0) {
       fetchTimeSlots();
     }
@@ -285,100 +170,13 @@ const YourCart = () => {
   function generateOrderNumber() {
     return 'SNB' + Math.floor(100000 + Math.random() * 900000);
   }
-  
+
   function generateConfirmationCode() {
     return Math.random().toString(36).substring(2, 8).toUpperCase();
   }
 
-  const validateForm = () => {
-    const errors = {};
-    
-    if (!paymentForm.holderName.trim()) {
-      errors.holderName = 'Cardholder name is required';
-    }
-    
-    if (!validateCardNumber(paymentForm.cardNumber)) {
-      errors.cardNumber = 'Card number must be 16 digits';
-    }
-    
-    if (!validateExpiryDate(paymentForm.expiryDate)) {
-      errors.expiryDate = 'Enter a valid expiry date (MM/YY) in the future';
-    }
-    
-    if (!validateCVV(paymentForm.cvv)) {
-      errors.cvv = 'CVV must be 3 digits';
-    }
-    
-    setValidationErrors(errors);
-    return Object.keys(errors).length === 0;
-  };
-
-  const handleInputChange = (field, value) => {
-    let formattedValue = value;
-    
-    if (field === 'cardNumber') {
-      formattedValue = formatCardNumber(value);
-    } else if (field === 'expiryDate') {
-      formattedValue = formatExpiryDate(value);
-    } else if (field === 'cvv') {
-      formattedValue = value.replace(/\D/g, '').substring(0, 3);
-    }
-    
-    setPaymentForm(prev => ({
-      ...prev,
-      [field]: formattedValue
-    }));
-    
-    // Clear error when user starts typing
-    if (validationErrors[field]) {
-      setValidationErrors(prev => ({
-        ...prev,
-        [field]: ''
-      }));
-    }
-  };
-
-  const handleInputBlur = (field) => {
-    setTouchedFields(prev => ({
-      ...prev,
-      [field]: true
-    }));
-
-    const errors = { ...validationErrors };
-    
-    if (field === 'holderName' && !paymentForm.holderName.trim()) {
-      errors.holderName = 'Cardholder name is required';
-    } else if (field === 'cardNumber' && !validateCardNumber(paymentForm.cardNumber)) {
-      errors.cardNumber = 'Card number must be 16 digits';
-    } else if (field === 'expiryDate' && !validateExpiryDate(paymentForm.expiryDate)) {
-      errors.expiryDate = 'Enter a valid expiry date (MM/YY) in the future';
-    } else if (field === 'cvv' && !validateCVV(paymentForm.cvv)) {
-      errors.cvv = 'CVV must be 3 digits';
-    } else {
-      delete errors[field];
-    }
-    
-    setValidationErrors(errors);
-  };
-
-  const handleCheckout = async () => {
-    if (!validateForm()) {
-      setTouchedFields({
-        holderName: true,
-        cardNumber: true,
-        expiryDate: true,
-        cvv: true
-      });
-      return;
-    }
-
-    setProcessingPayment(true);
-    
+const handleCheckout = async (paymentDetails) => {
     try {
-      // Simulate payment processing
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      // Instead of calling checkout, just navigate to pickup with item id and time slot
       const selectedSlot = timeSlots.find(slot => slot.value === selectedTimeSlot);
       if (!selectedSlot) {
         setError('Please select a valid time slot');
@@ -515,9 +313,8 @@ const YourCart = () => {
       });
 
     } catch (err) {
-      setError('Failed to process payment. Please try again.');
-    } finally {
-      setProcessingPayment(false);
+      console.error('Checkout error:', err);
+      setError(`Failed to process payment: ${err.message}`);
     }
   };
 
@@ -526,21 +323,7 @@ const YourCart = () => {
       setError('Please select a pickup time slot');
       return;
     }
-    setError(null);
     setShowPayment(true);
-  };
-
-  const closePaymentModal = () => {
-    setShowPayment(false);
-    setPaymentForm({
-      cardNumber: '',
-      expiryDate: '',
-      cvv: '',
-      holderName: ''
-    });
-    setValidationErrors({});
-    setTouchedFields({});
-    setProcessingPayment(false);
   };
 
   const total = cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
@@ -561,7 +344,7 @@ const YourCart = () => {
     );
   }
 
-  if (error && !showPayment) {
+  if (error) {
     return (
       <div className="min-h-screen bg-gray-50 w-full py-8">
         <CustomerNavBar />
@@ -659,7 +442,7 @@ const YourCart = () => {
             </div>
 
             <div className="md:col-span-1">
-              <div className="bg-white rounded-lg shadow-sm p-6 sticky top-4">
+              <div className="bg-white rounded-lg shadow-sm p-6">
                 <h2 className="text-lg font-semibold mb-4">Order Summary</h2>
                 <div className="space-y-2 mb-4">
                   {cartItems.map(item => (
@@ -697,7 +480,7 @@ const YourCart = () => {
                     <select
                       value={selectedTimeSlot}
                       onChange={(e) => setSelectedTimeSlot(e.target.value)}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-colors"
+                      className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
                       required
                     >
                       <option value="">Choose a time slot...</option>
@@ -731,10 +514,9 @@ const YourCart = () => {
                   Proceed to Payment
                 </button>
                 {!selectedTimeSlot && (
-                  <div className="mt-2 flex items-center text-xs text-red-500 justify-center">
-                    <AlertCircleIcon size={14} className="mr-1" />
+                  <p className="text-xs text-red-500 mt-1 text-center">
                     Please select a pickup time to continue
-                  </div>
+                  </p>
                 )}
               </div>
             </div>
@@ -742,8 +524,8 @@ const YourCart = () => {
         )}
 
         {showPayment && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-            <div className="bg-white rounded-lg p-6 max-w-md w-full max-h-[90vh] overflow-y-auto">
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4">
+            <div className="bg-white rounded-lg p-6 max-w-md w-full">
               <h2 className="text-xl font-semibold mb-4">Payment Details</h2>
               {selectedTimeSlot && (
                 <div className="mb-4 p-3 bg-emerald-50 border border-emerald-200 rounded-md">
@@ -756,178 +538,69 @@ const YourCart = () => {
                   </p>
                 </div>
               )}
-              
-              {selectedTimeSlot && (
-                <div className="mb-4 p-3 bg-emerald-50 border border-emerald-200 rounded-md">
-                  <div className="flex items-center text-emerald-800">
-                    <CheckCircleIcon size={16} className="mr-2" />
-                    <span className="text-sm">
-                      Pickup: {timeSlots.find(slot => slot.value === selectedTimeSlot)?.label}
-                    </span>
-                  </div>
-                </div>
-              )}
-              
-              <form className="space-y-4">
-                {/* Cardholder Name */}
+              <form 
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  const formData = new FormData(e.target);
+                  handleCheckout({
+                    card_number: formData.get('card_number'),
+                    expiry_date: formData.get('expiry_date'),
+                    cvv: formData.get('cvv')
+                  });
+                }} 
+                className="space-y-4"
+              >
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Cardholder Name *
+                    Card Number
                   </label>
                   <input 
                     type="text" 
-                    value={paymentForm.holderName}
-                    onChange={(e) => handleInputChange('holderName', e.target.value)}
-                    onBlur={() => handleInputBlur('holderName')}
-                    className={`w-full px-4 py-2 border rounded-md transition-colors ${
-                      validationErrors.holderName && touchedFields.holderName
-                        ? 'border-red-500 focus:ring-red-500 focus:border-red-500' 
-                        : 'border-gray-300 focus:ring-emerald-500 focus:border-emerald-500'
-                    }`}
-                    placeholder="John Doe" 
+                    name="card_number"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-md" 
+                    placeholder="1234 5678 9012 3456" 
+                    required
                   />
-                  {validationErrors.holderName && touchedFields.holderName && (
-                    <p className="mt-1 text-xs text-red-500 flex items-center">
-                      <AlertCircleIcon size={12} className="mr-1" />
-                      {validationErrors.holderName}
-                    </p>
-                  )}
                 </div>
-
-                {/* Card Number */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Card Number *
-                  </label>
-                  <input 
-                    type="text" 
-                    value={paymentForm.cardNumber}
-                    onChange={(e) => handleInputChange('cardNumber', e.target.value)}
-                    onBlur={() => handleInputBlur('cardNumber')}
-                    className={`w-full px-4 py-2 border rounded-md transition-colors ${
-                      validationErrors.cardNumber && touchedFields.cardNumber
-                        ? 'border-red-500 focus:ring-red-500 focus:border-red-500' 
-                        : 'border-gray-300 focus:ring-emerald-500 focus:border-emerald-500'
-                    }`}
-                    placeholder="1234 5678 9012 3456"
-                    maxLength={19}
-                  />
-                  {validationErrors.cardNumber && touchedFields.cardNumber && (
-                    <p className="mt-1 text-xs text-red-500 flex items-center">
-                      <AlertCircleIcon size={12} className="mr-1" />
-                      {validationErrors.cardNumber}
-                    </p>
-                  )}
-                </div>
-
                 <div className="grid grid-cols-2 gap-4">
-                  {/* Expiry Date */}
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Expiry Date *
+                      Expiry Date
                     </label>
                     <input 
                       type="text" 
-                      value={paymentForm.expiryDate}
-                      onChange={(e) => handleInputChange('expiryDate', e.target.value)}
-                      onBlur={() => handleInputBlur('expiryDate')}
-                      className={`w-full px-4 py-2 border rounded-md transition-colors ${
-                        validationErrors.expiryDate && touchedFields.expiryDate
-                          ? 'border-red-500 focus:ring-red-500 focus:border-red-500' 
-                          : 'border-gray-300 focus:ring-emerald-500 focus:border-emerald-500'
-                      }`}
-                      placeholder="MM/YY"
-                      maxLength={5}
+                      name="expiry_date"
+                      className="w-full px-4 py-2 border border-gray-300 rounded-md" 
+                      placeholder="MM/YY" 
+                      required
                     />
-                    {validationErrors.expiryDate && touchedFields.expiryDate && (
-                      <p className="mt-1 text-xs text-red-500 flex items-center">
-                        <AlertCircleIcon size={12} className="mr-1" />
-                        {validationErrors.expiryDate}
-                      </p>
-                    )}
                   </div>
-
-                  {/* CVV */}
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
-                      CVV *
+                      CVV
                     </label>
                     <input 
                       type="text" 
-                      value={paymentForm.cvv}
-                      onChange={(e) => handleInputChange('cvv', e.target.value)}
-                      onBlur={() => handleInputBlur('cvv')}
-                      className={`w-full px-4 py-2 border rounded-md transition-colors ${
-                        validationErrors.cvv && touchedFields.cvv
-                          ? 'border-red-500 focus:ring-red-500 focus:border-red-500' 
-                          : 'border-gray-300 focus:ring-emerald-500 focus:border-emerald-500'
-                      }`}
-                      placeholder="123"
-                      maxLength={3}
+                      name="cvv"
+                      className="w-full px-4 py-2 border border-gray-300 rounded-md" 
+                      placeholder="123" 
+                      required
                     />
-                    {validationErrors.cvv && touchedFields.cvv && (
-                      <p className="mt-1 text-xs text-red-500 flex items-center">
-                        <AlertCircleIcon size={12} className="mr-1" />
-                        {validationErrors.cvv}
-                      </p>
-                    )}
                   </div>
                 </div>
-
-                {/* Payment Total */}
-                <div className="bg-gray-50 p-4 rounded-md">
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm font-medium text-gray-700">Total Amount:</span>
-                    <span className="text-lg font-bold text-emerald-600">R{total.toFixed(2)}</span>
-                  </div>
-                </div>
-
-                {/* Action Buttons */}
-                <div className="flex flex-col space-y-3 pt-4">
-                  <button 
-                    type="button"
-                    onClick={handleCheckout}
-                    disabled={processingPayment}
-                    className="w-full py-3 bg-emerald-600 text-white rounded-md hover:bg-emerald-700 transition-colors flex items-center justify-center disabled:bg-gray-400 disabled:cursor-not-allowed"
-                  >
-                    {processingPayment ? (
-                      <>
-                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                        Processing Payment...
-                      </>
-                    ) : (
-                      <>
-                        <CreditCardIcon size={20} className="mr-2" />
-                        Pay R{total.toFixed(2)}
-                      </>
-                    )}
-                  </button>
-                  
-                  <button 
-                    type="button" 
-                    onClick={closePaymentModal}
-                    disabled={processingPayment}
-                    className="w-full py-3 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    Cancel
-                  </button>
-                </div>
-
-                {/* Security Note */}
-                <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-md">
-                  <div className="flex items-start">
-                    <div className="flex-shrink-0">
-                      <svg className="h-4 w-4 text-blue-400 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
-                        <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
-                      </svg>
-                    </div>
-                    <div className="ml-2">
-                      <p className="text-xs text-blue-800">
-                        Your payment information is secure and encrypted. We don't store your card details.
-                      </p>
-                    </div>
-                  </div>
-                </div>
+                <button 
+                  type="submit" 
+                  className="w-full py-3 bg-emerald-600 text-white rounded-md hover:bg-emerald-700 transition-colors"
+                >
+                  Pay R{total.toFixed(2)}
+                </button>
+                <button 
+                  type="button" 
+                  onClick={() => setShowPayment(false)} 
+                  className="w-full py-3 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors"
+                >
+                  Cancel
+                </button>
               </form>
             </div>
           </div>
@@ -938,4 +611,3 @@ const YourCart = () => {
 };
 
 export default YourCart;
-
