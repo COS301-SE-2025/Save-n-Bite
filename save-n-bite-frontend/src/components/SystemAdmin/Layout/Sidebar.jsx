@@ -72,7 +72,7 @@ const Sidebar = ({ isOpen }) => {
             isOpen={isOpen}
           />
           <NavItem
-            to="/notifications"
+            to="/admin-notifications"
             icon={<BellIcon size={20} />}
             label="Notifications"
             isOpen={isOpen}

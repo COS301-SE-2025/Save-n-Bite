@@ -27,6 +27,8 @@ import Users from './pages/SystemAdmin/Users'
 import Verifications from './pages/SystemAdmin/Verifications'
 import Listings from './pages/SystemAdmin/Listings'
 import AdminReviews from './pages/SystemAdmin/Reviews'
+import Transactions from './pages/SystemAdmin/Transactions';
+import AdminNotifications from './pages/SystemAdmin/Notifications';
 
 
 function App() {
@@ -64,6 +66,8 @@ function App() {
           <Route path="/verifications" element={<Verifications />} />
           <Route path="/listings" element={<Listings />} />
           <Route path="/admin-reviews" element={<AdminReviews />} />
+          <Route path="/transactions" element={<Transactions />} />
+          <Route path="/admin-notifications" element={<AdminNotifications />} />
         </Route>
 
 
