@@ -23,6 +23,7 @@ import ManageDonations from './pages/foodProvider/Donations';
 import Layout from './components/SystemAdmin/Layout/Layout'
 import AdminLogin from './pages/SystemAdmin/AdminLogin'
 import AdminDashboard from './pages/SystemAdmin/AdminDashboard'
+import Users from './pages/SystemAdmin/Users'
 
 
 
@@ -57,9 +58,10 @@ function App() {
         <Route element={<Layout />}>
           <Route path="/admin-login" element={<AdminLogin />} />
           <Route path="/admin-dashboard" element={<AdminDashboard />} />
+          <Route path="/users" element={<Users />} />
         </Route>
 
-        
+
       </Routes>
     </Router>
   );

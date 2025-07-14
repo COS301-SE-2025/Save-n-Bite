@@ -107,13 +107,13 @@ const Dashboard = () => {
           title="Send Platform Notification"
           description="Reach all users with important updates"
           link="/notifications"
-          color="purple"
+          color="blue"
         />
         <QuickLinkCard
           title="View Audit Logs"
           description="Review recent admin activities"
           link="/audit-logs"
-          color="green"
+          color="blue"
         />
       </div>
     </div>
