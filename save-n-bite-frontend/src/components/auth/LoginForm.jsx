@@ -1,9 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { authAPI } from '../../services/authAPI';
 import { validateEmail, validateRequired } from '../../utils/validators';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 
-const LoginForm = ({ onSuccess, onError }) => {
+const LoginForm = ({ onSuccess, onError, onEmailChange }) => {
     const [formData, setFormData] = useState({
         email: '',
         password: ''
@@ -35,6 +35,12 @@ const LoginForm = ({ onSuccess, onError }) => {
             ...prev,
             [name]: value
         }));
+        
+        // Track email changes and pass to parent
+        if (name === 'email' && onEmailChange) {
+            onEmailChange(value);
+        }
+        
         if (errors[name]) {
             setErrors(prev => ({
                 ...prev,
@@ -42,6 +48,13 @@ const LoginForm = ({ onSuccess, onError }) => {
             }));
         }
     };
+
+    // Also update parent when component mounts with any existing email
+    useEffect(() => {
+        if (onEmailChange && formData.email) {
+            onEmailChange(formData.email);
+        }
+    }, []);
 
     const validateForm = () => {
         const newErrors = {};

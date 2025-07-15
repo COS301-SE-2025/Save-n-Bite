@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { authAPI } from '../../services/authAPI';
+import ForgotPassword from '../../services/ForgotPasswordAPI';
 import { useNavigate, Link } from 'react-router-dom';
 import LoginForm from '../../components/auth/LoginForm';
 import logo from '../../assets/images/SnB_leaf_icon.png';
@@ -10,6 +11,7 @@ const Login = () => {
   const [messageType, setMessageType] = useState(''); // 'success' or 'error'
   const [showPopup, setShowPopup] = useState(false);
   const [unreadCountSnapshot, setUnreadCountSnapshot] = useState(0);
+  const [currentEmail, setCurrentEmail] = useState(''); // Track email from LoginForm
   const navigate = useNavigate();
   const { fetchUnreadCount, unreadCount } = useNotifications();
 
@@ -57,6 +59,66 @@ const Login = () => {
       setMessage('');
       setMessageType('');
     }, 5000);
+  };
+
+  const handleForgotPasswordClick = async () => {
+    // Check if email is provided
+    if (!currentEmail || currentEmail.trim() === '') {
+      setMessage('Please enter your email address first before requesting a password reset.');
+      setMessageType('error');
+      
+      setTimeout(() => {
+        setMessage('');
+        setMessageType('');
+      }, 5000);
+      return;
+    }
+
+    // Validate email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(currentEmail)) {
+      setMessage('Please enter a valid email address.');
+      setMessageType('error');
+      
+      setTimeout(() => {
+        setMessage('');
+        setMessageType('');
+      }, 5000);
+      return;
+    }
+
+    try {
+      setMessage('Sending reset email...');
+      setMessageType('info');
+
+      const response = await ForgotPassword.ResetPassword(currentEmail);
+      
+      if (response.success) {
+        setMessage(`Reset email sent to ${currentEmail}. Check your email for the temporary password.`);
+        setMessageType('success');
+        
+        // Navigate to forgot password page after 2 seconds
+        setTimeout(() => {
+          navigate('/forgot-password');
+        }, 2000);
+      } else {
+        setMessage(response.error || 'Failed to send reset email. Please try again.');
+        setMessageType('error');
+        
+        setTimeout(() => {
+          setMessage('');
+          setMessageType('');
+        }, 5000);
+      }
+    } catch (error) {
+      setMessage('An unexpected error occurred. Please try again.');
+      setMessageType('error');
+      
+      setTimeout(() => {
+        setMessage('');
+        setMessageType('');
+      }, 5000);
+    }
   };
 
   return (
@@ -129,8 +191,10 @@ const Login = () => {
               {message && (
                 <div className={`mb-6 p-3 rounded-md ${
                   messageType === 'success' 
-                    ? 'bg-emerald-100 text-emerald-700' 
-                    : 'bg-red-100 text-red-700'
+                    ? 'bg-emerald-100 text-emerald-700 border border-emerald-200' 
+                    : messageType === 'info'
+                    ? 'bg-blue-100 text-blue-700 border border-blue-200'
+                    : 'bg-red-100 text-red-700 border border-red-200'
                 }`}>
                   {message}
                 </div>
@@ -140,16 +204,18 @@ const Login = () => {
               <LoginForm
                 onSuccess={handleLoginSuccess}
                 onError={handleLoginError}
+                onEmailChange={setCurrentEmail} // Pass callback to track email
               />
 
               {/* Forgot Password Link */}
               <div className="mt-4 text-center">
-                <Link 
-                  to="/forgot-password" 
-                  className="text-sm text-emerald-600 hover:text-emerald-700"
+                <button
+                  type="button"
+                  onClick={handleForgotPasswordClick}
+                  className="text-sm text-emerald-600 hover:text-emerald-700 underline"
                 >
                   Forgot your password?
-                </Link>
+                </button>
               </div>
 
               {/* Register Link */}
