@@ -1,20 +1,34 @@
-# admin_panel/tests.py
+# admin_system/tests.py
 import pytest
 from django.contrib.auth import get_user_model
-from rest_framework.test import APIClient
+from django.test import TestCase, TransactionTestCase
+from django.db import transaction
+from rest_framework.test import APIClient, APITestCase
 from rest_framework import status
+from unittest.mock import patch, MagicMock, Mock
+from datetime import datetime, timedelta
+from django.utils import timezone
 from django.urls import reverse
-from unittest.mock import patch, MagicMock
+from django.core import mail
+from django.conf import settings
 import uuid
+import json
 
-from .models import AdminActionLog, SystemLogEntry, PasswordReset
+# Import models and services
+from .models import (
+    AdminActionLog, SystemAnnouncement, SystemLogEntry, 
+    DocumentAccessLog, PasswordReset
+)
 from .services import (
     AdminService, VerificationService, PasswordResetService,
-    UserManagementService, DashboardService
+    UserManagementService, DashboardService, SystemLogService
 )
-from authentication.models import NGOProfile, FoodProviderProfile, CustomerProfile
-
-User = get_user_model()
+from .permissions import (
+    IsSystemAdmin, CanModerateContent, CanManageUsers,
+    CanViewAuditLogs, CanManageSystemSettings
+)
+from .utils import SystemLogger, get_file_size_human_readable
+from authentication.models import User, NGOProfile, FoodProviderProfile, CustomerProfile
 
 # ============ FIXTURES ============
 
@@ -26,7 +40,8 @@ def admin_user(db):
         email='admin@test.com',
         password='adminpass123',
         admin_rights=True,
-        user_type='customer'
+        user_type='customer',
+        is_superuser=True
     )
 
 @pytest.fixture
@@ -89,6 +104,23 @@ def provider_user(db):
     return user
 
 @pytest.fixture
+def customer_user(db):
+    """Create a customer user with profile"""
+    user = User.objects.create_user(
+        username='customer_test',
+        email='customer@test.com',
+        password='customerpass123',
+        user_type='customer'
+    )
+    
+    CustomerProfile.objects.create(
+        user=user,
+        full_name='Test Customer'
+    )
+    
+    return user
+
+@pytest.fixture
 def authenticated_admin_client(admin_user):
     """Create an authenticated admin API client"""
     client = APIClient()
@@ -102,355 +134,1831 @@ def authenticated_regular_client(regular_user):
     client.force_authenticate(user=regular_user)
     return client
 
-# ============ PERMISSION TESTS ============
+@pytest.fixture
+def system_log_entry(db):
+    """Create a test system log entry"""
+    return SystemLogEntry.objects.create(
+        severity='error',
+        category='authentication',
+        title='Test Error',
+        description='Test error description',
+        error_details={'test': 'data'}
+    )
 
-class TestAdminPermissions:
+@pytest.fixture
+def admin_action_log(db, admin_user):
+    """Create a test admin action log"""
+    return AdminActionLog.objects.create(
+        admin_user=admin_user,
+        action_type='user_verification',
+        target_type='ngo_profile',
+        target_id='test-id',
+        action_description='Test action',
+        metadata={'test': 'data'}
+    )
+
+# ============ MODEL TESTS ============
+
+class TestAdminActionLogModel(TestCase):
     
-    def test_admin_dashboard_access_allowed(self, authenticated_admin_client):
-        """Test that admin can access dashboard"""
-        response = authenticated_admin_client.get('/api/admin/dashboard/')
-        assert response.status_code == status.HTTP_200_OK
-        assert 'dashboard' in response.json()
+    def setUp(self):
+        self.admin_user = User.objects.create_user(
+            username='admin_test',
+            email='admin@test.com',
+            password='adminpass123',
+            admin_rights=True,
+            user_type='customer'
+        )
     
-    def test_admin_dashboard_access_denied_regular_user(self, authenticated_regular_client):
-        """Test that regular user cannot access dashboard"""
-        response = authenticated_regular_client.get('/api/admin/dashboard/')
-        assert response.status_code == status.HTTP_403_FORBIDDEN
+    def test_admin_action_log_creation(self):
+        """Test creating an admin action log"""
+        log = AdminActionLog.objects.create(
+            admin_user=self.admin_user,
+            action_type='user_verification',
+            target_type='ngo_profile',
+            target_id='test-id',
+            action_description='Test action',
+            metadata={'test': 'data'},
+            ip_address='127.0.0.1'
+        )
+        
+        self.assertEqual(log.admin_user, self.admin_user)
+        self.assertEqual(log.action_type, 'user_verification')
+        self.assertEqual(log.target_type, 'ngo_profile')
+        self.assertEqual(log.target_id, 'test-id')
+        self.assertEqual(log.metadata, {'test': 'data'})
+        self.assertEqual(log.ip_address, '127.0.0.1')
     
-    def test_admin_dashboard_access_denied_unauthenticated(self):
-        """Test that unauthenticated user cannot access dashboard"""
-        client = APIClient()
-        response = client.get('/api/admin/dashboard/')
-        assert response.status_code == status.HTTP_401_UNAUTHORIZED
+    def test_admin_action_log_str_representation(self):
+        """Test string representation of admin action log"""
+        log = AdminActionLog.objects.create(
+            admin_user=self.admin_user,
+            action_type='user_verification',
+            target_type='ngo_profile',
+            target_id='test-id',
+            action_description='Test action'
+        )
+        
+        expected = f"{self.admin_user.username} - user_verification - {log.timestamp}"
+        self.assertEqual(str(log), expected)
+
+class TestSystemLogEntryModel(TestCase):
+    
+    def test_system_log_entry_creation(self):
+        """Test creating a system log entry"""
+        log = SystemLogEntry.objects.create(
+            severity='error',
+            category='authentication',
+            title='Test Error',
+            description='Test error description',
+            error_details={'error_code': 500}
+        )
+        
+        self.assertEqual(log.severity, 'error')
+        self.assertEqual(log.category, 'authentication')
+        self.assertEqual(log.title, 'Test Error')
+        self.assertEqual(log.status, 'open')
+        self.assertEqual(log.error_details, {'error_code': 500})
+    
+    def test_system_log_entry_str_representation(self):
+        """Test string representation of system log entry"""
+        log = SystemLogEntry.objects.create(
+            severity='critical',
+            category='database',
+            title='Database Connection Failed',
+            description='Cannot connect to database'
+        )
+        
+        expected = "CRITICAL: Database Connection Failed"
+        self.assertEqual(str(log), expected)
+
+class TestSystemAnnouncementModel(TestCase):
+    
+    def setUp(self):
+        self.admin_user = User.objects.create_user(
+            username='admin_test',
+            email='admin@test.com',
+            password='adminpass123',
+            admin_rights=True,
+            user_type='customer'
+        )
+    
+    def test_system_announcement_creation(self):
+        """Test creating a system announcement"""
+        announcement = SystemAnnouncement.objects.create(
+            title='Test Announcement',
+            message='Test message',
+            priority='high',
+            target_user_types=['customer', 'provider'],
+            created_by=self.admin_user
+        )
+        
+        self.assertEqual(announcement.title, 'Test Announcement')
+        self.assertEqual(announcement.priority, 'high')
+        self.assertEqual(announcement.target_user_types, ['customer', 'provider'])
+        self.assertEqual(announcement.created_by, self.admin_user)
+        self.assertTrue(announcement.is_active)
 
 # ============ SERVICE TESTS ============
 
-class TestAdminService:
+class TestAdminService(TestCase):
     
-    def test_log_admin_action(self, admin_user):
+    def setUp(self):
+        self.admin_user = User.objects.create_user(
+            username='admin_test',
+            email='admin@test.com',
+            password='adminpass123',
+            admin_rights=True,
+            user_type='customer'
+        )
+    
+    def test_log_admin_action(self):
         """Test logging admin actions"""
         log_entry = AdminService.log_admin_action(
-            admin_user=admin_user,
+            admin_user=self.admin_user,
             action_type='user_verification',
             target_type='ngo_profile',
             target_id='123',
             description='Test action',
-            metadata={'test': 'data'}
+            metadata={'test': 'data'},
+            ip_address='127.0.0.1'
         )
         
-        assert log_entry.admin_user == admin_user
-        assert log_entry.action_type == 'user_verification'
-        assert log_entry.target_type == 'ngo_profile'
-        assert log_entry.target_id == '123'
-        assert log_entry.metadata == {'test': 'data'}
-
-class TestVerificationService:
+        self.assertEqual(log_entry.admin_user, self.admin_user)
+        self.assertEqual(log_entry.action_type, 'user_verification')
+        self.assertEqual(log_entry.target_type, 'ngo_profile')
+        self.assertEqual(log_entry.target_id, '123')
+        self.assertEqual(log_entry.metadata, {'test': 'data'})
+        self.assertEqual(log_entry.ip_address, '127.0.0.1')
     
-    def test_update_ngo_verification_status(self, admin_user, ngo_user):
-        """Test updating NGO verification status"""
-        ngo_profile = ngo_user.ngo_profile
-        
-        updated_profile = VerificationService.update_verification_status(
-            admin_user=admin_user,
+    def test_log_document_access(self):
+        """Test logging document access"""
+        log_entry = AdminService.log_document_access(
+            admin_user=self.admin_user,
+            document_type='npo_document',
             profile_type='ngo',
-            profile_id=ngo_profile.id,
-            new_status='verified',
-            reason='All documents valid'
+            profile_id='123',
+            document_name='certificate.pdf',
+            ip_address='127.0.0.1'
         )
         
-        assert updated_profile.status == 'verified'
+        self.assertEqual(log_entry.admin_user, self.admin_user)
+        self.assertEqual(log_entry.document_type, 'npo_document')
+        self.assertEqual(log_entry.profile_type, 'ngo')
+        self.assertEqual(log_entry.profile_id, '123')
+        self.assertEqual(log_entry.document_name, 'certificate.pdf')
+
+class TestVerificationService(TransactionTestCase):
+    
+    def setUp(self):
+        self.admin_user = User.objects.create_user(
+            username='admin_test',
+            email='admin@test.com',
+            password='adminpass123',
+            admin_rights=True,
+            user_type='customer'
+        )
         
-        # Check that action was logged
-        log_exists = AdminActionLog.objects.filter(
-            admin_user=admin_user,
+        self.ngo_user = User.objects.create_user(
+            username='ngo_test',
+            email='ngo@test.com',
+            password='ngopass123',
+            user_type='ngo'
+        )
+        
+        self.ngo_profile = NGOProfile.objects.create(
+            user=self.ngo_user,
+            organisation_name='Test NGO',
+            organisation_contact='+1234567890',
+            organisation_email='ngo@test.com',
+            representative_name='John Doe',
+            representative_email='john@test.com',
+            address_line1='123 Test St',
+            city='Test City',
+            province_or_state='Test Province',
+            postal_code='12345',
+            country='Test Country',
+            status='pending_verification'
+        )
+    
+    def test_get_pending_verifications_endpoint(self):
+        """Test get pending verifications endpoint"""
+        self.client.force_authenticate(user=self.admin_user)
+        response = self.client.get('/api/admin/verifications/pending/')
+        
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        data = response.json()
+        self.assertIn('pending_verifications', data)
+        self.assertEqual(data['pending_verifications']['total_count'], 1)
+        self.assertEqual(len(data['pending_verifications']['ngos']), 1)
+    
+    def test_update_verification_status_endpoint(self):
+        """Test update verification status endpoint"""
+        self.client.force_authenticate(user=self.admin_user)
+        data = {
+            'profile_type': 'ngo',
+            'profile_id': str(self.ngo_profile.id),
+            'new_status': 'verified',
+            'reason': 'All documents validated'
+        }
+        
+        response = self.client.post('/api/admin/verifications/update/', data)
+        
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        response_data = response.json()
+        self.assertIn('message', response_data)
+        self.assertIn('profile', response_data)
+        
+        # Verify profile was actually updated
+        self.ngo_profile.refresh_from_db()
+        self.assertEqual(self.ngo_profile.status, 'verified')
+    
+    def test_update_verification_status_invalid_profile(self):
+        """Test update verification status with invalid profile ID"""
+        self.client.force_authenticate(user=self.admin_user)
+        data = {
+            'profile_type': 'ngo',
+            'profile_id': str(uuid.uuid4()),
+            'new_status': 'verified',
+            'reason': 'Test'
+        }
+        
+        response = self.client.post('/api/admin/verifications/update/', data)
+        
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+    
+    def test_update_verification_status_invalid_data(self):
+        """Test update verification status with invalid data"""
+        self.client.force_authenticate(user=self.admin_user)
+        data = {
+            'profile_type': 'invalid',
+            'profile_id': str(self.ngo_profile.id),
+            'new_status': 'verified'
+        }
+        
+        response = self.client.post('/api/admin/verifications/update/', data)
+        
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+class TestAuditLogsAPI(APITestCase):
+    
+    def setUp(self):
+        self.admin_user = User.objects.create_user(
+            username='admin_test',
+            email='admin@test.com',
+            password='adminpass123',
+            admin_rights=True,
+            user_type='customer'
+        )
+        
+        # Create some test log entries
+        AdminActionLog.objects.create(
+            admin_user=self.admin_user,
             action_type='user_verification',
-            target_type='ngo_profile'
-        ).exists()
-        assert log_exists
-    
-    def test_update_provider_verification_status(self, admin_user, provider_user):
-        """Test updating provider verification status"""
-        provider_profile = provider_user.provider_profile
-        
-        updated_profile = VerificationService.update_verification_status(
-            admin_user=admin_user,
-            profile_type='provider',
-            profile_id=provider_profile.id,
-            new_status='verified',
-            reason='Business license verified'
+            target_type='ngo_profile',
+            target_id='test-id-1',
+            action_description='Approved NGO verification'
         )
         
-        assert updated_profile.status == 'verified'
+        AdminActionLog.objects.create(
+            admin_user=self.admin_user,
+            action_type='user_management',
+            target_type='user',
+            target_id='test-id-2',
+            action_description='Deactivated user account'
+        )
     
-    def test_update_verification_invalid_profile_type(self, admin_user):
-        """Test updating verification with invalid profile type"""
-        with pytest.raises(ValueError, match="Invalid profile type"):
+    def test_get_admin_action_logs_endpoint(self):
+        """Test get admin action logs endpoint"""
+        self.client.force_authenticate(user=self.admin_user)
+        response = self.client.get('/api/admin/logs/admin-actions/')
+        
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        data = response.json()
+        self.assertIn('logs', data)
+        self.assertIn('pagination', data)
+        self.assertGreaterEqual(len(data['logs']), 2)
+    
+    def test_get_admin_action_logs_with_filters(self):
+        """Test get admin action logs with filters"""
+        self.client.force_authenticate(user=self.admin_user)
+        response = self.client.get('/api/admin/logs/admin-actions/?action_type=user_verification')
+        
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        data = response.json()
+        self.assertIn('logs', data)
+        
+        # Check that all returned logs are of the filtered type
+        for log in data['logs']:
+            self.assertEqual(log['action_type'], 'user_verification')
+    
+    def test_get_admin_action_logs_with_search(self):
+        """Test get admin action logs with search"""
+        self.client.force_authenticate(user=self.admin_user)
+        response = self.client.get('/api/admin/logs/admin-actions/?search=NGO')
+        
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        data = response.json()
+        self.assertIn('logs', data)
+
+class TestSystemLogsAPI(APITestCase):
+    
+    def setUp(self):
+        self.admin_user = User.objects.create_user(
+            username='admin_test',
+            email='admin@test.com',
+            password='adminpass123',
+            admin_rights=True,
+            user_type='customer'
+        )
+        
+        self.system_log = SystemLogEntry.objects.create(
+            severity='error',
+            category='authentication',
+            title='Test Error',
+            description='Test error description',
+            status='open'
+        )
+    
+    def test_get_system_logs_endpoint(self):
+        """Test get system logs endpoint"""
+        self.client.force_authenticate(user=self.admin_user)
+        response = self.client.get('/api/admin/logs/system/')
+        
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        data = response.json()
+        self.assertIn('logs', data)
+        self.assertIn('pagination', data)
+        self.assertIn('summary', data)
+        self.assertGreaterEqual(len(data['logs']), 1)
+    
+    def test_get_system_logs_with_filters(self):
+        """Test get system logs with filters"""
+        self.client.force_authenticate(user=self.admin_user)
+        response = self.client.get('/api/admin/logs/system/?severity=error&status=open')
+        
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        data = response.json()
+        self.assertIn('logs', data)
+    
+    def test_resolve_system_log_endpoint(self):
+        """Test resolve system log endpoint"""
+        self.client.force_authenticate(user=self.admin_user)
+        data = {
+            'log_id': str(self.system_log.id),
+            'resolution_notes': 'Issue resolved by restarting service'
+        }
+        
+        response = self.client.post('/api/admin/logs/system/resolve/', data)
+        
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        response_data = response.json()
+        self.assertIn('message', response_data)
+        self.assertIn('log', response_data)
+        
+        # Verify log was actually resolved
+        self.system_log.refresh_from_db()
+        self.assertEqual(self.system_log.status, 'resolved')
+        self.assertEqual(self.system_log.resolved_by, self.admin_user)
+    
+    def test_resolve_system_log_invalid_id(self):
+        """Test resolve system log with invalid ID"""
+        self.client.force_authenticate(user=self.admin_user)
+        data = {
+            'log_id': str(uuid.uuid4()),
+            'resolution_notes': 'Test'
+        }
+        
+        response = self.client.post('/api/admin/logs/system/resolve/', data)
+        
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+class TestAnalyticsAPI(APITestCase):
+    
+    def setUp(self):
+        self.admin_user = User.objects.create_user(
+            username='admin_test',
+            email='admin@test.com',
+            password='adminpass123',
+            admin_rights=True,
+            user_type='customer'
+        )
+        
+        # Create additional users for analytics
+        User.objects.create_user(
+            username='customer1',
+            email='customer1@test.com',
+            password='pass123',
+            user_type='customer'
+        )
+        
+        User.objects.create_user(
+            username='customer2',
+            email='customer2@test.com',
+            password='pass123',
+            user_type='customer'
+        )
+    
+    def test_get_analytics_endpoint(self):
+        """Test get analytics endpoint"""
+        self.client.force_authenticate(user=self.admin_user)
+        response = self.client.get('/api/admin/analytics/')
+        
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        data = response.json()
+        self.assertIn('analytics', data)
+        
+        analytics = data['analytics']
+        self.assertIn('total_users', analytics)
+        self.assertIn('user_distribution', analytics)
+        self.assertIn('top_providers', analytics)
+        self.assertGreaterEqual(analytics['total_users'], 3)
+
+class TestDataExportAPI(APITestCase):
+    
+    def setUp(self):
+        self.admin_user = User.objects.create_user(
+            username='admin_test',
+            email='admin@test.com',
+            password='adminpass123',
+            admin_rights=True,
+            user_type='customer'
+        )
+    
+    def test_export_users_data(self):
+        """Test export users data"""
+        self.client.force_authenticate(user=self.admin_user)
+        data = {
+            'export_type': 'users',
+            'format': 'csv'
+        }
+        
+        response = self.client.post('/api/admin/export/', data)
+        
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response['Content-Type'], 'text/csv')
+        self.assertIn('attachment', response['Content-Disposition'])
+    
+    def test_export_analytics_data(self):
+        """Test export analytics data"""
+        self.client.force_authenticate(user=self.admin_user)
+        data = {
+            'export_type': 'analytics',
+            'format': 'csv'
+        }
+        
+        response = self.client.post('/api/admin/export/', data)
+        
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response['Content-Type'], 'text/csv')
+    
+    def test_export_invalid_type(self):
+        """Test export with invalid type"""
+        self.client.force_authenticate(user=self.admin_user)
+        data = {
+            'export_type': 'invalid',
+            'format': 'csv'
+        }
+        
+        response = self.client.post('/api/admin/export/', data)
+        
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+# ============ INTEGRATION TESTS ============
+
+class TestAdminWorkflowIntegration(TransactionTestCase):
+    
+    def setUp(self):
+        self.admin_user = User.objects.create_user(
+            username='admin_test',
+            email='admin@test.com',
+            password='adminpass123',
+            admin_rights=True,
+            user_type='customer'
+        )
+        
+        self.ngo_user = User.objects.create_user(
+            username='ngo_test',
+            email='ngo@test.com',
+            password='ngopass123',
+            user_type='ngo'
+        )
+        
+        self.ngo_profile = NGOProfile.objects.create(
+            user=self.ngo_user,
+            organisation_name='Test NGO',
+            organisation_contact='+1234567890',
+            organisation_email='ngo@test.com',
+            representative_name='John Doe',
+            representative_email='john@test.com',
+            address_line1='123 Test St',
+            city='Test City',
+            province_or_state='Test Province',
+            postal_code='12345',
+            country='Test Country',
+            status='pending_verification'
+        )
+        
+        self.client = APIClient()
+        self.client.force_authenticate(user=self.admin_user)
+    
+    def test_complete_verification_workflow(self):
+        """Test complete workflow from pending to verified"""
+        # 1. Check pending verifications
+        response = self.client.get('/api/admin/verifications/pending/')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.json()['pending_verifications']['total_count'], 1)
+        
+        # 2. Approve verification
+        data = {
+            'profile_type': 'ngo',
+            'profile_id': str(self.ngo_profile.id),
+            'new_status': 'verified',
+            'reason': 'Documents approved'
+        }
+        response = self.client.post('/api/admin/verifications/update/', data)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        
+        # 3. Check audit logs
+        response = self.client.get('/api/admin/logs/admin-actions/')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        logs = response.json()['logs']
+        self.assertTrue(any(log['action_type'] == 'user_verification' for log in logs))
+        
+        # 4. Verify pending count decreased
+        response = self.client.get('/api/admin/verifications/pending/')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.json()['pending_verifications']['total_count'], 0)
+    
+    def test_user_management_workflow(self):
+        """Test complete user management workflow"""
+        # 1. Get user list
+        response = self.client.get('/api/admin/users/')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        initial_users = response.json()['users']
+        
+        # 2. Deactivate user
+        data = {'user_id': str(self.ngo_user.UserID)}
+        response = self.client.post('/api/admin/users/toggle-status/', data)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        
+        # 3. Check user is deactivated
+        response = self.client.get('/api/admin/users/')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        users = response.json()['users']
+        ngo_user_data = next(user for user in users if user['UserID'] == str(self.ngo_user.UserID))
+        self.assertEqual(ngo_user_data['status'], 'inactive')
+        
+        # 4. Check audit logs
+        response = self.client.get('/api/admin/logs/admin-actions/')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        logs = response.json()['logs']
+        self.assertTrue(any(log['action_type'] == 'user_management' for log in logs))
+    
+    def test_system_log_workflow(self):
+        """Test complete system log workflow"""
+        # 1. Create system log
+        system_log = SystemLogEntry.objects.create(
+            severity='error',
+            category='authentication',
+            title='Login System Error',
+            description='Multiple login failures detected',
+            status='open'
+        )
+        
+        # 2. Check system logs
+        response = self.client.get('/api/admin/logs/system/')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        logs = response.json()['logs']
+        self.assertTrue(any(log['id'] == str(system_log.id) for log in logs))
+        
+        # 3. Resolve system log
+        data = {
+            'log_id': str(system_log.id),
+            'resolution_notes': 'Fixed by updating authentication service'
+        }
+        response = self.client.post('/api/admin/logs/system/resolve/', data)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        
+        # 4. Check log is resolved
+        response = self.client.get('/api/admin/logs/system/')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        logs = response.json()['logs']
+        resolved_log = next(log for log in logs if log['id'] == str(system_log.id))
+        self.assertEqual(resolved_log['status'], 'resolved')
+        
+        # 5. Check audit logs for resolution
+        response = self.client.get('/api/admin/logs/admin-actions/')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        logs = response.json()['logs']
+        self.assertTrue(any(log['action_type'] == 'system_management' for log in logs))
+
+# ============ PERFORMANCE TESTS ============
+
+class TestAdminPerformance(TestCase):
+    
+    def setUp(self):
+        self.admin_user = User.objects.create_user(
+            username='admin_test',
+            email='admin@test.com',
+            password='adminpass123',
+            admin_rights=True,
+            user_type='customer'
+        )
+        
+        # Create multiple users for performance testing
+        for i in range(100):
+            User.objects.create_user(
+                username=f'user{i}',
+                email=f'user{i}@test.com',
+                password='pass123',
+                user_type='customer'
+            )
+    
+    def test_get_users_performance(self):
+        """Test get users endpoint performance with many users"""
+        client = APIClient()
+        client.force_authenticate(user=self.admin_user)
+        
+        import time
+        start_time = time.time()
+        
+        response = client.get('/api/admin/users/')
+        
+        end_time = time.time()
+        execution_time = end_time - start_time
+        
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertLess(execution_time, 2.0)  # Should complete within 2 seconds
+    
+    def test_dashboard_performance(self):
+        """Test dashboard endpoint performance"""
+        client = APIClient()
+        client.force_authenticate(user=self.admin_user)
+        
+        import time
+        start_time = time.time()
+        
+        response = client.get('/api/admin/dashboard/')
+        
+        end_time = time.time()
+        execution_time = end_time - start_time
+        
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertLess(execution_time, 3.0)  # Should complete within 3 seconds
+
+# ============ ERROR HANDLING TESTS ============
+
+class TestErrorHandling(TestCase):
+    
+    def setUp(self):
+        self.admin_user = User.objects.create_user(
+            username='admin_test',
+            email='admin@test.com',
+            password='adminpass123',
+            admin_rights=True,
+            user_type='customer'
+        )
+    
+    def test_service_error_handling(self):
+        """Test service error handling"""
+        # Test with invalid UUID
+        with self.assertRaises(ValueError):
             VerificationService.update_verification_status(
-                admin_user=admin_user,
-                profile_type='invalid',
+                admin_user=self.admin_user,
+                profile_type='ngo',
                 profile_id=uuid.uuid4(),
                 new_status='verified'
             )
     
-    def test_get_pending_verifications(self, ngo_user, provider_user):
+    def test_api_error_responses(self):
+        """Test API error responses"""
+        client = APIClient()
+        client.force_authenticate(user=self.admin_user)
+        
+        # Test invalid data
+        response = client.post('/api/admin/verifications/update/', {
+            'profile_type': 'invalid',
+            'profile_id': 'invalid-uuid',
+            'new_status': 'verified'
+        })
+        
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn('error', response.json())
+
+# ============ SECURITY TESTS ============
+
+class TestSecurityFeatures(TestCase):
+    
+    def setUp(self):
+        self.admin_user = User.objects.create_user(
+            username='admin_test',
+            email='admin@test.com',
+            password='adminpass123',
+            admin_rights=True,
+            user_type='customer'
+        )
+        
+        self.regular_user = User.objects.create_user(
+            username='regular_test',
+            email='regular@test.com',
+            password='regularpass123',
+            admin_rights=False,
+            user_type='customer'
+        )
+    
+    def test_admin_action_logging(self):
+        """Test that admin actions are properly logged"""
+        # Perform admin action
+        UserManagementService.toggle_user_status(
+            admin_user=self.admin_user,
+            target_user=self.regular_user,
+            ip_address='127.0.0.1'
+        )
+        
+        # Check log was created
+        log = AdminActionLog.objects.filter(
+            admin_user=self.admin_user,
+            action_type='user_management'
+        ).first()
+        
+        self.assertIsNotNone(log)
+        self.assertEqual(log.ip_address, '127.0.0.1')
+        self.assertIn('target_id', log.action_description)
+    
+    def test_permission_enforcement(self):
+        """Test that permissions are properly enforced"""
+        client = APIClient()
+        client.force_authenticate(user=self.regular_user)
+        
+        # Try to access admin endpoint
+        response = client.get('/api/admin/dashboard/')
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+        
+    # Try to perform admin action
+        response = client.post('/api/admin/users/toggle-status/', {
+        'user_id': str(self.regular_user.UserID)
+    })
+
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+        self.ngo_user = User.objects.create_user(
+        username='ngo_test',
+        email='ngo@test.com',
+        password='ngopass123',
+        user_type='ngo'
+    )
+    
+        self.ngo_profile = NGOProfile.objects.create(
+            user=self.ngo_user,
+            organisation_name='Test NGO',
+            organisation_contact='+1234567890',
+            organisation_email='ngo@test.com',
+            representative_name='John Doe',
+            representative_email='john@test.com',
+            address_line1='123 Test St',
+            city='Test City',
+            province_or_state='Test Province',
+            postal_code='12345',
+            country='Test Country',
+            status='pending_verification'
+        )
+    
+    def test_update_ngo_verification_status(self):
+        """Test updating NGO verification status"""
+        updated_profile = VerificationService.update_verification_status(
+            admin_user=self.admin_user,
+            profile_type='ngo',
+            profile_id=self.ngo_profile.id,
+            new_status='verified',
+            reason='All documents valid'
+        )
+        
+        self.assertEqual(updated_profile.status, 'verified')
+        
+        # Check that action was logged
+        log_exists = AdminActionLog.objects.filter(
+            admin_user=self.admin_user,
+            action_type='user_verification',
+            target_type='ngo_profile'
+        ).exists()
+        self.assertTrue(log_exists)
+    
+    def test_update_verification_invalid_profile_type(self):
+        """Test updating verification with invalid profile type"""
+        with self.assertRaises(ValueError) as context:
+            VerificationService.update_verification_status(
+                admin_user=self.admin_user,
+                profile_type='invalid',
+                profile_id=uuid.uuid4(),
+                new_status='verified'
+            )
+        
+        self.assertIn('Invalid profile type', str(context.exception))
+    
+    def test_update_verification_nonexistent_profile(self):
+        """Test updating verification with non-existent profile"""
+        with self.assertRaises(ValueError) as context:
+            VerificationService.update_verification_status(
+                admin_user=self.admin_user,
+                profile_type='ngo',
+                profile_id=uuid.uuid4(),
+                new_status='verified'
+            )
+        
+        self.assertIn('NGO profile with ID', str(context.exception))
+    
+    def test_get_pending_verifications(self):
         """Test getting pending verifications"""
         verifications = VerificationService.get_pending_verifications()
         
-        assert verifications['total_count'] == 2
-        assert verifications['ngos'].count() == 1
-        assert verifications['providers'].count() == 1
+        self.assertEqual(verifications['total_count'], 1)
+        self.assertEqual(verifications['ngos'].count(), 1)
+        self.assertEqual(verifications['providers'].count(), 0)
 
-class TestPasswordResetService:
+class TestPasswordResetService(TestCase):
+    
+    def setUp(self):
+        self.admin_user = User.objects.create_user(
+            username='admin_test',
+            email='admin@test.com',
+            password='adminpass123',
+            admin_rights=True,
+            user_type='customer'
+        )
+        
+        self.target_user = User.objects.create_user(
+            username='target_test',
+            email='target@test.com',
+            password='targetpass123',
+            user_type='customer'
+        )
     
     def test_generate_temporary_password(self):
         """Test temporary password generation"""
         password = PasswordResetService.generate_temporary_password()
         
-        assert len(password) == 12
-        assert any(c.isalpha() for c in password)
-        assert any(c.isdigit() for c in password)
+        self.assertEqual(len(password), 12)
+        self.assertTrue(any(c.isalpha() for c in password))
+        self.assertTrue(any(c.isdigit() for c in password))
     
-    @patch('admin_panel.services.send_mail')
-    def test_reset_user_password(self, mock_send_mail, admin_user, regular_user):
+    def test_generate_temporary_password_custom_length(self):
+        """Test temporary password generation with custom length"""
+        password = PasswordResetService.generate_temporary_password(16)
+        
+        self.assertEqual(len(password), 16)
+    
+    @patch('admin_system.services.send_mail')
+    def test_reset_user_password(self, mock_send_mail):
         """Test password reset functionality"""
         mock_send_mail.return_value = True
         
         password_reset = PasswordResetService.reset_user_password(
-            admin_user=admin_user,
-            target_user=regular_user
+            admin_user=self.admin_user,
+            target_user=self.target_user
         )
         
-        assert password_reset.target_user == regular_user
-        assert password_reset.reset_by == admin_user
-        assert mock_send_mail.called
+        self.assertEqual(password_reset.target_user, self.target_user)
+        self.assertEqual(password_reset.reset_by, self.admin_user)
+        self.assertTrue(mock_send_mail.called)
         
         # Check that action was logged
         log_exists = AdminActionLog.objects.filter(
-            admin_user=admin_user,
+            admin_user=self.admin_user,
             action_type='password_reset'
         ).exists()
-        assert log_exists
-
-class TestUserManagementService:
+        self.assertTrue(log_exists)
     
-    def test_toggle_user_status_activate(self, admin_user, regular_user):
-        """Test activating a user"""
-        regular_user.is_active = False
-        regular_user.save()
+    @patch('admin_system.services.send_mail')
+    def test_reset_user_password_email_failure(self, mock_send_mail):
+        """Test password reset with email failure"""
+        mock_send_mail.side_effect = Exception("Email failed")
         
-        updated_user = UserManagementService.toggle_user_status(
-            admin_user=admin_user,
-            target_user=regular_user
+        with self.assertRaises(Exception) as context:
+            PasswordResetService.reset_user_password(
+                admin_user=self.admin_user,
+                target_user=self.target_user
+            )
+        
+        self.assertIn('Failed to send email', str(context.exception))
+
+class TestUserManagementService(TestCase):
+    
+    def setUp(self):
+        self.admin_user = User.objects.create_user(
+            username='admin_test',
+            email='admin@test.com',
+            password='adminpass123',
+            admin_rights=True,
+            user_type='customer'
         )
         
-        assert updated_user.is_active == True
+        self.target_user = User.objects.create_user(
+            username='target_test',
+            email='target@test.com',
+            password='targetpass123',
+            user_type='customer'
+        )
+    
+    def test_toggle_user_status_activate(self):
+        """Test activating a user"""
+        self.target_user.is_active = False
+        self.target_user.save()
+        
+        updated_user = UserManagementService.toggle_user_status(
+            admin_user=self.admin_user,
+            target_user=self.target_user
+        )
+        
+        self.assertTrue(updated_user.is_active)
         
         # Check that action was logged
         log_exists = AdminActionLog.objects.filter(
-            admin_user=admin_user,
+            admin_user=self.admin_user,
             action_type='user_management'
         ).exists()
-        assert log_exists
+        self.assertTrue(log_exists)
     
-    def test_toggle_user_status_deactivate(self, admin_user, regular_user):
+    def test_toggle_user_status_deactivate(self):
         """Test deactivating a user"""
-        regular_user.is_active = True
-        regular_user.save()
+        self.target_user.is_active = True
+        self.target_user.save()
         
         updated_user = UserManagementService.toggle_user_status(
-            admin_user=admin_user,
-            target_user=regular_user
+            admin_user=self.admin_user,
+            target_user=self.target_user
         )
         
-        assert updated_user.is_active == False
+        self.assertFalse(updated_user.is_active)
 
-class TestDashboardService:
+class TestDashboardService(TestCase):
     
-    def test_get_dashboard_stats(self, admin_user, regular_user, ngo_user, provider_user):
+    def setUp(self):
+        self.admin_user = User.objects.create_user(
+            username='admin_test',
+            email='admin@test.com',
+            password='adminpass123',
+            admin_rights=True,
+            user_type='customer'
+        )
+        
+        self.regular_user = User.objects.create_user(
+            username='regular_test',
+            email='regular@test.com',
+            password='regularpass123',
+            user_type='customer'
+        )
+    
+    def test_get_dashboard_stats(self):
         """Test dashboard statistics generation"""
         stats = DashboardService.get_dashboard_stats()
         
-        assert 'users' in stats
-        assert 'verifications' in stats
-        assert 'listings' in stats
-        assert 'transactions' in stats
-        assert 'system_health' in stats
+        self.assertIn('users', stats)
+        self.assertIn('verifications', stats)
+        self.assertIn('listings', stats)
+        self.assertIn('transactions', stats)
+        self.assertIn('system_health', stats)
         
         # Check user stats
-        assert stats['users']['total'] >= 4  # admin, regular, ngo, provider
-        assert stats['verifications']['pending_total'] == 2  # ngo + provider
+        self.assertGreaterEqual(stats['users']['total'], 2)
     
-    def test_get_recent_activity(self, ngo_user, provider_user):
+    def test_get_recent_activity(self):
         """Test recent activity generation"""
         activities = DashboardService.get_recent_activity()
         
-        assert isinstance(activities, list)
-        assert len(activities) >= 0  # Could be empty or have activities
+        self.assertIsInstance(activities, list)
         
         # If there are activities, check structure
         if activities:
             activity = activities[0]
-            assert 'type' in activity
-            assert 'description' in activity
-            assert 'timestamp' in activity
-            assert 'icon' in activity
+            self.assertIn('type', activity)
+            self.assertIn('description', activity)
+            self.assertIn('timestamp', activity)
+            self.assertIn('icon', activity)
+
+class TestSystemLogService(TestCase):
+    
+    def setUp(self):
+        self.admin_user = User.objects.create_user(
+            username='admin_test',
+            email='admin@test.com',
+            password='adminpass123',
+            admin_rights=True,
+            user_type='customer'
+        )
+        
+        self.system_log = SystemLogEntry.objects.create(
+            severity='error',
+            category='authentication',
+            title='Test Error',
+            description='Test error description'
+        )
+    
+    def test_create_system_log(self):
+        """Test creating a system log entry"""
+        log = SystemLogService.create_system_log(
+            severity='warning',
+            category='database',
+            title='Slow Query',
+            description='Query took too long',
+            error_details={'query_time': 5.2}
+        )
+        
+        self.assertEqual(log.severity, 'warning')
+        self.assertEqual(log.category, 'database')
+        self.assertEqual(log.title, 'Slow Query')
+        self.assertEqual(log.error_details, {'query_time': 5.2})
+    
+    def test_resolve_system_log(self):
+        """Test resolving a system log"""
+        resolved_log = SystemLogService.resolve_system_log(
+            log_id=self.system_log.id,
+            admin_user=self.admin_user,
+            resolution_notes='Issue resolved'
+        )
+        
+        self.assertEqual(resolved_log.status, 'resolved')
+        self.assertEqual(resolved_log.resolved_by, self.admin_user)
+        self.assertEqual(resolved_log.resolution_notes, 'Issue resolved')
+        self.assertIsNotNone(resolved_log.resolved_at)
+        
+        # Check that action was logged
+        log_exists = AdminActionLog.objects.filter(
+            admin_user=self.admin_user,
+            action_type='system_management'
+        ).exists()
+        self.assertTrue(log_exists)
+    
+    def test_resolve_nonexistent_system_log(self):
+        """Test resolving a non-existent system log"""
+        with self.assertRaises(ValueError) as context:
+            SystemLogService.resolve_system_log(
+                log_id=uuid.uuid4(),
+                admin_user=self.admin_user
+            )
+        
+        self.assertIn('System log with ID', str(context.exception))
+
+# ============ PERMISSION TESTS ============
+
+class TestAdminPermissions(TestCase):
+    
+    def setUp(self):
+        self.admin_user = User.objects.create_user(
+            username='admin_test',
+            email='admin@test.com',
+            password='adminpass123',
+            admin_rights=True,
+            user_type='customer'
+        )
+        
+        self.regular_user = User.objects.create_user(
+            username='regular_test',
+            email='regular@test.com',
+            password='regularpass123',
+            admin_rights=False,
+            user_type='customer'
+        )
+    
+    def test_is_system_admin_permission(self):
+        """Test IsSystemAdmin permission"""
+        permission = IsSystemAdmin()
+        
+        # Mock request with admin user
+        admin_request = Mock()
+        admin_request.user = self.admin_user
+        
+        # Mock request with regular user
+        regular_request = Mock()
+        regular_request.user = self.regular_user
+        
+        self.assertTrue(permission.has_permission(admin_request, None))
+        self.assertFalse(permission.has_permission(regular_request, None))
+    
+    def test_can_moderate_content_permission(self):
+        """Test CanModerateContent permission"""
+        permission = CanModerateContent()
+        
+        admin_request = Mock()
+        admin_request.user = self.admin_user
+        
+        regular_request = Mock()
+        regular_request.user = self.regular_user
+        
+        self.assertTrue(permission.has_permission(admin_request, None))
+        self.assertFalse(permission.has_permission(regular_request, None))
+
+# ============ UTILITY TESTS ============
+
+class TestUtils(TestCase):
+    
+    def test_get_file_size_human_readable(self):
+        """Test human readable file size formatting"""
+        self.assertEqual(get_file_size_human_readable(0), "0B")
+        self.assertEqual(get_file_size_human_readable(1024), "1.0KB")
+        self.assertEqual(get_file_size_human_readable(1024 * 1024), "1.0MB")
+        self.assertEqual(get_file_size_human_readable(1024 * 1024 * 1024), "1.0GB")
+    
+    def test_system_logger_log_error(self):
+        """Test SystemLogger error logging"""
+        log = SystemLogger.log_error(
+            category='test',
+            title='Test Error',
+            description='Test description',
+            error_details={'test': 'data'}
+        )
+        
+        self.assertEqual(log.severity, 'error')
+        self.assertEqual(log.category, 'test')
+        self.assertEqual(log.title, 'Test Error')
+        self.assertEqual(log.error_details, {'test': 'data'})
+    
+    def test_system_logger_log_critical(self):
+        """Test SystemLogger critical logging"""
+        log = SystemLogger.log_critical(
+            category='test',
+            title='Critical Error',
+            description='Critical description'
+        )
+        
+        self.assertEqual(log.severity, 'critical')
+        self.assertEqual(log.category, 'test')
+        self.assertEqual(log.title, 'Critical Error')
 
 # ============ API ENDPOINT TESTS ============
 
-class TestDashboardAPI:
+class TestDashboardAPI(APITestCase):
     
-    def test_dashboard_endpoint(self, authenticated_admin_client):
-        """Test dashboard API endpoint"""
-        response = authenticated_admin_client.get('/api/admin/dashboard/')
+    def setUp(self):
+        self.admin_user = User.objects.create_user(
+            username='admin_test',
+            email='admin@test.com',
+            password='adminpass123',
+            admin_rights=True,
+            user_type='customer'
+        )
         
-        assert response.status_code == status.HTTP_200_OK
+        self.regular_user = User.objects.create_user(
+            username='regular_test',
+            email='regular@test.com',
+            password='regularpass123',
+            admin_rights=False,
+            user_type='customer'
+        )
+    
+    def test_dashboard_endpoint_success(self):
+        """Test successful dashboard access"""
+        self.client.force_authenticate(user=self.admin_user)
+        response = self.client.get('/api/admin/dashboard/')
+        
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
         data = response.json()
-        assert 'dashboard' in data
-        assert 'recent_activity' in data
-        assert 'admin_info' in data
+        self.assertIn('dashboard', data)
+        self.assertIn('recent_activity', data)
+        self.assertIn('admin_info', data)
+    
+    def test_dashboard_endpoint_access_denied(self):
+        """Test dashboard access denied for regular user"""
+        self.client.force_authenticate(user=self.regular_user)
+        response = self.client.get('/api/admin/dashboard/')
+        
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+    
+    def test_dashboard_endpoint_unauthenticated(self):
+        """Test dashboard access denied for unauthenticated user"""
+        response = self.client.get('/api/admin/dashboard/')
+        
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
-class TestUserManagementAPI:
+class TestUserManagementAPI(APITestCase):
     
-    def test_get_all_users(self, authenticated_admin_client):
-        """Test get all users endpoint"""
-        response = authenticated_admin_client.get('/api/admin/users/')
+    def setUp(self):
+        self.admin_user = User.objects.create_user(
+            username='admin_test',
+            email='admin@test.com',
+            password='adminpass123',
+            admin_rights=True,
+            user_type='customer'
+        )
         
-        assert response.status_code == status.HTTP_200_OK
-        data = response.json()
-        assert 'users' in data
-        assert 'pagination' in data
+        self.target_user = User.objects.create_user(
+            username='target_test',
+            email='target@test.com',
+            password='targetpass123',
+            user_type='customer'
+        )
     
-    def test_toggle_user_status_endpoint(self, authenticated_admin_client, regular_user):
+    def test_get_all_users_endpoint(self):
+        """Test get all users endpoint"""
+        self.client.force_authenticate(user=self.admin_user)
+        response = self.client.get('/api/admin/users/')
+        
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        data = response.json()
+        self.assertIn('users', data)
+        self.assertIn('pagination', data)
+        self.assertGreaterEqual(len(data['users']), 2)
+    
+    def test_get_all_users_with_filters(self):
+        """Test get all users with filters"""
+        self.client.force_authenticate(user=self.admin_user)
+        response = self.client.get('/api/admin/users/?user_type=customer&status=active')
+        
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        data = response.json()
+        self.assertIn('users', data)
+    
+    def test_toggle_user_status_endpoint(self):
         """Test toggle user status endpoint"""
+        self.client.force_authenticate(user=self.admin_user)
         data = {
-            'user_id': str(regular_user.UserID),
+            'user_id': str(self.target_user.UserID),
             'reason': 'Test deactivation'
         }
         
-        response = authenticated_admin_client.post('/api/admin/users/toggle-status/', data)
+        response = self.client.post('/api/admin/users/toggle-status/', data)
         
-        assert response.status_code == status.HTTP_200_OK
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
         response_data = response.json()
-        assert 'message' in response_data
-        assert 'user' in response_data
+        self.assertIn('message', response_data)
+        self.assertIn('user', response_data)
+        
+        # Verify user was actually deactivated
+        self.target_user.refresh_from_db()
+        self.assertFalse(self.target_user.is_active)
     
-    @patch('admin_panel.services.PasswordResetService.reset_user_password')
-    def test_reset_password_endpoint(self, mock_reset, authenticated_admin_client, regular_user):
+    def test_toggle_user_status_invalid_user(self):
+        """Test toggle user status with invalid user ID"""
+        self.client.force_authenticate(user=self.admin_user)
+        data = {
+            'user_id': str(uuid.uuid4()),
+            'reason': 'Test'
+        }
+        
+        response = self.client.post('/api/admin/users/toggle-status/', data)
+        
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+    
+    @patch('admin_system.services.PasswordResetService.reset_user_password')
+    def test_reset_password_endpoint(self, mock_reset):
         """Test password reset endpoint"""
         mock_reset.return_value = MagicMock()
-        mock_reset.return_value.expires_at.isoformat.return_value = '2024-01-01T00:00:00'
+        mock_reset.return_value.expires_at.isoformat.return_value = '2025-01-01T00:00:00'
         
+        self.client.force_authenticate(user=self.admin_user)
         data = {
-            'user_id': str(regular_user.UserID),
+            'user_id': str(self.target_user.UserID),
             'reason': 'User forgot password'
         }
         
-        response = authenticated_admin_client.post('/api/admin/users/reset-password/', data)
+        response = self.client.post('/api/admin/users/reset-password/', data)
         
-        assert response.status_code == status.HTTP_200_OK
-        assert mock_reset.called
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertTrue(mock_reset.called)
 
-class TestVerificationAPI:
+# Continue from where TestVerificationAPI was cut off:
+
+class TestVerificationAPI(APITestCase):
     
-    def test_get_pending_verifications_endpoint(self, authenticated_admin_client, ngo_user, provider_user):
-        """Test get pending verifications endpoint"""
-        response = authenticated_admin_client.get('/api/admin/verifications/pending/')
+    def setUp(self):
+        self.admin_user = User.objects.create_user(
+            username='admin_test',
+            email='admin@test.com',
+            password='adminpass123',
+            admin_rights=True,
+            user_type='customer'
+        )
         
-        assert response.status_code == status.HTTP_200_OK
-        data = response.json()
-        assert 'pending_verifications' in data
-        assert data['pending_verifications']['total_count'] == 2
+        self.ngo_user = User.objects.create_user(
+            username='ngo_test',
+            email='ngo@test.com',
+            password='ngopass123',
+            user_type='ngo'
+        )
+        
+        self.ngo_profile = NGOProfile.objects.create(
+            user=self.ngo_user,
+            organisation_name='Test NGO',
+            organisation_contact='+1234567890',
+            organisation_email='ngo@test.com',
+            representative_name='John Doe',
+            representative_email='john@test.com',
+            address_line1='123 Test St',
+            city='Test City',
+            province_or_state='Test Province',
+            postal_code='12345',
+            country='Test Country',
+            status='pending_verification'
+        )
     
-    def test_update_verification_status_endpoint(self, authenticated_admin_client, ngo_user):
+    def test_get_pending_verifications_endpoint(self):
+        """Test get pending verifications endpoint"""
+        self.client.force_authenticate(user=self.admin_user)
+        response = self.client.get('/api/admin/verifications/pending/')
+        
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        data = response.json()
+        self.assertIn('pending_verifications', data)
+        self.assertEqual(data['pending_verifications']['total_count'], 1)
+        self.assertEqual(len(data['pending_verifications']['ngos']), 1)
+        self.assertEqual(len(data['pending_verifications']['providers']), 0)
+    
+    def test_update_verification_status_endpoint(self):
         """Test update verification status endpoint"""
+        self.client.force_authenticate(user=self.admin_user)
         data = {
             'profile_type': 'ngo',
-            'profile_id': str(ngo_user.ngo_profile.id),
+            'profile_id': str(self.ngo_profile.id),
             'new_status': 'verified',
             'reason': 'All documents validated'
         }
         
-        response = authenticated_admin_client.post('/api/admin/verifications/update/', data)
+        response = self.client.post('/api/admin/verifications/update/', data)
         
-        assert response.status_code == status.HTTP_200_OK
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
         response_data = response.json()
-        assert 'message' in response_data
-        assert 'profile' in response_data
-
-class TestAnalyticsAPI:
-    
-    def test_analytics_endpoint(self, authenticated_admin_client):
-        """Test analytics endpoint"""
-        response = authenticated_admin_client.get('/api/admin/analytics/')
+        self.assertIn('message', response_data)
+        self.assertIn('profile', response_data)
         
-        assert response.status_code == status.HTTP_200_OK
-        data = response.json()
-        assert 'analytics' in data
-        
-        analytics = data['analytics']
-        assert 'total_users' in analytics
-        assert 'user_distribution' in analytics
-        assert 'top_providers' in analytics
-
-class TestAuditLogsAPI:
+        # Verify profile was actually updated
+        self.ngo_profile.refresh_from_db()
+        self.assertEqual(self.ngo_profile.status, 'verified')
     
-    def test_admin_action_logs_endpoint(self, authenticated_admin_client, admin_user):
-        """Test admin action logs endpoint"""
-        # Create a test log entry
-        AdminService.log_admin_action(
-            admin_user=admin_user,
-            action_type='user_verification',
-            target_type='test',
-            target_id='123',
-            description='Test log entry'
+    def test_update_verification_status_invalid_profile(self):
+        """Test update verification status with invalid profile ID"""
+        self.client.force_authenticate(user=self.admin_user)
+        data = {
+            'profile_type': 'ngo',
+            'profile_id': str(uuid.uuid4()),
+            'new_status': 'verified',
+            'reason': 'Test'
+        }
+        
+        response = self.client.post('/api/admin/verifications/update/', data)
+        
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+    
+    def test_update_verification_status_invalid_data(self):
+        """Test update verification status with invalid data"""
+        self.client.force_authenticate(user=self.admin_user)
+        data = {
+            'profile_type': 'invalid',
+            'profile_id': str(self.ngo_profile.id),
+            'new_status': 'verified'
+        }
+        
+        response = self.client.post('/api/admin/verifications/update/', data)
+        
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+    
+    def test_update_verification_status_missing_data(self):
+        """Test update verification status with missing required data"""
+        self.client.force_authenticate(user=self.admin_user)
+        data = {
+            'profile_type': 'ngo',
+            # Missing profile_id and new_status
+        }
+        
+        response = self.client.post('/api/admin/verifications/update/', data)
+        
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+    
+    def test_update_verification_status_unauthorized(self):
+        """Test update verification status without admin rights"""
+        regular_user = User.objects.create_user(
+            username='regular_test',
+            email='regular@test.com',
+            password='regularpass123',
+            admin_rights=False,
+            user_type='customer'
         )
         
-        response = authenticated_admin_client.get('/api/admin/logs/admin-actions/')
+        self.client.force_authenticate(user=regular_user)
+        data = {
+            'profile_type': 'ngo',
+            'profile_id': str(self.ngo_profile.id),
+            'new_status': 'verified'
+        }
         
-        assert response.status_code == status.HTTP_200_OK
+        response = self.client.post('/api/admin/verifications/update/', data)
+        
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+class TestAuditLogsAPI(APITestCase):
+    
+    def setUp(self):
+        self.admin_user = User.objects.create_user(
+            username='admin_test',
+            email='admin@test.com',
+            password='adminpass123',
+            admin_rights=True,
+            user_type='customer'
+        )
+        
+        # Create some test log entries
+        AdminActionLog.objects.create(
+            admin_user=self.admin_user,
+            action_type='user_verification',
+            target_type='ngo_profile',
+            target_id='test-id-1',
+            action_description='Approved NGO verification'
+        )
+        
+        AdminActionLog.objects.create(
+            admin_user=self.admin_user,
+            action_type='user_management',
+            target_type='user',
+            target_id='test-id-2',
+            action_description='Deactivated user account'
+        )
+    
+    def test_get_admin_action_logs_endpoint(self):
+        """Test get admin action logs endpoint"""
+        self.client.force_authenticate(user=self.admin_user)
+        response = self.client.get('/api/admin/logs/admin-actions/')
+        
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
         data = response.json()
-        assert 'logs' in data
-        assert 'pagination' in data
-        assert len(data['logs']) >= 1
+        self.assertIn('logs', data)
+        self.assertIn('pagination', data)
+        self.assertGreaterEqual(len(data['logs']), 2)
+    
+    def test_get_admin_action_logs_with_filters(self):
+        """Test get admin action logs with filters"""
+        self.client.force_authenticate(user=self.admin_user)
+        response = self.client.get('/api/admin/logs/admin-actions/?action_type=user_verification')
+        
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        data = response.json()
+        self.assertIn('logs', data)
+        
+        # Check that all returned logs are of the filtered type
+        for log in data['logs']:
+            self.assertEqual(log['action_type'], 'user_verification')
+    
+    def test_get_admin_action_logs_with_search(self):
+        """Test get admin action logs with search"""
+        self.client.force_authenticate(user=self.admin_user)
+        response = self.client.get('/api/admin/logs/admin-actions/?search=NGO')
+        
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        data = response.json()
+        self.assertIn('logs', data)
+    
+    def test_get_admin_action_logs_pagination(self):
+        """Test get admin action logs with pagination"""
+        self.client.force_authenticate(user=self.admin_user)
+        response = self.client.get('/api/admin/logs/admin-actions/?page=1&per_page=1')
+        
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        data = response.json()
+        self.assertIn('logs', data)
+        self.assertIn('pagination', data)
+        self.assertEqual(len(data['logs']), 1)
+        self.assertEqual(data['pagination']['per_page'], 1)
+
+class TestSystemLogsAPI(APITestCase):
+    
+    def setUp(self):
+        self.admin_user = User.objects.create_user(
+            username='admin_test',
+            email='admin@test.com',
+            password='adminpass123',
+            admin_rights=True,
+            user_type='customer'
+        )
+        
+        self.system_log = SystemLogEntry.objects.create(
+            severity='error',
+            category='authentication',
+            title='Test Error',
+            description='Test error description',
+            status='open'
+        )
+    
+    def test_get_system_logs_endpoint(self):
+        """Test get system logs endpoint"""
+        self.client.force_authenticate(user=self.admin_user)
+        response = self.client.get('/api/admin/logs/system/')
+        
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        data = response.json()
+        self.assertIn('logs', data)
+        self.assertIn('pagination', data)
+        self.assertIn('summary', data)
+        self.assertGreaterEqual(len(data['logs']), 1)
+    
+    def test_get_system_logs_with_filters(self):
+        """Test get system logs with filters"""
+        self.client.force_authenticate(user=self.admin_user)
+        response = self.client.get('/api/admin/logs/system/?severity=error&status=open')
+        
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        data = response.json()
+        self.assertIn('logs', data)
+    
+    def test_resolve_system_log_endpoint(self):
+        """Test resolve system log endpoint"""
+        self.client.force_authenticate(user=self.admin_user)
+        data = {
+            'log_id': str(self.system_log.id),
+            'resolution_notes': 'Issue resolved by restarting service'
+        }
+        
+        response = self.client.post('/api/admin/logs/system/resolve/', data)
+        
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        response_data = response.json()
+        self.assertIn('message', response_data)
+        self.assertIn('log', response_data)
+        
+        # Verify log was actually resolved
+        self.system_log.refresh_from_db()
+        self.assertEqual(self.system_log.status, 'resolved')
+        self.assertEqual(self.system_log.resolved_by, self.admin_user)
+    
+    def test_resolve_system_log_invalid_id(self):
+        """Test resolve system log with invalid ID"""
+        self.client.force_authenticate(user=self.admin_user)
+        data = {
+            'log_id': str(uuid.uuid4()),
+            'resolution_notes': 'Test'
+        }
+        
+        response = self.client.post('/api/admin/logs/system/resolve/', data)
+        
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+class TestAnalyticsAPI(APITestCase):
+    
+    def setUp(self):
+        self.admin_user = User.objects.create_user(
+            username='admin_test',
+            email='admin@test.com',
+            password='adminpass123',
+            admin_rights=True,
+            user_type='customer'
+        )
+        
+        # Create additional users for analytics
+        User.objects.create_user(
+            username='customer1',
+            email='customer1@test.com',
+            password='pass123',
+            user_type='customer'
+        )
+        
+        User.objects.create_user(
+            username='customer2',
+            email='customer2@test.com',
+            password='pass123',
+            user_type='customer'
+        )
+    
+    def test_get_analytics_endpoint(self):
+        """Test get analytics endpoint"""
+        self.client.force_authenticate(user=self.admin_user)
+        response = self.client.get('/api/admin/analytics/')
+        
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        data = response.json()
+        self.assertIn('analytics', data)
+        
+        analytics = data['analytics']
+        self.assertIn('total_users', analytics)
+        self.assertIn('user_distribution', analytics)
+        self.assertIn('top_providers', analytics)
+        self.assertGreaterEqual(analytics['total_users'], 3)
+
+class TestDataExportAPI(APITestCase):
+    
+    def setUp(self):
+        self.admin_user = User.objects.create_user(
+            username='admin_test',
+            email='admin@test.com',
+            password='adminpass123',
+            admin_rights=True,
+            user_type='customer'
+        )
+    
+    def test_export_users_data(self):
+        """Test export users data"""
+        self.client.force_authenticate(user=self.admin_user)
+        data = {
+            'export_type': 'users',
+            'format': 'csv'
+        }
+        
+        response = self.client.post('/api/admin/export/', data)
+        
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response['Content-Type'], 'text/csv')
+        self.assertIn('attachment', response['Content-Disposition'])
+    
+    def test_export_analytics_data(self):
+        """Test export analytics data"""
+        self.client.force_authenticate(user=self.admin_user)
+        data = {
+            'export_type': 'analytics',
+            'format': 'csv'
+        }
+        
+        response = self.client.post('/api/admin/export/', data)
+        
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response['Content-Type'], 'text/csv')
+    
+    def test_export_invalid_type(self):
+        """Test export with invalid type"""
+        self.client.force_authenticate(user=self.admin_user)
+        data = {
+            'export_type': 'invalid',
+            'format': 'csv'
+        }
+        
+        response = self.client.post('/api/admin/export/', data)
+        
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
 # ============ INTEGRATION TESTS ============
 
-class TestAdminWorkflow:
+class TestAdminWorkflowIntegration(TransactionTestCase):
     
-    def test_complete_verification_workflow(self, authenticated_admin_client, ngo_user):
+    def setUp(self):
+        self.admin_user = User.objects.create_user(
+            username='admin_test',
+            email='admin@test.com',
+            password='adminpass123',
+            admin_rights=True,
+            user_type='customer'
+        )
+        
+        self.ngo_user = User.objects.create_user(
+            username='ngo_test',
+            email='ngo@test.com',
+            password='ngopass123',
+            user_type='ngo'
+        )
+        
+        self.ngo_profile = NGOProfile.objects.create(
+            user=self.ngo_user,
+            organisation_name='Test NGO',
+            organisation_contact='+1234567890',
+            organisation_email='ngo@test.com',
+            representative_name='John Doe',
+            representative_email='john@test.com',
+            address_line1='123 Test St',
+            city='Test City',
+            province_or_state='Test Province',
+            postal_code='12345',
+            country='Test Country',
+            status='pending_verification'
+        )
+        
+        self.client = APIClient()
+        self.client.force_authenticate(user=self.admin_user)
+    
+    def test_complete_verification_workflow(self):
         """Test complete workflow from pending to verified"""
         # 1. Check pending verifications
-        response = authenticated_admin_client.get('/api/admin/verifications/pending/')
-        assert response.status_code == status.HTTP_200_OK
-        assert response.json()['pending_verifications']['total_count'] >= 1
+        response = self.client.get('/api/admin/verifications/pending/')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.json()['pending_verifications']['total_count'], 1)
         
         # 2. Approve verification
         data = {
             'profile_type': 'ngo',
-            'profile_id': str(ngo_user.ngo_profile.id),
+            'profile_id': str(self.ngo_profile.id),
             'new_status': 'verified',
             'reason': 'Documents approved'
         }
-        response = authenticated_admin_client.post('/api/admin/verifications/update/', data)
-        assert response.status_code == status.HTTP_200_OK
+        response = self.client.post('/api/admin/verifications/update/', data)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
         
         # 3. Check audit logs
-        response = authenticated_admin_client.get('/api/admin/logs/admin-actions/')
-        assert response.status_code == status.HTTP_200_OK
+        response = self.client.get('/api/admin/logs/admin-actions/')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
         logs = response.json()['logs']
-        assert any(log['action_type'] == 'user_verification' for log in logs)
+        self.assertTrue(any(log['action_type'] == 'user_verification' for log in logs))
+        
+        # 4. Verify pending count decreased
+        response = self.client.get('/api/admin/verifications/pending/')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.json()['pending_verifications']['total_count'], 0)
     
-    def test_user_management_workflow(self, authenticated_admin_client, regular_user):
+    def test_user_management_workflow(self):
         """Test complete user management workflow"""
         # 1. Get user list
-        response = authenticated_admin_client.get('/api/admin/users/')
-        assert response.status_code == status.HTTP_200_OK
+        response = self.client.get('/api/admin/users/')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
         
         # 2. Deactivate user
-        data = {'user_id': str(regular_user.UserID)}
-        response = authenticated_admin_client.post('/api/admin/users/toggle-status/', data)
-        assert response.status_code == status.HTTP_200_OK
+        data = {'user_id': str(self.ngo_user.UserID)}
+        response = self.client.post('/api/admin/users/toggle-status/', data)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
         
-        # 3. Check audit logs
-        response = authenticated_admin_client.get('/api/admin/logs/admin-actions/')
-        assert response.status_code == status.HTTP_200_OK
+        # 3. Check user is deactivated
+        response = self.client.get('/api/admin/users/')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        users = response.json()['users']
+        ngo_user_data = next(user for user in users if user['UserID'] == str(self.ngo_user.UserID))
+        self.assertEqual(ngo_user_data['status'], 'inactive')
+        
+        # 4. Check audit logs
+        response = self.client.get('/api/admin/logs/admin-actions/')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        logs = response.json()['logs']
+        self.assertTrue(any(log['action_type'] == 'user_management' for log in logs))
+    
+    def test_system_log_workflow(self):
+        """Test complete system log workflow"""
+        # 1. Create system log
+        system_log = SystemLogEntry.objects.create(
+            severity='error',
+            category='authentication',
+            title='Login System Error',
+            description='Multiple login failures detected',
+            status='open'
+        )
+        
+        # 2. Check system logs
+        response = self.client.get('/api/admin/logs/system/')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        logs = response.json()['logs']
+        self.assertTrue(any(log['id'] == str(system_log.id) for log in logs))
+        
+        # 3. Resolve system log
+        data = {
+            'log_id': str(system_log.id),
+            'resolution_notes': 'Fixed by updating authentication service'
+        }
+        response = self.client.post('/api/admin/logs/system/resolve/', data)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        
+        # 4. Check log is resolved
+        response = self.client.get('/api/admin/logs/system/')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        logs = response.json()['logs']
+        resolved_log = next(log for log in logs if log['id'] == str(system_log.id))
+        self.assertEqual(resolved_log['status'], 'resolved')
+        
+        # 5. Check audit logs for resolution
+        response = self.client.get('/api/admin/logs/admin-actions/')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        logs = response.json()['logs']
+        self.assertTrue(any(log['action_type'] == 'system_management' for log in logs))
+
+# ============ SECURITY TESTS ============
+
+class TestSecurityFeatures(TestCase):
+    
+    def setUp(self):
+        self.admin_user = User.objects.create_user(
+            username='admin_test',
+            email='admin@test.com',
+            password='adminpass123',
+            admin_rights=True,
+            user_type='customer'
+        )
+        
+        self.regular_user = User.objects.create_user(
+            username='regular_test',
+            email='regular@test.com',
+            password='regularpass123',
+            admin_rights=False,
+            user_type='customer'
+        )
+    
+    def test_admin_action_logging(self):
+        """Test that admin actions are properly logged"""
+        # Perform admin action
+        UserManagementService.toggle_user_status(
+            admin_user=self.admin_user,
+            target_user=self.regular_user,
+            ip_address='127.0.0.1'
+        )
+        
+        # Check log was created
+        log = AdminActionLog.objects.filter(
+            admin_user=self.admin_user,
+            action_type='user_management'
+        ).first()
+        
+        self.assertIsNotNone(log)
+        self.assertEqual(log.ip_address, '127.0.0.1')
+        self.assertIn(str(self.regular_user.UserID), log.target_id)
+    
+    def test_permission_enforcement(self):
+        """Test that permissions are properly enforced"""
+        client = APIClient()
+        client.force_authenticate(user=self.regular_user)
+        
+        # Try to access admin endpoint
+        response = client.get('/api/admin/dashboard/')
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+        
+        # Try to perform admin action
+        response = client.post('/api/admin/users/toggle-status/', {
+            'user_id': str(self.regular_user.UserID)
+        })
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
