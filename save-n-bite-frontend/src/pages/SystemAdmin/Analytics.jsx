@@ -1,8 +1,8 @@
 import React, { useState } from 'react'
-import AnalyticsHeader from '../components/analytics/AnalyticsHeader'
-import KpiCard from '../components/dashboard/KpiCard'
-import AnalyticsChart from '../components/analytics/AnalyticsChart'
-import ImpactSummary from '../components/analytics/ImpactSummary'
+import AnalyticsHeader from '../../components/SystemAdmin/Analytics/AnalyticsHeader'
+import KpiCard from '../../components/SystemAdmin/AdminDashboard/KpiCard'
+import AnalyticsChart from '../../components/SystemAdmin/Analytics/AnalyticsChart'
+import ImpactSummary from '../../components/SystemAdmin/Analytics/ImpactSummary'
 import {
   UsersIcon,
   ShoppingBagIcon,
@@ -170,7 +170,7 @@ const Analytics = () => {
           nameKey="name"
           donut
         />
-        <AnalyticsChart
+        {/* <AnalyticsChart
           title="Impact Metrics Growth"
           type="radialBar"
           data={[
@@ -181,7 +181,7 @@ const Analytics = () => {
           ]}
           dataKeys={['value']}
           height={320}
-        />
+        /> */}
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

@@ -29,7 +29,7 @@ import Listings from './pages/SystemAdmin/Listings'
 import AdminReviews from './pages/SystemAdmin/Reviews'
 import Transactions from './pages/SystemAdmin/Transactions';
 import AdminNotifications from './pages/SystemAdmin/Notifications';
-
+import AdminAnalytics from './pages/SystemAdmin/Analytics';
 
 function App() {
   return (
@@ -68,6 +68,7 @@ function App() {
           <Route path="/admin-reviews" element={<AdminReviews />} />
           <Route path="/transactions" element={<Transactions />} />
           <Route path="/admin-notifications" element={<AdminNotifications />} />
+          <Route path="/admin-analytics" element={<AdminAnalytics />} />
         </Route>
 
 

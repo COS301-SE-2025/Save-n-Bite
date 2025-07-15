@@ -78,7 +78,7 @@ const Sidebar = ({ isOpen }) => {
             isOpen={isOpen}
           />
           <NavItem
-            to="/analytics"
+            to="/admin-analytics"
             icon={<BarChartIcon size={20} />}
             label="Analytics"
             isOpen={isOpen}
