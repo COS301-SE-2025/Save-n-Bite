@@ -31,6 +31,8 @@ import Transactions from './pages/SystemAdmin/Transactions';
 import AdminNotifications from './pages/SystemAdmin/Notifications';
 import AdminAnalytics from './pages/SystemAdmin/Analytics';
 import AuditLogs from './pages/SystemAdmin/AuditLogs'
+import SystemLogs from './pages/SystemAdmin/SystemLogs'
+
 
 function App() {
   return (
@@ -71,6 +73,7 @@ function App() {
           <Route path="/admin-notifications" element={<AdminNotifications />} />
           <Route path="/admin-analytics" element={<AdminAnalytics />} />
           <Route path="/audit-logs" element={<AuditLogs />} />
+          <Route path="/system-logs" element={<SystemLogs />} />
         </Route>
 
 
