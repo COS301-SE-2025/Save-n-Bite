@@ -19,6 +19,7 @@ import Dashboard from './pages/foodProvider/Dashboard';
 import OrdersAndFeedback from './pages/foodProvider/OrdersAndFeedback';
 import PickupCoordination from './pages/foodProvider/PickupCoordination';
 import ManageDonations from './pages/foodProvider/Donations';
+import ForgotPassword from './pages/auth/ForgotPassword';
 
 
 function App() {
@@ -35,6 +36,7 @@ function App() {
           <Route path="/cart" element={<Cart />} />
           <Route path="/create-listing" element={<CreateListing />} />
           <Route path="/listings-overview" element={<ListingOverview />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
 
           <Route path="/notifications" element={<Notification />} />
 
