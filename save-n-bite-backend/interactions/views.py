@@ -10,6 +10,7 @@ from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from .models import Cart, CartItem, Interaction, Order, Payment, InteractionItem, InteractionStatusHistory
 from food_listings.models import FoodListing
+from decimal import Decimal, ROUND_HALF_UP
 from .serializers import (
     CartResponseSerializer,
     AddToCartSerializer,
@@ -28,11 +29,16 @@ class CartView(APIView):
     def get(self, request):
         """GET /cart - Retrieve cart items"""
         cart, _ = Cart.objects.get_or_create(user=request.user)
-        
-        # Build cart items with provider information manually
+    
         cart_items_data = []
+        total_savings = Decimal('0.00')  # Initialize total savings
+    
         for item in cart.items.all():
-            # Get the provider information from the food listing
+            # Calculate savings for this item and add to total
+            item_savings = Decimal(str(item.food_listing.original_price)) - Decimal(str(item.food_listing.discounted_price))
+            total_savings += item_savings * Decimal(str(item.quantity))  # Multiply by quantity
+        
+            # Provider data
             provider_data = None
             if hasattr(item.food_listing, 'provider') and hasattr(item.food_listing.provider, 'provider_profile'):
                 provider_profile = item.food_listing.provider.provider_profile
@@ -41,7 +47,7 @@ class CartView(APIView):
                     'business_name': provider_profile.business_name,
                     'business_address': provider_profile.business_address,
                 }
-            
+        
             cart_items_data.append({
                 'id': str(item.id),
                 'name': item.food_listing.name,
@@ -57,17 +63,17 @@ class CartView(APIView):
                     'provider': provider_data
                 }
             })
-        
+    
         response_data = {
             'cartItems': cart_items_data,
             'summary': {
                 'totalItems': cart.total_items,
                 'subtotal': float(cart.subtotal),
-                'estimatedSavings': 0,
+                'estimatedSavings': f"{total_savings:.2f}",  
                 'totalAmount': float(cart.subtotal)
             }
         }
-        
+    
         return Response(response_data)
     
 class AddToCartView(APIView):
@@ -105,7 +111,7 @@ class AddToCartView(APIView):
                 'totalItems': cart.total_items,
                 'totalAmount': float(cart.subtotal)
             }
-        }, status=status.HTTP_200_OK)
+        }, status=status.HTTP_201_CREATED)
     
 class RemoveCartItemView(APIView):
     permission_classes = [IsAuthenticated]
