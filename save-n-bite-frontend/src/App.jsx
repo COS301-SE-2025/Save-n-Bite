@@ -32,7 +32,7 @@ import AdminNotifications from './pages/SystemAdmin/Notifications';
 import AdminAnalytics from './pages/SystemAdmin/Analytics';
 import AuditLogs from './pages/SystemAdmin/AuditLogs'
 import SystemLogs from './pages/SystemAdmin/SystemLogs'
-
+import AdminSettings from './pages/SystemAdmin/Settings'
 
 function App() {
   return (
@@ -74,6 +74,7 @@ function App() {
           <Route path="/admin-analytics" element={<AdminAnalytics />} />
           <Route path="/audit-logs" element={<AuditLogs />} />
           <Route path="/system-logs" element={<SystemLogs />} />
+           <Route path="/admin-settings" element={<AdminSettings />} />
         </Route>
 
 

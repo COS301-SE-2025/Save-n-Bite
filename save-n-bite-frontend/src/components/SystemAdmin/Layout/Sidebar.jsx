@@ -96,7 +96,7 @@ const Sidebar = ({ isOpen }) => {
             isOpen={isOpen}
           />
           <NavItem
-            to="/settings"
+            to="/admin-settings"
             icon={<SettingsIcon size={20} />}
             label="Settings"
             isOpen={isOpen}
