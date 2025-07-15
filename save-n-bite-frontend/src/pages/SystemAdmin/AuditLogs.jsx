@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
-import AuditLogFilters from '../components/audit/AuditLogFilters'
-import AuditLogTable from '../components/audit/AuditLogTable'
-import AuditLogDetails from '../components/audit/AuditLogDetails'
+import AuditLogFilters from '../../components/SystemAdmin/Audit/AuditLogFilters'
+import AuditLogTable from '../../components/SystemAdmin/Audit/AuditLogTable'
+import AuditLogDetails from '../../components/SystemAdmin/Audit/AuditLogDetails'
 
 // Mock data for audit logs
 const mockAuditLogs = [
