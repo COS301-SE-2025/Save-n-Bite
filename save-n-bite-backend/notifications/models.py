@@ -56,6 +56,9 @@ class Notification(models.Model):
         ('business_update', 'Business Update'),
         ('system_announcement', 'System Announcement'),
         ('welcome', 'Welcome'),
+        ('pickup_reminder', 'Pickup Reminder'),  # Existing type from scheduling
+        ('order_preparation', 'Order Preparation'),
+        ('order_completion', 'Order Completion'),
     ]
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
