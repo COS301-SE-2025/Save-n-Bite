@@ -18,8 +18,8 @@ class FoodListing(models.Model):
         ('sold_out', 'Sold Out'),
         ('expired', 'Expired'),
         ('inactive', 'Inactive'),
-        ('removed', 'Removed'),  # FOR ADMIN REMOVAL
-        ('flagged', 'Flagged'), # FOR ADMINS
+        ('removed', 'Removed'),  
+        ('flagged', 'Flagged'), 
     ]
     
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)

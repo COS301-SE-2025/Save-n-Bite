@@ -1,9 +1,10 @@
 # admin_panel/views.py
+from itertools import count
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 from django.core.paginator import Paginator
-from django.db.models import Count, Q, Avg
+from django.db.models import Q, Count
 from django.contrib.auth import get_user_model
 from django.http import HttpResponse
 from django.utils import timezone

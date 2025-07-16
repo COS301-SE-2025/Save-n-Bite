@@ -1,0 +1,332 @@
+# food_listings/admin_views.py
+
+from rest_framework import status
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+from django.core.paginator import Paginator
+from django.db.models import Q
+from django.shortcuts import get_object_or_404
+from django.utils import timezone
+
+from .models import FoodListing
+from .serializers import FoodListingSerializer, FoodListingDetailSerializer
+
+# =============== ADMIN VIEWS FOR FOOD LISTINGS ===============
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def admin_get_all_listings(request):
+    """Get all food listings for admin moderation"""
+    # Check if user is admin/staff
+    if not (request.user.is_superuser or request.user.is_staff):
+        return Response({
+            'error': {
+                'code': 'PERMISSION_DENIED',
+                'message': 'Only administrators can access this endpoint'
+            }
+        }, status=status.HTTP_403_FORBIDDEN)
+    
+    # Get all listings (including removed/flagged)
+    listings = FoodListing.objects.all().select_related('provider', 'removed_by').order_by('-created_at')
+    
+    # Apply filters
+    status_filter = request.GET.get('status')
+    if status_filter:
+        listings = listings.filter(status=status_filter)
+    
+    search_term = request.GET.get('search')
+    if search_term:
+        listings = listings.filter(
+            Q(name__icontains=search_term) |
+            Q(description__icontains=search_term) |
+            Q(provider__email__icontains=search_term)
+        )
+    
+    provider_filter = request.GET.get('provider')
+    if provider_filter:
+        listings = listings.filter(provider__email__icontains=provider_filter)
+    
+    # Pagination
+    page = request.GET.get('page', 1)
+    page_size = request.GET.get('page_size', 20)
+    
+    try:
+        page = int(page)
+        page_size = int(page_size)
+        if page_size > 100:  # Limit page size
+            page_size = 100
+    except ValueError:
+        page = 1
+        page_size = 20
+    
+    paginator = Paginator(listings, page_size)
+    page_listings = paginator.get_page(page)
+    
+    # Serialize the listings with additional admin info
+    serialized_listings = []
+    for listing in page_listings:
+        listing_data = FoodListingDetailSerializer(listing).data
+        
+        # Add admin-specific fields
+        listing_data.update({
+            'admin_flagged': listing.admin_flagged,
+            'admin_removal_reason': listing.admin_removal_reason,
+            'removed_by': listing.removed_by.email if listing.removed_by else None,
+            'removed_at': listing.removed_at.isoformat() if listing.removed_at else None,
+            'provider_email': listing.provider.email,
+            'provider_business_name': getattr(listing.provider.provider_profile, 'business_name', 'N/A') if hasattr(listing.provider, 'provider_profile') else 'N/A'
+        })
+        
+        serialized_listings.append(listing_data)
+    
+    return Response({
+        'listings': serialized_listings,
+        'pagination': {
+            'current_page': page_listings.number,
+            'total_pages': paginator.num_pages,
+            'total_count': paginator.count,
+            'has_next': page_listings.has_next(),
+            'has_previous': page_listings.has_previous(),
+            'page_size': page_size
+        },
+        'filters': {
+            'status_counts': {
+                'active': FoodListing.objects.filter(status='active').count(),
+                'flagged': FoodListing.objects.filter(status='flagged').count(),
+                'removed': FoodListing.objects.filter(status='removed').count(),
+                'sold_out': FoodListing.objects.filter(status='sold_out').count(),
+                'expired': FoodListing.objects.filter(status='expired').count(),
+                'inactive': FoodListing.objects.filter(status='inactive').count(),
+            }
+        }
+    }, status=status.HTTP_200_OK)
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def admin_moderate_listing(request):
+    """Flag or remove a food listing (admin only)"""
+    # Check if user is admin/staff
+    if not (request.user.is_superuser or request.user.is_staff):
+        return Response({
+            'error': {
+                'code': 'PERMISSION_DENIED',
+                'message': 'Only administrators can moderate listings'
+            }
+        }, status=status.HTTP_403_FORBIDDEN)
+    
+    # Required fields
+    listing_id = request.data.get('listing_id')
+    action = request.data.get('action')  # 'flag', 'remove', or 'restore'
+    reason = request.data.get('reason', '')
+    
+    if not listing_id or not action:
+        return Response({
+            'error': {
+                'code': 'MISSING_REQUIRED_FIELDS',
+                'message': 'listing_id and action are required',
+                'details': [
+                    {'field': 'listing_id', 'message': 'This field is required'},
+                    {'field': 'action', 'message': 'This field is required (flag, remove, or restore)'}
+                ]
+            }
+        }, status=status.HTTP_400_BAD_REQUEST)
+    
+    if action not in ['flag', 'remove', 'restore']:
+        return Response({
+            'error': {
+                'code': 'INVALID_ACTION',
+                'message': 'Action must be either "flag", "remove", or "restore"'
+            }
+        }, status=status.HTTP_400_BAD_REQUEST)
+    
+    # Get the listing
+    try:
+        listing = FoodListing.objects.get(id=listing_id)
+    except FoodListing.DoesNotExist:
+        return Response({
+            'error': {
+                'code': 'NOT_FOUND',
+                'message': 'Food listing not found'
+            }
+        }, status=status.HTTP_404_NOT_FOUND)
+    
+    # Store previous status for logging
+    previous_status = listing.status
+    
+    # Perform the moderation action
+    try:
+        if action == 'flag':
+            listing.admin_flag(request.user, reason)
+            action_message = 'flagged for review'
+            
+        elif action == 'remove':
+            listing.admin_remove(request.user, reason)
+            action_message = 'removed by admin'
+            
+        elif action == 'restore':
+            listing.admin_restore()
+            action_message = 'restored to active status'
+        
+        # Create a moderation log entry (you might want to add this model)
+        # ModerationLog.objects.create(
+        #     listing=listing,
+        #     moderator=request.user,
+        #     action=action,
+        #     reason=reason,
+        #     previous_status=previous_status,
+        #     new_status=listing.status
+        # )
+        
+        # Get updated listing data
+        updated_listing = FoodListingDetailSerializer(listing).data
+        updated_listing.update({
+            'admin_flagged': listing.admin_flagged,
+            'admin_removal_reason': listing.admin_removal_reason,
+            'removed_by': listing.removed_by.email if listing.removed_by else None,
+            'removed_at': listing.removed_at.isoformat() if listing.removed_at else None,
+        })
+        
+        return Response({
+            'message': f'Listing successfully {action_message}',
+            'action': action,
+            'listing': updated_listing,
+            'moderation_details': {
+                'moderator': request.user.email,
+                'action': action,
+                'reason': reason,
+                'previous_status': previous_status,
+                'new_status': listing.status,
+                'timestamp': timezone.now().isoformat()
+            }
+        }, status=status.HTTP_200_OK)
+        
+    except Exception as e:
+        return Response({
+            'error': {
+                'code': 'MODERATION_ERROR',
+                'message': f'Failed to {action} listing',
+                'details': [{'field': 'general', 'message': str(e)}]
+            }
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def admin_get_listing_details(request, listing_id):
+    """Get detailed information about a specific listing for admin"""
+    # Check if user is admin/staff
+    if not (request.user.is_superuser or request.user.is_staff):
+        return Response({
+            'error': {
+                'code': 'PERMISSION_DENIED',
+                'message': 'Only administrators can access this endpoint'
+            }
+        }, status=status.HTTP_403_FORBIDDEN)
+    
+    try:
+        listing = FoodListing.objects.select_related(
+            'provider', 'removed_by'
+        ).get(id=listing_id)
+    except FoodListing.DoesNotExist:
+        return Response({
+            'error': {
+                'code': 'NOT_FOUND',
+                'message': 'Food listing not found'
+            }
+        }, status=status.HTTP_404_NOT_FOUND)
+    
+    # Serialize the listing with admin details
+    listing_data = FoodListingDetailSerializer(listing).data
+    
+    # Add admin-specific information
+    listing_data.update({
+        'admin_details': {
+            'admin_flagged': listing.admin_flagged,
+            'admin_removal_reason': listing.admin_removal_reason,
+            'removed_by': {
+                'email': listing.removed_by.email,
+                'full_name': f"{listing.removed_by.first_name} {listing.removed_by.last_name}".strip()
+            } if listing.removed_by else None,
+            'removed_at': listing.removed_at.isoformat() if listing.removed_at else None,
+        },
+        'provider_details': {
+            'email': listing.provider.email,
+            'full_name': f"{listing.provider.first_name} {listing.provider.last_name}".strip(),
+            'business_name': getattr(listing.provider.provider_profile, 'business_name', 'N/A') if hasattr(listing.provider, 'provider_profile') else 'N/A',
+            'verification_status': getattr(listing.provider.provider_profile, 'status', 'N/A') if hasattr(listing.provider, 'provider_profile') else 'N/A'
+        }
+    })
+    
+    # Get interaction history for this listing (if needed)
+    try:
+        from interactions.models import Interaction
+        interactions_count = Interaction.objects.filter(
+            business=listing.provider.provider_profile
+        ).count()
+        listing_data['provider_details']['total_interactions'] = interactions_count
+    except:
+        listing_data['provider_details']['total_interactions'] = 0
+    
+    return Response({
+        'listing': listing_data
+    }, status=status.HTTP_200_OK)
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def admin_get_moderation_stats(request):
+    """Get moderation statistics for admins"""
+    # Check if user is admin/staff
+    if not (request.user.is_superuser or request.user.is_staff):
+        return Response({
+            'error': {
+                'code': 'PERMISSION_DENIED',
+                'message': 'Only administrators can access this endpoint'
+            }
+        }, status=status.HTTP_403_FORBIDDEN)
+    
+    # Get basic statistics
+    total_listings = FoodListing.objects.count()
+    active_listings = FoodListing.objects.filter(status='active').count()
+    flagged_listings = FoodListing.objects.filter(status='flagged').count()
+    removed_listings = FoodListing.objects.filter(status='removed').count()
+    
+    # Get recent activity (last 30 days)
+    from datetime import timedelta
+    thirty_days_ago = timezone.now() - timedelta(days=30)
+    
+    recent_flagged = FoodListing.objects.filter(
+        status='flagged',
+        updated_at__gte=thirty_days_ago
+    ).count()
+    
+    recent_removed = FoodListing.objects.filter(
+        status='removed',
+        removed_at__gte=thirty_days_ago
+    ).count()
+    
+    
+    return Response({
+        'overview': {
+            'total_listings': total_listings,
+            'active_listings': active_listings,
+            'flagged_listings': flagged_listings,
+            'removed_listings': removed_listings,
+            'pending_review': flagged_listings,  # Flagged items need review
+        },
+        'recent_activity': {
+            'flagged_last_30_days': recent_flagged,
+            'removed_last_30_days': recent_removed,
+        },
+        'status_breakdown': {
+            'active': active_listings,
+            'flagged': flagged_listings,
+            'removed': removed_listings,
+            'sold_out': FoodListing.objects.filter(status='sold_out').count(),
+            'expired': FoodListing.objects.filter(status='expired').count(),
+            'inactive': FoodListing.objects.filter(status='inactive').count(),
+        }
+        # 'top_moderators': list(moderator_activity) if moderator_activity else []
+    }, status=status.HTTP_200_OK)
