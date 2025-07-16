@@ -153,6 +153,35 @@ Login for any user type (customer, provider, NGO).
 }
 ```
 
+---
+
+### 5. Search Businesses
+**GET** `/auth/businesses/search/`
+
+
+**Response (200 - Success):**
+```json
+{
+    "businesses": [
+        {
+            "id": "48dff97b-8602-49fb-8da1-bb9a9864c4bc",
+            "business_name": "Saber's Snacks",
+            "business_address": "123 Food Street, Test City, Test Province, 12345",
+            "logo": null,
+            "follower_count": 1
+        },
+        {
+            "id": "a7a4b210-16f3-4fae-95a9-07fbf21fc4b1",
+            "business_name": "Elven Foods",
+            "business_address": "1, Mirkwood, Eastern Cape, 1111",
+            "logo": null,
+            "follower_count": 0
+        }
+    ],
+    "count": 2
+}
+```
+
 ## Error Responses
 
 All endpoints may return the following error responses:
