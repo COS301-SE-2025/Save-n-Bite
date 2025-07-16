@@ -78,7 +78,7 @@ class Notification(models.Model):
     )
     business = models.ForeignKey(FoodProviderProfile, on_delete=models.CASCADE, null=True, blank=True)
     
-    notification_type = models.CharField(max_length=20, choices=NOTIFICATION_TYPES)
+    notification_type = models.CharField(max_length=40, choices=NOTIFICATION_TYPES)
     title = models.CharField(max_length=255)
     message = models.TextField()
     
