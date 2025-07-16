@@ -80,6 +80,47 @@ class Interaction(models.Model):
                     changed_by=getattr(self, 'changed_by', None)
                 )
 
+    @classmethod
+    def get_business_history(cls, business_profile):
+        """
+        Returns all interactions for a business with related items and status history
+        """
+        return cls.objects.filter(business=business_profile).prefetch_related(
+            'items',
+            'status_history'
+        ).order_by('-created_at')
+
+    def get_interaction_details(self):
+        """
+        Returns detailed information about a specific interaction
+        """
+        return {
+            'id': str(self.id),
+            'type': self.interaction_type,
+            'status': self.status,
+            'total_amount': float(self.total_amount),
+            'created_at': self.created_at,
+            'completed_at': self.completed_at,
+            'user': {
+                'id': str(self.user.id),
+                'email': self.user.email,
+                'name': self.user.get_full_name()
+            },
+            'items': [{
+                'name': item.name,
+                'quantity': item.quantity,
+                'price_per_item': float(item.price_per_item),
+                'total_price': float(item.total_price),
+                'expiry_date': item.expiry_date
+            } for item in self.items.all()],
+            'status_history': [{
+                'old_status': history.old_status,
+                'new_status': history.new_status,
+                'changed_at': history.changed_at,
+                'changed_by': history.changed_by.email if history.changed_by else None
+            } for history in self.status_history.all()]
+        }
+
 class Cart(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='cart')
@@ -226,6 +267,21 @@ class InteractionItem(models.Model):
 
     def __str__(self):
         return f"{self.quantity} x {self.name} ({self.total_price})"
+    
+    def get_item_details(self):
+        """
+        Returns detailed information about an interaction item
+        """
+        return {
+            'id': str(self.id),
+            'name': self.name,
+            'quantity': self.quantity,
+            'price_per_item': float(self.price_per_item),
+            'total_price': float(self.total_price),
+            'expiry_date': self.expiry_date,
+            'food_listing_id': str(self.food_listing.id) if self.food_listing else None,
+            'image_url': self.image_url
+        }
 
 class InteractionStatusHistory(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
@@ -242,3 +298,17 @@ class InteractionStatusHistory(models.Model):
 
     def __str__(self):
         return f"Status change from {self.old_status} to {self.new_status}"
+    
+    def get_history_details(self):
+        """
+        Returns formatted status history details
+        """
+        return {
+            'id': str(self.id),
+            'interaction_id': str(self.interaction.id),
+            'old_status': self.old_status,
+            'new_status': self.new_status,
+            'changed_at': self.changed_at,
+            'changed_by': self.changed_by.email if self.changed_by else None,
+            'notes': self.notes
+        }

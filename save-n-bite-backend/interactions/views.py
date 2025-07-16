@@ -756,3 +756,42 @@ class RejectDonationView(APIView):
 
         return Response({'message': 'Donation request rejected'}, status=200)
 
+class BusinessHistoryView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        # Verify user is a provider
+        if request.user.user_type != 'provider':
+            return Response(
+                {'error': 'Only food providers can access this history.'},
+                status=status.HTTP_403_FORBIDDEN
+            )
+
+        try:
+            provider_profile = request.user.provider_profile
+        except FoodProviderProfile.DoesNotExist:
+            return Response(
+                {'error': 'Provider profile not found.'},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+        # Get all interactions for this business
+        interactions = Interaction.get_business_history(provider_profile)
+        
+        # Format the response
+        response_data = {
+            'business': {
+                'id': str(provider_profile.id),
+                'name': provider_profile.business_name
+            },
+            'interactions': [interaction.get_interaction_details() for interaction in interactions],
+            'stats': {
+                'total_interactions': interactions.count(),
+                'total_purchases': interactions.filter(interaction_type='Purchase').count(),
+                'total_donations': interactions.filter(interaction_type='Donation').count(),
+                'completed': interactions.filter(status='completed').count(),
+                'pending': interactions.filter(status='pending').count()
+            }
+        }
+
+        return Response(response_data, status=status.HTTP_200_OK)
