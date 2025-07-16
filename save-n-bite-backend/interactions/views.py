@@ -6,6 +6,7 @@ from django.shortcuts import render
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.exceptions import ValidationError
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from .models import Cart, CartItem, Interaction, Order, Payment, InteractionItem, InteractionStatusHistory
@@ -86,17 +87,39 @@ class AddToCartView(APIView):
 
         cart, _ = Cart.objects.get_or_create(user=request.user)
         food_listing = get_object_or_404(FoodListing, id=serializer.validated_data['listingId'])
+        requested_quantity = serializer.validated_data['quantity']
 
-        # Check if item already in cart
+        # Calculate total quantity already in cart plus new request
+        existing_cart_quantity = 0
+        try:
+            existing_cart_item = CartItem.objects.get(cart=cart, food_listing=food_listing)
+            existing_cart_quantity = existing_cart_item.quantity
+        except CartItem.DoesNotExist:
+            pass
 
+        total_requested = existing_cart_quantity + requested_quantity
+
+        # Check if requested quantity exceeds available quantity
+        if total_requested > food_listing.quantity:
+            available = food_listing.quantity - existing_cart_quantity
+            return Response({
+                'error': {
+                    'code': 'INSUFFICIENT_QUANTITY',
+                    'message': f'Only {available} items available (you already have {existing_cart_quantity} in cart)',
+                    'available': available,
+                    'already_in_cart': existing_cart_quantity
+                }
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        # Proceed with adding to cart if quantity is available
         cart_item, created = CartItem.objects.get_or_create(
             cart=cart,
             food_listing=food_listing,
-            defaults={'quantity': serializer.validated_data['quantity']}
+            defaults={'quantity': requested_quantity}
         )
 
         if not created:
-            cart_item.quantity += serializer.validated_data['quantity']
+            cart_item.quantity += requested_quantity
             cart_item.save()
 
         return Response({
@@ -265,17 +288,26 @@ class CheckoutView(APIView):
                 special_instructions=serializer.validated_data.get('specialInstructions', '')
             )
 
-            # 2. Create Interaction Items
+            # 2. Create Interaction Items and update FoodListing quantities
             for cart_item in cart.items.all():
+                # Update FoodListing quantity
+                food_listing = cart_item.food_listing
+                if food_listing.quantity < cart_item.quantity:
+                    raise ValidationError(f"Not enough quantity available for {food_listing.name}")
+                
+                food_listing.quantity -= cart_item.quantity
+                food_listing.save()
+
+                # Create InteractionItem
                 InteractionItem.objects.create(
                     interaction=interaction,
-                    food_listing=cart_item.food_listing,
-                    name=cart_item.food_listing.name,
+                    food_listing=food_listing,
+                    name=food_listing.name,
                     quantity=cart_item.quantity,
-                    price_per_item=cart_item.food_listing.discounted_price,
-                    total_price=cart_item.quantity * cart_item.food_listing.discounted_price,
-                    expiry_date=cart_item.food_listing.expiry_date,
-                    image_url=cart_item.food_listing.images[0] if cart_item.food_listing.images else ''
+                    price_per_item=food_listing.discounted_price,
+                    total_price=cart_item.quantity * food_listing.discounted_price,
+                    expiry_date=food_listing.expiry_date,
+                    image_url=food_listing.images[0] if food_listing.images else ''
                 )
 
             # 3. Create Payment

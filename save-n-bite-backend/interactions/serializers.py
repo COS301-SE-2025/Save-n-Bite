@@ -82,6 +82,16 @@ class AddToCartSerializer(serializers.Serializer):
     listingId = serializers.UUIDField()
     quantity = serializers.IntegerField(min_value=1)
 
+    def validate(self, data):
+        food_listing = FoodListing.objects.filter(id=data['listingId']).first()
+        if not food_listing:
+            raise serializers.ValidationError("Food listing not found")
+        
+        if food_listing.quantity < 1:
+            raise serializers.ValidationError("This item is currently out of stock")
+            
+        return data
+
 class RemoveCartItemSerializer(serializers.Serializer):
     cartItemId = serializers.UUIDField()
 
