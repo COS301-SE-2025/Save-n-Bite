@@ -35,3 +35,18 @@ pytest>=8.4.0
 pytest-django>=4.11.1
 pytest-cov>=6.2.0
 
+
+# Production server
+gunicorn>=21.0.0
+
+# Environment management
+python-decouple>=3.8
+
+# Security (optional but recommended)
+django-environ>=0.10.0
+
+# Production database optimizations (optional)
+django-redis>=5.2.0
+
+# Health checks (optional)
+django-health-check>=3.17.0
