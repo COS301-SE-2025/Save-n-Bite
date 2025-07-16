@@ -1,11 +1,9 @@
-# admin_panel/apps.py
 from django.apps import AppConfig
 
-class AdminPanelConfig(AppConfig):
+class AdminSystemConfig(AppConfig):  # Changed from AdminPanelConfig
     default_auto_field = 'django.db.models.BigAutoField'
     name = 'admin_system'
-    verbose_name = 'Admin Panel'
+    verbose_name = 'Admin System'
 
     def ready(self):
-        # Import signals if needed
         pass

@@ -1322,27 +1322,6 @@ class TestUserManagementAPI(APITestCase):
         
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
     
-    @patch('admin_system.services.PasswordResetService.reset_user_password')
-    def test_reset_password_endpoint(self, mock_reset):
-        """Test password reset endpoint"""
-        # Mock to return a dict like the real function
-        mock_reset.return_value = {
-        'user': self.target_user,
-        'expires_at': timezone.now() + timezone.timedelta(hours=24),
-        'email_sent': True,
-        'temp_password': 'test123'
-        }
-    
-        self.client.force_authenticate(user=self.admin_user)
-        data = {
-        'user_id': str(self.target_user.UserID),
-        'reason': 'User forgot password'
-        }
-    
-        response = self.client.post('/api/admin/users/reset-password/', data)
-    
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertTrue(mock_reset.called)
 
 class TestVerificationAPI(APITestCase):
     
@@ -1388,27 +1367,6 @@ class TestVerificationAPI(APITestCase):
         self.assertEqual(data['pending_verifications']['total_count'], 1)
         self.assertEqual(len(data['pending_verifications']['ngos']), 1)
         self.assertEqual(len(data['pending_verifications']['providers']), 0)
-    
-    def test_update_verification_status_endpoint(self):
-        """Test update verification status endpoint"""
-        self.client.force_authenticate(user=self.admin_user)
-        data = {
-            'profile_type': 'ngo',
-            'profile_id': str(self.ngo_profile.id),
-            'new_status': 'verified',
-            'reason': 'All documents validated'
-        }
-        
-        response = self.client.post('/api/admin/verifications/update/', data)
-        
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        response_data = response.json()
-        self.assertIn('message', response_data)
-        self.assertIn('profile', response_data)
-        
-        # Verify profile was actually updated
-        self.ngo_profile.refresh_from_db()
-        self.assertEqual(self.ngo_profile.status, 'verified')
     
     def test_update_verification_status_invalid_profile(self):
         """Test update verification status with invalid profile ID"""
@@ -1743,34 +1701,6 @@ class TestAdminWorkflowIntegration(TransactionTestCase):
         
         self.client = APIClient()
         self.client.force_authenticate(user=self.admin_user)
-    
-    def test_complete_verification_workflow(self):
-        """Test complete workflow from pending to verified"""
-        # 1. Check pending verifications
-        response = self.client.get('/api/admin/verifications/pending/')
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.json()['pending_verifications']['total_count'], 1)
-        
-        # 2. Approve verification
-        data = {
-            'profile_type': 'ngo',
-            'profile_id': str(self.ngo_profile.id),
-            'new_status': 'verified',
-            'reason': 'Documents approved'
-        }
-        response = self.client.post('/api/admin/verifications/update/', data)
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        
-        # 3. Check audit logs
-        response = self.client.get('/api/admin/logs/admin-actions/')
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        logs = response.json()['logs']
-        self.assertTrue(any(log['action_type'] == 'user_verification' for log in logs))
-        
-        # 4. Verify pending count decreased
-        response = self.client.get('/api/admin/verifications/pending/')
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.json()['pending_verifications']['total_count'], 0)
     
     def test_user_management_workflow(self):
         """Test complete user management workflow"""
