@@ -1,5 +1,3 @@
-# Updated views.py - CLEANED VERSION
-
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
 from django.shortcuts import render
@@ -8,8 +6,11 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.exceptions import ValidationError
 from django.shortcuts import get_object_or_404
+from django.db import models
 from django.utils import timezone
-from .models import Cart, CartItem, Interaction, Order, Payment, InteractionItem, InteractionStatusHistory
+from django.conf import settings
+from datetime import timedelta
+from .models import Cart, CartItem, Interaction, Order, Payment, InteractionItem, InteractionStatusHistory, CheckoutSession
 from food_listings.models import FoodListing
 from decimal import Decimal, ROUND_HALF_UP
 from .serializers import (
@@ -795,3 +796,174 @@ class BusinessHistoryView(APIView):
         }
 
         return Response(response_data, status=status.HTTP_200_OK)
+
+class InitiateCheckoutView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    @db_transaction.atomic
+    def post(self, request):
+        """POST /checkout/initiate/ - Start checkout session with timer"""
+        cart = get_object_or_404(Cart, user=request.user)
+        
+        if cart.items.count() == 0:
+            return Response(
+                {'error': 'Cart is empty'}, 
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # Check for existing active session
+        existing_session = CheckoutSession.objects.filter(
+            user=request.user,
+            is_active=True,
+            expires_at__gt=timezone.now()
+        ).first()
+        
+        if existing_session:
+            return Response(
+                {
+                    'message': 'Checkout session already active',
+                    'session_id': str(existing_session.id),
+                    'expires_at': existing_session.expires_at
+                },
+                status=status.HTTP_200_OK
+            )
+
+        # Reserve inventory by temporarily reducing available quantity
+        for item in cart.items.all():
+            if item.food_listing.quantity_available < item.quantity:
+                return Response(
+                    {
+                        'error': f'Not enough quantity available for {item.food_listing.name}',
+                        'item_id': str(item.food_listing.id),
+                        'available': item.food_listing.quantity_available,
+                        'requested': item.quantity
+                    },
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+            
+            item.food_listing.quantity_available -= item.quantity
+            item.food_listing.save()
+
+        # Create checkout session
+        checkout_session = CheckoutSession.objects.create(
+            user=request.user,
+            cart=cart,
+            expires_at=timezone.now() + timedelta(minutes=30)
+        )
+        
+        return Response(
+            {
+                'message': 'Checkout session started',
+                'session_id': str(checkout_session.id),
+                'expires_at': checkout_session.expires_at,
+                'time_left_seconds': 1800  # 30 minutes in seconds
+            },
+            status=status.HTTP_201_CREATED
+        )
+
+class CompleteCheckoutView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    @db_transaction.atomic
+    def post(self, request):
+        """POST /checkout/complete/ - Complete checkout within the time limit"""
+        serializer = CheckoutSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        
+        session_id = request.data.get('session_id')
+        checkout_session = get_object_or_404(
+            CheckoutSession,
+            id=session_id,
+            user=request.user,
+            is_active=True
+        )
+
+        if checkout_session.is_expired():
+            # Release reserved inventory
+            for item in checkout_session.cart.items.all():
+                item.food_listing.quantity_available += item.quantity
+                item.food_listing.save()
+            
+            checkout_session.is_active = False
+            checkout_session.save()
+            
+            return Response(
+                {'error': 'Checkout session expired'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # Proceed with normal checkout process
+        cart = checkout_session.cart
+        order_subtotal = cart.subtotal
+        first_item = cart.items.first()
+        provider_profile = first_item.food_listing.provider.provider_profile
+
+        # 1. Create Interaction
+        interaction = Interaction.objects.create(
+            user=request.user,
+            business=provider_profile,
+            interaction_type='Purchase',
+            quantity=cart.total_items,
+            total_amount=order_subtotal,
+            special_instructions=serializer.validated_data.get('specialInstructions', '')
+        )
+
+        # 2. Create Interaction Items (quantity already reserved)
+        for cart_item in cart.items.all():
+            InteractionItem.objects.create(
+                interaction=interaction,
+                food_listing=cart_item.food_listing,
+                name=cart_item.food_listing.name,
+                quantity=cart_item.quantity,
+                price_per_item=cart_item.food_listing.discounted_price,
+                total_price=cart_item.quantity * cart_item.food_listing.discounted_price,
+                expiry_date=cart_item.food_listing.expiry_date,
+                image_url=cart_item.food_listing.images[0] if cart_item.food_listing.images else ''
+            )
+
+        # 3. Create Payment
+        payment = Payment.objects.create(
+            interaction=interaction,
+            method=serializer.validated_data['paymentMethod'],
+            amount=order_subtotal,
+            details=serializer.validated_data['paymentDetails'],
+            status=Payment.Status.PENDING
+        )
+
+        # Simulate payment processing
+        if serializer.validated_data['paymentMethod'] != 'cash':
+            payment.status = Payment.Status.COMPLETED
+            payment.processed_at = timezone.now()
+            payment.save()
+        else:
+            payment.status = Payment.Status.COMPLETED
+            payment.processed_at = timezone.now()
+            payment.save()
+
+        # 4. Create Order if payment succeeded
+        if payment.status == Payment.Status.COMPLETED:
+            order = Order.objects.create(
+                interaction=interaction,
+                pickup_window=first_item.food_listing.pickup_window,
+                pickup_code=str(uuid.uuid4())[:6].upper(),
+                status=Order.Status.CONFIRMED
+            )
+
+            # Clear cart and mark session as complete
+            cart.items.all().delete()
+            checkout_session.is_active = False
+            checkout_session.save()
+
+            return Response(
+                {
+                    'message': 'Checkout completed successfully',
+                    'order_id': str(order.id),
+                    'pickup_code': order.pickup_code
+                },
+                status=status.HTTP_201_CREATED
+            )
+        else:
+            return Response(
+                {'error': 'Payment processing failed'},
+                status=status.HTTP_400_BAD_REQUEST
+            )

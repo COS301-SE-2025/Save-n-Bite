@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from food_listings.models import FoodListing
 from authentication.models import FoodProviderProfile
-from interactions.models import Cart, CartItem, Order, Payment, Interaction, InteractionItem, InteractionStatusHistory
+from interactions.models import Cart, CartItem, Order, Payment, Interaction, InteractionItem, InteractionStatusHistory, CheckoutSession
 
 # Add this to your serializers.py file (add to the end of the file)
 
@@ -185,3 +185,31 @@ class DonationRequestSerializer(serializers.Serializer):
 
 class DonationDecisionSerializer(serializers.Serializer):
     rejectionReason = serializers.CharField(allow_blank=True, required=False)
+
+class InitiateCheckoutSerializer(serializers.Serializer):
+    """Empty serializer since initiation doesn't need input data"""
+    pass
+
+class CompleteCheckoutSerializer(serializers.Serializer):
+    session_id = serializers.UUIDField()
+    paymentMethod = serializers.CharField(max_length=20)
+    paymentDetails = serializers.JSONField()
+    specialInstructions = serializers.CharField(required=False, allow_blank=True)
+
+    def validate_paymentMethod(self, value):
+        valid_methods = ['card', 'cash', 'digital_wallet']
+        if value not in valid_methods:
+            raise serializers.ValidationError(f"Invalid payment method. Must be one of {valid_methods}")
+        return value
+
+class CheckoutSessionSerializer(serializers.ModelSerializer):
+    time_left_seconds = serializers.SerializerMethodField()
+    
+    class Meta:
+        model = CheckoutSession
+        fields = ['id', 'expires_at', 'is_active', 'created_at', 'time_left_seconds']
+    
+    def get_time_left_seconds(self, obj):
+        from django.utils import timezone
+        delta = obj.expires_at - timezone.now()
+        return max(0, delta.total_seconds())

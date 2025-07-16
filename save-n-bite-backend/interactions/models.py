@@ -312,3 +312,19 @@ class InteractionStatusHistory(models.Model):
             'changed_by': self.changed_by.email if self.changed_by else None,
             'notes': self.notes
         }
+
+class CheckoutSession(models.Model):
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    cart = models.ForeignKey(Cart, on_delete=models.CASCADE)
+    expires_at = models.DateTimeField()
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    
+    class Meta:
+        indexes = [
+            models.Index(fields=['expires_at']),
+        ]
+
+    def is_expired(self):
+        from django.utils import timezone
+        return timezone.now() > self.expires_at

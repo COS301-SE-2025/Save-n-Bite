@@ -4,7 +4,7 @@ from django.contrib import admin
 from django.contrib import admin
 from .models import (
     Interaction, Cart, CartItem, Order, Payment,
-    InteractionItem, InteractionStatusHistory
+    InteractionItem, InteractionStatusHistory, CheckoutSession
 )
 
 @admin.register(Interaction)
@@ -37,3 +37,9 @@ class InteractionItemAdmin(admin.ModelAdmin):
 @admin.register(InteractionStatusHistory)
 class InteractionStatusHistoryAdmin(admin.ModelAdmin):
     list_display = ('Interaction', 'old_status', 'new_status', 'changed_by', 'changed_at')
+
+@admin.register(CheckoutSession)
+class CheckoutSessionAdmin(admin.ModelAdmin):
+    list_display = ('id', 'user', 'expires_at', 'is_active')
+    list_filter = ('is_active',)
+    search_fields = ('user__email',)
