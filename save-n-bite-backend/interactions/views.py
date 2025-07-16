@@ -690,7 +690,7 @@ class DonationRequestView(APIView):
                 'message': 'Donation request submitted successfully',
                 'interaction_id': str(interaction.id),
                 'requested_quantity': requested_quantity,
-                'available_quantity': food_listing.quantity
+                'available_quantity': food_listing.quantity_available
             },
             status=status.HTTP_201_CREATED
         )
@@ -716,23 +716,19 @@ class AcceptDonationView(APIView):
             requested_quantity = interaction_item.quantity
 
             # Verify quantity is still available
-            if food_listing.quantity < requested_quantity:
+            if food_listing.quantity_available < requested_quantity:
                 return Response(
                     {'error': f'Not enough quantity available for {food_listing.name}.'}, 
                     status=400
                 )
 
             # Reduce the quantity
-            food_listing.quantity -= requested_quantity
+            food_listing.quantity_available -= requested_quantity
             food_listing.save()
 
             # Update interaction and order status
             interaction.status = Interaction.Status.READY_FOR_PICKUP
             interaction.save()
-
-            if hasattr(interaction, 'order'):
-                interaction.order.status = Order.Status.READY_FOR_PICKUP
-                interaction.order.save()
 
         return Response(
             {'message': 'Donation accepted and marked as ready for pickup'}, 
