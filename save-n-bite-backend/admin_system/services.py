@@ -351,7 +351,7 @@ class DashboardService:
         # Listing statistics
         total_listings = FoodListing.objects.count()
         active_listings = FoodListing.objects.filter(status='active').count()
-        new_listings = FoodListing.objects.filter(created_at__gte=recent).count()
+        new_listings = FoodListing.objects.filter(created_at__gte=week_ago).count()
         
         # Transaction statistics (if available)
         try:
