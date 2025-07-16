@@ -366,26 +366,27 @@ def get_business_profile(request, business_id):
 @api_view(['GET'])
 @permission_classes([AllowAny])
 def search_businesses(request):
-    """Search for businesses"""
+    """Search for businesses or get all verified businesses"""
     search_query = request.GET.get('search', '').strip()
-    
-    if not search_query:
-        return Response({
-            'businesses': [],
-            'count': 0
-        }, status=status.HTTP_200_OK)
     
     try:
         from django.db.models import Q
         
-        # Search in business profiles
-        businesses = User.objects.filter(
+        # Start with all verified businesses
+        businesses_query = User.objects.filter(
             user_type='provider',
             provider_profile__status='verified'
-        ).filter(
-            Q(provider_profile__business_name__icontains=search_query) |
-            Q(provider_profile__business_address__icontains=search_query)
-        ).select_related('provider_profile')[:20]  # Limit to 20 results
+        ).select_related('provider_profile')
+        
+        # Apply search filter if search query is provided
+        if search_query:
+            businesses_query = businesses_query.filter(
+                Q(provider_profile__business_name__icontains=search_query) |
+                Q(provider_profile__business_address__icontains=search_query)
+            )
+        
+        # Limit to 200 results
+        businesses = businesses_query[:200]
         
         business_list = []
         for business in businesses:

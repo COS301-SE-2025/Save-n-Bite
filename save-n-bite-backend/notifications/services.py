@@ -603,3 +603,138 @@ class NotificationService:
         except Exception as e:
             logger.error(f"Error getting follow recommendations: {str(e)}")
             raise ValueError(f"Failed to get recommendations: {str(e)}")
+
+    @staticmethod
+    def send_order_preparation_notification(scheduled_pickup):
+        """Send notification when order is scheduled and being prepared"""
+        try:
+            customer = scheduled_pickup.order.interaction.user
+            business = scheduled_pickup.location.business
+            
+            # Create in-app notification
+            title = "Order Received - We're Preparing Your Order!"
+            message = f"Great news! We've received your order for '{scheduled_pickup.food_listing.name}' from {business.business_name}. We're now preparing your order and will have it ready for pickup on {scheduled_pickup.scheduled_date} at {scheduled_pickup.scheduled_start_time.strftime('%H:%M')}."
+            
+            notification = NotificationService.create_notification(
+                recipient=customer,
+                notification_type='order_preparation',
+                title=title,
+                message=message,
+                sender=business.user,
+                business=business,
+                data={
+                    'pickup_id': str(scheduled_pickup.id),
+                    'confirmation_code': scheduled_pickup.confirmation_code,
+                    'food_listing_id': str(scheduled_pickup.food_listing.id),
+                    'food_listing_name': scheduled_pickup.food_listing.name,
+                    'business_name': business.business_name,
+                    'pickup_date': scheduled_pickup.scheduled_date.isoformat(),
+                    'pickup_time': scheduled_pickup.scheduled_start_time.strftime('%H:%M'),
+                    'location_name': scheduled_pickup.location.name,
+                    'location_address': scheduled_pickup.location.address
+                }
+            )
+
+            # Check if user wants email notifications
+            preferences, _ = NotificationPreferences.objects.get_or_create(user=customer)
+            if preferences.email_notifications:
+                # Send email notification
+                email_context = {
+                    'customer_name': NotificationService._get_user_display_name(customer),
+                    'business_name': business.business_name,
+                    'food_listing_name': scheduled_pickup.food_listing.name,
+                    'confirmation_code': scheduled_pickup.confirmation_code,
+                    'pickup_date': scheduled_pickup.scheduled_date.strftime('%B %d, %Y'),
+                    'pickup_time': f"{scheduled_pickup.scheduled_start_time.strftime('%H:%M')} - {scheduled_pickup.scheduled_end_time.strftime('%H:%M')}",
+                    'location_name': scheduled_pickup.location.name,
+                    'location_address': scheduled_pickup.location.address,
+                    'location_instructions': scheduled_pickup.location.instructions,
+                    'contact_person': scheduled_pickup.location.contact_person,
+                    'contact_phone': scheduled_pickup.location.contact_phone,
+                    'customer_notes': scheduled_pickup.customer_notes,
+                    'business_logo': business.logo.url if business.logo else None,
+                }
+                
+                NotificationService.send_email_notification(
+                    user=customer,
+                    subject=f"Order Received - {business.business_name} is Preparing Your Order",
+                    template_name='order_preparation',
+                    context=email_context,
+                    notification=notification
+                )
+
+            logger.info(f"Sent order preparation notification to {customer.email} for pickup {scheduled_pickup.confirmation_code}")
+
+        except Exception as e:
+            logger.error(f"Failed to send order preparation notification for pickup {scheduled_pickup.id}: {str(e)}")
+            # Don't re-raise the exception to avoid breaking the scheduling process
+
+    @staticmethod
+    def send_order_completion_notification(scheduled_pickup):
+        """Send thank you notification when pickup is completed"""
+        try:
+            customer = scheduled_pickup.order.interaction.user
+            business = scheduled_pickup.location.business
+            
+            # Calculate total quantity from interaction items
+            total_quantity = sum(item.quantity for item in scheduled_pickup.order.interaction.items.all())
+            
+            # Create in-app notification
+            title = "Thank You for Shopping with Us!"
+            message = f"Thank you for choosing {business.business_name}! Your pickup of '{scheduled_pickup.food_listing.name}' has been completed successfully. Together, we're helping reduce food waste and making a positive impact on our environment. We hope to see you again soon!"
+            
+            notification = NotificationService.create_notification(
+                recipient=customer,
+                notification_type='order_completion',
+                title=title,
+                message=message,
+                sender=business.user,
+                business=business,
+                data={
+                    'pickup_id': str(scheduled_pickup.id),
+                    'confirmation_code': scheduled_pickup.confirmation_code,
+                    'food_listing_id': str(scheduled_pickup.food_listing.id),
+                    'food_listing_name': scheduled_pickup.food_listing.name,
+                    'business_name': business.business_name,
+                    'completed_at': scheduled_pickup.actual_pickup_time.isoformat() if scheduled_pickup.actual_pickup_time else None,
+                    'total_quantity': total_quantity,
+                    'sustainability_impact': 'food_waste_reduced'
+                }
+            )
+
+            # Check if user wants email notifications
+            preferences, _ = NotificationPreferences.objects.get_or_create(user=customer)
+            if preferences.email_notifications:
+                # Send email notification
+                email_context = {
+                    'customer_name': NotificationService._get_user_display_name(customer),
+                    'business_name': business.business_name,
+                    'business_address': business.business_address,
+                    'business_contact': business.business_contact,
+                    'food_listing_name': scheduled_pickup.food_listing.name,
+                    'food_listing_description': scheduled_pickup.food_listing.description,
+                    'confirmation_code': scheduled_pickup.confirmation_code,
+                    'pickup_date': scheduled_pickup.scheduled_date.strftime('%B %d, %Y'),
+                    'pickup_time': scheduled_pickup.actual_pickup_time.strftime('%H:%M on %B %d, %Y') if scheduled_pickup.actual_pickup_time else 'Recently',
+                    'total_quantity': total_quantity,
+                    'customer_notes': scheduled_pickup.customer_notes,
+                    'business_notes': scheduled_pickup.business_notes,
+                    'business_logo': business.logo.url if business.logo else None,
+                    # Add some sustainability messaging
+                    'sustainability_message': f"By purchasing surplus food, you've helped reduce food waste and supported sustainable practices in your community!",
+                    'invite_back_message': f"Don't forget to follow {business.business_name} to get notified about future surplus food opportunities!"
+                }
+                
+                NotificationService.send_email_notification(
+                    user=customer,
+                    subject=f"Thank You from {business.business_name} - Pickup Completed Successfully",
+                    template_name='order_completion',
+                    context=email_context,
+                    notification=notification
+                )
+
+            logger.info(f"Sent order completion notification to {customer.email} for pickup {scheduled_pickup.confirmation_code}")
+
+        except Exception as e:
+            logger.error(f"Failed to send order completion notification for pickup {scheduled_pickup.id}: {str(e)}")
+            # Don't re-raise the exception to avoid breaking the completion process
