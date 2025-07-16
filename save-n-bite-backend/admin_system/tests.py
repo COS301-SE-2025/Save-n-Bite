@@ -15,20 +15,21 @@ import uuid
 import json
 
 # Import models and services
-from .models import (
+from admin_system.models import (
     AdminActionLog, SystemAnnouncement, SystemLogEntry, 
-    DocumentAccessLog, PasswordReset
+    DocumentAccessLog, PasswordReset, User
 )
-from .services import (
+from admin_system.services import (
     AdminService, VerificationService, PasswordResetService,
     UserManagementService, DashboardService, SystemLogService
 )
-from .permissions import (
+from admin_system.permissions import (
     IsSystemAdmin, CanModerateContent, CanManageUsers,
     CanViewAuditLogs, CanManageSystemSettings
 )
-from .utils import SystemLogger, get_file_size_human_readable
-from authentication.models import User, NGOProfile, FoodProviderProfile, CustomerProfile
+from admin_system.utils import SystemLogger, get_file_size_human_readable
+from authentication.models import FoodProviderProfile, CustomerProfile, NGOProfile
+
 
 # ============ FIXTURES ============
 
@@ -308,97 +309,6 @@ class TestAdminService(TestCase):
         self.assertEqual(log_entry.profile_id, '123')
         self.assertEqual(log_entry.document_name, 'certificate.pdf')
 
-class TestVerificationService(TransactionTestCase):
-    
-    def setUp(self):
-        self.admin_user = User.objects.create_user(
-            username='admin_test',
-            email='admin@test.com',
-            password='adminpass123',
-            admin_rights=True,
-            user_type='customer'
-        )
-        
-        self.ngo_user = User.objects.create_user(
-            username='ngo_test',
-            email='ngo@test.com',
-            password='ngopass123',
-            user_type='ngo'
-        )
-        
-        self.ngo_profile = NGOProfile.objects.create(
-            user=self.ngo_user,
-            organisation_name='Test NGO',
-            organisation_contact='+1234567890',
-            organisation_email='ngo@test.com',
-            representative_name='John Doe',
-            representative_email='john@test.com',
-            address_line1='123 Test St',
-            city='Test City',
-            province_or_state='Test Province',
-            postal_code='12345',
-            country='Test Country',
-            status='pending_verification'
-        )
-    
-    def test_get_pending_verifications_endpoint(self):
-        """Test get pending verifications endpoint"""
-        self.client.force_authenticate(user=self.admin_user)
-        response = self.client.get('/api/admin/verifications/pending/')
-        
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        data = response.json()
-        self.assertIn('pending_verifications', data)
-        self.assertEqual(data['pending_verifications']['total_count'], 1)
-        self.assertEqual(len(data['pending_verifications']['ngos']), 1)
-    
-    def test_update_verification_status_endpoint(self):
-        """Test update verification status endpoint"""
-        self.client.force_authenticate(user=self.admin_user)
-        data = {
-            'profile_type': 'ngo',
-            'profile_id': str(self.ngo_profile.id),
-            'new_status': 'verified',
-            'reason': 'All documents validated'
-        }
-        
-        response = self.client.post('/api/admin/verifications/update/', data)
-        
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        response_data = response.json()
-        self.assertIn('message', response_data)
-        self.assertIn('profile', response_data)
-        
-        # Verify profile was actually updated
-        self.ngo_profile.refresh_from_db()
-        self.assertEqual(self.ngo_profile.status, 'verified')
-    
-    def test_update_verification_status_invalid_profile(self):
-        """Test update verification status with invalid profile ID"""
-        self.client.force_authenticate(user=self.admin_user)
-        data = {
-            'profile_type': 'ngo',
-            'profile_id': str(uuid.uuid4()),
-            'new_status': 'verified',
-            'reason': 'Test'
-        }
-        
-        response = self.client.post('/api/admin/verifications/update/', data)
-        
-        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
-    
-    def test_update_verification_status_invalid_data(self):
-        """Test update verification status with invalid data"""
-        self.client.force_authenticate(user=self.admin_user)
-        data = {
-            'profile_type': 'invalid',
-            'profile_id': str(self.ngo_profile.id),
-            'new_status': 'verified'
-        }
-        
-        response = self.client.post('/api/admin/verifications/update/', data)
-        
-        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
 class TestAuditLogsAPI(APITestCase):
     
@@ -1008,39 +918,52 @@ class TestPasswordResetService(TestCase):
         
         self.assertEqual(len(password), 16)
     
-    @patch('admin_system.services.send_mail')
-    def test_reset_user_password(self, mock_send_mail):
+    @patch('admin_system.services.NotificationService.send_email_notification')
+    @patch('admin_system.services.NotificationService.create_notification')
+    def test_reset_user_password(self, mock_create_notification, mock_send_email):
         """Test password reset functionality"""
-        mock_send_mail.return_value = True
-        
+    # Mock the notification service methods
+        mock_create_notification.return_value = MagicMock()
+        mock_send_email.return_value = True
+    
         password_reset = PasswordResetService.reset_user_password(
-            admin_user=self.admin_user,
-            target_user=self.target_user
+        admin_user=self.admin_user,
+        target_user=self.target_user
         )
-        
-        self.assertEqual(password_reset.target_user, self.target_user)
-        self.assertEqual(password_reset.reset_by, self.admin_user)
-        self.assertTrue(mock_send_mail.called)
-        
-        # Check that action was logged
+    
+    # Test the returned dict
+        self.assertEqual(password_reset['user'], self.target_user)
+        self.assertIn('expires_at', password_reset)
+        self.assertTrue(password_reset['email_sent'])
+    
+    # Check that notification methods were called
+        self.assertTrue(mock_create_notification.called)
+        self.assertTrue(mock_send_email.called)
+    
+    # Check that action was logged
         log_exists = AdminActionLog.objects.filter(
-            admin_user=self.admin_user,
-            action_type='password_reset'
+        admin_user=self.admin_user,
+        action_type='password_reset'
         ).exists()
         self.assertTrue(log_exists)
     
-    @patch('admin_system.services.send_mail')
-    def test_reset_user_password_email_failure(self, mock_send_mail):
+    @patch('admin_system.services.NotificationService.send_email_notification')
+    @patch('admin_system.services.NotificationService.create_notification')
+    def test_reset_user_password_email_failure(self, mock_create_notification, mock_send_email):
         """Test password reset with email failure"""
-        mock_send_mail.side_effect = Exception("Email failed")
-        
+        mock_create_notification.return_value = MagicMock()
+        mock_send_email.side_effect = Exception("Email failed")
+
         with self.assertRaises(Exception) as context:
             PasswordResetService.reset_user_password(
                 admin_user=self.admin_user,
                 target_user=self.target_user
             )
-        
-        self.assertIn('Failed to send email', str(context.exception))
+    
+        self.assertIn('Failed to send password reset email', str(context.exception))
+    
+    # Just check that the exception was raised, don't worry about logging for now
+    # The important thing is that the function properly handles email failures
 
 class TestUserManagementService(TestCase):
     
@@ -1402,21 +1325,24 @@ class TestUserManagementAPI(APITestCase):
     @patch('admin_system.services.PasswordResetService.reset_user_password')
     def test_reset_password_endpoint(self, mock_reset):
         """Test password reset endpoint"""
-        mock_reset.return_value = MagicMock()
-        mock_reset.return_value.expires_at.isoformat.return_value = '2025-01-01T00:00:00'
-        
+        # Mock to return a dict like the real function
+        mock_reset.return_value = {
+        'user': self.target_user,
+        'expires_at': timezone.now() + timezone.timedelta(hours=24),
+        'email_sent': True,
+        'temp_password': 'test123'
+        }
+    
         self.client.force_authenticate(user=self.admin_user)
         data = {
-            'user_id': str(self.target_user.UserID),
-            'reason': 'User forgot password'
+        'user_id': str(self.target_user.UserID),
+        'reason': 'User forgot password'
         }
-        
+    
         response = self.client.post('/api/admin/users/reset-password/', data)
-        
+    
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertTrue(mock_reset.called)
-
-# Continue from where TestVerificationAPI was cut off:
 
 class TestVerificationAPI(APITestCase):
     

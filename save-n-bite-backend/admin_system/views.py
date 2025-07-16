@@ -3,7 +3,7 @@ from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 from django.core.paginator import Paginator
-from django.db.models import Q
+from django.db.models import Count, Q, Avg
 from django.contrib.auth import get_user_model
 from django.http import HttpResponse
 from django.utils import timezone
@@ -470,7 +470,8 @@ def get_admin_action_logs(request):
                 'total_pages': paginator.num_pages,
                 'total_count': paginator.count,
                 'has_next': page_obj.has_next(),
-                'has_previous': page_obj.has_previous()
+                'has_previous': page_obj.has_previous(),
+                'per_page': per_page
             }
         }, status=status.HTTP_200_OK)
         
