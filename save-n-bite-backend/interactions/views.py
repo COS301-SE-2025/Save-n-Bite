@@ -100,8 +100,8 @@ class AddToCartView(APIView):
         total_requested = existing_cart_quantity + requested_quantity
 
         # Check if requested quantity exceeds available quantity
-        if total_requested > food_listing.quantity:
-            available = food_listing.quantity - existing_cart_quantity
+        if total_requested > food_listing.quantity_available:
+            available = food_listing.quantity_available - existing_cart_quantity
             return Response({
                 'error': {
                     'code': 'INSUFFICIENT_QUANTITY',
@@ -292,10 +292,10 @@ class CheckoutView(APIView):
             for cart_item in cart.items.all():
                 # Update FoodListing quantity
                 food_listing = cart_item.food_listing
-                if food_listing.quantity < cart_item.quantity:
+                if food_listing.quantity_available < cart_item.quantity:
                     raise ValidationError(f"Not enough quantity available for {food_listing.name}")
                 
-                food_listing.quantity -= cart_item.quantity
+                food_listing.quantity_available -= cart_item.quantity
                 food_listing.save()
 
                 # Create InteractionItem

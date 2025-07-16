@@ -42,7 +42,7 @@ class FoodListingsSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = FoodListing
-        fields = ['id', 'name', 'description', 'quantity', 'original_price', 'discounted_price', 'savings', 'discount_percentage', 'type', 'expiry_date', 'pickup_window', 'images', 'allergens', 'dietary_info', 'provider']
+        fields = ['id', 'name', 'description', 'quantity_available', 'original_price', 'discounted_price', 'savings', 'discount_percentage', 'type', 'expiry_date', 'pickup_window', 'images', 'allergens', 'dietary_info', 'provider']
 
     def get_savings(self, obj):
         return float(obj.original_price - obj.discounted_price)
@@ -87,7 +87,7 @@ class AddToCartSerializer(serializers.Serializer):
         if not food_listing:
             raise serializers.ValidationError("Food listing not found")
         
-        if food_listing.quantity < 1:
+        if food_listing.quantity_available < 1:
             raise serializers.ValidationError("This item is currently out of stock")
             
         return data
