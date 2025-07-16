@@ -12,7 +12,7 @@ class StatusTransition:
         },
         'Order': {
             'pending': ['confirmed', 'cancelled'],
-            'confirmed': ['ready', 'cancelled'],
+            'confirmed': ['ready', 'completed', 'cancelled'],
             'ready': ['completed', 'cancelled'],
             'completed': [],
             'cancelled': []

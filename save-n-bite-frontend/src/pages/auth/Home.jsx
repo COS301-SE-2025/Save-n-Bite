@@ -18,11 +18,11 @@ const HomePage = () => {
             reducing food waste.
           </p>
           <div className="flex flex-col sm:flex-row justify-center gap-4">
-            <Link to="/browse" className="px-8 py-3 bg-emerald-600 text-white font-medium rounded-md hover:bg-emerald-700 transition-colors">
-              Browse Surplus Food
+            <Link to="/register" className="px-8 py-3 bg-emerald-600 text-white font-medium rounded-md hover:bg-emerald-700 transition-colors">
+              Sign Up
             </Link>
-            <Link to="/register" className="px-8 py-3 bg-white text-emerald-600 font-medium rounded-md border border-emerald-600 hover:bg-emerald-50 transition-colors">
-              Sign Up Now
+            <Link to="/login" className="px-8 py-3 bg-white text-emerald-600 font-medium rounded-md border border-emerald-600 hover:bg-emerald-50 transition-colors">
+              Login
             </Link>
           </div>
         </div>
@@ -67,7 +67,7 @@ const HomePage = () => {
         </div>
       </section>
       {/* What is Save n Bite Section */}
-      <section className="py-16 px-6 bg-gray-50">
+      <section className="py-16 px-6 bg-gray-50" id="about">
         <div className="max-w-4xl mx-auto text-center">
           <h2 className="text-3xl font-bold mb-6 text-gray-800">
             What is Save n Bite?
@@ -83,7 +83,7 @@ const HomePage = () => {
         </div>
       </section>
       {/* How It Works Section */}
-      <section className="py-16 px-6">
+      <section className="py-16 px-6" id="how-it-works">
         <div className="max-w-6xl mx-auto">
           <h2 className="text-3xl font-bold mb-12 text-center text-gray-800">
             How It Works
@@ -104,7 +104,7 @@ const HomePage = () => {
               <div className="bg-blue-100 w-16 h-16 rounded-full flex items-center justify-center mb-4">
                 <span className="text-xl font-bold text-blue-600">2</span>
               </div>
-              <h3 className="text-xl font-semibold mb-2">Reserve + Pay</h3>
+              <h3 className="text-xl font-semibold mb-2">Order + Pay</h3>
               <p className="text-gray-600">
                 Select items, pay securely, and get your pickup confirmation.
               </p>
@@ -117,7 +117,7 @@ const HomePage = () => {
               <h3 className="text-xl font-semibold mb-2">Pickup</h3>
               <p className="text-gray-600">
                 Visit the business during the pickup window and show your
-                confirmation.
+                confirmation code.
               </p>
             </div>
             {/* Step 4 */}

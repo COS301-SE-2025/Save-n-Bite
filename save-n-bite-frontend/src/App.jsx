@@ -18,6 +18,7 @@ import Reviews from './pages/auth/ReviewPage';
 import Dashboard from './pages/foodProvider/Dashboard';
 import OrdersAndFeedback from './pages/foodProvider/OrdersAndFeedback';
 import PickupCoordination from './pages/foodProvider/PickupCoordination';
+import ManageDonations from './pages/foodProvider/Donations';
 
 
 function App() {
@@ -44,8 +45,9 @@ function App() {
           <Route path="/reviews/:orderId" element={<Reviews />} />
           <Route path="/reviews" element={<Reviews />} />
           <Route path="/dashboard" element={<Dashboard />} />
-           <Route path="/orders-and-feedback" element={<OrdersAndFeedback />} />
-    <Route path="/pickup-coordination" element={<PickupCoordination />} />
+          <Route path="/orders-and-feedback" element={<OrdersAndFeedback />} />
+          <Route path="/pickup-coordination" element={<PickupCoordination />} />
+          <Route path="/donations" element={<ManageDonations />} />
 
       </Routes>
     </Router>

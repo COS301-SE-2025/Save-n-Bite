@@ -227,19 +227,6 @@ class InteractionItem(models.Model):
     def __str__(self):
         return f"{self.quantity} x {self.name} ({self.total_price})"
 
-class PickupDetails(models.Model):
-    order = models.OneToOneField(Order, on_delete=models.CASCADE, related_name='pickup_details')
-    scheduled_time = models.DateTimeField()
-    actual_time = models.DateTimeField(null=True, blank=True)
-    location = models.TextField()
-    contact_person = models.CharField(max_length=100)
-    contact_number = models.CharField(max_length=20)
-    is_completed = models.BooleanField(default=False)
-    notes = models.TextField(blank=True)
-
-    def __str__(self):
-        return f"Pickup for {self.order} at {self.scheduled_time}"
-
 class InteractionStatusHistory(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     Interaction = models.ForeignKey(Interaction, on_delete=models.CASCADE, related_name='status_history', default=1)

@@ -59,6 +59,7 @@ const transformFormData = (formData, userType) => {
                 organisation_logo: formData.logo || '',
             };
 
+
         default:
             return formData;
     }

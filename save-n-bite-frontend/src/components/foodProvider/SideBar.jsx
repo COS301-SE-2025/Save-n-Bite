@@ -7,6 +7,7 @@ import {
   PackageIcon,
   ShoppingCartIcon,
   SettingsIcon,
+  HeartHandshakeIcon ,
   HelpCircle as HelpIcon,
 } from 'lucide-react'
 import logo from '../../assets/images/SnB_leaf_icon.png';
@@ -14,6 +15,8 @@ import { useNavigate } from 'react-router-dom';
 import { OnboardingProvider } from './OnboardingWalkthrough/OnboardingContext'
 import { Onboarding } from './OnboardingWalkthrough/Onboarding'
 import { HelpMenu } from './HelpMenu'
+
+
 
 const navigationItems = [
   {
@@ -47,6 +50,13 @@ const navigationItems = [
     path: '/orders-and-feedback'
   },
   {
+  name: 'Manage Donations',
+  icon: HeartHandshakeIcon, 
+  route: 'donations',
+  path: '/donations'
+},
+
+  {
     name: 'Settings',
     icon: SettingsIcon,
     route: 'settings',
@@ -54,8 +64,19 @@ const navigationItems = [
   },
 ]
 
-const SideBar = ({ currentPage }) => { 
+const SideBar = ({ currentPage, pendingCount }) => { 
   const navigate = useNavigate(); 
+ 
+  SideBar.propTypes = {
+  currentPage: PropTypes.string.isRequired,
+  pendingCount: PropTypes.number,
+}
+
+const handleLogout = () => {
+    localStorage.removeItem('authToken');
+    localStorage.removeItem('userData');
+    navigate('/login');
+  };
 
   const handleNavigation = (path) => {
     navigate(path); 
@@ -80,25 +101,33 @@ const SideBar = ({ currentPage }) => {
         </div>
         <nav className="flex-1 p-4 flex flex-col justify-between h-[calc(100vh-104px)]">
           <ul className="space-y-2">
-            {navigationItems.map((item) => {
-              const Icon = item.icon
-              return (
-                <li key={item.route}>
-                  <button
-                    onClick={() => handleNavigation(item.path)}
-                    className={`w-full flex items-center px-4 py-3 rounded-lg transition-colors ${
-                      currentPage === item.route
-                        ? 'bg-blue-700 text-white'
-                        : 'text-blue-200 hover:bg-blue-800 hover:text-white'
-                    }`}
-                    data-onboarding={`nav-${item.route.toLowerCase()}`}
-                  >
-                    <Icon className="w-5 h-5 mr-3" />
-                    {item.name}
-                  </button>
-                </li>
-              )
-            })}
+          {navigationItems.map((item) => {
+          const Icon = item.icon
+          return (
+            <li key={item.route}>
+              <button
+                onClick={() => handleNavigation(item.path)}
+                className={`w-full flex items-center px-4 py-3 rounded-lg transition-colors ${
+                  currentPage === item.route
+                    ? 'bg-blue-700 text-white'
+                    : 'text-blue-200 hover:bg-blue-800 hover:text-white'
+                }`}
+                data-onboarding={`nav-${item.route.toLowerCase()}`}
+              >
+                <Icon className="w-5 h-5 mr-3" />
+                <span className="flex-1 text-left">{item.name}</span>
+
+                {/* Notification badge for donations */}
+                {item.name === 'Manage Donations' && pendingCount > 0 && (
+                  <span className="ml-auto bg-green-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                    {pendingCount}
+                  </span>
+                )}
+              </button>
+            </li>
+          )
+        })}
+
           </ul>
           <div className="mt-4">
             <button
@@ -110,6 +139,15 @@ const SideBar = ({ currentPage }) => {
               <HelpIcon className="w-5 h-5 mr-3" />
               Help Center
             </button>
+            
+            <button
+          onClick={handleLogout}
+          className="w-full flex justify-center items-center px-4 py-3 rounded-lg bg-red-600 text-white hover:bg-red-800 transition-colors"
+        >
+          Logout
+        </button>
+
+
           </div>
         </nav>
       </div>
