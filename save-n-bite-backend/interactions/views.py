@@ -621,62 +621,123 @@ class DonationRequestView(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
+        # Verify NGO status
         if request.user.user_type != 'ngo':
-            return Response({'error': 'Only NGOs can request donations.'}, status=403)
+            return Response(
+                {'error': 'Only NGOs can request donations.'}, 
+                status=status.HTTP_403_FORBIDDEN
+            )
 
         data = request.data
         food_listing = get_object_or_404(FoodListing, id=data.get("listingId"))
+        requested_quantity = data.get("quantity", 1)  # Default to 1 if not specified
+
+        # Validate requested quantity
+        if requested_quantity <= 0:
+            return Response(
+                {'error': 'Quantity must be at least 1.'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # Check available quantity
+        if requested_quantity > food_listing.quantity_available:
+            return Response(
+                {
+                    'error': 'Requested quantity exceeds available amount.',
+                    'available_quantity': food_listing.quantity_available,
+                    'requested_quantity': requested_quantity
+                },
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
         provider_profile = food_listing.provider.provider_profile
 
-        interaction = Interaction.objects.create(
-            user=request.user,
-            business=provider_profile,
-            interaction_type=Interaction.InteractionType.DONATION,
-            quantity=data.get("quantity", 1),
-            total_amount=0.00,  # No charge
-            special_instructions=data.get("specialInstructions", ""),
-            motivation_message=data.get("motivationMessage", ""),
-            verification_documents=data.get("verificationDocuments", [])
-        )
+        with db_transaction.atomic():
+            # Create the interaction (status will be PENDING by default)
+            interaction = Interaction.objects.create(
+                user=request.user,
+                business=provider_profile,
+                interaction_type=Interaction.InteractionType.DONATION,
+                quantity=requested_quantity,
+                total_amount=0.00,  # Donations are free
+                special_instructions=data.get("specialInstructions", ""),
+                motivation_message=data.get("motivationMessage", ""),
+                verification_documents=data.get("verificationDocuments", [])
+            )
 
-        # Create InteractionItem (similar to purchase)
-        InteractionItem.objects.create(
-            interaction=interaction,
-            food_listing=food_listing,
-            name=food_listing.name,
-            quantity=data.get("quantity", 1),
-            price_per_item=0.00,
-            total_price=0.00,
-            expiry_date=food_listing.expiry_date,
-            image_url=food_listing.images
-        )
+            # Create interaction item
+            InteractionItem.objects.create(
+                interaction=interaction,
+                food_listing=food_listing,
+                name=food_listing.name,
+                quantity=requested_quantity,
+                price_per_item=0.00,
+                total_price=0.00,
+                expiry_date=food_listing.expiry_date,
+                image_url=food_listing.images[0] if food_listing.images else ''
+            )
 
-        Order.objects.create(
-            interaction=interaction,
-            pickup_window=food_listing.pickup_window,
-            pickup_code=str(uuid.uuid4())[:6].upper()
-        )
+            # Create pending order
+            Order.objects.create(
+                interaction=interaction,
+                pickup_window=food_listing.pickup_window,
+                pickup_code=str(uuid.uuid4())[:6].upper(),
+                status=Order.Status.PENDING
+            )
 
-        return Response({'message': 'Donation request submitted'}, status=201)
+        return Response(
+            {
+                'message': 'Donation request submitted successfully',
+                'interaction_id': str(interaction.id),
+                'requested_quantity': requested_quantity,
+                'available_quantity': food_listing.quantity
+            },
+            status=status.HTTP_201_CREATED
+        )
     
 class AcceptDonationView(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request, interaction_id):
         interaction = get_object_or_404(
-            Interaction, id=interaction_id, business=request.user.provider_profile,
+            Interaction, 
+            id=interaction_id, 
+            business=request.user.provider_profile,
             interaction_type=Interaction.InteractionType.DONATION
         )
 
         if interaction.status != Interaction.Status.PENDING:
             return Response({'error': 'Only pending donations can be accepted.'}, status=400)
 
-        interaction.status = Interaction.Status.READY_FOR_PICKUP
-        interaction.save()
+        with db_transaction.atomic():
+            # Get the food listing and quantity from the interaction item
+            interaction_item = interaction.items.first()  # Assuming one item per donation
+            food_listing = interaction_item.food_listing
+            requested_quantity = interaction_item.quantity
 
-        # Optionally: trigger notification to NGO
+            # Verify quantity is still available
+            if food_listing.quantity < requested_quantity:
+                return Response(
+                    {'error': f'Not enough quantity available for {food_listing.name}.'}, 
+                    status=400
+                )
 
-        return Response({'message': 'Donation accepted and marked as ready for pickup'}, status=200)
+            # Reduce the quantity
+            food_listing.quantity -= requested_quantity
+            food_listing.save()
+
+            # Update interaction and order status
+            interaction.status = Interaction.Status.READY_FOR_PICKUP
+            interaction.save()
+
+            if hasattr(interaction, 'order'):
+                interaction.order.status = Order.Status.READY_FOR_PICKUP
+                interaction.order.save()
+
+        return Response(
+            {'message': 'Donation accepted and marked as ready for pickup'}, 
+            status=200
+        )
     
 class RejectDonationView(APIView):
     permission_classes = [IsAuthenticated]

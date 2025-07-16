@@ -163,11 +163,25 @@ class InteractionSerializer(serializers.ModelSerializer):
 class DonationRequestSerializer(serializers.Serializer):
     listingId = serializers.UUIDField()
     quantity = serializers.IntegerField(min_value=1)
-    specialInstructions = serializers.CharField(allow_blank=True, required=False)
-    motivationMessage = serializers.CharField()
+    specialInstructions = serializers.CharField(required=False, allow_blank=True)
+    motivationMessage = serializers.CharField(required=True)
     verificationDocuments = serializers.ListField(
-        child=serializers.URLField(), allow_empty=False
+        child=serializers.URLField(),
+        required=False,
+        default=[]
     )
+
+    def validate(self, data):
+        food_listing = FoodListing.objects.filter(id=data['listingId']).first()
+        if not food_listing:
+            raise serializers.ValidationError("Food listing not found")
+        
+        if data['quantity'] > food_listing.quantity_available:
+            raise serializers.ValidationError(
+                f"Cannot request more than available quantity ({food_listing.quantity})"
+            )
+            
+        return data
 
 class DonationDecisionSerializer(serializers.Serializer):
     rejectionReason = serializers.CharField(allow_blank=True, required=False)
