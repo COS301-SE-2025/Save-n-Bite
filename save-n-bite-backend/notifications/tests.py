@@ -896,98 +896,121 @@ class TestNotificationSignals:
     #         user_type='ngo'
     #     )
 
-# ============ INTEGRATION TESTS ============
+#============ INTEGRATION TESTS ============
 
-# @pytest.mark.django_db
-# class TestNotificationIntegration:
+@pytest.mark.django_db
+class TestNotificationIntegration:
     
-#     def test_complete_notification_workflow(
-#         self, 
-#         authenticated_customer_client, 
-#         customer_user, 
-#         provider_user
-#     ):
-#         """Test complete notification workflow from creation to deletion"""
+    def test_complete_notification_workflow(
+        self, 
+        authenticated_customer_client, 
+        customer_user, 
+        provider_user
+    ):
+        """Test complete notification workflow from creation to deletion"""
         
-#         # 1. Create notification preferences
-#         prefs_url = reverse('notification_preferences')
-#         prefs_data = {
-#             'email_notifications': True,
-#             'new_listing_notifications': True,
-#             'promotional_notifications': False
-#         }
+        # 1. Create notification preferences
+        prefs_url = reverse('notification_preferences')
+        prefs_data = {
+            'email_notifications': True,
+            'new_listing_notifications': True,
+            'promotional_notifications': False
+        }
         
-#         prefs_response = authenticated_customer_client.put(
-#             prefs_url,
-#             data=json.dumps(prefs_data),
-#             content_type='application/json'
-#         )
-#         assert prefs_response.status_code == status.HTTP_200_OK
+        prefs_response = authenticated_customer_client.put(
+            prefs_url,
+            data=json.dumps(prefs_data),
+            content_type='application/json'
+        )
+        assert prefs_response.status_code == status.HTTP_200_OK
         
-#         # 2. Follow a business
-#         follow_url = reverse('follow_business')
-#         follow_data = {'business_id': str(provider_user.UserID)}
+        # 2. Follow a business
+        follow_url = reverse('follow_business')
+        follow_data = {'business_id': str(provider_user.UserID)}
         
-#         follow_response = authenticated_customer_client.post(
-#             follow_url,
-#             data=json.dumps(follow_data),
-#             content_type='application/json'
-#         )
-#         assert follow_response.status_code == status.HTTP_201_CREATED
+        follow_response = authenticated_customer_client.post(
+            follow_url,
+            data=json.dumps(follow_data),
+            content_type='application/json'
+        )
+        assert follow_response.status_code == status.HTTP_201_CREATED
         
-#         # 3. Create a notification (simulating business posting new listing)
-#         notification = Notification.objects.create(
-#             recipient=customer_user,
-#             sender=provider_user,
-#             business=provider_user.provider_profile,
-#             notification_type='new_listing',
-#             title='New Pizza Available!',
-#             message='Fresh pizza just posted at Test Restaurant',
-#             data={'listing_id': 'test-123', 'price': '15.00'}
-#         )
+        # 3. Create a notification (simulating business posting new listing)
+        notification = Notification.objects.create(
+            recipient=customer_user,
+            sender=provider_user,
+            business=provider_user.provider_profile,
+            notification_type='new_listing',
+            title='New Pizza Available!',
+            message='Fresh pizza just posted at Test Restaurant',
+            data={'listing_id': 'test-123', 'price': '15.00'}
+        )
         
-#         # 4. Get notifications and verify it appears
-#         notif_url = reverse('get_notifications')
-#         notif_response = authenticated_customer_client.get(notif_url)
+        # 4. Get notifications and verify it appears
+        notif_url = reverse('get_notifications')
+        notif_response = authenticated_customer_client.get(notif_url)
         
-#         assert notif_response.status_code == status.HTTP_200_OK
-#         assert len(notif_response.data['notifications']) == 1
-#         assert notif_response.data['unread_count'] == 1
-#         assert notif_response.data['notifications'][0]['title'] == 'New Pizza Available!'
+        assert notif_response.status_code == status.HTTP_200_OK
         
-#         # 5. Mark notification as read
-#         mark_read_url = reverse('mark_notifications_read')
-#         mark_read_data = {'notification_ids': [str(notification.id)]}
+        # The response is paginated, so data is in 'results' not 'notifications'
+        # Also check if the structure includes pagination fields
+        if 'results' in notif_response.data:
+            # Paginated response structure
+            notifications_data = notif_response.data['results']['notifications']
+            unread_count = notif_response.data['results']['unread_count']
+        else:
+            # Alternative structure - check if data is directly accessible
+            notifications_data = notif_response.data['notifications']
+            unread_count = notif_response.data['unread_count']
         
-#         mark_read_response = authenticated_customer_client.post(
-#             mark_read_url,
-#             data=json.dumps(mark_read_data),
-#             content_type='application/json'
-#         )
-#         assert mark_read_response.status_code == status.HTTP_200_OK
-#         assert mark_read_response.data['unread_count'] == 0
+        # Should have both the welcome notification and the new listing notification
+        assert len(notifications_data) == 2
+        assert unread_count == 2
         
-#         # 6. Delete notification
-#         delete_url = reverse('delete_notification', args=[notification.id])
-#         delete_response = authenticated_customer_client.delete(delete_url)
+        # Find our specific notification (order might vary)
+        new_listing_notification = None
+        for notif in notifications_data:
+            if notif['title'] == 'New Pizza Available!':
+                new_listing_notification = notif
+                break
         
-#         assert delete_response.status_code == status.HTTP_200_OK
+        assert new_listing_notification is not None
+        assert new_listing_notification['notification_type'] == 'new_listing'
+        assert new_listing_notification['message'] == 'Fresh pizza just posted at Test Restaurant'
         
-#         # 7. Verify notification is soft deleted
-#         notification.refresh_from_db()
-#         assert notification.is_deleted is True
+        # 5. Mark notification as read
+        mark_read_url = reverse('mark_notifications_read')
+        mark_read_data = {'notification_ids': [str(notification.id)]}
         
-#         # 8. Unfollow business
-#         unfollow_url = reverse('unfollow_business', args=[provider_user.UserID])
-#         unfollow_response = authenticated_customer_client.delete(unfollow_url)
+        mark_read_response = authenticated_customer_client.post(
+            mark_read_url,
+            data=json.dumps(mark_read_data),
+            content_type='application/json'
+        )
+        assert mark_read_response.status_code == status.HTTP_200_OK
+        assert mark_read_response.data['unread_count'] == 1
         
-#         assert unfollow_response.status_code == status.HTTP_200_OK
+        # 6. Delete notification
+        delete_url = reverse('delete_notification', args=[notification.id])
+        delete_response = authenticated_customer_client.delete(delete_url)
         
-#         # 9. Verify follow relationship is removed
-#         assert not BusinessFollower.objects.filter(
-#             user=customer_user,
-#             business=provider_user.provider_profile
-#         ).exists()
+        assert delete_response.status_code == status.HTTP_200_OK
+        
+        # 7. Verify notification is soft deleted
+        notification.refresh_from_db()
+        assert notification.is_deleted is True
+        
+        # 8. Unfollow business
+        unfollow_url = reverse('unfollow_business', args=[provider_user.UserID])
+        unfollow_response = authenticated_customer_client.delete(unfollow_url)
+        
+        assert unfollow_response.status_code == status.HTTP_200_OK
+        
+        # 9. Verify follow relationship is removed
+        assert not BusinessFollower.objects.filter(
+            user=customer_user,
+            business=provider_user.provider_profile
+        ).exists()
 
 # ============ PERMISSION TESTS ============
 

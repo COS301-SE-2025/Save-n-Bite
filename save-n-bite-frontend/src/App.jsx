@@ -18,7 +18,21 @@ import Reviews from './pages/auth/ReviewPage';
 import Dashboard from './pages/foodProvider/Dashboard';
 import OrdersAndFeedback from './pages/foodProvider/OrdersAndFeedback';
 import PickupCoordination from './pages/foodProvider/PickupCoordination';
+import ManageDonations from './pages/foodProvider/Donations';
 
+import Layout from './components/SystemAdmin/Layout/Layout'
+import AdminLogin from './pages/SystemAdmin/AdminLogin'
+import AdminDashboard from './pages/SystemAdmin/AdminDashboard'
+import Users from './pages/SystemAdmin/Users'
+import Verifications from './pages/SystemAdmin/Verifications'
+import Listings from './pages/SystemAdmin/Listings'
+import AdminReviews from './pages/SystemAdmin/Reviews'
+import Transactions from './pages/SystemAdmin/Transactions';
+import AdminNotifications from './pages/SystemAdmin/Notifications';
+import AdminAnalytics from './pages/SystemAdmin/Analytics';
+import AuditLogs from './pages/SystemAdmin/AuditLogs'
+import SystemLogs from './pages/SystemAdmin/SystemLogs'
+import AdminSettings from './pages/SystemAdmin/Settings'
 
 function App() {
   return (
@@ -44,8 +58,25 @@ function App() {
           <Route path="/reviews/:orderId" element={<Reviews />} />
           <Route path="/reviews" element={<Reviews />} />
           <Route path="/dashboard" element={<Dashboard />} />
-           <Route path="/orders-and-feedback" element={<OrdersAndFeedback />} />
-    <Route path="/pickup-coordination" element={<PickupCoordination />} />
+          <Route path="/orders-and-feedback" element={<OrdersAndFeedback />} />
+          <Route path="/pickup-coordination" element={<PickupCoordination />} />
+          <Route path="/donations" element={<ManageDonations />} />
+
+        <Route element={<Layout />}>
+          <Route path="/admin-login" element={<AdminLogin />} />
+          <Route path="/admin-dashboard" element={<AdminDashboard />} />
+          <Route path="/users" element={<Users />} />
+          <Route path="/verifications" element={<Verifications />} />
+          <Route path="/listings" element={<Listings />} />
+          <Route path="/admin-reviews" element={<AdminReviews />} />
+          <Route path="/transactions" element={<Transactions />} />
+          <Route path="/admin-notifications" element={<AdminNotifications />} />
+          <Route path="/admin-analytics" element={<AdminAnalytics />} />
+          <Route path="/audit-logs" element={<AuditLogs />} />
+          <Route path="/system-logs" element={<SystemLogs />} />
+           <Route path="/admin-settings" element={<AdminSettings />} />
+        </Route>
+
 
       </Routes>
     </Router>
