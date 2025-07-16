@@ -14,6 +14,8 @@ import {
   LogOutIcon,
   MessageSquareIcon,
 } from 'lucide-react'
+import logo from '../../../assets/images/SnB_leaf_icon.png'
+import { Link } from 'react-router-dom';
 
 // Mock data for pending verification requests
 const pendingVerifications = 5
@@ -27,9 +29,14 @@ const Sidebar = ({ isOpen }) => {
     >
       <div className="flex items-center justify-center h-16 border-b border-gray-200">
         {isOpen ? (
-          <h1 className="text-xl font-bold text-green-600">Save 'n Bite</h1>
+          <Link to="/admin-dashboard" className="flex items-baseline gap-2">
+                    <img src={logo} alt="Logo" className="w-15 h-9 self-center" />
+                    <span className="text-2xl font-bold text-emerald-600 dark:text-emerald-500">
+                      Save n Bite
+                    </span>
+                  </Link>
         ) : (
-          <h1 className="text-xl font-bold text-green-600">S'nB</h1>
+          <img src={logo} alt="Logo" className="w-15 h-9 self-center" />
         )}
       </div>
       <nav className="flex-1 overflow-y-auto py-4">
