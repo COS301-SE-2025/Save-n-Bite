@@ -815,7 +815,7 @@ def pickup_details(request, pickup_id):
         }, status=status.HTTP_404_NOT_FOUND)
 
 
-@api_view(['POST'])
+@api_view(['DELETE'])
 @permission_classes([IsAuthenticated])
 def cancel_pickup(request, pickup_id):
     """Cancel a scheduled pickup"""
