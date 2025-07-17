@@ -38,6 +38,7 @@ const CustomerNavBar = () => {
 
         <div className="hidden md:flex items-center space-x-8">
           <Link to="/food-listing" className="nav-link">Browse Food</Link>
+          <Link to="/food-listing" className="nav-link">Browse Food Providers</Link>
           <Link to="/cart" className="nav-link">My Cart</Link>
           <Link to="/orders" className="nav-link">Order History</Link>
           <Link to="/profile" className="nav-link">Profile</Link>
