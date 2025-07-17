@@ -1,6 +1,8 @@
 import React, { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { SearchIcon, StarIcon, MapPinIcon } from 'lucide-react'
+import CustomerNavBar from '../../components/auth/CustomerNavBar'
+
 // Mock data for food providers
 const foodProviders = [
   {
@@ -10,7 +12,6 @@ const foodProviders = [
       'https://images.unsplash.com/photo-1517433670267-08bbd4be890f?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=600&q=80',
     description: 'Artisanal bakery specializing in fresh pastries and bread',
     address: '123 Main St, Eco City',
-    distance: '0.8 miles',
     itemCount: 12,
     rating: 4.8,
     followers: 324,
@@ -23,7 +24,6 @@ const foodProviders = [
       'https://images.unsplash.com/photo-1554118811-1e0d58224f24?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=600&q=80',
     description: 'Vegetarian and vegan cafe with daily fresh options',
     address: '456 Elm St, Eco City',
-    distance: '1.2 miles',
     itemCount: 8,
     rating: 4.6,
     followers: 256,
@@ -37,7 +37,6 @@ const foodProviders = [
     description:
       'Traditional bakery with a focus on sourdough and specialty breads',
     address: '789 Oak St, Eco City',
-    distance: '0.5 miles',
     itemCount: 15,
     rating: 4.9,
     followers: 412,
@@ -50,7 +49,6 @@ const foodProviders = [
       'https://images.unsplash.com/photo-1578916171728-46686eac8d58?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=600&q=80',
     description: 'Neighborhood grocery with fresh produce and prepared foods',
     address: '321 Pine St, Eco City',
-    distance: '1.5 miles',
     itemCount: 30,
     rating: 4.5,
     followers: 189,
@@ -63,7 +61,6 @@ const foodProviders = [
       'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=600&q=80',
     description: 'Authentic Italian deli and prepared meals',
     address: '654 Maple St, Eco City',
-    distance: '2.1 miles',
     itemCount: 18,
     rating: 4.7,
     followers: 276,
@@ -76,7 +73,6 @@ const foodProviders = [
       'https://images.unsplash.com/photo-1525610553991-2bede1a236e2?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=600&q=80',
     description: 'Quick and healthy lunch options for busy professionals',
     address: '987 Cedar St, Eco City',
-    distance: '0.7 miles',
     itemCount: 10,
     rating: 4.4,
     followers: 156,
@@ -89,7 +85,6 @@ const foodProviders = [
       'https://images.unsplash.com/photo-1585059895524-72359e06133a?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=600&q=80',
     description: 'Farm-to-table produce and prepared foods',
     address: '246 Birch St, Eco City',
-    distance: '3.2 miles',
     itemCount: 22,
     rating: 4.9,
     followers: 345,
@@ -102,7 +97,6 @@ const foodProviders = [
       'https://images.unsplash.com/photo-1617196034183-421b4917c92d?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=600&q=80',
     description: 'Fresh sushi and Japanese cuisine',
     address: '135 Willow St, Eco City',
-    distance: '1.8 miles',
     itemCount: 14,
     rating: 4.6,
     followers: 210,
@@ -129,6 +123,7 @@ const FoodProvidersPage = () => {
   })
   return (
     <div className="bg-gray-50 min-h-screen w-full">
+        <CustomerNavBar />
       <div className="max-w-6xl mx-auto p-4 md:p-6">
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-800 mb-2">
@@ -169,7 +164,7 @@ const FoodProvidersPage = () => {
             </div>
           </div>
         </div>
-        
+
         {/* Providers Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredProviders.map((provider) => (
@@ -198,10 +193,7 @@ const FoodProvidersPage = () => {
                     <span className="ml-1 text-sm">{provider.rating}</span>
                   </div>
                   <span className="mx-2 text-gray-300">•</span>
-                  <div className="flex items-center text-gray-500 text-sm">
-                    <MapPinIcon size={14} className="mr-1" />
-                    {provider.distance}
-                  </div>
+                 
                 </div>
                 <div className="flex flex-wrap gap-1 mt-3">
                   {provider.categories.slice(0, 3).map((category) => (

@@ -9,6 +9,9 @@ import {
   GlobeIcon,
   ShoppingCartIcon,
 } from 'lucide-react'
+
+import ReviewsModal from '../../components/auth/ReviewModal'
+import CustomerNavBar from '../../components/auth/CustomerNavBar'
 // Mock data for a single provider
 const provider = {
   id: 1,
@@ -17,8 +20,7 @@ const provider = {
     'https://images.unsplash.com/photo-1517433670267-08bbd4be890f?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1200&q=80',
   logo: 'https://images.unsplash.com/photo-1608198093002-ad4e005484ec?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=300&q=80',
   address: '123 Main St, Eco City',
-  phone: '(555) 123-4567',
-  website: 'www.sweetbakery.com',
+  phone: '071 123 4567',
   hours: 'Mon-Fri: 7am-7pm, Sat-Sun: 8am-6pm',
   rating: 4.8,
   reviews: 156,
@@ -82,14 +84,79 @@ const providerItems = [
     
   },
 ]
+  const providerReviews = [
+  {
+    id: 1,
+    userName: 'Emily Johnson',
+    userImage:
+      'https://images.unsplash.com/photo-1494790108377-be9c29b29330?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=150&q=80',
+    rating: 5,
+    date: 'June 12, 2023',
+    comment:
+      'The pastries from Sweet Bakery are absolutely delicious! I picked up their discounted assortment box and everything was still incredibly fresh. Great way to enjoy quality baked goods while reducing food waste.',
+    helpful: 24,
+    isHelpful: true,
+  },
+  {
+    id: 2,
+    userName: 'Michael Chen',
+    userImage:
+      'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=150&q=80',
+    rating: 4,
+    date: 'May 30, 2023',
+    comment:
+      "I'm a regular customer at Sweet Bakery. Their sourdough bread is exceptional, and being able to get it at a discount at the end of the day is a bonus. The staff is always friendly and helpful.",
+    helpful: 15,
+    isHelpful: false,
+  },
+  {
+    id: 3,
+    userName: 'Sophia Rodriguez',
+    userImage:
+      'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=150&q=80',
+    rating: 5,
+    date: 'June 5, 2023',
+    comment:
+      "The chocolate croissants are to die for! I appreciate that Sweet Bakery is committed to reducing food waste. The app makes it easy to see what's available and when to pick it up.",
+    helpful: 18,
+    isHelpful: false,
+  },
+  {
+    id: 4,
+    userName: 'David Kim',
+    userImage:
+      'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=150&q=80',
+    rating: 3,
+    date: 'May 22, 2023',
+    comment:
+      "Good selection of baked goods. Sometimes items sell out quickly, so you have to be fast. The quality is generally good, though I've had a few items that weren't as fresh as expected.",
+    helpful: 7,
+    isHelpful: false,
+  },
+  {
+    id: 5,
+    userName: 'Olivia Martinez',
+    userImage:
+      'https://images.unsplash.com/photo-1614644147798-f8c0fc9da7f6?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=150&q=80',
+    rating: 5,
+    date: 'June 8, 2023',
+    comment:
+      'I love that I can support a local business while also helping reduce food waste. The artisan bagels are amazing and such a great deal through this app. Highly recommend!',
+    helpful: 22,
+    isHelpful: true,
+  },
+]
 const FoodProviderDetailPage = () => {
   const { id } = useParams()
   const [isFollowing, setIsFollowing] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
+    const [buttonStatus, setButtonStatus] = useState("idle");
   const [filters, setFilters] = useState({
     priceRange: [0, 20],
     type: 'all',
   })
+
+   const [isReviewsModalOpen, setIsReviewsModalOpen] = useState(false)
 
   const handleFollow = () => {
     setIsFollowing(!isFollowing)
@@ -98,8 +165,45 @@ const FoodProviderDetailPage = () => {
     console.log(`Added item ${itemId} to cart`)
     alert(`Added item to cart!`)
   }
+  const handleAddToCart = async (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    if (buttonStatus === "added") {
+      navigate('/cart');
+      return;
+    }
+
+    setButtonStatus("loading");
+
+    try {
+      const response = await foodAPI.addToCart(id, quantity);
+      if (response.success) {
+        setButtonStatus("added");
+        setTimeout(() => {
+          navigate('/cart');
+        }, 1500);
+      } else {
+        setError(response.error);
+        setButtonStatus("idle");
+      }
+    } catch (err) {
+      setError('Failed to add item to cart');
+      setButtonStatus("idle");
+    }
+  };
+
+  const openReviewsModal = () => {
+    setIsReviewsModalOpen(true)
+  }
+  const closeReviewsModal = () => {
+    setIsReviewsModalOpen(false)
+  }
+
+
   return (
     <div className="bg-gray-50 min-h-screen w-full">
+        <CustomerNavBar />
       <div className="max-w-6xl mx-auto p-4 md:p-6">
         <div className="mb-6">
           <Link
@@ -141,7 +245,8 @@ const FoodProviderDetailPage = () => {
                         <StarIcon size={16} className="fill-current" />
                         <span className="ml-1">{provider.rating}</span>
                       </div>
-                      <button className="ml-2 text-emerald-600 hover:text-emerald-700 text-sm font-medium">
+                      <button className="ml-2 text-emerald-600 hover:text-emerald-700 text-sm font-medium"
+                       onClick={openReviewsModal}>
                         Read Reviews
                       </button>
                     </div>
@@ -189,15 +294,7 @@ const FoodProviderDetailPage = () => {
                   />
                   {isFollowing ? 'Following' : 'Follow'}
                 </button>
-                <a
-                  href={`http://${provider.website}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="mt-2 px-6 py-2 border border-gray-300 rounded-md text-gray-700 flex items-center justify-center hover:bg-gray-50 transition-colors"
-                >
-                  <GlobeIcon size={18} className="mr-2" />
-                  Visit Website
-                </a>
+                
               </div>
             </div>
           </div>
@@ -254,16 +351,21 @@ const FoodProviderDetailPage = () => {
                     </span>
                   </div>
                   <div className="flex justify-between items-center">
-                    <span className="text-xs text-gray-500">
+                    {/* <span className="text-xs text-gray-500">
                       Expires: {item.expirationTime}
-                    </span>
-                    <button
-                      onClick={() => addToCart(item.id)}
-                      className="px-3 py-1 bg-emerald-600 text-white text-sm rounded hover:bg-emerald-700 transition-colors flex items-center"
-                    >
-                      <ShoppingCartIcon size={14} className="mr-1" />
-                      Add to Cart
-                    </button>
+                    </span> */}
+                     <button
+                                        onClick={handleAddToCart}
+                                        disabled={buttonStatus === "loading"}
+                                        className={`w-full py-3 ${
+                                          buttonStatus === "added" ? "bg-emerald-400" : "bg-emerald-200"
+                                        } text-white font-medium rounded-md hover:bg-emerald-700 transition-colors flex items-center justify-center`}
+                                      >
+                                        <ShoppingCartIcon size={20} className="mr-2" />
+                                        {buttonStatus === "idle" && "Add to Cart"}
+                                        {buttonStatus === "loading" && "Adding..."}
+                                        {buttonStatus === "added" && "View Cart"}
+                                      </button>
                   </div>
                 </div>
               </div>
@@ -281,6 +383,14 @@ const FoodProviderDetailPage = () => {
           )}
         </div>
       </div>
+       <ReviewsModal
+        isOpen={isReviewsModalOpen}
+        onClose={closeReviewsModal}
+        providerName={provider.name}
+        providerRating={provider.rating}
+        totalReviews={provider.reviews}
+        reviews={providerReviews}
+      />
     </div>
   )
 }
