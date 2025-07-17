@@ -3,7 +3,7 @@ name: Build and Push Images
 
 on:
   push:
-    branches: [ dev-CleanUP ]
+    branches: [ dev-CleanUp ]
   workflow_dispatch:
 
 env:
