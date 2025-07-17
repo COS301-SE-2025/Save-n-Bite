@@ -138,7 +138,7 @@ function Dashboard() {
             {analyticsData?.total_orders_fulfilled > 0 && (
               <div className="mt-2 p-2 bg-blue-50 border border-blue-200 rounded-lg">
                 <p className="text-sm text-blue-800">
-                  <strong>Your Analytics:</strong> {(analyticsData.total_orders_fulfilled || 0) - 1} orders fulfilled with {analyticsData.sustainability_impact?.meals_saved || 0} meals saved
+                  <strong>Your Analytics:</strong> {(analyticsData.total_orders_fulfilled || 0)} orders fulfilled with {analyticsData.sustainability_impact?.meals_saved || 0} meals saved
                 </p>
               </div>
             )}
@@ -156,7 +156,7 @@ function Dashboard() {
               <div>
                 <p className="text-gray-500 text-sm">Total Orders Fulfilled</p>
                 <h3 className="text-2xl font-bold mt-1">
-                  {(analyticsData.total_orders_fulfilled || 0) - 1}
+                  {(analyticsData.total_orders_fulfilled || 0)}
                 </h3>
               </div>
               <div className="p-2 bg-blue-100 rounded-md">
