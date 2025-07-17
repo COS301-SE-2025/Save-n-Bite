@@ -69,9 +69,9 @@ const VerificationTable = ({ verifications, onViewVerification }) => {
                           : 'bg-red-100 text-red-800'
                       }`}
                     >
-                      {verification.status === 'Pending' ? (
+                      {verification.status === 'pending_verification' ? (
                         <>Pending</>
-                      ) : verification.status === 'Approved' ? (
+                     ) : verification.status === 'verified' ? (
                         <>
                           <CheckCircleIcon size={12} className="mr-1" />
                           Approved

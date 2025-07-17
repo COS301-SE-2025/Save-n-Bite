@@ -14,7 +14,7 @@ const mockVerifications = [
     email: 'contact@freshharvest.com',
     number: '071 234 5567',
     submitted: '2023-08-10',
-    status: 'Pending',
+    status: 'pending_verification',
     documents: [
       {
         name: 'Business License',
@@ -33,7 +33,7 @@ const mockVerifications = [
     email: 'help@communityfood.org',
     number: '071 234 5567',
     submitted: '2023-08-09',
-    status: 'Pending',
+    status: 'pending_verification',
     documents: [
       {
         name: 'NGO Registration',
@@ -52,7 +52,7 @@ const mockVerifications = [
     email: 'info@localbakery.com',
     number: '071 234 5567',
     submitted: '2023-08-08',
-    status: 'Pending',
+    status: 'pending_verification',
     documents: [
       {
         name: 'Business License',
@@ -71,7 +71,7 @@ const mockVerifications = [
     email: 'contact@hungerrelief.org',
     number: '071 234 5567',
     submitted: '2023-08-07',
-    status: 'Approved',
+    status: 'verified',
     documents: [
       {
         name: 'NGO Registration',
@@ -90,7 +90,7 @@ const mockVerifications = [
     email: 'support@citysupermarket.com',
     number: '071 234 5567',
     submitted: '2023-08-06',
-    status: 'Rejected',
+    status: 'rejected',
     documents: [
       {
         name: 'Business License',
@@ -105,7 +105,7 @@ const Verifications = () => {
   const [verifications, setVerifications] = useState(mockVerifications)
   const [search, setSearch] = useState('')
   const [typeFilter, setTypeFilter] = useState('All')
-  const [statusFilter, setStatusFilter] = useState('Pending')
+  const [statusFilter, setStatusFilter] = useState('pending_verification')
   const [selectedVerification, setSelectedVerification] = useState(null)
   const [showVerificationModal, setShowVerificationModal] = useState(false)
   const [showConfirmModal, setShowConfirmModal] = useState(false)
@@ -126,10 +126,11 @@ const Verifications = () => {
     setShowVerificationModal(true)
   }
 
-  const handleApprove = (verificationId) => {
+  const handleApprove = (verificationId, approvalReason) => {
     setConfirmAction({
       type: 'approve',
       verificationId,
+      reason: approvalReason
     })
     setShowConfirmModal(true)
   }
@@ -145,12 +146,14 @@ const Verifications = () => {
 
   const executeAction = () => {
     if (!confirmAction) return
+
     const { type, verificationId, rejectionReason } = confirmAction
+
     if (type === 'approve') {
       setVerifications(
         verifications.map((verification) =>
           verification.id === verificationId
-            ? { ...verification, status: 'Approved' }
+            ? { ...verification, status: 'verified' }
             : verification
         )
       )
@@ -161,7 +164,7 @@ const Verifications = () => {
           verification.id === verificationId
             ? {
                 ...verification,
-                status: 'Rejected',
+                status: 'rejected',
                 rejectionReason: rejectionReason || 'No reason provided',
               }
             : verification
@@ -213,8 +216,8 @@ const Verifications = () => {
           }
           message={
             confirmAction.type === 'approve'
-              ? 'Are you sure you want to approve this verification request? This will grant the organization verified status on the platform.'
-              : 'Are you sure you want to reject this verification request? The organization will need to resubmit their documents.'
+              ? 'Are you sure you want to approve this verification request? This will grant the organisation verified status on the platform.'
+              : 'Are you sure you want to reject this verification request? The organisation will need to resubmit their documents.'
           }
           confirmButtonText="Confirm"
           confirmButtonColor={confirmAction.type === 'approve' ? 'green' : 'red'}
