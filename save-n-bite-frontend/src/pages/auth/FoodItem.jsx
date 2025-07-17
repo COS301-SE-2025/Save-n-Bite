@@ -344,7 +344,14 @@ const FoodItem = () => {
             </div>
           </div>
 
-          <StoreLocation address={item.provider.address} />
+          <StoreLocation 
+          address={item.provider.address}
+          businessName={item.provider.businessName}
+          phone={item.provider.business_contact || item.provider.phone_number} 
+          hours={item.provider.business_hours}
+          coordinates={item.provider.coordinates} // Auto-calculated coordinates
+          openstreetmapUrl={item.provider.openstreetmap_url} // Pre-generated directions URL
+        />
         </div>
       </div>
     </div>

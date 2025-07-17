@@ -1,0 +1,178 @@
+<!-- notifications/templates/notifications/emails/order_preparation.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Order Received - We're Preparing Your Order</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f9f9f9;
+        }
+        .container {
+            background-color: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .logo {
+            max-width: 120px;
+            height: auto;
+            margin-bottom: 20px;
+        }
+        .title {
+            color: #2c5530;
+            font-size: 24px;
+            margin-bottom: 10px;
+        }
+        .subtitle {
+            color: #666;
+            font-size: 16px;
+        }
+        .order-details {
+            background-color: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+            border-left: 4px solid #28a745;
+        }
+        .detail-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+        .detail-label {
+            font-weight: bold;
+            color: #555;
+        }
+        .detail-value {
+            color: #333;
+        }
+        .confirmation-code {
+            background-color: #e3f2fd;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            margin: 20px 0;
+            border: 2px dashed #2196f3;
+        }
+        .confirmation-number {
+            font-size: 24px;
+            font-weight: bold;
+            color: #1976d2;
+            letter-spacing: 2px;
+        }
+        .pickup-info {
+            background-color: #fff3e0;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+            border-left: 4px solid #ff9800;
+        }
+        .footer {
+            text-align: center;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #ddd;
+            color: #666;
+            font-size: 14px;
+        }
+        .button {
+            display: inline-block;
+            background-color: #28a745;
+            color: white;
+            padding: 12px 30px;
+            text-decoration: none;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            {% if business_logo %}
+                <img src="{{ business_logo }}" alt="{{ business_name }} Logo" class="logo">
+            {% endif %}
+            <h1 class="title">🎉 Order Received!</h1>
+            <p class="subtitle">We're preparing your delicious order</p>
+        </div>
+
+        <p>Hi {{ customer_name }},</p>
+        
+        <p>Great news! We've received your order and our team at <strong>{{ business_name }}</strong> is now preparing your food. Thank you for choosing us and helping reduce food waste!</p>
+
+        <div class="order-details">
+            <h3>📋 Order Details</h3>
+            <div class="detail-row">
+                <span class="detail-label">Item:</span>
+                <span class="detail-value">{{ food_listing_name }}</span>
+            </div>
+        </div>
+
+        <div class="confirmation-code">
+            <p style="margin: 0; font-size: 16px; color: #555;">Your Confirmation Code</p>
+            <div class="confirmation-number">{{ confirmation_code }}</div>
+            <p style="margin: 5px 0 0 0; font-size: 12px; color: #777;">Show this code during pickup</p>
+        </div>
+
+        <div class="pickup-info">
+            <h3>📍 Pickup Information</h3>
+            <div class="detail-row">
+                <span class="detail-label">Date:</span>
+                <span class="detail-value">{{ pickup_date }}</span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">Time:</span>
+                <span class="detail-value">{{ pickup_time }}</span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">Location:</span>
+                <span class="detail-value">{{ location_name }}</span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">Address:</span>
+                <span class="detail-value">{{ location_address }}</span>
+            </div>
+            {% if location_instructions %}
+            <div class="detail-row">
+                <span class="detail-label">Instructions:</span>
+                <span class="detail-value">{{ location_instructions }}</span>
+            </div>
+            {% endif %}
+            <div class="detail-row">
+                <span class="detail-label">Contact:</span>
+                <span class="detail-value">{{ contact_person }} - {{ contact_phone }}</span>
+            </div>
+        </div>
+
+        {% if customer_notes %}
+        <div style="background-color: #f0f8ff; padding: 15px; border-radius: 8px; margin: 20px 0;">
+            <strong>Your Notes:</strong> {{ customer_notes }}
+        </div>
+        {% endif %}
+
+        <p>🌱 <strong>Environmental Impact:</strong> By purchasing surplus food, you're helping reduce food waste and supporting sustainable practices in your community. Thank you for making a difference!</p>
+
+        <p>We'll send you a reminder closer to your pickup time. If you have any questions, please contact us at {{ contact_phone }}.</p>
+
+        <div class="footer">
+            <p>Thank you for choosing {{ business_name }}!</p>
+            <p>Together, we're reducing food waste one meal at a time. 🌍</p>
+            <p style="font-size: 12px; margin-top: 20px;">
+                This is an automated message from Save n Bite. Please do not reply to this email.
+            </p>
+        </div>
+    </div>
+</body>
+</html>
