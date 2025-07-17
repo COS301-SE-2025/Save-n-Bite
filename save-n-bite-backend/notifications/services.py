@@ -40,7 +40,7 @@ class NotificationService:
 
     @staticmethod
     def send_email_notification(user, subject, template_name, context, notification=None):
-        """Send email notification to user"""
+        """Send email notification to user - ORIGINAL METHOD RESTORED"""
         try:
             # Check if user wants email notifications
             preferences, _ = NotificationPreferences.objects.get_or_create(user=user)
@@ -91,6 +91,151 @@ class NotificationService:
                 email_log.error_message = str(e)
                 email_log.save()
             return False
+        
+    @staticmethod
+    def send_critical_email_notification(user, subject, template_name, context, notification=None):
+        """
+        Send critical email that bypasses user preferences
+        This is a NEW method that doesn't interfere with the original
+        """
+        try:
+            # Create email log entry
+            email_log = EmailNotificationLog.objects.create(
+                recipient_email=user.email,
+                recipient_user=user,
+                notification=notification,
+                subject=subject,
+                template_name=template_name,
+                status='pending'
+            )
+
+            # Render email content
+            html_message = render_to_string(f'notifications/emails/{template_name}.html', context)
+            plain_message = strip_tags(html_message)
+
+            # Send email (bypasses preferences)
+            success = send_mail(
+                subject=subject,
+                message=plain_message,
+                from_email=settings.DEFAULT_FROM_EMAIL,
+                recipient_list=[user.email],
+                html_message=html_message,
+                fail_silently=False
+            )
+
+            if success:
+                email_log.status = 'sent'
+                email_log.sent_at = timezone.now()
+                logger.info(f"Critical email sent successfully to {user.email} (bypassed preferences)")
+            else:
+                email_log.status = 'failed'
+                email_log.error_message = "Unknown error occurred"
+                logger.error(f"Failed to send critical email to {user.email}")
+
+            email_log.save()
+            return success
+
+        except Exception as e:
+            logger.error(f"Error sending critical email to {user.email}: {str(e)}")
+            if 'email_log' in locals():
+                email_log.status = 'failed'
+                email_log.error_message = str(e)
+                email_log.save()
+            return False
+    
+    @staticmethod
+    def send_password_reset_email(user, temp_password, admin_name=None, expires_at=None):
+        """
+        Send password reset email - this is always critical and bypasses preferences
+        """
+        try:
+            # Create in-app notification
+            notification = NotificationService.create_notification(
+                recipient=user,
+                notification_type='password_reset',
+                title='Password Reset',
+                message='Your password has been reset. Please check your email for the temporary password.',
+                data={
+                    'expires_at': expires_at.isoformat() if expires_at else None,
+                    'reset_type': 'admin' if admin_name else 'self_service'
+                }
+            )
+
+            # Prepare email context
+            context = {
+                'user_name': NotificationService._get_user_display_name(user),
+                'temp_password': temp_password,
+                'login_url': f"{getattr(settings, 'FRONTEND_URL', 'http://localhost:3000')}/login",
+                'expires_at': expires_at,
+                'admin_name': admin_name or 'System',
+                'is_self_service': admin_name is None,
+                'support_email': 'savenbite@gmail.com',
+                'company_name': 'Save n Bite'
+            }
+
+            # Send critical email (bypasses user preferences)
+            email_sent = NotificationService.send_critical_email_notification(
+                user=user,
+                subject='Password Reset - Save n Bite [IMPORTANT]',
+                template_name='password_reset',
+                context=context,
+                notification=notification
+            )
+
+            if email_sent:
+                logger.info(f"Password reset email sent successfully to {user.email} (bypassed preferences)")
+            else:
+                logger.error(f"Failed to send password reset email to {user.email}")
+
+            return email_sent, notification
+
+        except Exception as e:
+            logger.error(f"Error in send_password_reset_email for {user.email}: {str(e)}")
+            return False, None
+        
+    @staticmethod
+    def send_account_security_email(user, event_type, context_data=None):
+        """
+        Send account security related emails (always critical)
+        
+        Args:
+            user: User to notify
+            event_type: Type of security event
+            context_data: Additional context for the email
+        """
+        try:
+            context = {
+                'user_name': NotificationService._get_user_display_name(user),
+                'event_type': event_type,
+                'timestamp': timezone.now(),
+                'support_email': 'savenbite@gmail.com',
+                'company_name': 'Save n Bite',
+                **(context_data or {})
+            }
+
+            # Create notification
+            notification = NotificationService.create_notification(
+                recipient=user,
+                notification_type='account_security',
+                title=f'Security Alert: {event_type}',
+                message=f'A security event has occurred on your account: {event_type}',
+                data=context
+            )
+
+            # Send critical email
+            email_sent = NotificationService.send_critical_email_notification(
+                user=user,
+                subject=f'Security Alert - Save n Bite [IMPORTANT]',
+                template_name='account_security',
+                context=context,
+                notification=notification
+            )
+
+            return email_sent, notification
+
+        except Exception as e:
+            logger.error(f"Error sending security email to {user.email}: {str(e)}")
+            return False, None
 
     @staticmethod
     def notify_followers_new_listing(business_profile, listing_data):
@@ -232,7 +377,7 @@ class NotificationService:
             # Send email notification
             NotificationService.send_email_notification(
                 user=user,
-                subject=f"Save n Bite Account {status.title()}",
+                subject=f"Save n Bite Account {status.title()} [IMPORTANT]",
                 template_name=template_name,
                 context=email_context,
                 notification=notification
