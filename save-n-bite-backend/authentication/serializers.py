@@ -233,6 +233,8 @@ class LoginSerializer(serializers.Serializer):
 
         return attrs
 
+# authentication/serializers.py - Update your existing UserProfileSerializer
+
 class UserProfileSerializer(serializers.ModelSerializer):
     profile = serializers.SerializerMethodField()
     notification_preferences = serializers.SerializerMethodField()
@@ -262,11 +264,19 @@ class UserProfileSerializer(serializers.ModelSerializer):
                 'business_name': obj.provider_profile.business_name,
                 'business_email': obj.provider_profile.business_email,
                 'business_address': obj.provider_profile.business_address,
+                'business_contact': obj.provider_profile.business_contact,
+                'phone_number': obj.provider_profile.phone_number,
+                'business_hours': obj.provider_profile.business_hours,
+                'website': obj.provider_profile.website,
                 'status': obj.provider_profile.status,
-                'logo': obj.provider_profile.logo.url if obj.provider_profile.logo else None
+                'logo': obj.provider_profile.logo.url if obj.provider_profile.logo else None,
+                # ADD THESE NEW FIELDS:
+                'coordinates': obj.provider_profile.coordinates,
+                'openstreetmap_url': obj.provider_profile.openstreetmap_url
             }
         return {}
 
+    # Keep your existing notification and following methods unchanged
     def get_notification_preferences(self, obj):
         """Get user's notification preferences"""
         try:
