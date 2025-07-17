@@ -14,6 +14,9 @@ from .views import (
     UpdateInteractionStatusView,  # Add this import
     check_interaction_review_status,
     get_interaction_review,
+    BusinessHistoryView, 
+    InitiateCheckoutView,
+    CompleteCheckoutView
     #admin_views
 )
 
@@ -32,6 +35,8 @@ urlpatterns = [
     path('donation/request/', DonationRequestView.as_view(), name='donation-request'),
     path('donation/<uuid:interaction_id>/accept/', AcceptDonationView.as_view(), name='donation-accept'),
     path('donation/<uuid:interaction_id>/reject/', RejectDonationView.as_view(), name='donation-reject'),
-
-    path('interactions/<uuid:interaction_id>/status/', UpdateInteractionStatusView.as_view(), name='update_interaction_status'),  # Updated this line
+    path('business/history/', BusinessHistoryView.as_view(), name='business-history'),
+    path('interactions/<uuid:interaction_id>/status/', UpdateInteractionStatusView.as_view(), name='update_interaction_status'), 
+    path('checkout/initiate/', InitiateCheckoutView.as_view(), name='initiate-checkout'),
+    path('checkout/complete/', CompleteCheckoutView.as_view(), name='complete-checkout'),
 ]

@@ -1,14 +1,16 @@
-# Updated views.py - CLEANED VERSION
-
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
 from django.shortcuts import render
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.exceptions import ValidationError
 from django.shortcuts import get_object_or_404
+from django.db import models
 from django.utils import timezone
-from .models import Cart, CartItem, Interaction, Order, Payment, InteractionItem, InteractionStatusHistory
+from django.conf import settings
+from datetime import timedelta
+from .models import Cart, CartItem, Interaction, Order, Payment, InteractionItem, InteractionStatusHistory, CheckoutSession
 from food_listings.models import FoodListing
 from decimal import Decimal, ROUND_HALF_UP
 from .serializers import (
@@ -85,19 +87,72 @@ class AddToCartView(APIView):
         serializer.is_valid(raise_exception=True)
 
         cart, _ = Cart.objects.get_or_create(user=request.user)
+        
+        # Check if cart is expired
+        if cart.is_expired():
+            with db_transaction.atomic():
+                # Clear expired cart
+                cart.items.all().delete()
+                # Reset expiration
+                cart.expires_at = timezone.now() + timedelta(minutes=30)
+                cart.save()
+
         food_listing = get_object_or_404(FoodListing, id=serializer.validated_data['listingId'])
+        requested_quantity = serializer.validated_data['quantity']
 
-        # Check if item already in cart
+        # Check if food listing is expired
+        if food_listing.is_expired:
+            return Response(
+                {'error': 'This food listing has expired'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
 
-        cart_item, created = CartItem.objects.get_or_create(
-            cart=cart,
-            food_listing=food_listing,
-            defaults={'quantity': serializer.validated_data['quantity']}
-        )
+        # Calculate total quantity already in cart plus new request
+        existing_cart_quantity = 0
+        try:
+            existing_cart_item = CartItem.objects.get(cart=cart, food_listing=food_listing)
+            existing_cart_quantity = existing_cart_item.quantity
+        except CartItem.DoesNotExist:
+            pass
 
-        if not created:
-            cart_item.quantity += serializer.validated_data['quantity']
-            cart_item.save()
+        total_requested = existing_cart_quantity + requested_quantity
+
+        # Check if requested quantity exceeds available quantity
+        if total_requested > food_listing.quantity_available:
+            available = food_listing.quantity_available - existing_cart_quantity
+            return Response({
+                'error': {
+                    'code': 'INSUFFICIENT_QUANTITY',
+                    'message': f'Only {available} items available (you already have {existing_cart_quantity} in cart)',
+                    'available': available,
+                    'already_in_cart': existing_cart_quantity
+                }
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        # Check if adding would exceed max cart items
+        if cart.total_items + requested_quantity > Cart.MAX_ITEMS:
+            return Response({
+                'error': {
+                    'code': 'MAX_ITEMS_EXCEEDED',
+                    'message': f'Cannot have more than {Cart.MAX_ITEMS} items in cart'
+                }
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        # Proceed with adding to cart
+        with db_transaction.atomic():
+            cart_item, created = CartItem.objects.get_or_create(
+                cart=cart,
+                food_listing=food_listing,
+                defaults={'quantity': requested_quantity}
+            )
+
+            if not created:
+                cart_item.quantity += requested_quantity
+                cart_item.save()
+
+            # Reset cart expiration timer on any cart activity
+            cart.expires_at = timezone.now() + timedelta(minutes=30)
+            cart.save()
 
         return Response({
             'message': 'Item added to cart successfully',
@@ -109,7 +164,8 @@ class AddToCartView(APIView):
             },
             'cartSummary': {
                 'totalItems': cart.total_items,
-                'totalAmount': float(cart.subtotal)
+                'totalAmount': float(cart.subtotal),
+                'expires_at': cart.expires_at
             }
         }, status=status.HTTP_201_CREATED)
     
@@ -265,17 +321,26 @@ class CheckoutView(APIView):
                 special_instructions=serializer.validated_data.get('specialInstructions', '')
             )
 
-            # 2. Create Interaction Items
+            # 2. Create Interaction Items and update FoodListing quantities
             for cart_item in cart.items.all():
+                # Update FoodListing quantity
+                food_listing = cart_item.food_listing
+                if food_listing.quantity_available < cart_item.quantity:
+                    raise ValidationError(f"Not enough quantity available for {food_listing.name}")
+                
+                food_listing.quantity_available -= cart_item.quantity
+                food_listing.save()
+
+                # Create InteractionItem
                 InteractionItem.objects.create(
                     interaction=interaction,
-                    food_listing=cart_item.food_listing,
-                    name=cart_item.food_listing.name,
+                    food_listing=food_listing,
+                    name=food_listing.name,
                     quantity=cart_item.quantity,
-                    price_per_item=cart_item.food_listing.discounted_price,
-                    total_price=cart_item.quantity * cart_item.food_listing.discounted_price,
-                    expiry_date=cart_item.food_listing.expiry_date,
-                    image_url=cart_item.food_listing.images[0] if cart_item.food_listing.images else ''
+                    price_per_item=food_listing.discounted_price,
+                    total_price=cart_item.quantity * food_listing.discounted_price,
+                    expiry_date=food_listing.expiry_date,
+                    image_url=food_listing.images[0] if food_listing.images else ''
                 )
 
             # 3. Create Payment
@@ -589,62 +654,119 @@ class DonationRequestView(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
+        # Verify NGO status
         if request.user.user_type != 'ngo':
-            return Response({'error': 'Only NGOs can request donations.'}, status=403)
+            return Response(
+                {'error': 'Only NGOs can request donations.'}, 
+                status=status.HTTP_403_FORBIDDEN
+            )
 
         data = request.data
         food_listing = get_object_or_404(FoodListing, id=data.get("listingId"))
+        requested_quantity = data.get("quantity", 1)  # Default to 1 if not specified
+
+        # Validate requested quantity
+        if requested_quantity <= 0:
+            return Response(
+                {'error': 'Quantity must be at least 1.'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # Check available quantity
+        if requested_quantity > food_listing.quantity_available:
+            return Response(
+                {
+                    'error': 'Requested quantity exceeds available amount.',
+                    'available_quantity': food_listing.quantity_available,
+                    'requested_quantity': requested_quantity
+                },
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
         provider_profile = food_listing.provider.provider_profile
 
-        interaction = Interaction.objects.create(
-            user=request.user,
-            business=provider_profile,
-            interaction_type=Interaction.InteractionType.DONATION,
-            quantity=data.get("quantity", 1),
-            total_amount=0.00,  # No charge
-            special_instructions=data.get("specialInstructions", ""),
-            motivation_message=data.get("motivationMessage", ""),
-            verification_documents=data.get("verificationDocuments", [])
-        )
+        with db_transaction.atomic():
+            # Create the interaction (status will be PENDING by default)
+            interaction = Interaction.objects.create(
+                user=request.user,
+                business=provider_profile,
+                interaction_type=Interaction.InteractionType.DONATION,
+                quantity=requested_quantity,
+                total_amount=0.00,  # Donations are free
+                special_instructions=data.get("specialInstructions", ""),
+                motivation_message=data.get("motivationMessage", ""),
+                verification_documents=data.get("verificationDocuments", [])
+            )
 
-        # Create InteractionItem (similar to purchase)
-        InteractionItem.objects.create(
-            interaction=interaction,
-            food_listing=food_listing,
-            name=food_listing.name,
-            quantity=data.get("quantity", 1),
-            price_per_item=0.00,
-            total_price=0.00,
-            expiry_date=food_listing.expiry_date,
-            image_url=food_listing.images
-        )
+            # Create interaction item
+            InteractionItem.objects.create(
+                interaction=interaction,
+                food_listing=food_listing,
+                name=food_listing.name,
+                quantity=requested_quantity,
+                price_per_item=0.00,
+                total_price=0.00,
+                expiry_date=food_listing.expiry_date,
+                image_url=food_listing.images[0] if food_listing.images else ''
+            )
 
-        Order.objects.create(
-            interaction=interaction,
-            pickup_window=food_listing.pickup_window,
-            pickup_code=str(uuid.uuid4())[:6].upper()
-        )
+            # Create pending order
+            Order.objects.create(
+                interaction=interaction,
+                pickup_window=food_listing.pickup_window,
+                pickup_code=str(uuid.uuid4())[:6].upper(),
+                status=Order.Status.PENDING
+            )
 
-        return Response({'message': 'Donation request submitted'}, status=201)
+        return Response(
+            {
+                'message': 'Donation request submitted successfully',
+                'interaction_id': str(interaction.id),
+                'requested_quantity': requested_quantity,
+                'available_quantity': food_listing.quantity_available
+            },
+            status=status.HTTP_201_CREATED
+        )
     
 class AcceptDonationView(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request, interaction_id):
         interaction = get_object_or_404(
-            Interaction, id=interaction_id, business=request.user.provider_profile,
+            Interaction, 
+            id=interaction_id, 
+            business=request.user.provider_profile,
             interaction_type=Interaction.InteractionType.DONATION
         )
 
         if interaction.status != Interaction.Status.PENDING:
             return Response({'error': 'Only pending donations can be accepted.'}, status=400)
 
-        interaction.status = Interaction.Status.READY_FOR_PICKUP
-        interaction.save()
+        with db_transaction.atomic():
+            # Get the food listing and quantity from the interaction item
+            interaction_item = interaction.items.first()  # Assuming one item per donation
+            food_listing = interaction_item.food_listing
+            requested_quantity = interaction_item.quantity
 
-        # Optionally: trigger notification to NGO
+            # Verify quantity is still available
+            if food_listing.quantity_available < requested_quantity:
+                return Response(
+                    {'error': f'Not enough quantity available for {food_listing.name}.'}, 
+                    status=400
+                )
 
-        return Response({'message': 'Donation accepted and marked as ready for pickup'}, status=200)
+            # Reduce the quantity
+            food_listing.quantity_available -= requested_quantity
+            food_listing.save()
+
+            # Update interaction and order status
+            interaction.status = Interaction.Status.READY_FOR_PICKUP
+            interaction.save()
+
+        return Response(
+            {'message': 'Donation accepted and marked as ready for pickup'}, 
+            status=200
+        )
     
 class RejectDonationView(APIView):
     permission_classes = [IsAuthenticated]
@@ -667,3 +789,213 @@ class RejectDonationView(APIView):
 
         return Response({'message': 'Donation request rejected'}, status=200)
 
+class BusinessHistoryView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        # Verify user is a provider
+        if request.user.user_type != 'provider':
+            return Response(
+                {'error': 'Only food providers can access this history.'},
+                status=status.HTTP_403_FORBIDDEN
+            )
+
+        try:
+            provider_profile = request.user.provider_profile
+        except FoodProviderProfile.DoesNotExist:
+            return Response(
+                {'error': 'Provider profile not found.'},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+        # Get all interactions for this business
+        interactions = Interaction.get_business_history(provider_profile)
+        
+        # Format the response
+        response_data = {
+            'business': {
+                'id': str(provider_profile.id),
+                'name': provider_profile.business_name
+            },
+            'interactions': [interaction.get_interaction_details() for interaction in interactions],
+            'stats': {
+                'total_interactions': interactions.count(),
+                'total_purchases': interactions.filter(interaction_type='Purchase').count(),
+                'total_donations': interactions.filter(interaction_type='Donation').count(),
+                'completed': interactions.filter(status='completed').count(),
+                'pending': interactions.filter(status='pending').count()
+            }
+        }
+
+        return Response(response_data, status=status.HTTP_200_OK)
+
+class InitiateCheckoutView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    @db_transaction.atomic
+    def post(self, request):
+        """POST /checkout/initiate/ - Start checkout session with timer"""
+        cart = get_object_or_404(Cart, user=request.user)
+        
+        if cart.items.count() == 0:
+            return Response(
+                {'error': 'Cart is empty'}, 
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # Check for existing active session
+        existing_session = CheckoutSession.objects.filter(
+            user=request.user,
+            is_active=True,
+            expires_at__gt=timezone.now()
+        ).first()
+        
+        if existing_session:
+            return Response(
+                {
+                    'message': 'Checkout session already active',
+                    'session_id': str(existing_session.id),
+                    'expires_at': existing_session.expires_at
+                },
+                status=status.HTTP_200_OK
+            )
+
+        # Reserve inventory by temporarily reducing available quantity
+        for item in cart.items.all():
+            if item.food_listing.quantity_available < item.quantity:
+                return Response(
+                    {
+                        'error': f'Not enough quantity available for {item.food_listing.name}',
+                        'item_id': str(item.food_listing.id),
+                        'available': item.food_listing.quantity_available,
+                        'requested': item.quantity
+                    },
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+            
+            item.food_listing.quantity_available -= item.quantity
+            item.food_listing.save()
+
+        # Create checkout session
+        checkout_session = CheckoutSession.objects.create(
+            user=request.user,
+            cart=cart,
+            expires_at=timezone.now() + timedelta(minutes=30)
+        )
+        
+        return Response(
+            {
+                'message': 'Checkout session started',
+                'session_id': str(checkout_session.id),
+                'expires_at': checkout_session.expires_at,
+                'time_left_seconds': 1800  # 30 minutes in seconds
+            },
+            status=status.HTTP_201_CREATED
+        )
+
+class CompleteCheckoutView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    @db_transaction.atomic
+    def post(self, request):
+        """POST /checkout/complete/ - Complete checkout within the time limit"""
+        serializer = CheckoutSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        
+        session_id = request.data.get('session_id')
+        checkout_session = get_object_or_404(
+            CheckoutSession,
+            id=session_id,
+            user=request.user,
+            is_active=True
+        )
+
+        if checkout_session.is_expired():
+            # Release reserved inventory
+            for item in checkout_session.cart.items.all():
+                item.food_listing.quantity_available += item.quantity
+                item.food_listing.save()
+            
+            checkout_session.is_active = False
+            checkout_session.save()
+            
+            return Response(
+                {'error': 'Checkout session expired'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # Proceed with normal checkout process
+        cart = checkout_session.cart
+        order_subtotal = cart.subtotal
+        first_item = cart.items.first()
+        provider_profile = first_item.food_listing.provider.provider_profile
+
+        # 1. Create Interaction
+        interaction = Interaction.objects.create(
+            user=request.user,
+            business=provider_profile,
+            interaction_type='Purchase',
+            quantity=cart.total_items,
+            total_amount=order_subtotal,
+            special_instructions=serializer.validated_data.get('specialInstructions', '')
+        )
+
+        # 2. Create Interaction Items (quantity already reserved)
+        for cart_item in cart.items.all():
+            InteractionItem.objects.create(
+                interaction=interaction,
+                food_listing=cart_item.food_listing,
+                name=cart_item.food_listing.name,
+                quantity=cart_item.quantity,
+                price_per_item=cart_item.food_listing.discounted_price,
+                total_price=cart_item.quantity * cart_item.food_listing.discounted_price,
+                expiry_date=cart_item.food_listing.expiry_date,
+                image_url=cart_item.food_listing.images[0] if cart_item.food_listing.images else ''
+            )
+
+        # 3. Create Payment
+        payment = Payment.objects.create(
+            interaction=interaction,
+            method=serializer.validated_data['paymentMethod'],
+            amount=order_subtotal,
+            details=serializer.validated_data['paymentDetails'],
+            status=Payment.Status.PENDING
+        )
+
+        # Simulate payment processing
+        if serializer.validated_data['paymentMethod'] != 'cash':
+            payment.status = Payment.Status.COMPLETED
+            payment.processed_at = timezone.now()
+            payment.save()
+        else:
+            payment.status = Payment.Status.COMPLETED
+            payment.processed_at = timezone.now()
+            payment.save()
+
+        # 4. Create Order if payment succeeded
+        if payment.status == Payment.Status.COMPLETED:
+            order = Order.objects.create(
+                interaction=interaction,
+                pickup_window=first_item.food_listing.pickup_window,
+                pickup_code=str(uuid.uuid4())[:6].upper(),
+                status=Order.Status.CONFIRMED
+            )
+
+            # Clear cart and mark session as complete
+            cart.items.all().delete()
+            checkout_session.is_active = False
+            checkout_session.save()
+
+            return Response(
+                {
+                    'message': 'Checkout completed successfully',
+                    'order_id': str(order.id),
+                    'pickup_code': order.pickup_code
+                },
+                status=status.HTTP_201_CREATED
+            )
+        else:
+            return Response(
+                {'error': 'Payment processing failed'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
