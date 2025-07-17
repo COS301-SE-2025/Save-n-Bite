@@ -7,7 +7,7 @@ on:
   workflow_dispatch:
 
 env:
-  REGISTRY: savenbiteregistry.azurecr.io
+  REGISTRY: savenbiteregistry-c0bnbkfndeayfbae.azurecr.io
   BACKEND_IMAGE: savenbite-backend
   FRONTEND_IMAGE: savenbite-frontend
 
