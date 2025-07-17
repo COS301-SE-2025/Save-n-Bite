@@ -12,6 +12,7 @@ const foodProviders = [
     specialties: ['Pastries', 'Bread', 'Cakes']
   },
   {
+    change: 1,
     id: 2,
     name: 'Green Cafe',
     image: 'https://images.unsplash.com/photo-1554118811-1e0d58224f24?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=600&q=80',
