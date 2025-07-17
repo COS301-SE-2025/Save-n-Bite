@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate,Link } from 'react-router-dom';
 import SearchBar from '../../components/auth/SearchBar';
 import FilterSidebar from '../../components/auth/FilterSidebar';
 import FoodListingsGrid from '../../components/auth/FoodListingsGrid';
@@ -236,6 +236,15 @@ const getAvailableTypeFilters = () => {
             <FoodProviderCarousel />
           </div>
         )}
+
+          <div className="text-center mt-6">
+                    <Link
+                      to="/providers"
+                      className="inline-flex items-center px-5 py-2.5 bg-emerald-600 text-white font-medium rounded-md hover:bg-emerald-700 transition-colors"
+                    >
+                      View All Food Providers
+                    </Link>
+            </div>
       </div>
     </div>
   );

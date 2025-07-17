@@ -185,14 +185,7 @@ const FoodProviderCarousel = () => {
         ))}
       </div>
 
-        <div className="text-center mt-6">
-            <Link
-              to="/providers"
-              className="inline-flex items-center px-5 py-2.5 bg-emerald-600 text-white font-medium rounded-md hover:bg-emerald-700 transition-colors"
-            >
-              View All Food Providers
-            </Link>
-          </div>
+    
 
     </div>
   );
