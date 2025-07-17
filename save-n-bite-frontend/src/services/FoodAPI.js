@@ -10,10 +10,9 @@ export const apiClient = axios.create({
     },
 });
 
-// Add request interceptor to include auth token
 apiClient.interceptors.request.use(
     (config) => {
-        const token = localStorage.getItem('authToken');
+        const token = localStorage.getItem('authToken') || localStorage.getItem('access_token');
         if (token) {
             config.headers.Authorization = `Bearer ${token}`;
         }
@@ -23,28 +22,50 @@ apiClient.interceptors.request.use(
         return Promise.reject(error);
     }
 );
-
-// Add response interceptor for error handling
+// Single response interceptor to handle token expiration
 apiClient.interceptors.response.use(
-    (response) => response,
+    (response) => {
+        return response;
+    },
     (error) => {
-        // Only redirect to login for protected routes
-        const protectedRoutes = [
-            '/transactions/',
-            '/cart/',
-            '/orders/',
-            '/profile/'
-        ];
-        
-        const isProtectedRoute = protectedRoutes.some(route => 
-            error.config.url.includes(route)
-        );
+        if (error.response?.status === 401) {
+            // Check if this is a protected route that requires authentication
+            const protectedRoutes = [
+                '/transactions/',
+                '/cart/',
+                '/orders/',
+                '/profile/',
+                '/food-listings/',
+                '/create-listing/',
+                '/notifications/',
+                '/donations/'
+            ];
+            
+            const isProtectedRoute = protectedRoutes.some(route => 
+                error.config?.url?.includes(route)
+            );
 
-        if (error.response?.status === 401 && isProtectedRoute) {
-            localStorage.removeItem('authToken');
-            localStorage.removeItem('userData');
-            window.location.href = '/login';
+            // Only handle logout for protected routes (not login/register)
+            if (isProtectedRoute) {
+                console.log('Token expired, clearing auth data');
+                
+                // Clear all auth data
+                localStorage.removeItem('user');
+                localStorage.removeItem('authToken');
+                localStorage.removeItem('access_token');
+                localStorage.removeItem('refresh_token');
+                localStorage.removeItem('refreshToken');
+                localStorage.removeItem('user_info');
+                localStorage.removeItem('userData');
+                
+                // Show user-friendly message and redirect
+                if (window.location.pathname !== '/login') {
+                    alert('Your session has expired. Please log in again.');
+                    window.location.href = '/login';
+                }
+            }
         }
+        
         return Promise.reject(error);
     }
 );

@@ -1,10 +1,12 @@
+// src/pages/auth/Login.js - Updated to work with AuthContext
 import React, { useState } from 'react';
 import { authAPI } from '../../services/authAPI';
 import ForgotPassword from '../../services/ForgotPasswordAPI';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, Link, useLocation } from 'react-router-dom';
 import LoginForm from '../../components/auth/LoginForm';
 import logo from '../../assets/images/SnB_leaf_icon.png';
 import { useNotifications } from '../../services/contexts/NotificationContext';
+import { useAuth } from '../../context/AuthContext'; 
 
 const Login = () => {
   const [message, setMessage] = useState('');
@@ -13,19 +15,28 @@ const Login = () => {
   const [unreadCountSnapshot, setUnreadCountSnapshot] = useState(0);
   const [currentEmail, setCurrentEmail] = useState(''); // Track email from LoginForm
   const navigate = useNavigate();
+  const location = useLocation();
   const { fetchUnreadCount, unreadCount } = useNotifications();
+  const { updateUser } = useAuth(); // Add this to sync with AuthContext
+
+  // Get the path user was trying to access before being redirected to login
+  const from = location.state?.from?.pathname || '/';
 
   const handleLoginSuccess = async (response) => {
     // Display welcome message with environmental fact
     setMessage(response.welcomeMessage || 'Welcome back! Great to see you again!');
     setMessageType('success');
     
-    // Store authentication data if needed
+    // Store authentication data in localStorage (existing behavior)
     if (response.token) {
       localStorage.setItem('authToken', response.token);
     }
     if (response.user) {
       localStorage.setItem('userData', JSON.stringify(response.user));
+      localStorage.setItem('user', JSON.stringify(response.user)); // Add this for AuthContext
+      
+      // Update AuthContext state
+      updateUser(response.user);
     }
 
     // Fetch unread notifications after login
@@ -39,14 +50,19 @@ const Login = () => {
     }, 500);
     
     setTimeout(() => {
-      // Navigate based on user type
-      const user = response.user || response.data?.user;
-      if (user?.user_type === 'provider') {
-        navigate('/create-listing');
-      } else if (user?.user_type === 'ngo') {
-        navigate('/food-listing');
+      // Check if user was trying to access a specific page
+      if (from !== '/') {
+        navigate(from, { replace: true });
       } else {
-        navigate('/food-listing');
+        // Navigate based on user type
+        const user = response.user || response.data?.user;
+        if (user?.user_type === 'provider') {
+          navigate('/dashboard'); 
+        } else if (user?.user_type === 'ngo') {
+          navigate('/food-listing');
+        } else {
+          navigate('/food-listing');
+        }
       }
     }, 3000);
   };

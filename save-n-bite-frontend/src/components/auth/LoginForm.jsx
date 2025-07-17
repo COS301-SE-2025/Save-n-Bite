@@ -126,7 +126,7 @@ const LoginForm = ({ onSuccess, onError, onEmailChange }) => {
             // Navigate based on user type
             const userType = response.user.user_type;
             if (userType === 'provider') {
-                navigate('/create-listing');
+                navigate('/dashboard');
             } else {
                 // Both customers and NGOs go to food listings
                 navigate('/food-listing');

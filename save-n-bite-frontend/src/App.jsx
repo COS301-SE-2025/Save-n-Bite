@@ -1,6 +1,11 @@
+// App.js
 import React from 'react';
-import logo from './assets/images/SnB_leaf_icon.png';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { AuthProvider } from './context/AuthContext';
+import ProtectedRoute from './components/ProtectedRoutes';
+import { USER_TYPES } from './config/routes';
+
+// Import your components
 import Register from './pages/auth/Register';
 import Login from './pages/auth/Login';
 import Home from './pages/auth/Home';
@@ -21,40 +26,154 @@ import PickupCoordination from './pages/foodProvider/PickupCoordination';
 import ManageDonations from './pages/foodProvider/Donations';
 import ForgotPassword from './pages/auth/ForgotPassword';
 
-
 function App() {
   return (
-    
-    <Router>
-      <Routes>
-        <Route path="/login" element={<Login />} />
-         <Route path="/register" element={<Register />} />
-          <Route path="/" element={<Home />} />
-          <Route path="/food-listing" element = {<FoodListing/>}/>
-          <Route path="/item/:id" element={<FoodItem />} />
-          <Route path="/orders" element={<OrderHistory />} />
-          <Route path="/cart" element={<Cart />} />
-          <Route path="/create-listing" element={<CreateListing />} />
-          <Route path="/listings-overview" element={<ListingOverview />} />
+    <AuthProvider>
+      <Router>
+        <Routes>
+          {/* Public routes - no authentication required */}
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="/" element={<Home />} />
 
-          <Route path="/notifications" element={<Notification />} />
+          {/* Customer and NGO routes */}
+          <Route 
+            path="/food-listing" 
+            element={
+              <ProtectedRoute requiredRoles={[USER_TYPES.CUSTOMER, USER_TYPES.NGO]}>
+                <FoodListing />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/item/:id" 
+            element={
+              <ProtectedRoute requiredRoles={[USER_TYPES.CUSTOMER, USER_TYPES.NGO]}>
+                <FoodItem />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/cart" 
+            element={
+              <ProtectedRoute requiredRoles={[USER_TYPES.CUSTOMER, USER_TYPES.NGO]}>
+                <Cart />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/orders" 
+            element={
+              <ProtectedRoute requiredRoles={[USER_TYPES.CUSTOMER, USER_TYPES.NGO]}>
+                <OrderHistory />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/donation-request/:id" 
+            element={
+              <ProtectedRoute requiredRoles={[USER_TYPES.NGO]}>
+                <DonationRequest />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/donation-confirmation/:id" 
+            element={
+              <ProtectedRoute requiredRoles={[USER_TYPES.NGO]}>
+                <DonationConfirmation />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/pickup" 
+            element={
+              <ProtectedRoute requiredRoles={[USER_TYPES.CUSTOMER, USER_TYPES.NGO]}>
+                <Pickup />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/reviews/:orderId" 
+            element={
+              <ProtectedRoute requiredRoles={[USER_TYPES.CUSTOMER, USER_TYPES.NGO]}>
+                <Reviews />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/reviews" 
+            element={
+              <ProtectedRoute requiredRoles={[USER_TYPES.CUSTOMER, USER_TYPES.NGO]}>
+                <Reviews />
+              </ProtectedRoute>
+            } 
+          />
 
-          <Route path="/donation-request/:id" element={<DonationRequest />} />
-          <Route path="/donation-confirmation/:id" element={<DonationConfirmation />} />
-          <Route path="/notifications" element={<OrderHistory />} />
-          <Route path="/pickup" element={<Pickup />} />
-          <Route path="/reviews/:orderId" element={<Reviews />} />
-          <Route path="/reviews" element={<Reviews />} />
-          <Route path="/dashboard" element={<Dashboard />} />
-          <Route path="/orders-and-feedback" element={<OrdersAndFeedback />} />
-          <Route path="/pickup-coordination" element={<PickupCoordination />} />
-          <Route path="/donations" element={<ManageDonations />} />
+          {/* Provider-only routes */}
+          <Route 
+            path="/dashboard" 
+            element={
+              <ProtectedRoute requiredRoles={[USER_TYPES.PROVIDER]}>
+                <Dashboard />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/create-listing" 
+            element={
+              <ProtectedRoute requiredRoles={[USER_TYPES.PROVIDER]}>
+                <CreateListing />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/listings-overview" 
+            element={
+              <ProtectedRoute requiredRoles={[USER_TYPES.PROVIDER]}>
+                <ListingOverview />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/orders-and-feedback" 
+            element={
+              <ProtectedRoute requiredRoles={[USER_TYPES.PROVIDER]}>
+                <OrdersAndFeedback />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/pickup-coordination" 
+            element={
+              <ProtectedRoute requiredRoles={[USER_TYPES.PROVIDER]}>
+                <PickupCoordination />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/donations" 
+            element={
+              <ProtectedRoute requiredRoles={[USER_TYPES.PROVIDER]}>
+                <ManageDonations />
+              </ProtectedRoute>
+            } 
+          />
 
-      </Routes>
-    </Router>
+          {/* Routes accessible by all authenticated users */}
+          <Route 
+            path="/notifications" 
+            element={
+              <ProtectedRoute requireAuth={true}>
+                <Notification />
+              </ProtectedRoute>
+            } 
+          />
+        </Routes>
+      </Router>
+    </AuthProvider>
   );
 }
 
 export default App;
-

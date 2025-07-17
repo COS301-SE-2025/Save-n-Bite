@@ -15,23 +15,44 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
+ 
+  const decodeToken = (token) => {
+    try {
+      const base64Url = token.split('.')[1];
+      const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+      const jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
+        return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+      }).join(''));
+      return JSON.parse(jsonPayload);
+    } catch (error) {
+      console.error('Error decoding token:', error);
+      return null;
+    }
+  };
+
   // Initialize user from localStorage on mount
   useEffect(() => {
     const initializeAuth = () => {
       try {
         const storedUser = localStorage.getItem('user');
-        const authToken = localStorage.getItem('authToken');
+        const authToken = localStorage.getItem('authToken') || localStorage.getItem('access_token');
         
         if (storedUser && authToken) {
           const parsedUser = JSON.parse(storedUser);
-          setUser(parsedUser);
+          
+          // Check if token is expired
+          const decodedToken = decodeToken(authToken);
+          if (decodedToken && decodedToken.exp * 1000 > Date.now()) {
+            setUser(parsedUser);
+          } else {
+            // Token expired, clear storage
+            clearUser();
+          }
         }
       } catch (error) {
         console.error('Error initializing auth:', error);
         // Clear corrupted data
-        localStorage.removeItem('user');
-        localStorage.removeItem('authToken');
-        localStorage.removeItem('refreshToken');
+        clearUser();
       } finally {
         setLoading(false);
       }
@@ -46,17 +67,38 @@ export const AuthProvider = ({ children }) => {
     localStorage.setItem('user', JSON.stringify(userData));
   };
 
+  // Login function (new - for handling login with token)
+  const login = (userData, token) => {
+    localStorage.setItem('access_token', token);
+    localStorage.setItem('authToken', token); // Keep both for compatibility
+    localStorage.setItem('user', JSON.stringify(userData));
+    setUser(userData);
+  };
+
   // Clear user data (called after logout)
   const clearUser = () => {
     setUser(null);
     localStorage.removeItem('user');
     localStorage.removeItem('authToken');
+    localStorage.removeItem('access_token');
+    localStorage.removeItem('refresh_token');
     localStorage.removeItem('refreshToken');
+    localStorage.removeItem('user_info');
+  };
+
+  // Logout function (alias for clearUser)
+  const logout = () => {
+    clearUser();
   };
 
   // Get user type helper
   const getUserType = () => {
     if (!user) return null;
+    
+    // First check if user_type is explicitly set
+    if (user.user_type) {
+      return user.user_type;
+    }
     
     // Check if user has organisation_name (NGO)
     if (user.organisation_name || user.representative_name) {
@@ -74,7 +116,20 @@ export const AuthProvider = ({ children }) => {
 
   // Check if user is authenticated
   const isAuthenticated = () => {
-    return !!user && !!localStorage.getItem('authToken');
+    const token = localStorage.getItem('authToken') || localStorage.getItem('access_token');
+    return !!user && !!token;
+  };
+
+  // Check if user has specific role(s) - NEW
+  const hasRole = (requiredRoles) => {
+    if (!user) return false;
+    
+    const userType = getUserType();
+    if (!userType) return false;
+    
+    // Convert to array if single role provided
+    const roles = Array.isArray(requiredRoles) ? requiredRoles : [requiredRoles];
+    return roles.includes(userType);
   };
 
   // Check if user is NGO
@@ -97,8 +152,11 @@ export const AuthProvider = ({ children }) => {
     loading,
     updateUser,
     clearUser,
+    login,        // NEW
+    logout,       // NEW
     getUserType,
     isAuthenticated,
+    hasRole,      // NEW
     isNGO,
     isCustomer,
     isProvider
