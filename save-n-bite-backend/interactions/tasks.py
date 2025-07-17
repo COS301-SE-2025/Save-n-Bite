@@ -2,6 +2,8 @@
 from celery import shared_task
 from django.utils import timezone
 from .models import CheckoutSession
+from .models import Cart
+from django.db import transaction as db_transaction
 
 @shared_task
 def expire_checkout_sessions():
@@ -18,3 +20,19 @@ def expire_checkout_sessions():
         
         session.is_active = False
         session.save()
+
+@shared_task
+def cleanup_expired_carts():
+    expired_carts = Cart.objects.filter(
+        expires_at__lte=timezone.now()
+    ).prefetch_related('items')
+    
+    for cart in expired_carts:
+        with db_transaction.atomic():
+            # Release reserved quantities
+            for item in cart.items.all():
+                item.food_listing.quantity_available += item.quantity
+                item.food_listing.save()
+            
+            # Clear the expired cart
+            cart.items.all().delete()

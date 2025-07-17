@@ -87,8 +87,25 @@ class AddToCartView(APIView):
         serializer.is_valid(raise_exception=True)
 
         cart, _ = Cart.objects.get_or_create(user=request.user)
+        
+        # Check if cart is expired
+        if cart.is_expired():
+            with db_transaction.atomic():
+                # Clear expired cart
+                cart.items.all().delete()
+                # Reset expiration
+                cart.expires_at = timezone.now() + timedelta(minutes=30)
+                cart.save()
+
         food_listing = get_object_or_404(FoodListing, id=serializer.validated_data['listingId'])
         requested_quantity = serializer.validated_data['quantity']
+
+        # Check if food listing is expired
+        if food_listing.is_expired:
+            return Response(
+                {'error': 'This food listing has expired'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
 
         # Calculate total quantity already in cart plus new request
         existing_cart_quantity = 0
@@ -112,16 +129,30 @@ class AddToCartView(APIView):
                 }
             }, status=status.HTTP_400_BAD_REQUEST)
 
-        # Proceed with adding to cart if quantity is available
-        cart_item, created = CartItem.objects.get_or_create(
-            cart=cart,
-            food_listing=food_listing,
-            defaults={'quantity': requested_quantity}
-        )
+        # Check if adding would exceed max cart items
+        if cart.total_items + requested_quantity > Cart.MAX_ITEMS:
+            return Response({
+                'error': {
+                    'code': 'MAX_ITEMS_EXCEEDED',
+                    'message': f'Cannot have more than {Cart.MAX_ITEMS} items in cart'
+                }
+            }, status=status.HTTP_400_BAD_REQUEST)
 
-        if not created:
-            cart_item.quantity += requested_quantity
-            cart_item.save()
+        # Proceed with adding to cart
+        with db_transaction.atomic():
+            cart_item, created = CartItem.objects.get_or_create(
+                cart=cart,
+                food_listing=food_listing,
+                defaults={'quantity': requested_quantity}
+            )
+
+            if not created:
+                cart_item.quantity += requested_quantity
+                cart_item.save()
+
+            # Reset cart expiration timer on any cart activity
+            cart.expires_at = timezone.now() + timedelta(minutes=30)
+            cart.save()
 
         return Response({
             'message': 'Item added to cart successfully',
@@ -133,7 +164,8 @@ class AddToCartView(APIView):
             },
             'cartSummary': {
                 'totalItems': cart.total_items,
-                'totalAmount': float(cart.subtotal)
+                'totalAmount': float(cart.subtotal),
+                'expires_at': cart.expires_at
             }
         }, status=status.HTTP_201_CREATED)
     

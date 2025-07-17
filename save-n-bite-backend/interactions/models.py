@@ -4,6 +4,7 @@ from django.core.exceptions import ValidationError
 from authentication.models import FoodProviderProfile
 from food_listings.models import FoodListing
 from django.contrib.postgres.fields import ArrayField
+from django.utils import timezone
 import uuid
 from django.contrib.auth import get_user_model
 from .utils import StatusTransition
@@ -122,10 +123,13 @@ class Interaction(models.Model):
         }
 
 class Cart(models.Model):
+    MAX_ITEMS = 50  # Maximum total items allowed in cart
+    
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='cart')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    expires_at = models.DateTimeField(null=True, blank=True)  # Add this line
 
     @property
     def total_items(self):
@@ -137,9 +141,30 @@ class Cart(models.Model):
             total=models.Sum(models.F('quantity') * models.F('food_listing__discounted_price'))
         )['total'] or 0
     
+    def is_expired(self):
+        if not self.expires_at:
+            return False
+        return timezone.now() > self.expires_at
+    
+    def clean(self):
+        if self.total_items > self.MAX_ITEMS:
+            raise ValidationError(f'Cannot have more than {self.MAX_ITEMS} items in cart')
+    
+    def save(self, *args, **kwargs):
+        # Set expiration time when cart is first created
+        if not self.pk and not self.expires_at:
+            self.expires_at = timezone.now() + timedelta(minutes=30)
+        self.full_clean()
+        super().save(*args, **kwargs)
+    
     def __str__(self):
         return f"Cart for {self.user.email}"
     
+    class Meta:
+        indexes = [
+            models.Index(fields=['expires_at']),
+        ]
+
 class CartItem(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     cart = models.ForeignKey(Cart, on_delete=models.CASCADE, related_name='items')
@@ -154,6 +179,18 @@ class CartItem(models.Model):
     class Meta:
         unique_together = ('cart', 'food_listing')
         ordering = ['-added_at']
+
+    def clean(self):
+            
+        # Check available quantity
+        if self.quantity > self.food_listing.quantity_available:
+            raise ValidationError(
+                f'Only {self.food_listing.quantity_available} available'
+            )
+    
+    def save(self, *args, **kwargs):
+        self.full_clean()
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return f"{self.quantity} x {self.food_listing.name} in cart"

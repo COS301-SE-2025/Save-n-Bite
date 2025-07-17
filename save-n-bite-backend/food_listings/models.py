@@ -3,6 +3,8 @@
 from django.db import models
 from django.contrib.auth import get_user_model
 import uuid
+from rest_framework.exceptions import ValidationError
+from django.utils import timezone
 
 User = get_user_model()
 
@@ -137,3 +139,11 @@ class FoodListing(models.Model):
             self.status = 'sold_out'
         
         super().save(*args, **kwargs)
+
+    @property
+    def is_expired(self):
+        return self.expiry_date and self.expiry_date < timezone.now().date()
+    
+    def clean(self):
+        if self.is_expired:
+            raise ValidationError('Cannot create or modify expired food listing')
