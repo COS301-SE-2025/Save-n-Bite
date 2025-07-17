@@ -36,49 +36,49 @@ const NotificationComposer = ({ onClose, onSend }) => {
   }
 
   const generateAIContent = () => {
-    setShowAIModal(true)
+    setShowAIModal(false)
   }
 
-  const handleAIGeneration = () => {
-    if (!aiPrompt.trim()) {
-      toast.error('Please provide context for the AI to generate content')
-      return
-    }
-    setIsLoading(true)
-    setShowAIModal(false)
-    setTimeout(() => {
-      let generatedTitle = ''
-      let generatedMessage = ''
-      const promptLower = aiPrompt.toLowerCase()
-      switch (notificationType) {
-        case 'update':
-          generatedTitle = promptLower.includes('feature')
-            ? 'New Feature Announcement'
-            : 'Important Platform Update'
-          generatedMessage = `We're excited to announce updates to our platform based on your feedback about ${aiPrompt}.\n\nWe've made improvements to our food listing process to make it easier for providers to share available items. Additionally, we've enhanced our search functionality to help users find food more efficiently based on location and preferences.\n\nThank you for being part of our community and helping reduce food waste!`
-          break
-        case 'maintenance':
-          generatedTitle = 'Scheduled Maintenance Notice'
-          generatedMessage = `We will be performing scheduled maintenance related to ${aiPrompt}.\n\nDuring this time, the platform will be temporarily unavailable. We expect the maintenance to last approximately 2 hours.\n\nWe apologize for any inconvenience this may cause and appreciate your understanding as we work to improve our service.`
-          break
-        case 'announcement':
-          generatedTitle = promptLower.includes('partnership')
-            ? 'New Partnership Announcement'
-            : 'Important Announcement'
-          generatedMessage = `We have some exciting news to share regarding ${aiPrompt}!\n\nThis development will help us further our mission of reducing food waste and connecting surplus food with those who need it most.\n\nStay tuned for more details in the coming weeks. Thank you for your continued support of our platform and mission.`
-          break
-        case 'alert':
-          generatedTitle = 'Important Alert'
-          generatedMessage = `We need to inform you about an important situation regarding ${aiPrompt}.\n\nPlease be aware of this information as it may affect your experience on our platform. We're working diligently to address this matter and will provide updates as soon as they're available.\n\nIf you have any questions or concerns, please contact our support team.`
-          break
-      }
-      setTitle(generatedTitle)
-      setMessage(generatedMessage)
-      setIsLoading(false)
-      toast.success('AI-generated content created based on your prompt')
-      setAiPrompt('')
-    }, 2000)
-  }
+  // const handleAIGeneration = () => {
+  //   if (!aiPrompt.trim()) {
+  //     toast.error('Please provide context for the AI to generate content')
+  //     return
+  //   }
+  //   setIsLoading(true)
+  //   setShowAIModal(false)
+  //   setTimeout(() => {
+  //     let generatedTitle = ''
+  //     let generatedMessage = ''
+  //     const promptLower = aiPrompt.toLowerCase()
+  //     switch (notificationType) {
+  //       case 'update':
+  //         generatedTitle = promptLower.includes('feature')
+  //           ? 'New Feature Announcement'
+  //           : 'Important Platform Update'
+  //         generatedMessage = `We're excited to announce updates to our platform based on your feedback about ${aiPrompt}.\n\nWe've made improvements to our food listing process to make it easier for providers to share available items. Additionally, we've enhanced our search functionality to help users find food more efficiently based on location and preferences.\n\nThank you for being part of our community and helping reduce food waste!`
+  //         break
+  //       case 'maintenance':
+  //         generatedTitle = 'Scheduled Maintenance Notice'
+  //         generatedMessage = `We will be performing scheduled maintenance related to ${aiPrompt}.\n\nDuring this time, the platform will be temporarily unavailable. We expect the maintenance to last approximately 2 hours.\n\nWe apologize for any inconvenience this may cause and appreciate your understanding as we work to improve our service.`
+  //         break
+  //       case 'announcement':
+  //         generatedTitle = promptLower.includes('partnership')
+  //           ? 'New Partnership Announcement'
+  //           : 'Important Announcement'
+  //         generatedMessage = `We have some exciting news to share regarding ${aiPrompt}!\n\nThis development will help us further our mission of reducing food waste and connecting surplus food with those who need it most.\n\nStay tuned for more details in the coming weeks. Thank you for your continued support of our platform and mission.`
+  //         break
+  //       case 'alert':
+  //         generatedTitle = 'Important Alert'
+  //         generatedMessage = `We need to inform you about an important situation regarding ${aiPrompt}.\n\nPlease be aware of this information as it may affect your experience on our platform. We're working diligently to address this matter and will provide updates as soon as they're available.\n\nIf you have any questions or concerns, please contact our support team.`
+  //         break
+  //     }
+  //     setTitle(generatedTitle)
+  //     setMessage(generatedMessage)
+  //     setIsLoading(false)
+  //     toast.success('AI-generated content created based on your prompt')
+  //     setAiPrompt('')
+  //   }, 2000)
+  // }
 
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto">
@@ -139,7 +139,7 @@ const NotificationComposer = ({ onClose, onSend }) => {
                       <option value="NGOs">NGOs Only</option>
                     </select>
                   </div>
-                  <div className="flex justify-between items-center">
+                  {/* <div className="flex justify-between items-center">
                     <button
                       type="button"
                       onClick={generateAIContent}
@@ -149,7 +149,7 @@ const NotificationComposer = ({ onClose, onSend }) => {
                       <SparklesIcon className="mr-2 h-4 w-4" />
                       Generate AI Content
                     </button>
-                  </div>
+                  </div> */}
                 </form>
               </div>
             </div>
@@ -210,9 +210,9 @@ const NotificationComposer = ({ onClose, onSend }) => {
                     />
                   </div>
                   <div className="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left w-full">
-                    <h3 className="text-lg leading-6 font-medium text-gray-900">
+                    {/* <h3 className="text-lg leading-6 font-medium text-gray-900">
                       Generate AI Content
-                    </h3>
+                    </h3> */}
                     <p className="mt-1 text-sm text-gray-500">
                       Provide context about what you want to communicate, and
                       our AI will generate a notification for you.

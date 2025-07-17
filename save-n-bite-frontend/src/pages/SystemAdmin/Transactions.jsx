@@ -2,10 +2,8 @@ import React, { useState } from 'react'
 import TransactionFilters from '../../components/SystemAdmin/Transactions/TransactionFilters'
 import TransactionTable from '../../components/SystemAdmin/Transactions/TransactionTable'
 import TransactionModal from '../../components/SystemAdmin/Transactions/TransactionModal'
-import ConfirmationModal from '../../components/SystemAdmin/UI/ConfirmationModal'
-import { toast } from 'sonner'
 
-// Mock data for transactions
+// Updated mock data with correct backend status values from Interactions service contract
 const mockTransactions = [
   {
     id: 'TRX001',
@@ -21,8 +19,7 @@ const mockTransactions = [
     item: 'Fresh Vegetables Bundle',
     amount: 'R12.99',
     date: '2023-08-10',
-    status: 'Completed',
-    dispute: null,
+    status: 'completed',
   },
   {
     id: 'TRX002',
@@ -38,8 +35,7 @@ const mockTransactions = [
     item: 'Bread and Pastries',
     amount: 'Free',
     date: '2023-08-09',
-    status: 'Completed',
-    dispute: null,
+    status: 'completed',
   },
   {
     id: 'TRX003',
@@ -55,8 +51,7 @@ const mockTransactions = [
     item: 'Canned Goods Assortment',
     amount: 'R8.50',
     date: '2023-08-08',
-    status: 'In Progress',
-    dispute: null,
+    status: 'ready_for_pickup',
   },
   {
     id: 'TRX004',
@@ -72,11 +67,11 @@ const mockTransactions = [
     item: 'Prepared Meals - 5 Pack',
     amount: 'R24.99',
     date: '2023-08-07',
-    status: 'Disputed',
+    status: 'cancelled',
     dispute: {
-      reason: 'Item quality not as described',
+      reason: 'Customer requested cancellation due to dietary restrictions',
       date: '2023-08-08',
-      status: 'Open',
+      status: 'Resolved',
     },
   },
   {
@@ -93,20 +88,91 @@ const mockTransactions = [
     item: 'Fruits Assortment',
     amount: 'Free',
     date: '2023-08-06',
-    status: 'Cancelled',
-    dispute: null,
+    status: 'rejected',
+    dispute: {
+      reason: 'Provider unable to fulfill donation request due to capacity',
+      date: '2023-08-06',
+      status: 'Closed',
+    },
+  },
+  {
+    id: 'TRX006',
+    type: 'Sale',
+    provider: {
+      name: 'City Market',
+      id: 'USR011',
+    },
+    consumer: {
+      name: 'Sarah Williams',
+      id: 'USR009',
+    },
+    item: 'Organic Produce Box',
+    amount: 'R45.00',
+    date: '2023-08-05',
+    status: 'preparing',
+  },
+  {
+    id: 'TRX007',
+    type: 'Donation',
+    provider: {
+      name: 'Fresh Harvest Market',
+      id: 'USR003',
+    },
+    consumer: {
+      name: 'Hunger Relief NGO',
+      id: 'USR012',
+    },
+    item: 'Mixed Vegetables',
+    amount: 'Free',
+    date: '2023-08-04',
+    status: 'confirmed',
+  },
+  {
+    id: 'TRX008',
+    type: 'Sale',
+    provider: {
+      name: 'University Cafeteria',
+      id: 'USR013',
+    },
+    consumer: {
+      name: 'Mike Chen',
+      id: 'USR014',
+    },
+    item: 'Lunch Combo',
+    amount: 'R18.50',
+    date: '2023-08-03',
+    status: 'expired',
+    dispute: {
+      reason: 'Order not collected within pickup window',
+      date: '2023-08-03',
+      status: 'Auto-resolved',
+    },
+  },
+  {
+    id: 'TRX009',
+    type: 'Sale',
+    provider: {
+      name: 'Corner Deli',
+      id: 'USR015',
+    },
+    consumer: {
+      name: 'Lisa Park',
+      id: 'USR016',
+    },
+    item: 'Sandwich & Drink',
+    amount: 'R15.75',
+    date: '2023-08-02',
+    status: 'pending',
   },
 ]
 
 const Transactions = () => {
-  const [transactions, setTransactions] = useState(mockTransactions)
+  const [transactions] = useState(mockTransactions)
   const [search, setSearch] = useState('')
   const [typeFilter, setTypeFilter] = useState('All')
   const [statusFilter, setStatusFilter] = useState('All')
   const [selectedTransaction, setSelectedTransaction] = useState(null)
   const [showTransactionModal, setShowTransactionModal] = useState(false)
-  const [showConfirmModal, setShowConfirmModal] = useState(false)
-  const [confirmAction, setConfirmAction] = useState(null)
 
   const filteredTransactions = transactions.filter((transaction) => {
     const matchesSearch =
@@ -116,11 +182,7 @@ const Transactions = () => {
       transaction.item.toLowerCase().includes(search.toLowerCase())
 
     const matchesType = typeFilter === 'All' || transaction.type === typeFilter
-    const matchesStatus =
-      statusFilter === 'All' ||
-      (statusFilter === 'Disputed'
-        ? transaction.status === 'Disputed'
-        : transaction.status === statusFilter)
+    const matchesStatus = statusFilter === 'All' || transaction.status === statusFilter
 
     return matchesSearch && matchesType && matchesStatus
   })
@@ -130,56 +192,15 @@ const Transactions = () => {
     setShowTransactionModal(true)
   }
 
-  const handleConfirmAction = (type, transactionId) => {
-    setConfirmAction({ type, transactionId })
-    setShowConfirmModal(true)
-  }
-
-  const executeAction = () => {
-    if (!confirmAction) return
-    const { type, transactionId } = confirmAction
-
-    if (type === 'resolve') {
-      setTransactions(
-        transactions.map((transaction) =>
-          transaction.id === transactionId
-            ? {
-                ...transaction,
-                status: 'Completed',
-                dispute: transaction.dispute
-                  ? { ...transaction.dispute, status: 'Resolved' }
-                  : null,
-              }
-            : transaction
-        )
-      )
-      toast.success(
-        `Dispute for transaction R{transactionId} has been resolved`
-      )
-    } else if (type === 'cancel') {
-      setTransactions(
-        transactions.map((transaction) =>
-          transaction.id === transactionId
-            ? { ...transaction, status: 'Cancelled' }
-            : transaction
-        )
-      )
-      toast.success(`Transaction R{transactionId} has been cancelled`)
-    }
-
-    setShowConfirmModal(false)
-    setConfirmAction(null)
-    setShowTransactionModal(false)
-  }
-
   return (
     <div className="space-y-6">
       <div className="flex flex-col md:flex-row md:items-center md:justify-between">
         <h1 className="text-2xl font-bold text-gray-900">Transactions</h1>
         <p className="text-gray-500">
-          Monitor and manage platform transactions
+          Monitor platform transactions and activity
         </p>
       </div>
+
 
       <TransactionFilters
         search={search}
@@ -193,36 +214,12 @@ const Transactions = () => {
       <TransactionTable
         transactions={filteredTransactions}
         onViewTransaction={handleViewTransaction}
-        onActionClick={handleConfirmAction}
       />
 
       {showTransactionModal && selectedTransaction && (
         <TransactionModal
           transaction={selectedTransaction}
           onClose={() => setShowTransactionModal(false)}
-          onResolve={(id) => handleConfirmAction('resolve', id)}
-          onCancel={(id) => handleConfirmAction('cancel', id)}
-        />
-      )}
-
-      {showConfirmModal && confirmAction && (
-        <ConfirmationModal
-          title={
-            confirmAction.type === 'resolve'
-              ? 'Resolve Dispute'
-              : 'Cancel Transaction'
-          }
-          message={
-            confirmAction.type === 'resolve'
-              ? 'Are you sure you want to resolve this dispute? This will mark the transaction as completed.'
-              : 'Are you sure you want to cancel this transaction? This action cannot be undone.'
-          }
-          confirmButtonText="Confirm"
-          confirmButtonColor={
-            confirmAction.type === 'resolve' ? 'green' : 'red'
-          }
-          onConfirm={executeAction}
-          onCancel={() => setShowConfirmModal(false)}
         />
       )}
     </div>
