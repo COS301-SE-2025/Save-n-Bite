@@ -1,4 +1,4 @@
-# Django Production Dockerfile (Dockerfile.prod)
+
 FROM python:3.11-slim
 
 # Set environment variables
@@ -22,8 +22,8 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy project
 COPY . .
 
-# Collect static files
-RUN python manage.py collectstatic --noinput
+# Create static and media directories
+RUN mkdir -p /app/staticfiles /app/media
 
 # Create non-root user
 RUN adduser --disabled-password --gecos '' appuser
@@ -34,4 +34,4 @@ USER appuser
 EXPOSE 8000
 
 # Run with gunicorn
-CMD ["gunicorn", "--bind", "0.0.0.0:8000", "--workers", "3", "backend.wsgi:application"]  
+CMD ["gunicorn", "--bind", "0.0.0.0:8000", "--workers", "3", "backend.wsgi:application"]
