@@ -1,4 +1,4 @@
-# React Simple Dockerfile.prod
+
 FROM node:18-alpine
 
 WORKDIR /app
@@ -6,17 +6,15 @@ WORKDIR /app
 
 COPY package*.json ./
 
-# Install dependencies (including missing ones)
+
 RUN npm install leaflet react-leaflet
 
-# Install all other dependencies
 RUN npm install
 
-# Copy source code
 COPY . .
 
-# Expose port
+
 EXPOSE 5173
 
-# Start Vite development server
+
 CMD ["npm", "run", "dev", "--", "--host", "0.0.0.0", "--port", "5173"]
