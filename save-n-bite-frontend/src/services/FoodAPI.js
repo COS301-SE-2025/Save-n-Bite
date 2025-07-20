@@ -22,50 +22,19 @@ apiClient.interceptors.request.use(
         return Promise.reject(error);
     }
 );
-// Single response interceptor to handle token expiration
+
+// SIMPLIFIED response interceptor - NO automatic redirects or localStorage clearing
 apiClient.interceptors.response.use(
     (response) => {
         return response;
     },
     (error) => {
+        // Just log 401 errors but don't handle them automatically
         if (error.response?.status === 401) {
-            // Check if this is a protected route that requires authentication
-            const protectedRoutes = [
-                '/transactions/',
-                '/cart/',
-                '/orders/',
-                '/profile/',
-                '/food-listings/',
-                '/create-listing/',
-                '/notifications/',
-                '/donations/'
-            ];
-            
-            const isProtectedRoute = protectedRoutes.some(route => 
-                error.config?.url?.includes(route)
-            );
-
-            // Only handle logout for protected routes (not login/register)
-            if (isProtectedRoute) {
-                console.log('Token expired, clearing auth data');
-                
-                // Clear all auth data
-                localStorage.removeItem('user');
-                localStorage.removeItem('authToken');
-                localStorage.removeItem('access_token');
-                localStorage.removeItem('refresh_token');
-                localStorage.removeItem('refreshToken');
-                localStorage.removeItem('user_info');
-                localStorage.removeItem('userData');
-                
-                // Show user-friendly message and redirect
-                if (window.location.pathname !== '/login') {
-                    alert('Your session has expired. Please log in again.');
-                    window.location.href = '/login';
-                }
-            }
+            console.log('401 response received for:', error.config?.url);
         }
         
+        // Let individual API calls handle their own errors
         return Promise.reject(error);
     }
 );
@@ -115,13 +84,15 @@ const foodAPI = {
             };
         } catch (error) {
             console.error('Error fetching food listings:', error);
+            
+            // Return error info but don't handle authentication automatically
             return {
                 success: false,
-                error: error.response?.data?.message || 'Failed to fetch food listings'
+                error: error.response?.data?.message || 'Failed to fetch food listings',
+                status: error.response?.status
             };
         }
     },
-
 
     getFoodListingDetails: async (listingId) => {
         try {
@@ -157,9 +128,11 @@ const foodAPI = {
             };
         } catch (error) {
             console.error('Error fetching food listing details:', error);
+            
             return {
                 success: false,
-                error: error.response?.data?.message || 'Failed to fetch listing details'
+                error: error.response?.data?.message || 'Failed to fetch listing details',
+                status: error.response?.status
             };
         }
     },
@@ -182,53 +155,56 @@ const foodAPI = {
             };
         } catch (error) {
             console.error('Error fetching providers:', error);
+            
             return {
                 success: false,
-                error: 'Failed to fetch providers'
+                error: 'Failed to fetch providers',
+                status: error.response?.status
             };
         }
     },
 
-
-getCart: async () => {
-    try {
-        const response = await apiClient.get('/cart/');
-        
-        return {
-            success: true,
-            data: {
-                items: response.data.cartItems.map(item => ({
-                    id: item.id,
-                    name: item.name,
-                    // Fix the imageUrl handling - check if it's a string before calling replace
-                    image: (item.imageUrl && typeof item.imageUrl === 'string') 
-                        ? item.imageUrl.replace(/[\[\]']/g, '').split(',')[0] 
-                        : null,
-                    price: parseFloat(item.pricePerItem),
-                    quantity: item.quantity,
-                    totalPrice: item.totalPrice,
-                    provider: item.provider,
-                    pickupWindow: item.pickupWindow,
-                    expiryDate: item.expiryDate,
-                    // Add the food listing ID that we need for scheduling
-                    listingId: item.food_listing.id || item.food_listing_id
-                })),
-                summary: {
-                    totalItems: parseInt(response.data.summary.totalItems),
-                    subtotal: parseFloat(response.data.summary.subtotal),
-                    estimatedSavings: parseFloat(response.data.summary.estimatedSavings),
-                    totalAmount: parseFloat(response.data.summary.totalAmount)
+    getCart: async () => {
+        try {
+            const response = await apiClient.get('/cart/');
+            
+            return {
+                success: true,
+                data: {
+                    items: response.data.cartItems.map(item => ({
+                        id: item.id,
+                        name: item.name,
+                        // Fix the imageUrl handling - check if it's a string before calling replace
+                        image: (item.imageUrl && typeof item.imageUrl === 'string') 
+                            ? item.imageUrl.replace(/[\[\]']/g, '').split(',')[0] 
+                            : null,
+                        price: parseFloat(item.pricePerItem),
+                        quantity: item.quantity,
+                        totalPrice: item.totalPrice,
+                        provider: item.provider,
+                        pickupWindow: item.pickupWindow,
+                        expiryDate: item.expiryDate,
+                        // Add the food listing ID that we need for scheduling
+                        listingId: item.food_listing.id || item.food_listing_id
+                    })),
+                    summary: {
+                        totalItems: parseInt(response.data.summary.totalItems),
+                        subtotal: parseFloat(response.data.summary.subtotal),
+                        estimatedSavings: parseFloat(response.data.summary.estimatedSavings),
+                        totalAmount: parseFloat(response.data.summary.totalAmount)
+                    }
                 }
-            }
-        };
-    } catch (error) {
-        console.error('Error fetching cart:', error);
-        return {
-            success: false,
-            error: error.response?.data?.message || 'Failed to fetch cart'
-        };
-    }
-},
+            };
+        } catch (error) {
+            console.error('Error fetching cart:', error);
+            
+            return {
+                success: false,
+                error: error.response?.data?.message || 'Failed to fetch cart',
+                status: error.response?.status
+            };
+        }
+    },
   
     addToCart: async (listingId, quantity = 1) => {
         try {
@@ -256,13 +232,14 @@ getCart: async () => {
             };
         } catch (error) {
             console.error('Error adding to cart:', error);
+            
             return {
                 success: false,
-                error: error.response?.data?.message || 'Failed to add item to cart'
+                error: error.response?.data?.message || 'Failed to add item to cart',
+                status: error.response?.status
             };
         }
     },
-
 
     removeFromCart: async (cartItemId) => {
         try {
@@ -277,14 +254,15 @@ getCart: async () => {
             };
         } catch (error) {
             console.error('Error removing from cart:', error);
+            
             return {
                 success: false,
-                error: error.response?.data?.message || 'Failed to remove item from cart'
+                error: error.response?.data?.message || 'Failed to remove item from cart',
+                status: error.response?.status
             };
         }
     },
 
- 
     updateCartItemQuantity: async (cartItemId, quantity) => {
         try {
             const response = await apiClient.put(`/cart/items/${cartItemId}/`, {
@@ -298,14 +276,15 @@ getCart: async () => {
             };
         } catch (error) {
             console.error('Error updating cart:', error);
+            
             return {
                 success: false,
-                error: error.response?.data?.message || 'Failed to update cart'
+                error: error.response?.data?.message || 'Failed to update cart',
+                status: error.response?.status
             };
         }
     },
 
-    
     processCheckout: async (checkoutData) => {
         try {
             const response = await apiClient.post('/cart/checkout/', checkoutData);
@@ -317,13 +296,14 @@ getCart: async () => {
             };
         } catch (error) {
             console.error('Error processing checkout:', error);
+            
             return {
                 success: false,
-                error: error.response?.data?.message || 'Failed to process checkout'
+                error: error.response?.data?.message || 'Failed to process checkout',
+                status: error.response?.status
             };
         }
     },
-
 
     getOrderHistory: async () => {
         try {
@@ -335,14 +315,15 @@ getCart: async () => {
             };
         } catch (error) {
             console.error('Error fetching order history:', error);
+            
             return {
                 success: false,
-                error: error.response?.data?.message || 'Failed to fetch order history'
+                error: error.response?.data?.message || 'Failed to fetch order history',
+                status: error.response?.status
             };
         }
     },
 
- 
     getOrderDetails: async (orderId) => {
         try {
             const response = await apiClient.get(`/cart/orders/${orderId}/`);
@@ -353,9 +334,11 @@ getCart: async () => {
             };
         } catch (error) {
             console.error('Error fetching order details:', error);
+            
             return {
                 success: false,
-                error: error.response?.data?.message || 'Failed to fetch order details'
+                error: error.response?.data?.message || 'Failed to fetch order details',
+                status: error.response?.status
             };
         }
     },
@@ -378,7 +361,6 @@ getCart: async () => {
             is_available: apiListing.is_available
         };
     },
-
 
     getErrorMessage: (error) => {
         if (error.response?.data?.message) {
