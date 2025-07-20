@@ -70,6 +70,8 @@ function App() {
               </ProtectedRoute>
             } 
           />
+          
+          {/* NGO-specific routes */}
           <Route 
             path="/donation-request/:id" 
             element={
@@ -86,6 +88,8 @@ function App() {
               </ProtectedRoute>
             } 
           />
+          
+          {/* Shared Customer/NGO routes */}
           <Route 
             path="/pickup" 
             element={
@@ -161,11 +165,14 @@ function App() {
             } 
           />
 
-          {/* Routes accessible by all authenticated users */}
+          {/* FIXED: Notifications accessible by ALL authenticated users */}
           <Route 
             path="/notifications" 
             element={
-              <ProtectedRoute requireAuth={true}>
+              <ProtectedRoute 
+                requiredRoles={[USER_TYPES.CUSTOMER, USER_TYPES.NGO, USER_TYPES.PROVIDER]}
+                requireAuth={true}
+              >
                 <Notification />
               </ProtectedRoute>
             } 
