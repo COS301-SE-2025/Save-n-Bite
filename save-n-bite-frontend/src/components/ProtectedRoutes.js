@@ -7,9 +7,22 @@ const ProtectedRoute = ({
   requiredRoles = [], 
   requireAuth = true 
 }) => {
-  const { user, loading, isAuthenticated, hasRole } = useAuth();
+  const { user, loading, isAuthenticated, hasRole, getUserType } = useAuth();
   const location = useLocation();
 
+  // Show loading spinner while checking authentication
+  if (loading) {
+    return React.createElement('div', {
+      style: { 
+        display: 'flex', 
+        justifyContent: 'center', 
+        alignItems: 'center', 
+        height: '100vh' 
+      }
+    }, 'Loading...');
+  }
+
+  // Check authentication requirement
   if (requireAuth && !isAuthenticated()) {
     return React.createElement(Navigate, { 
       to: "/login", 
@@ -18,8 +31,9 @@ const ProtectedRoute = ({
     });
   }
 
+  // Check role requirements
   if (requiredRoles.length > 0 && !hasRole(requiredRoles)) {
-    const userType = user?.user_type || user?.role;
+    const userType = getUserType();
     
     let redirectPath = '/';
     switch (userType) {
