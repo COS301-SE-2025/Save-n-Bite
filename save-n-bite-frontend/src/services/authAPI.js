@@ -22,30 +22,16 @@ apiClient.interceptors.request.use(
     }
 );
 
-// Response interceptor to handle token expiration
+// COMPLETELY REMOVED automatic logout/redirect logic
+// Let components handle their own authentication errors
 apiClient.interceptors.response.use(
     (response) => {
         return response;
     },
     (error) => {
+        // Just log errors for debugging, no automatic actions
         if (error.response?.status === 401) {
-            // Token expired or invalid
-            console.log('Token expired, clearing auth data');
-            
-            // Clear all auth data
-            localStorage.removeItem('user');
-            localStorage.removeItem('authToken');
-            localStorage.removeItem('access_token');
-            localStorage.removeItem('refresh_token');
-            localStorage.removeItem('refreshToken');
-            localStorage.removeItem('user_info');
-            localStorage.removeItem('userData');
-            
-            // Show user-friendly message
-            if (window.location.pathname !== '/login') {
-                alert('Your session has expired. Please log in again.');
-                window.location.href = '/login';
-            }
+            console.log('401 response received for:', error.config?.url);
         }
         
         return Promise.reject(error);
@@ -101,7 +87,6 @@ const transformFormData = (formData, userType) => {
                 npo_document: formData.npoDocument || '',
                 organisation_logo: formData.logo || '',
             };
-
 
         default:
             return formData;
@@ -233,6 +218,4 @@ export const authAPI = {
             throw new Error(error.message || 'Google sign-in failed');
         }
     },
-
 };
-
