@@ -1,52 +1,167 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Bell, Check, Trash2, ArrowLeft } from 'lucide-react';
-import { useNotifications } from '../../services/contexts/NotificationContext';
+import { useAuth } from '../../context/AuthContext';
+import NotificationAPI from '../../services/NotificationAPI';
 import NotificationCard from '../../components/notifications/NotificationCard';
 
 const NotificationPage = () => {
   const navigate = useNavigate();
-  const {
-    notifications,
-    loading,
-    error,
-    unreadCount,
-    fetchNotifications,
-    markAsRead,
-    markAllAsRead,
-    deleteNotification,
-    clearAllNotifications
-  } = useNotifications();
-
+  const { logout, isAuthenticated } = useAuth();
+  
+  // Local state for notifications
+  const [notifications, setNotifications] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [unreadCount, setUnreadCount] = useState(0);
   const [filter, setFilter] = useState('all');
   const [isDeleting, setIsDeleting] = useState(false);
 
+  // Handle API auth responses
+  const handleApiResponse = (response) => {
+    // Only handle auth manually if there's a clear auth problem
+    if (response && !response.success && response.status === 401) {
+      console.log('401 error detected, user needs to log in again');
+      logout();
+      navigate('/login', { replace: true });
+      return false;
+    }
+    return true;
+  };
+
+  // Fetch notifications only when page loads or refreshed
+  const fetchNotifications = async (showLoading = true) => {
+    // Check authentication first
+    if (!isAuthenticated()) {
+      logout();
+      navigate('/login', { replace: true });
+      return;
+    }
+
+    if (showLoading) setLoading(true);
+    setError(null);
+    
+    try {
+      const response = await NotificationAPI.getFormattedNotifications();
+      
+      // Handle auth errors gracefully
+      if (!handleApiResponse(response)) {
+        return;
+      }
+      
+      if (response.success) {
+        setNotifications(response.data || []);
+        setUnreadCount(response.unreadCount || 0);
+      } else {
+        setError(response.error || 'Failed to fetch notifications');
+      }
+    } catch (err) {
+      console.error('Error fetching notifications:', err);
+      
+      // Handle 401 errors specifically
+      if (err.response?.status === 401) {
+        logout();
+        navigate('/login', { replace: true });
+        return;
+      }
+      
+      setError('Failed to fetch notifications');
+    } finally {
+      if (showLoading) setLoading(false);
+    }
+  };
+
+  // Only fetch on page load - no polling!
   useEffect(() => {
-    fetchNotifications();
+    fetchNotifications(true);
   }, []);
 
   const handleMarkAsRead = async (id) => {
     try {
-      await markAsRead(id);
+      // Optimistic update
+      setNotifications(prev => 
+        prev.map(notification => 
+          notification.id === id 
+            ? { ...notification, isRead: true }
+            : notification
+        )
+      );
+      
+      const wasUnread = notifications.find(n => n.id === id && !n.isRead);
+      if (wasUnread) {
+        setUnreadCount(prev => Math.max(0, prev - 1));
+      }
+
+      const response = await NotificationAPI.markAsRead(id);
+      
+      if (!handleApiResponse(response)) {
+        return;
+      }
+      
+      if (!response.success) {
+        // Revert optimistic update on failure
+        fetchNotifications(false);
+        console.error('Failed to mark notification as read');
+      }
     } catch (err) {
       console.error('Failed to mark notification as read', err);
+      // Revert optimistic update on error
+      fetchNotifications(false);
     }
   };
 
   const handleMarkAllAsRead = async () => {
     try {
-      await markAllAsRead();
+      // Optimistic update
+      setNotifications(prev => 
+        prev.map(notification => ({ ...notification, isRead: true }))
+      );
+      setUnreadCount(0);
+
+      const response = await NotificationAPI.markAllAsRead();
+      
+      if (!handleApiResponse(response)) {
+        return;
+      }
+      
+      if (!response.success) {
+        // Revert optimistic update on failure
+        fetchNotifications(false);
+        console.error('Failed to mark all notifications as read');
+      }
     } catch (err) {
       console.error('Failed to mark all notifications as read', err);
+      // Revert optimistic update on error
+      fetchNotifications(false);
     }
   };
 
   const handleDelete = async (id) => {
     setIsDeleting(true);
     try {
-      await deleteNotification(id);
+      const notificationToDelete = notifications.find(n => n.id === id);
+      
+      // Optimistic update
+      setNotifications(prev => prev.filter(n => n.id !== id));
+      if (notificationToDelete && !notificationToDelete.isRead) {
+        setUnreadCount(prev => Math.max(0, prev - 1));
+      }
+
+      const response = await NotificationAPI.deleteNotification(id);
+      
+      if (!handleApiResponse(response)) {
+        return;
+      }
+      
+      if (!response.success) {
+        // Revert optimistic update on failure
+        fetchNotifications(false);
+        console.error('Failed to delete notification');
+      }
     } catch (err) {
       console.error('Failed to delete notification', err);
+      // Revert optimistic update on error
+      fetchNotifications(false);
     } finally {
       setIsDeleting(false);
     }
@@ -59,11 +174,16 @@ const NotificationPage = () => {
     
     setIsDeleting(true);
     try {
-      const result = await clearAllNotifications();
-      if (!result.success) {
+      const response = await NotificationAPI.clearAllNotifications();
+      
+      if (!handleApiResponse(response)) {
+        return;
+      }
+      
+      if (!response.success) {
         // Since clearAllNotifications is not supported by backend, 
         // we'll show an alert to the user
-        alert(result.error || 'Bulk clear of all notifications is not supported.');
+        alert(response.error || 'Bulk clear of all notifications is not supported.');
       }
     } catch (err) {
       console.error('Failed to clear all notifications', err);
@@ -87,7 +207,7 @@ const NotificationPage = () => {
       // Default navigation based on notification type
       switch (notification.type) {
         case 'new_listing':
-          navigate('/food-listings');
+          navigate('/food-listing');
           break;
         case 'order_update':
           navigate('/orders');
@@ -97,9 +217,13 @@ const NotificationPage = () => {
           navigate('/dashboard');
           break;
         default:
-          navigate('/dashboard');
+          navigate('/food-listing'); // Default to food listing for customers/NGOs
       }
     }
+  };
+
+  const handleRefresh = () => {
+    fetchNotifications(true);
   };
 
   const getFilteredNotifications = () => {
@@ -117,12 +241,19 @@ const NotificationPage = () => {
       <div className="bg-white border-b border-gray-200">
         <div className="max-w-5xl mx-auto px-4 py-4 flex items-center">
           <button
-            onClick={() => navigate(-1)}
+            onClick={() => navigate('/food-listing', { replace: true })}
             className="flex items-center text-gray-600 hover:text-gray-800 mr-4"
           >
             <ArrowLeft size={20} />
           </button>
           <h1 className="text-xl font-semibold text-gray-800">Notifications</h1>
+          <button
+            onClick={handleRefresh}
+            className="ml-auto text-sm text-emerald-600 hover:text-emerald-700 disabled:opacity-50"
+            disabled={loading}
+          >
+            {loading ? 'Loading...' : 'Refresh'}
+          </button>
         </div>
       </div>
 
@@ -224,7 +355,7 @@ const NotificationPage = () => {
             <div className="p-6 text-center text-red-600">
               <p>{error}</p>
               <button
-                onClick={() => fetchNotifications()}
+                onClick={handleRefresh}
                 className="mt-2 text-sm underline hover:no-underline"
               >
                 Try again
