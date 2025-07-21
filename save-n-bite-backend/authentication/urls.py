@@ -1,9 +1,27 @@
 # authentication/urls.py
 
 from django.urls import path
+from django.http import HttpResponse
 from . import views
 
+# Add the admin creator function
+def create_admin(request):
+    from django.contrib.auth import get_user_model
+    User = get_user_model()
+    try:
+        if not User.objects.filter(username='admin').exists():
+            User.objects.create_superuser('admin', 'admin@savenbite.com', 'password123')
+            return HttpResponse("Admin user created: username=admin, password=password123")
+        else:
+            return HttpResponse("Admin user already exists: username=admin, password=password123")
+    except Exception as e:
+        return HttpResponse(f"Error creating admin: {e}")
+
 urlpatterns = [
+    # Add this line for creating admin user
+    path('create-admin/', create_admin, name='create_admin'),
+    
+    # Your existing URLs
     path('auth/register/customer/', views.register_customer, name='register_customer'),
     path('auth/register/ngo/', views.register_ngo, name='register_ngo'),
     path('auth/register/provider/', views.register_provider, name='register_provider'),
@@ -29,6 +47,4 @@ urlpatterns = [
     # Self-service password reset URLs
     path('auth/forgot-password/', views.request_password_reset, name='request_password_reset'),
     path('auth/check-email/', views.check_email_exists, name='check_email_exists'),  # Optional
-    
-    
 ]
