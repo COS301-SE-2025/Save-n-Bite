@@ -37,7 +37,9 @@ DEBUG = os.getenv("DEBUG") == "false"
 ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", "localhost,127.0.0.1").split(",")
 
 
-
+CSRF_TRUSTED_ORIGINS = [
+    'https://savenbiteservice-hzghg8gcgddtcfg7.southafricanorth-01.azurewebsites.net',
+]
 # Application definition
 
 INSTALLED_APPS = [
