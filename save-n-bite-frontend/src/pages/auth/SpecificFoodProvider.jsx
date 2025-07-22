@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import {
   MapPinIcon,
@@ -12,6 +12,12 @@ import {
 
 import ReviewsModal from '../../components/auth/ReviewModal'
 import CustomerNavBar from '../../components/auth/CustomerNavBar'
+import SearchBar from '../../components/auth/SearchBar'
+import FilterSidebar from '../../components/auth/FilterSidebar'
+import FoodListingsGrid from '../../components/auth/FoodListingsGrid'
+import Sort from '../../components/auth/Sort'
+import foodListingsAPI from '../../services/foodListingsAPI'
+
 // Mock data for a single provider
 const provider = {
   id: 1,
@@ -26,6 +32,7 @@ const provider = {
   reviews: 156,
   categories: ['Bakery', 'Pastries', 'Bread'],
 }
+
 // Mock data for provider's items
 const providerItems = [
   {
@@ -35,9 +42,8 @@ const providerItems = [
       'https://images.unsplash.com/photo-1609950547346-a4f431435b2b?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=600&q=80',
     originalPrice: 18.99,
     discountPrice: 7.99,
-    // expirationTime: 'Today, 8 PM',
-    type: 'Discount',
-    
+    type: 'discount',
+    provider: 'Sweet Bakery'
   },
   {
     id: 2,
@@ -46,9 +52,8 @@ const providerItems = [
       'https://images.unsplash.com/photo-1585478259715-4aa341a5ce8e?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=600&q=80',
     originalPrice: 7.5,
     discountPrice: 3.5,
-    // expirationTime: 'Today, 8 PM',
-    type: 'Discount',
-   
+    type: 'discount',
+    provider: 'Sweet Bakery'
   },
   {
     id: 3,
@@ -57,9 +62,8 @@ const providerItems = [
       'https://images.unsplash.com/photo-1608198093002-ad4e005484ec?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=600&q=80',
     originalPrice: 15.0,
     discountPrice: 6.0,
-    // expirationTime: 'Tomorrow, 10 AM',
-    type: 'Discount',
-   
+    type: 'discount',
+    provider: 'Sweet Bakery'
   },
   {
     id: 4,
@@ -68,9 +72,8 @@ const providerItems = [
       'https://images.unsplash.com/photo-1623334044303-241021148842?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=600&q=80',
     originalPrice: 12.0,
     discountPrice: 5.0,
-    // expirationTime: 'Today, 8 PM',
-    type: 'Discount',
-   
+    type: 'discount',
+    provider: 'Sweet Bakery'
   },
   {
     id: 5,
@@ -79,12 +82,12 @@ const providerItems = [
       'https://images.unsplash.com/photo-1585478259069-4a3278c17f2d?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=600&q=80',
     originalPrice: 10.99,
     discountPrice: 0,
-    // expirationTime: 'Tomorrow, 10 AM',
-    type: 'Donation',
-    
+    type: 'donation',
+    provider: 'Sweet Bakery'
   },
 ]
-  const providerReviews = [
+
+const providerReviews = [
   {
     id: 1,
     userName: 'Emily Johnson',
@@ -146,64 +149,202 @@ const providerItems = [
     isHelpful: true,
   },
 ]
+
 const FoodProviderDetailPage = () => {
   const { id } = useParams()
   const [isFollowing, setIsFollowing] = useState(false)
+  const [isReviewsModalOpen, setIsReviewsModalOpen] = useState(false)
+  
+  // Reused state from FoodListings
+  const [showFilters, setShowFilters] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
-    const [buttonStatus, setButtonStatus] = useState("idle");
   const [filters, setFilters] = useState({
     priceRange: [0, 20],
+    expiration: 'all',
     type: 'all',
+    provider: 'all'
   })
+  const [selectedSort, setSelectedSort] = useState('')
+  
 
-   const [isReviewsModalOpen, setIsReviewsModalOpen] = useState(false)
+  const [allFoodListings, setAllFoodListings] = useState([])
+  const [filteredListings, setFilteredListings] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [totalCount, setTotalCount] = useState(0)
+  const [userType, setUserType] = useState('customer')
+
+ 
+  const isCustomer = () => userType === 'customer'
+  const isNGO = () => userType === 'ngo'
+
+  const filterListingsByUserType = (listings) => {
+    if (!Array.isArray(listings)) return []
+    
+    const currentUserType = foodListingsAPI.getUserType()
+    
+    switch(currentUserType) {
+      case 'customer':
+        return listings.filter(listing => 
+          listing?.type?.toLowerCase() === 'discount'
+        )
+      case 'ngo':
+        return listings.filter(listing => {
+          const type = listing?.type?.toLowerCase()
+          return type === 'discount' || type === 'donation'
+        })
+      default:
+        return listings
+    }
+  }
+
+  const getAvailableTypeFilters = () => {
+    const currentUserType = foodListingsAPI.getUserType()
+    
+    const options = [
+      { value: 'all', label: 'All Items' },
+      { value: 'Discount', label: 'Discounted' } 
+    ]
+    
+    if (currentUserType === 'ngo') {
+      options.push({ value: 'Donation', label: 'Donations' })
+    }
+    
+    return options
+  }
+
+
+  const processProviderItems = () => {
+    setLoading(true)
+    
+    // Simulate API call delay
+    setTimeout(() => {
+      setAllFoodListings(providerItems)
+      
+      const currentUserType = foodListingsAPI.getUserType()
+      setUserType(currentUserType)
+      
+      const filtered = filterListingsByUserType(providerItems)
+      setFilteredListings(filtered)
+      setTotalCount(filtered.length)
+      setLoading(false)
+    }, 300)
+  }
+
+  
+  const applyFiltersAndSearch = () => {
+    let filtered = [...allFoodListings]
+    
+    // Apply search
+    if (searchQuery) {
+      filtered = filtered.filter(item =>
+        item.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        item.provider.toLowerCase().includes(searchQuery.toLowerCase())
+      )
+    }
+    
+    if (filters.type !== 'all') {
+      filtered = filtered.filter(item =>
+        item.type.toLowerCase() === filters.type.toLowerCase()
+      )
+    }
+    
+
+    const price = filters.type === 'Donation' ? 0 : filtered.discountPrice || 0
+    filtered = filtered.filter(item => {
+      const itemPrice = item.type === 'donation' ? 0 : item.discountPrice
+      return itemPrice >= filters.priceRange[0] && itemPrice <= filters.priceRange[1]
+    })
+    
+
+    const userFiltered = filterListingsByUserType(filtered)
+    
+    // Apply sorting
+    if (selectedSort) {
+      userFiltered.sort((a, b) => {
+        switch(selectedSort) {
+          case 'price-low':
+            return (a.discountPrice || 0) - (b.discountPrice || 0)
+          case 'price-high':
+            return (b.discountPrice || 0) - (a.discountPrice || 0)
+          case 'name':
+            return a.title.localeCompare(b.title)
+          default:
+            return 0
+        }
+      })
+    }
+    
+    setFilteredListings(userFiltered)
+    setTotalCount(userFiltered.length)
+  }
+
+  const handleResetFilters = () => {
+    setFilters({
+      priceRange: [0, 20],
+      expiration: 'all',
+      type: 'all',
+      provider: 'all'
+    })
+    setSearchQuery('')
+    setSelectedSort('')
+  }
 
   const handleFollow = () => {
     setIsFollowing(!isFollowing)
   }
-  const addToCart = (itemId) => {
-    console.log(`Added item ${itemId} to cart`)
-    alert(`Added item to cart!`)
-  }
-  const handleAddToCart = async (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-
-    if (buttonStatus === "added") {
-      navigate('/cart');
-      return;
-    }
-
-    setButtonStatus("loading");
-
-    try {
-      const response = await foodAPI.addToCart(id, quantity);
-      if (response.success) {
-        setButtonStatus("added");
-        setTimeout(() => {
-          navigate('/cart');
-        }, 1500);
-      } else {
-        setError(response.error);
-        setButtonStatus("idle");
-      }
-    } catch (err) {
-      setError('Failed to add item to cart');
-      setButtonStatus("idle");
-    }
-  };
 
   const openReviewsModal = () => {
     setIsReviewsModalOpen(true)
   }
+
   const closeReviewsModal = () => {
     setIsReviewsModalOpen(false)
   }
 
+  // Initialize data on component mount
+  useEffect(() => {
+    processProviderItems()
+  }, [])
+
+
+  useEffect(() => {
+    if (allFoodListings.length > 0) {
+      const debounceTimer = setTimeout(() => {
+        applyFiltersAndSearch()
+      }, 300)
+      
+      return () => clearTimeout(debounceTimer)
+    }
+  }, [filters, searchQuery, selectedSort, allFoodListings])
+
+  
+  useEffect(() => {
+    if (allFoodListings.length > 0) {
+      const currentUserType = foodListingsAPI.getUserType()
+      setUserType(currentUserType)
+      
+      applyFiltersAndSearch()
+    }
+  }, [allFoodListings])
+
+  if (loading && filteredListings.length === 0) {
+    return (
+      <div className="bg-gray-50 min-h-screen w-full">
+        <CustomerNavBar />
+        <div className="flex items-center justify-center min-h-[60vh]">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-600 mx-auto mb-4"></div>
+            <p className="text-gray-600">Loading provider details...</p>
+          </div>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="bg-gray-50 min-h-screen w-full">
-        <CustomerNavBar />
+      <CustomerNavBar />
+      
       <div className="max-w-6xl mx-auto p-4 md:p-6">
         <div className="mb-6">
           <Link
@@ -245,8 +386,10 @@ const FoodProviderDetailPage = () => {
                         <StarIcon size={16} className="fill-current" />
                         <span className="ml-1">{provider.rating}</span>
                       </div>
-                      <button className="ml-2 text-emerald-600 hover:text-emerald-700 text-sm font-medium"
-                       onClick={openReviewsModal}>
+                      <button 
+                        className="ml-2 text-emerald-600 hover:text-emerald-700 text-sm font-medium"
+                        onClick={openReviewsModal}
+                      >
                         Read Reviews
                       </button>
                     </div>
@@ -286,7 +429,11 @@ const FoodProviderDetailPage = () => {
               <div className="mt-6 md:mt-0 md:ml-4 md:flex md:flex-col md:justify-center">
                 <button
                   onClick={handleFollow}
-                  className={`px-6 py-2 rounded-md flex items-center justify-center transition-colors ${isFollowing ? 'bg-gray-100 text-gray-800 hover:bg-gray-200' : 'bg-emerald-600 text-white hover:bg-emerald-700'}`}
+                  className={`px-6 py-2 rounded-md flex items-center justify-center transition-colors ${
+                    isFollowing 
+                      ? 'bg-gray-100 text-gray-800 hover:bg-gray-200' 
+                      : 'bg-emerald-600 text-white hover:bg-emerald-700'
+                  }`}
                 >
                   <HeartIcon
                     size={18}
@@ -294,96 +441,71 @@ const FoodProviderDetailPage = () => {
                   />
                   {isFollowing ? 'Following' : 'Follow'}
                 </button>
-                
               </div>
             </div>
           </div>
         </div>
 
-        {/* Available Items */}
-        <div>
-          <h2 className="text-xl font-semibold mb-6 text-gray-800">
-            Available Items from {provider.name}
-          </h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {providerItems.map((item) => (
-              <div
-                key={item.id}
-                className="bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow"
-              >
-                <div className="relative">
-                  <img
-                    src={item.image}
-                    alt={item.title}
-                    className="w-full h-48 object-cover"
-                  />
-                  <div className="absolute top-0 right-0 m-2">
-                    <span
-                      className={`text-xs font-medium px-2 py-1 rounded ${item.type === 'Donation' ? 'bg-blue-100 text-blue-800' : 'bg-emerald-100 text-emerald-800'}`}
-                    >
-                      {item.type}
-                    </span>
-                  </div>
-                </div>
-                <div className="p-4">
-                  <h3 className="font-semibold text-lg mb-1 text-gray-800">
-                    {item.title}
-                  </h3>
-                  <div className="flex justify-between items-center mb-2">
-                    <div>
-                      {item.type === 'Discount' ? (
-                        <div className="flex items-center">
-                          <span className="font-semibold text-emerald-600">
-                            ${item.discountPrice.toFixed(2)}
-                          </span>
-                          <span className="text-xs text-gray-500 line-through ml-2">
-                            ${item.originalPrice.toFixed(2)}
-                          </span>
-                        </div>
-                      ) : (
-                        <span className="font-semibold text-blue-600">
-                          Free
-                        </span>
-                      )}
-                    </div>
-                    <span className="text-xs text-gray-500">
-                      {item.distance}
-                    </span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    {/* <span className="text-xs text-gray-500">
-                      Expires: {item.expirationTime}
-                    </span> */}
-                     <button
-                                        onClick={handleAddToCart}
-                                        disabled={buttonStatus === "loading"}
-                                        className={`w-full py-3 ${
-                                          buttonStatus === "added" ? "bg-emerald-400" : "bg-emerald-200"
-                                        } text-white font-medium rounded-md hover:bg-emerald-700 transition-colors flex items-center justify-center`}
-                                      >
-                                        <ShoppingCartIcon size={20} className="mr-2" />
-                                        {buttonStatus === "idle" && "Add to Cart"}
-                                        {buttonStatus === "loading" && "Adding..."}
-                                        {buttonStatus === "added" && "View Cart"}
-                                      </button>
-                  </div>
+
+        <SearchBar 
+          searchQuery={searchQuery}
+          setSearchQuery={setSearchQuery}
+          showFilters={showFilters}
+          setShowFilters={setShowFilters}
+        />
+        
+        <br />
+
+        
+        <div className="flex flex-col md:flex-row gap-6">
+          <FilterSidebar 
+            showFilters={showFilters}
+            filters={filters}
+            setFilters={setFilters}
+            providerOptions={[{ value: provider.id, label: provider.name }]}
+            typeOptions={getAvailableTypeFilters()}
+            onResetFilters={handleResetFilters}
+          />
+          
+          <div className="flex-grow">
+            <div className="flex items-center justify-between mb-4">
+              <div className="text-sm text-gray-600">
+                {loading ? 'Loading...' : `${totalCount} items available from ${provider.name}`}
+              </div>
+              <Sort 
+                selectedSort={selectedSort} 
+                setSelectedSort={setSelectedSort} 
+              />
+            </div>
+            
+            {loading && filteredListings.length > 0 && (
+              <div className="mb-4 text-center">
+                <div className="inline-flex items-center px-4 py-2 bg-emerald-50 text-emerald-600 rounded-md">
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-emerald-600 mr-2"></div>
+                  Updating listings...
                 </div>
               </div>
-            ))}
+            )}
+            
+            <FoodListingsGrid listings={filteredListings} />
+            
+            
+            {!loading && filteredListings.length === 0 && (
+              <div className="text-center py-12 bg-white rounded-lg shadow-sm">
+                <p className="text-xl text-gray-600 mb-4">No items available</p>
+                <p className="text-gray-500">
+                  {userType === 'customer' 
+                    ? 'No discounted items available from this provider right now'
+                    : 'No items available from this provider right now'
+                  }
+                </p>
+              </div>
+            )}
           </div>
-
-          {/* Empty state */}
-          {providerItems.length === 0 && (
-            <div className="text-center py-12 bg-white rounded-lg shadow-sm">
-              <p className="text-xl text-gray-600 mb-4">No items available</p>
-              <p className="text-gray-500">
-                Check back later for new items from this provider
-              </p>
-            </div>
-          )}
         </div>
       </div>
-       <ReviewsModal
+
+      <ReviewsModal
         isOpen={isReviewsModalOpen}
         onClose={closeReviewsModal}
         providerName={provider.name}
@@ -394,4 +516,5 @@ const FoodProviderDetailPage = () => {
     </div>
   )
 }
+
 export default FoodProviderDetailPage
