@@ -2,11 +2,10 @@ import React, { useState } from 'react'
 import { toast } from 'sonner'
 import { SaveIcon, ShieldIcon } from 'lucide-react'
 
-const SecuritySettings = () => {
+const SecuritySettings = ({ isAdmin = false }) => {
   const [currentPassword, setCurrentPassword] = useState('')
   const [newPassword, setNewPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
-  const [twoFactorEnabled, setTwoFactorEnabled] = useState(true)
 
   const handleSubmit = (e) => {
     e.preventDefault()
@@ -26,86 +25,81 @@ const SecuritySettings = () => {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
-      <div>
-        <h3 className="text-lg font-medium text-gray-900">Change Password</h3>
-        <p className="mt-1 text-sm text-gray-500">
-          Ensure your account is using a long, random password to stay secure.
-        </p>
-      </div>
-
-      <div className="grid grid-cols-1 gap-6">
+      {isAdmin && (
         <div>
-          <label htmlFor="current-password" className="block text-sm font-medium text-gray-700">
-            Current Password
-          </label>
-          <input
-            type="password"
-            id="current-password"
-            value={currentPassword}
-            onChange={(e) => setCurrentPassword(e.target.value)}
-            className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-          />
-        </div>
+          <h3 className="text-lg font-medium text-gray-900">Change Password</h3>
+          <p className="mt-1 text-sm text-gray-500">
+            Ensure your account is using a long, random password to stay secure.
+          </p>
 
-        <div>
-          <label htmlFor="new-password" className="block text-sm font-medium text-gray-700">
-            New Password
-          </label>
-          <input
-            type="password"
-            id="new-password"
-            value={newPassword}
-            onChange={(e) => setNewPassword(e.target.value)}
-            className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-          />
-        </div>
+          <div className="mt-4 space-y-4">
+            <div>
+              <label htmlFor="current-password" className="block text-sm font-medium text-gray-700">
+                Current Password
+              </label>
+              <input
+                type="password"
+                id="current-password"
+                value={currentPassword}
+                onChange={(e) => setCurrentPassword(e.target.value)}
+                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+              />
+            </div>
 
-        <div>
-          <label htmlFor="confirm-password" className="block text-sm font-medium text-gray-700">
-            Confirm New Password
-          </label>
-          <input
-            type="password"
-            id="confirm-password"
-            value={confirmPassword}
-            onChange={(e) => setConfirmPassword(e.target.value)}
-            className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-          />
-        </div>
-      </div>
+            <div>
+              <label htmlFor="new-password" className="block text-sm font-medium text-gray-700">
+                New Password
+              </label>
+              <input
+                type="password"
+                id="new-password"
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
+                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+              />
+            </div>
 
-      <div className="pt-6 border-t border-gray-200">
-        <h3 className="text-lg font-medium text-gray-900">Two-Factor Authentication</h3>
-        <p className="mt-1 text-sm text-gray-500">
-          Add additional security to your account using two-factor authentication.
-        </p>
-        <div className="mt-4 flex items-center">
-          <button
-            type="button"
-            className={`${twoFactorEnabled ? 'bg-blue-600' : 'bg-gray-200'} relative inline-flex flex-shrink-0 h-6 w-11 border-2 border-transparent rounded-full cursor-pointer transition-colors ease-in-out duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500`}
-            onClick={() => setTwoFactorEnabled(!twoFactorEnabled)}
-          >
-            <span
-              className={`${twoFactorEnabled ? 'translate-x-5' : 'translate-x-0'} pointer-events-none inline-block h-5 w-5 rounded-full bg-white shadow transform ring-0 transition ease-in-out duration-200`}
-            />
-          </button>
-          <span className="ml-3 text-sm font-medium text-gray-900">
-            {twoFactorEnabled ? 'Enabled' : 'Disabled'}
-          </span>
-        </div>
-
-        {twoFactorEnabled && (
-          <div className="mt-4">
-            <button
-              type="button"
-              className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-            >
-              <ShieldIcon className="mr-2 h-4 w-4" />
-              Setup Two-Factor Authentication
-            </button>
+            <div>
+              <label htmlFor="confirm-password" className="block text-sm font-medium text-gray-700">
+                Confirm New Password
+              </label>
+              <input
+                type="password"
+                id="confirm-password"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+              />
+            </div>
           </div>
-        )}
-      </div>
+        </div>
+      )}
+
+      {!isAdmin && (
+        <div>
+          <h3 className="text-lg font-medium text-gray-900">Password Management</h3>
+          <p className="mt-1 text-sm text-gray-500">
+            Use the "Forgot Password" feature on the login page to reset your password securely.
+          </p>
+          <div className="mt-4 bg-blue-50 p-4 rounded-md">
+            <div className="flex">
+              <div className="flex-shrink-0">
+                <ShieldIcon className="h-5 w-5 text-blue-400" aria-hidden="true" />
+              </div>
+              <div className="ml-3">
+                <h4 className="text-sm font-medium text-blue-800">
+                  Password Security
+                </h4>
+                <p className="mt-1 text-sm text-blue-700">
+                  For security reasons, password changes are handled through our secure reset process. 
+                  If you need to change your password, please log out and use the "Forgot Password" 
+                  link on the login page.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       <div className="pt-6 border-t border-gray-200">
         <h3 className="text-lg font-medium text-gray-900">Login Sessions</h3>
