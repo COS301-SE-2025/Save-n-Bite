@@ -128,13 +128,17 @@ const ProfilePage = () => {
               <p className="text-gray-600 dark:text-gray-300 mb-2">
                 {user.address}
               </p>
+              <p className="text-gray-600 dark:text-gray-300 mb-1">
+                {user.bio}
+            </p>
+
               <p className="text-sm text-gray-500 dark:text-gray-400">
                 Member since {user.joinDate}
               </p>
             </div>
             <div className="mt-4 sm:mt-0">
               <Link
-                to="/profile/edit"
+                to="/edit-profile"
                 className="inline-flex items-center px-4 py-2 bg-emerald-600 dark:bg-emerald-500 text-white rounded-md hover:bg-emerald-700 dark:hover:bg-emerald-600 transition-colors"
               >
                 <EditIcon size={16} className="mr-2" />

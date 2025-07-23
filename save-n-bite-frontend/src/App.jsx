@@ -36,7 +36,8 @@ import AdminAnalytics from './pages/SystemAdmin/Analytics';
 import AuditLogs from './pages/SystemAdmin/AuditLogs'
 import SystemLogs from './pages/SystemAdmin/SystemLogs'
 import AdminSettings from './pages/SystemAdmin/Settings'
-
+import EditProfilePage
+ from './components/auth/EditProfile';
 function App() {
   return (
     
@@ -67,6 +68,7 @@ function App() {
           <Route path="/providers" element={<FoodProvidersPage />} />
            <Route path="/providers/:id" element={<SpecificFoodProvider />} />
             <Route path="/profile" element={<ProfilePage />} />
+            <Route path="/edit-profile" element={<EditProfilePage />} />
 
         <Route element={<Layout />}>
           <Route path="/admin-login" element={<AdminLogin />} />
