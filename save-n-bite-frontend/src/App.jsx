@@ -21,7 +21,7 @@ import PickupCoordination from './pages/foodProvider/PickupCoordination';
 import ManageDonations from './pages/foodProvider/Donations';
 import FoodProvidersPage from './pages/auth/AllFoodproviders';
 import SpecificFoodProvider from './pages/auth//SpecificFoodProvider'
-
+import ProfilePage from './components/auth/Profile';
 
 import Layout from './components/SystemAdmin/Layout/Layout'
 import AdminLogin from './pages/SystemAdmin/AdminLogin'
@@ -66,6 +66,7 @@ function App() {
           <Route path="/donations" element={<ManageDonations />} />
           <Route path="/providers" element={<FoodProvidersPage />} />
            <Route path="/providers/:id" element={<SpecificFoodProvider />} />
+            <Route path="/profile" element={<ProfilePage />} />
 
         <Route element={<Layout />}>
           <Route path="/admin-login" element={<AdminLogin />} />
