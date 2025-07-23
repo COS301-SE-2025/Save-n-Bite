@@ -6,6 +6,44 @@ const ListingTable = ({
   onViewListing,
   onActionClick,
 }) => {
+  const getStatusColor = (status) => {
+    switch (status) {
+      case 'active':
+        return 'bg-green-100 text-green-800'
+      case 'flagged':
+        return 'bg-amber-100 text-amber-800'
+      case 'removed':
+        return 'bg-red-100 text-red-800'
+      case 'sold_out':
+        return 'bg-gray-100 text-gray-800'
+      case 'expired':
+        return 'bg-purple-100 text-purple-800'
+      case 'inactive':
+        return 'bg-blue-100 text-blue-800'
+      default:
+        return 'bg-gray-100 text-gray-800'
+    }
+  }
+
+    const getStatusDisplay = (status) => {
+    switch (status) {
+      case 'active':
+        return 'Active'
+      case 'flagged':
+        return 'Flagged'
+      case 'removed':
+        return 'Removed'
+      case 'sold_out':
+        return 'Sold Out'
+      case 'expired':
+        return 'Expired'
+      case 'inactive':
+        return 'Inactive'
+      default:
+        return status
+    }
+  }
+
   return (
     <div className="bg-white rounded-lg shadow overflow-hidden">
       <div className="overflow-x-auto">
@@ -114,17 +152,7 @@ const ListingTable = ({
                         <XIcon size={18} />
                       </button>
                     )}
-                    <button
-                      onClick={() => onActionClick('feature', listing.id)}
-                      className={`${
-                        listing.featured
-                          ? 'text-gray-600 hover:text-gray-900'
-                          : 'text-yellow-600 hover:text-yellow-900'
-                      }`}
-                      title={listing.featured ? 'Unfeature' : 'Feature'}
-                    >
-                      <StarIcon size={18} />
-                    </button>
+                    
                   </td>
                 </tr>
               ))

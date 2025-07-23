@@ -1,7 +1,20 @@
 import React from 'react'
-import { UserIcon, KeyIcon, BellIcon, GlobeIcon } from 'lucide-react'
+import { UserIcon, KeyIcon, BellIcon, DatabaseIcon } from 'lucide-react'
 
-const SettingsTabs = ({ activeTab, setActiveTab }) => {
+const SettingsTabs = ({ activeTab, setActiveTab, isAdmin = false }) => {
+  const tabs = [
+    { id: 'profile', label: 'Profile', icon: UserIcon, showFor: 'all' },
+    { id: 'security', label: 'Security', icon: KeyIcon, showFor: 'all' },
+    { id: 'system', label: 'Database Management', icon: DatabaseIcon, showFor: 'admin' }
+  ]
+
+  const visibleTabs = tabs.filter(tab => {
+    if (tab.showFor === 'all') return true
+    if (tab.showFor === 'admin') return isAdmin
+    if (tab.showFor === 'user') return !isAdmin
+    return false
+  })
+
   return (
     <>
       <div className="sm:hidden">
@@ -15,63 +28,32 @@ const SettingsTabs = ({ activeTab, setActiveTab }) => {
           value={activeTab}
           onChange={(e) => setActiveTab(e.target.value)}
         >
-          <option value="profile">Profile</option>
-          <option value="security">Security</option>
-          <option value="notifications">Notifications</option>
-          <option value="system">System Settings</option>
+          {visibleTabs.map(tab => (
+            <option key={tab.id} value={tab.id}>{tab.label}</option>
+          ))}
         </select>
       </div>
 
       <div className="hidden sm:block">
         <div className="border-b border-gray-200">
           <nav className="-mb-px flex space-x-8" aria-label="Tabs">
-            <button
-              onClick={() => setActiveTab('profile')}
-              className={`${
-                activeTab === 'profile'
-                  ? 'border-blue-500 text-blue-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-              } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm flex items-center`}
-            >
-              <UserIcon className="mr-2 h-5 w-5" />
-              Profile
-            </button>
-
-            <button
-              onClick={() => setActiveTab('security')}
-              className={`${
-                activeTab === 'security'
-                  ? 'border-blue-500 text-blue-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-              } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm flex items-center`}
-            >
-              <KeyIcon className="mr-2 h-5 w-5" />
-              Security
-            </button>
-
-            <button
-              onClick={() => setActiveTab('notifications')}
-              className={`${
-                activeTab === 'notifications'
-                  ? 'border-blue-500 text-blue-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-              } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm flex items-center`}
-            >
-              <BellIcon className="mr-2 h-5 w-5" />
-              Notifications
-            </button>
-
-            <button
-              onClick={() => setActiveTab('system')}
-              className={`${
-                activeTab === 'system'
-                  ? 'border-blue-500 text-blue-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-              } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm flex items-center`}
-            >
-              <GlobeIcon className="mr-2 h-5 w-5" />
-              System Settings
-            </button>
+            {visibleTabs.map(tab => {
+              const Icon = tab.icon
+              return (
+                <button
+                  key={tab.id}
+                  onClick={() => setActiveTab(tab.id)}
+                  className={`${
+                    activeTab === tab.id
+                      ? 'border-blue-500 text-blue-600'
+                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                  } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm flex items-center`}
+                >
+                  <Icon className="mr-2 h-5 w-5" />
+                  {tab.label}
+                </button>
+              )
+            })}
           </nav>
         </div>
       </div>

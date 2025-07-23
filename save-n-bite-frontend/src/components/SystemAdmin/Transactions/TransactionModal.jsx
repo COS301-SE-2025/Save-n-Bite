@@ -4,9 +4,29 @@ import { XIcon, AlertTriangleIcon } from 'lucide-react'
 const TransactionModal = ({
   transaction,
   onClose,
-  onResolve,
-  onCancel,
 }) => {
+  const getStatusDisplay = (status) => {
+    switch (status) {
+      case 'pending':
+        return 'Pending'
+      case 'confirmed':
+        return 'Confirmed'
+      case 'preparing':
+        return 'Preparing'
+      case 'ready_for_pickup':
+        return 'Ready for Pickup'
+      case 'completed':
+        return 'Completed'
+      case 'cancelled':
+        return 'Cancelled'
+      case 'expired':
+        return 'Expired'
+      case 'rejected':
+        return 'Rejected'
+      default:
+        return status
+    }
+  }
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto">
       <div className="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
@@ -26,10 +46,10 @@ const TransactionModal = ({
                 <div className="flex justify-between items-center">
                   <h3 className="text-lg leading-6 font-medium text-gray-900 flex items-center">
                     Transaction Details
-                    {transaction.status === 'Disputed' && (
+                    {(transaction.status === 'cancelled' || transaction.status === 'rejected' || transaction.status === 'expired') && (
                       <span className="ml-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
                         <AlertTriangleIcon size={12} className="mr-1" />
-                        Disputed
+                        {getStatusDisplay(transaction.status)}
                       </span>
                     )}
                   </h3>
@@ -113,16 +133,22 @@ const TransactionModal = ({
                       <p className="mt-1">
                         <span
                           className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                            transaction.status === 'Completed'
+                            transaction.status === 'completed'
                               ? 'bg-green-100 text-green-800'
-                              : transaction.status === 'In Progress'
+                              : transaction.status === 'confirmed' || transaction.status === 'ready_for_pickup'
                               ? 'bg-blue-100 text-blue-800'
-                              : transaction.status === 'Disputed'
+                              : transaction.status === 'preparing'
+                              ? 'bg-yellow-100 text-yellow-800'
+                              : transaction.status === 'pending'
+                              ? 'bg-orange-100 text-orange-800'
+                              : transaction.status === 'cancelled' || transaction.status === 'rejected'
                               ? 'bg-red-100 text-red-800'
+                              : transaction.status === 'expired'
+                              ? 'bg-purple-100 text-purple-800'
                               : 'bg-gray-100 text-gray-800'
                           }`}
                         >
-                          {transaction.status}
+                          {getStatusDisplay(transaction.status)}
                         </span>
                       </p>
                     </div>
@@ -168,35 +194,28 @@ const TransactionModal = ({
                           </p>
                         </div>
                       </div>
+                      <div className="mt-3 p-3 bg-yellow-50 rounded border">
+                        <p className="text-sm text-yellow-800">
+                          <strong>Note:</strong> Transaction disputes are handled through the platform's dispute resolution process. Contact the respective parties directly or escalate to customer support if needed.
+                        </p>
+                      </div>
                     </div>
                   )}
+                  
+                  <div className="bg-blue-50 p-3 rounded-md">
+                    <p className="text-sm text-blue-800">
+                      <strong>Admin Note:</strong> This is a read-only view for monitoring purposes. Transaction modifications must be handled by the respective parties through the platform's standard processes.
+                    </p>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
           <div className="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
-            {transaction.status === 'Disputed' && (
-              <button
-                type="button"
-                onClick={() => onResolve(transaction.id)}
-                className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-green-600 text-base font-medium text-white hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 sm:ml-3 sm:w-auto sm:text-sm"
-              >
-                Resolve Dispute
-              </button>
-            )}
-            {transaction.status === 'In Progress' && (
-              <button
-                type="button"
-                onClick={() => onCancel(transaction.id)}
-                className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-red-600 text-base font-medium text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 sm:ml-3 sm:w-auto sm:text-sm"
-              >
-                Cancel Transaction
-              </button>
-            )}
             <button
               type="button"
               onClick={onClose}
-              className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
+              className="w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:w-auto sm:text-sm"
             >
               Close
             </button>

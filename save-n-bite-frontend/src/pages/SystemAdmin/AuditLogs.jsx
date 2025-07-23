@@ -30,7 +30,7 @@ const mockAuditLogs = [
       id: 'ADM001',
     },
     target: {
-      name: 'Hunger Relief',
+      name: 'Hunger Relief Organization',
       id: 'USR010',
       type: 'NGO',
     },
@@ -58,52 +58,52 @@ const mockAuditLogs = [
   },
   {
     id: 'LOG004',
-    action: 'Dispute Resolution',
+    action: 'System Announcement',
     user: {
       name: 'Admin User',
       id: 'ADM001',
     },
     target: {
-      name: 'Transaction TRX004',
+      name: 'System Maintenance Notification',
       id: 'TRX004',
-      type: 'Transaction',
+      type: 'Announcement',
     },
     timestamp: '2023-08-07T16:20:33',
-    details: 'Resolved dispute in favor of consumer with partial refund',
+    details: 'Created system maintenance notification for all users',
     ip: '192.168.1.1',
     userAgent: 'Chrome 115.0.0.0 / Windows',
   },
   {
     id: 'LOG005',
-    action: 'System Settings Update',
+    action: 'Data Export',
     user: {
       name: 'Admin User',
       id: 'ADM001',
     },
     target: {
-      name: 'System Settings',
+      name: 'User Data Export',
       id: 'SYS001',
-      type: 'System',
+      type: 'Export',
     },
     timestamp: '2023-08-06T10:05:17',
-    details: 'Updated maximum listing duration from 5 days to 7 days',
+    details: 'Exported user data for compliance audit (1,247 records)',
     ip: '192.168.1.1',
     userAgent: 'Chrome 115.0.0.0 / Windows',
   },
   {
     id: 'LOG006',
-    action: 'Notification Sent',
+    action: 'Password Reset',
     user: {
       name: 'Admin User',
       id: 'ADM001',
     },
     target: {
-      name: 'All Users',
+      name: 'John Smith',
       id: 'USR000',
-      type: 'Users',
+      type: 'User',
     },
     timestamp: '2023-08-05T14:12:09',
-    details: 'Sent system maintenance notification to all users',
+    details: 'Reset password for user upon verified request',
     ip: '192.168.1.1',
     userAgent: 'Chrome 115.0.0.0 / Windows',
   },
@@ -148,7 +148,7 @@ const AuditLogs = () => {
     setShowDetailsModal(true)
   }
 
-  // Get unique action types for filter
+  // Get unique action types for filter - THIS WAS THE MISSING PROP!
   const actionTypes = [
     'All',
     ...Array.from(new Set(mockAuditLogs.map((log) => log.action))),
@@ -160,6 +160,25 @@ const AuditLogs = () => {
         <h1 className="text-2xl font-bold text-gray-900">Audit Logs</h1>
         <p className="text-gray-500">View detailed logs of admin actions</p>
       </div>
+      
+      {/* Demo Notice */}
+      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+        <div className="flex items-start">
+          <div className="flex-shrink-0">
+            <svg className="w-5 h-5 text-blue-600 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+              <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+            </svg>
+          </div>
+          <div className="ml-3">
+            <h3 className="text-sm font-medium text-blue-800">Demo Mode</h3>
+            <p className="text-sm text-blue-700 mt-1">
+              Currently showing mock audit logs. This demonstrates the functionality before API integration.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* Pass the actionTypes prop that was missing! */}
       <AuditLogFilters
         search={search}
         setSearch={setSearch}
@@ -169,7 +188,9 @@ const AuditLogs = () => {
         setDateFilter={setDateFilter}
         actionTypes={actionTypes}
       />
+      
       <AuditLogTable logs={filteredLogs} onViewDetails={handleViewDetails} />
+      
       {showDetailsModal && selectedLog && (
         <AuditLogDetails
           log={selectedLog}

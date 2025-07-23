@@ -1,140 +1,158 @@
 import React, { useState } from 'react'
 import { toast } from 'sonner'
-import { SaveIcon, DatabaseIcon } from 'lucide-react'
-import InfoTooltip from '../../SystemAdmin/UI/InfoTooltip'
+import { SaveIcon, DatabaseIcon, DownloadIcon, ClockIcon } from 'lucide-react'
 
 const SystemSettings = () => {
-  const [settings, setSettings] = useState({
-    maintenanceMode: false,
-    autoVerification: false,
-    maxListingDuration: '7',
-    disputeWindow: '3',
-    requireVerification: true,
-    autoArchive: true,
-  })
+  const [isExporting, setIsExporting] = useState(false)
+  const [lastBackup, setLastBackup] = useState('Today at 3:00 AM')
+  
+  const handleDatabaseExport = async (format) => {
+    setIsExporting(true)
+    try {
+      // Simulate API call for database export
+      await new Promise(resolve => setTimeout(resolve, 2000))
+      toast.success(`Database export (${format}) started.`)
+    } catch (error) {
+      toast.error('Export failed. Please try again.')
+    } finally {
+      setIsExporting(false)
+    }
+  }
 
-  const handleSubmit = (e) => {
-    e.preventDefault()
-    toast.success('System settings saved')
+  const handleManualBackup = async () => {
+    try {
+      // Simulate API call for manual backup
+      await new Promise(resolve => setTimeout(resolve, 1500))
+      setLastBackup('Just now')
+      toast.success('Manual backup completed successfully')
+    } catch (error) {
+      toast.error('Backup failed. Please try again.')
+    }
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
-      <div>
-        <h3 className="text-lg font-medium text-gray-900">System Configuration</h3>
-        <p className="mt-1 text-sm text-gray-500">
-          Configure global platform settings and behavior.
-        </p>
+    <div className="space-y-6">
+      <div className="flex items-center">
+        <DatabaseIcon className="h-6 w-6 text-gray-400 mr-3" />
+        <div>
+          <h3 className="text-lg font-medium text-gray-900">Database Management</h3>
+          <p className="mt-1 text-sm text-gray-500">
+            Manage database operations, backups, and data exports.
+          </p>
+        </div>
       </div>
 
-      <div className="pt-4 grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-6">
-        <div className="sm:col-span-3">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center">
-              <label htmlFor="maintenance-mode" className="block text-sm font-medium text-gray-700">
-                Maintenance Mode
-              </label>
-              <span className="ml-1">
-                <InfoTooltip
-                  content="When enabled, users will see a maintenance message and cannot access the platform. Admin users can still log in."
-                  position="right"
-                />
+      {/* Database Backup Section */}
+      <div className="bg-gray-50 p-6 rounded-lg">
+        <div className="flex items-center mb-4">
+          <ClockIcon className="h-5 w-5 text-gray-400 mr-2" />
+          <h4 className="text-base font-medium text-gray-900">Database Backup</h4>
+        </div>
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+          <div className="bg-white p-4 rounded-md border">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-900">Last Backup</p>
+                <p className="text-xs text-gray-500">{lastBackup}</p>
+              </div>
+              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                Completed
               </span>
             </div>
-            <button
-              type="button"
-              className={`${
-                settings.maintenanceMode ? 'bg-blue-600' : 'bg-gray-200'
-              } relative inline-flex flex-shrink-0 h-6 w-11 border-2 border-transparent rounded-full cursor-pointer transition-colors ease-in-out duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500`}
-              onClick={() =>
-                setSettings({
-                  ...settings,
-                  maintenanceMode: !settings.maintenanceMode,
-                })
-              }
-            >
-              <span
-                className={`${
-                  settings.maintenanceMode ? 'translate-x-5' : 'translate-x-0'
-                } pointer-events-none inline-block h-5 w-5 rounded-full bg-white shadow transform ring-0 transition ease-in-out duration-200`}
-              />
-            </button>
           </div>
-          <p className="mt-1 text-sm text-gray-500">
-            When enabled, the platform will be inaccessible to users for maintenance.
-          </p>
-        </div>
-
-        <div className="sm:col-span-3">
-          <label htmlFor="max-listing-duration" className="block text-sm font-medium text-gray-700">
-            Maximum Listing Duration (days)
-          </label>
-          <select
-            id="max-listing-duration"
-            value={settings.maxListingDuration}
-            onChange={(e) =>
-              setSettings({
-                ...settings,
-                maxListingDuration: e.target.value,
-              })
-            }
-            className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md"
-          >
-            <option value="1">1 day</option>
-            <option value="3">3 days</option>
-            <option value="5">5 days</option>
-            <option value="7">7 days</option>
-            <option value="14">14 days</option>
-            <option value="30">30 days</option>
-          </select>
-          <p className="mt-1 text-sm text-gray-500">
-            How long food listings remain active before expiring.
-          </p>
-        </div>
-      </div>
-
-      <div className="pt-6 border-t border-gray-200">
-        <h3 className="text-lg font-medium text-gray-900">Database Management</h3>
-        <p className="mt-1 text-sm text-gray-500">
-          Manage database operations and maintenance.
-        </p>
-        <div className="mt-4 space-y-4">
-          <div className="bg-gray-50 p-4 rounded-md">
-            <div className="flex items-center">
-              <DatabaseIcon className="h-5 w-5 text-gray-400" />
-              <div className="ml-3">
-                <h4 className="text-sm font-medium text-gray-900">Database Backup</h4>
-                <p className="text-xs text-gray-500">Last backup: Today at 3:00 AM</p>
+          
+          <div className="bg-white p-4 rounded-md border">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-900">Next Scheduled</p>
+                <p className="text-xs text-gray-500">Tomorrow at 3:00 AM</p>
               </div>
+              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                Scheduled
+              </span>
             </div>
-            <div className="mt-4 flex space-x-4">
+          </div>
+        </div>
+
+        <div className="flex flex-wrap gap-3">
+          <button
+            type="button"
+            onClick={handleManualBackup}
+            className="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+          >
+            <DatabaseIcon className="mr-2 h-4 w-4" />
+            Run Manual Backup
+          </button>
+          
+          <button
+            type="button"
+            className="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+          >
+            View Backup History
+          </button>
+        </div>
+      </div>
+
+      {/* Database Export Section */}
+      <div className="bg-blue-50 p-6 rounded-lg">
+        <div className="flex items-center mb-4">
+          <DownloadIcon className="h-5 w-5 text-blue-500 mr-2" />
+          <h4 className="text-base font-medium text-gray-900">Data Export</h4>
+        </div>
+        
+        <p className="text-sm text-gray-600 mb-4">
+          Export system data for analysis, reporting, or migration purposes. 
+        </p>
+// I may export in other formats but as far as i know, it's just CSV
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          {[
+            { format: 'CSV', desc: 'Comma-separated values for spreadsheets' }
+          ].map((exportOption) => (
+            <div key={exportOption.format} className="bg-white p-4 rounded-md border border-blue-200">
+              <h5 className="font-medium text-gray-900 mb-2">{exportOption.format}</h5>
+              <p className="text-xs text-gray-500 mb-3">{exportOption.desc}</p>
               <button
                 type="button"
-                className="inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                onClick={() => handleDatabaseExport(exportOption.format)}
+                disabled={isExporting}
+                className="w-full inline-flex justify-center items-center px-3 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                Run Manual Backup
+                {isExporting ? (
+                  <>
+                    <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    Processing...
+                  </>
+                ) : (
+                  <>
+                    <DownloadIcon className="mr-1 h-4 w-4" />
+                    Export
+                  </>
+                )}
               </button>
-              <button
-                type="button"
-                className="inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-              >
-                View Backup History
-              </button>
+            </div>
+          ))}
+        </div>
+
+        <div className="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded-md">
+          <div className="flex">
+            <div className="flex-shrink-0">
+              <svg className="h-5 w-5 text-yellow-400" viewBox="0 0 20 20" fill="currentColor">
+                <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+              </svg>
+            </div>
+            <div className="ml-3">
+              <p className="text-sm text-yellow-700">
+                <strong>Note:</strong> Large exports may take several minutes to process. 
+              </p>
             </div>
           </div>
         </div>
       </div>
-
-      <div className="flex justify-end">
-        <button
-          type="submit"
-          className="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-        >
-          <SaveIcon className="mr-2 h-4 w-4" />
-          Save System Settings
-        </button>
-      </div>
-    </form>
+    </div>
   )
 }
 

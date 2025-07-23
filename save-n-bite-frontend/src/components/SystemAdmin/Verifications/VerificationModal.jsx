@@ -11,7 +11,9 @@ const VerificationModal = ({
   const [showRejectForm, setShowRejectForm] = useState(false)
 
   const handleApprove = () => {
-    onApprove(verification.id)
+    // Send default reason for approval to the DB
+    const defaultApprovalReason = 'Documentation verified and approved by admin'
+    onApprove(verification.id, defaultApprovalReason)
   }
 
   const handleReject = () => {
@@ -21,10 +23,14 @@ const VerificationModal = ({
         return
       }
       onReject(verification.id, rejectionReason)
+      setRejectionReason('')
+      setShowRejectForm(false)
     } else {
       setShowRejectForm(true)
     }
   }
+
+
 
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto">
@@ -59,11 +65,11 @@ const VerificationModal = ({
                     <p className="mt-1 text-sm text-gray-900">{verification.id}</p>
                   </div>
                   <div>
-                    <h4 className="text-sm font-medium text-gray-500">Organization Name</h4>
+                    <h4 className="text-sm font-medium text-gray-500">organisation Name</h4>
                     <p className="mt-1 text-sm text-gray-900">{verification.name}</p>
                   </div>
                   <div>
-                    <h4 className="text-sm font-medium text-gray-500">Organization Type</h4>
+                    <h4 className="text-sm font-medium text-gray-500">organisation Type</h4>
                     <p className="mt-1">
                       <span
                         className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
@@ -95,7 +101,7 @@ const VerificationModal = ({
                     <p className="mt-1">
                       <span
                         className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                          verification.status === 'Pending'
+                          verification.status === 'pending_verification'
                             ? 'bg-yellow-100 text-yellow-800'
                             : verification.status === 'Approved'
                             ? 'bg-green-100 text-green-800'
@@ -163,7 +169,7 @@ const VerificationModal = ({
             </div>
           </div>
           <div className="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
-            {verification.status === 'Pending' && (
+            {verification.status === 'pending_verification' && (
               <>
                 <button
                   type="button"

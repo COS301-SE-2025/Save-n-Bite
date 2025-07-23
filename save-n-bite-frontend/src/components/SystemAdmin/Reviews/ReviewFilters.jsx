@@ -54,10 +54,10 @@ const ReviewFilters = ({
               className="block w-full pl-10 pr-10 py-2 text-base border border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md"
             >
               <option value="All">All Status</option>
-              <option value="Published">Published</option>
-              <option value="Under Review">Under Review</option>
-              <option value="Removed">Removed</option>
-              <option value="Flagged">Flagged</option>
+              <option value="active">Active</option>
+              <option value="flagged">Flagged</option>
+              <option value="censored">Censored</option>
+              <option value="deleted">Deleted</option>
             </select>
           </div>
         </div>

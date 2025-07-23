@@ -1,16 +1,35 @@
 import React from 'react'
 import {
   EyeIcon,
-  CheckCircleIcon,
-  XCircleIcon,
   AlertTriangleIcon,
 } from 'lucide-react'
 
 const TransactionTable = ({
   transactions,
   onViewTransaction,
-  onActionClick,
 }) => {
+  const getStatusDisplay = (status) => {
+    switch (status) {
+      case 'pending':
+        return 'Pending'
+      case 'confirmed':
+        return 'Confirmed'
+      case 'preparing':
+        return 'Preparing'
+      case 'ready_for_pickup':
+        return 'Ready for Pickup'
+      case 'completed':
+        return 'Completed'
+      case 'cancelled':
+        return 'Cancelled'
+      case 'expired':
+        return 'Expired'
+      case 'rejected':
+        return 'Rejected'
+      default:
+        return status
+    }
+  }
   return (
     <div className="bg-white rounded-lg shadow overflow-hidden">
       <div className="overflow-x-auto">
@@ -81,19 +100,25 @@ const TransactionTable = ({
                   <td className="px-6 py-4 whitespace-nowrap">
                     <span
                       className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                        transaction.status === 'Completed'
+                        transaction.status === 'completed'
                           ? 'bg-green-100 text-green-800'
-                          : transaction.status === 'In Progress'
+                          : transaction.status === 'confirmed' || transaction.status === 'ready_for_pickup'
                           ? 'bg-blue-100 text-blue-800'
-                          : transaction.status === 'Disputed'
+                          : transaction.status === 'preparing'
+                          ? 'bg-yellow-100 text-yellow-800'
+                          : transaction.status === 'pending'
+                          ? 'bg-orange-100 text-orange-800'
+                          : transaction.status === 'cancelled' || transaction.status === 'rejected'
                           ? 'bg-red-100 text-red-800'
+                          : transaction.status === 'expired'
+                          ? 'bg-purple-100 text-purple-800'
                           : 'bg-gray-100 text-gray-800'
                       }`}
                     >
-                      {transaction.status === 'Disputed' && (
+                      {(transaction.status === 'cancelled' || transaction.status === 'rejected' || transaction.status === 'expired') && (
                         <AlertTriangleIcon size={12} className="mr-1" />
                       )}
-                      {transaction.status}
+                      {getStatusDisplay(transaction.status)}
                     </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
@@ -102,33 +127,11 @@ const TransactionTable = ({
                   <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                     <button
                       onClick={() => onViewTransaction(transaction)}
-                      className="text-blue-600 hover:text-blue-900 mr-3"
+                      className="text-blue-600 hover:text-blue-900"
                       title="View Details"
                     >
                       <EyeIcon size={18} />
                     </button>
-                    {transaction.status === 'Disputed' && (
-                      <button
-                        onClick={() =>
-                          onActionClick('resolve', transaction.id)
-                        }
-                        className="text-green-600 hover:text-green-900 mr-3"
-                        title="Resolve Dispute"
-                      >
-                        <CheckCircleIcon size={18} />
-                      </button>
-                    )}
-                    {transaction.status === 'In Progress' && (
-                      <button
-                        onClick={() =>
-                          onActionClick('cancel', transaction.id)
-                        }
-                        className="text-red-600 hover:text-red-900"
-                        title="Cancel Transaction"
-                      >
-                        <XCircleIcon size={18} />
-                      </button>
-                    )}
                   </td>
                 </tr>
               ))

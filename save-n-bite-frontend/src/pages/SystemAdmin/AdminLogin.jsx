@@ -33,7 +33,7 @@ const AdminLogin = () => {
             <LockIcon className="text-green-600" size={28} />
           </div>
           <h2 className="text-2xl font-bold">Admin Login</h2>
-          <p className="mt-1 text-green-100">Save 'n Bite Platform</p>
+          <p className="mt-1 text-green-100">Save n Bite Platform</p>
         </div>
         <form onSubmit={handleSubmit} className="py-8 px-6 space-y-6">
           <div>
