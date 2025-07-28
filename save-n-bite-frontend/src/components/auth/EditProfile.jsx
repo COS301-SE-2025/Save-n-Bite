@@ -29,6 +29,7 @@ const EditProfilePage = () => {
   const [errors, setErrors] = useState({});
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const { updateUser } = useAuth();
+  
 
   const handleChange = (e) => {
     const { name, value } = e.target;

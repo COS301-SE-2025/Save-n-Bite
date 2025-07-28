@@ -60,7 +60,7 @@ const navigationItems = [
 {
     name: 'Profile',
     icon: ProfileIcon, 
-    route: 'profile',
+    route: 'foodprovider-profile',
     path: '/foodprovider-profile',
   },
 

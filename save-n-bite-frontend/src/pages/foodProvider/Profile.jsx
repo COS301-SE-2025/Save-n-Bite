@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useRef } from 'react'
 import { Edit2Icon, CheckIcon, XIcon } from 'lucide-react'
 import { profileData, sustainabilityData } from '../../utils/MockData'
 import SideBar from '../../components/foodProvider/SideBar';
@@ -8,6 +8,8 @@ function ProfilePage() {
   const [formData, setFormData] = useState(profileData)
   const [tags, setTags] = useState(profileData.tags)
   const [newTag, setNewTag] = useState('')
+    const bannerInputRef = useRef(null)
+  const logoInputRef = useRef(null)
 
   const handleChange = (e) => {
     const { name, value } = e.target
@@ -40,28 +42,53 @@ function ProfilePage() {
     }
   }
 
+  const handleImageChange = (e, type) => {
+    const file = e.target.files[0]
+    if (file) {
+      const reader = new FileReader()
+      reader.onloadend = () => {
+        setFormData({
+          ...formData,
+          [type]: reader.result,
+        })
+      }
+      reader.readAsDataURL(file)
+    }
+  }
+
+
   return (
     <div className="w-full flex min-h-screen">
-                     <SideBar onNavigate={() => {}} currentPage="foodprovider-profile" />
+    <SideBar onNavigate={() => {}} currentPage="foodprovider-profile" />
     <div className="max-w-5xl mx-auto">
-      <h1 className="text-2xl font-bold mb-6">Business Profile</h1>
+      {/* <h1 className="text-2xl font-bold mb-6">Business Profile</h1> */}
 
       {/* Banner Section */}
-      <div className="relative h-64 rounded-lg overflow-hidden mb-8 bg-blue-100">
-        <img
-          src={formData.bannerUrl}
-          alt="Business Banner"
-          className="w-full h-full object-cover"
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent flex items-end">
-          <div className="p-6 text-white">
-            <h2 className="text-3xl font-bold">{formData.businessName}</h2>
+        <div className="relative h-64 rounded-lg overflow-hidden mb-8 bg-blue-100">
+          <img
+            src={formData.bannerUrl}
+            alt="Business Banner"
+            className="w-full h-full object-cover"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent flex items-end">
+            <div className="p-6 text-white">
+              <h2 className="text-3xl font-bold">{formData.businessName}</h2>
+            </div>
           </div>
+          <button
+            onClick={() => bannerInputRef.current.click()}
+            className="absolute top-4 right-4 bg-white/80 hover:bg-white p-2 rounded-full shadow-md transition-colors"
+          >
+            <Edit2Icon className="h-5 w-5 text-blue-900" />
+          </button>
+          <input
+            type="file"
+            accept="image/*"
+            ref={bannerInputRef}
+            style={{ display: 'none' }}
+            onChange={(e) => handleImageChange(e, 'bannerUrl')}
+          />
         </div>
-        <button className="absolute top-4 right-4 bg-white/80 hover:bg-white p-2 rounded-full shadow-md transition-colors">
-          <Edit2Icon className="h-5 w-5 text-blue-900" />
-        </button>
-      </div>
 
       {/* Business Info Section */}
       <div className="bg-white rounded-lg shadow-md overflow-hidden mb-8">
@@ -99,29 +126,43 @@ function ProfilePage() {
             )}
           </div>
 
-          <div className="flex items-center mb-6">
-            <div className="h-24 w-24 bg-gray-200 rounded-full overflow-hidden mr-6">
-              <img
-                src={formData.logoUrl}
-                alt="Business Logo"
-                className="h-full w-full object-cover"
+      <div className="flex items-center mb-6 relative">
+              <div className="h-24 w-24 bg-gray-200 rounded-full overflow-hidden mr-6">
+                <img
+                  src={formData.logoUrl}
+                  alt="Business Logo"
+                  className="h-full w-full object-cover"
+                />
+              </div>
+              <button
+                onClick={() => logoInputRef.current.click()}
+                className="absolute left-16 top-16 bg-white/80 hover:bg-white p-2 rounded-full shadow-md transition-colors"
+              >
+                <Edit2Icon className="h-4 w-4 text-blue-900" />
+              </button>
+              <input
+                type="file"
+                accept="image/*"
+                ref={logoInputRef}
+                style={{ display: 'none' }}
+                onChange={(e) => handleImageChange(e, 'logoUrl')}
               />
+              <div>
+                <span className="inline-block px-3 py-1 bg-blue-100 text-blue-800 rounded-full font-medium text-sm">
+                  {formData.verificationStatus === 'Verified' ? (
+                    <span className="flex items-center">
+                      <CheckIcon className="h-4 w-4 mr-1 text-green-600" />
+                      Verified Business
+                    </span>
+                  ) : formData.verificationStatus === 'Pending' ? (
+                    <span className="text-yellow-600">Verification Pending</span>
+                  ) : (
+                    <span className="text-red-600">Verification Required</span>
+                  )}
+                </span>
+              </div>
             </div>
-            <div>
-              <span className="inline-block px-3 py-1 bg-blue-100 text-blue-800 rounded-full font-medium text-sm">
-                {formData.verificationStatus === 'Verified' ? (
-                  <span className="flex items-center">
-                    <CheckIcon className="h-4 w-4 mr-1 text-green-600" />
-                    Verified Business
-                  </span>
-                ) : formData.verificationStatus === 'Pending' ? (
-                  <span className="text-yellow-600">Verification Pending</span>
-                ) : (
-                  <span className="text-red-600">Verification Required</span>
-                )}
-              </span>
-            </div>
-          </div>
+
 
           {isEditing ? (
             <form className="space-y-4">

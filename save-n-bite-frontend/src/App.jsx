@@ -23,6 +23,7 @@ import FoodProvidersPage from './pages/auth/AllFoodproviders';
 import SpecificFoodProvider from './pages/auth//SpecificFoodProvider'
 import ProfilePage from './components/auth/Profile';
 import FoodproviderProfile from './pages/foodProvider/Profile'
+import FoodproviderSettings from './pages/foodProvider/Settings'
 
 import Layout from './components/SystemAdmin/Layout/Layout'
 import AdminLogin from './pages/SystemAdmin/AdminLogin'
@@ -37,8 +38,7 @@ import AdminAnalytics from './pages/SystemAdmin/Analytics';
 import AuditLogs from './pages/SystemAdmin/AuditLogs'
 import SystemLogs from './pages/SystemAdmin/SystemLogs'
 import AdminSettings from './pages/SystemAdmin/Settings'
-import EditProfilePage
- from './components/auth/EditProfile';
+import EditProfilePage from './components/auth/EditProfile';
 function App() {
   return (
     
@@ -71,6 +71,7 @@ function App() {
             <Route path="/profile" element={<ProfilePage />} />
             <Route path="/edit-profile" element={<EditProfilePage />} />
             <Route path="/foodprovider-profile" element={<FoodproviderProfile />} />
+            <Route path="/settings" element={<FoodproviderSettings />} />
 
               <Route path="/admin-login" element={<AdminLogin />} />
         <Route element={<Layout />}>
