@@ -1,12 +1,16 @@
-# React Simple Dockerfile.prod - Clean Version
+# Development Dockerfile (NOT recommended for production)
 FROM node:18-alpine
 
 WORKDIR /app
 
+# Accept environment variable
+ARG REACT_APP_API_URL
+ENV REACT_APP_API_URL=$REACT_APP_API_URL
+
 # Copy package files
 COPY package*.json ./
 
-# Install dependencies (add leaflet to package.json instead)
+# Install dependencies
 RUN npm install --legacy-peer-deps
 
 # Copy source code
@@ -15,5 +19,5 @@ COPY . .
 # Expose port
 EXPOSE 5173
 
-# Start Vite development server
-CMD ["npm", "run", "dev", "--", "--host", "0.0.0.0", "--port", "5173"]
+# Configure Vite to be more stable in containers
+CMD ["npm", "run", "dev", "--", "--host", "0.0.0.0", "--port", "5173", "--strictPort"]
