@@ -1,4 +1,4 @@
-# RECOMMENDED: Production Dockerfile
+# RECOMMENDED: Production Dockerfile (Port 5173)
 FROM node:18-alpine as build
 
 WORKDIR /app
@@ -28,24 +28,20 @@ FROM nginx:alpine
 # Copy built app
 COPY --from=build /app/dist /usr/share/nginx/html
 
-# Create nginx config
+# Create nginx config for port 5173
 RUN echo 'events { worker_connections 1024; } \
 http { \
     include /etc/nginx/mime.types; \
     default_type application/octet-stream; \
     server { \
-        listen 80; \
+        listen 5173; \
         root /usr/share/nginx/html; \
         index index.html; \
         location / { \
             try_files $uri $uri/ /index.html; \
         } \
-        location /health { \
-            return 200 "OK"; \
-            add_header Content-Type text/plain; \
-        } \
     } \
 }' > /etc/nginx/nginx.conf
 
-EXPOSE 80
+EXPOSE 5173
 CMD ["nginx", "-g", "daemon off;"]
