@@ -1,6 +1,5 @@
 # .github/workflows/build-only.yml
 name: Build and Push Images
-
 on:
   push:
     branches: [ dev-CleanUp ]
@@ -10,6 +9,7 @@ env:
   REGISTRY: savenbiteregistry-c0bnbkfndeayfbae.azurecr.io
   BACKEND_IMAGE: savenbite-backend
   FRONTEND_IMAGE: savenbite-frontend
+  REACT_APP_API_URL: https://savenbiteservice-hzghg8gcgddtcfg7.southafricanorth-01.azurewebsites.net
 
 jobs:
   build-and-push:
@@ -18,14 +18,19 @@ jobs:
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
-
+      
+    - name: Log environment variables
+      run: |
+        echo "Building with API URL: ${{ env.REACT_APP_API_URL }}"
+        echo "Registry: ${{ env.REGISTRY }}"
+        
     - name: Log in to Azure Container Registry
       uses: docker/login-action@v3
       with:
         registry: ${{ env.REGISTRY }}
         username: ${{ secrets.ACR_USERNAME }}
         password: ${{ secrets.ACR_PASSWORD }}
-
+        
     - name: Build and push backend image
       uses: docker/build-push-action@v5
       with:
@@ -33,7 +38,7 @@ jobs:
         file: ./save-n-bite-backend/Dockerfile.prod
         push: true
         tags: ${{ env.REGISTRY }}/${{ env.BACKEND_IMAGE }}:${{ github.sha }},${{ env.REGISTRY }}/${{ env.BACKEND_IMAGE }}:latest
-
+        
     - name: Build and push frontend image
       uses: docker/build-push-action@v5
       with:
@@ -41,25 +46,13 @@ jobs:
         file: ./save-n-bite-frontend/Dockerfile.prod
         push: true
         tags: ${{ env.REGISTRY }}/${{ env.FRONTEND_IMAGE }}:${{ github.sha }},${{ env.REGISTRY }}/${{ env.FRONTEND_IMAGE }}:latest
-
-    - name: Create Web Apps Command
+        build-args: |
+          REACT_APP_API_URL=${{ env.REACT_APP_API_URL }}
+        # Add more verbose output
+        outputs: type=registry,push=true
+        
+    - name: Verify images were pushed
       run: |
-        echo "🎉 Images built and pushed successfully!"
-        echo ""
-        echo "📋 To deploy, run these commands in your terminal:"
-        echo ""
-        echo "# Create App Service Plan"
-        echo "az appservice plan create --name savenbite-plan --resource-group savenbite-rg --is-linux --sku B1"
-        echo ""
-        echo "# Create Backend Web App"
-        echo "az webapp create --resource-group savenbite-rg --plan savenbite-plan --name savenbite-backend --deployment-container-image-name ${{ env.REGISTRY }}/${{ env.BACKEND_IMAGE }}:latest --docker-registry-server-url https://${{ env.REGISTRY }} --docker-registry-server-user ${{ secrets.ACR_USERNAME }} --docker-registry-server-password ${{ secrets.ACR_PASSWORD }}"
-        echo ""
-        echo "# Create Frontend Web App"
-        echo "az webapp create --resource-group savenbite-rg --plan savenbite-plan --name savenbite-frontend --deployment-container-image-name ${{ env.REGISTRY }}/${{ env.FRONTEND_IMAGE }}:latest --docker-registry-server-url https://${{ env.REGISTRY }} --docker-registry-server-user ${{ secrets.ACR_USERNAME }} --docker-registry-server-password ${{ secrets.ACR_PASSWORD }}"
-        echo ""
-        echo "# Configure Backend Environment"
-        echo "az webapp config appsettings set --resource-group savenbite-rg --name savenbite-backend --settings DEBUG=0 SECRET_KEY='${{ secrets.DJANGO_SECRET_KEY }}' DB_HOST='${{ secrets.DB_HOST }}' DB_NAME='${{ secrets.DB_NAME }}' DB_USER='${{ secrets.DB_USER }}' DB_PASSWORD='${{ secrets.DB_PASSWORD }}' DB_PORT=5432 ALLOWED_HOSTS='savenbite-backend.azurewebsites.net,savenbite-frontend.azurewebsites.net'"
-        echo ""
-        echo "🌐 Your apps will be available at:"
-        echo "Backend: https://savenbite-backend.azurewebsites.net"
-        echo "Frontend: https://savenbite-frontend.azurewebsites.net"
+        echo "✅ Backend image: ${{ env.REGISTRY }}/${{ env.BACKEND_IMAGE }}:latest"
+        echo "✅ Frontend image: ${{ env.REGISTRY }}/${{ env.FRONTEND_IMAGE }}:latest"
+        echo "🔧 Frontend built with API URL: ${{ env.REACT_APP_API_URL }}"
