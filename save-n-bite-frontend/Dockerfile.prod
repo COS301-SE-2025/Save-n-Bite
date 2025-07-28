@@ -1,11 +1,14 @@
-# Development Dockerfile (NOT recommended for production)
-FROM node:18-alpine
+# RECOMMENDED: Production Dockerfile
+FROM node:18-alpine as build
 
 WORKDIR /app
 
 # Accept environment variable
 ARG REACT_APP_API_URL
 ENV REACT_APP_API_URL=$REACT_APP_API_URL
+
+# Debug log
+RUN echo "Building with API URL: $REACT_APP_API_URL"
 
 # Copy package files
 COPY package*.json ./
@@ -16,8 +19,33 @@ RUN npm install --legacy-peer-deps
 # Copy source code
 COPY . .
 
-# Expose port
-EXPOSE 5173
+# Build for production
+RUN npm run build
 
-# Configure Vite to be more stable in containers
-CMD ["npm", "run", "dev", "--", "--host", "0.0.0.0", "--port", "5173", "--strictPort"]
+# Production stage
+FROM nginx:alpine
+
+# Copy built app
+COPY --from=build /app/dist /usr/share/nginx/html
+
+# Create nginx config
+RUN echo 'events { worker_connections 1024; } \
+http { \
+    include /etc/nginx/mime.types; \
+    default_type application/octet-stream; \
+    server { \
+        listen 80; \
+        root /usr/share/nginx/html; \
+        index index.html; \
+        location / { \
+            try_files $uri $uri/ /index.html; \
+        } \
+        location /health { \
+            return 200 "OK"; \
+            add_header Content-Type text/plain; \
+        } \
+    } \
+}' > /etc/nginx/nginx.conf
+
+EXPOSE 80
+CMD ["nginx", "-g", "daemon off;"]
