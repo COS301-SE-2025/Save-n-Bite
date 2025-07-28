@@ -1,8 +1,9 @@
 import React, { useState } from 'react'
 import { Edit2Icon, CheckIcon, XIcon } from 'lucide-react'
 import { profileData, sustainabilityData } from '../../utils/MockData'
+import SideBar from '../../components/foodProvider/SideBar';
 
-export function ProfilePage() {
+function ProfilePage() {
   const [isEditing, setIsEditing] = useState(false)
   const [formData, setFormData] = useState(profileData)
   const [tags, setTags] = useState(profileData.tags)
@@ -40,6 +41,8 @@ export function ProfilePage() {
   }
 
   return (
+    <div className="w-full flex min-h-screen">
+                     <SideBar onNavigate={() => {}} currentPage="foodprovider-profile" />
     <div className="max-w-5xl mx-auto">
       <h1 className="text-2xl font-bold mb-6">Business Profile</h1>
 
@@ -319,5 +322,7 @@ export function ProfilePage() {
         </button>
       </div>
     </div>
+    </div>
   )
 }
+export default  ProfilePage;

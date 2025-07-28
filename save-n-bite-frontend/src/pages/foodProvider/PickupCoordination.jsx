@@ -369,7 +369,7 @@ function PickupCoordination() {
 
   return (
         <div className="w-full flex min-h-screen">
-                 <SideBar onNavigate={() => {}} currentPage="dashboard" />
+                 <SideBar onNavigate={() => {}} currentPage="pickup-coordination" />
                      <div className="flex-1 p-6 overflow-auto">
       <div className="mb-6">
         <h1 className="text-2xl font-bold">Pickup Coordination</h1>
