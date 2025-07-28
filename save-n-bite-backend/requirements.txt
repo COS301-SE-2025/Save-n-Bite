@@ -12,7 +12,7 @@ dj-database-url>=2.3.0
 redis>=6.1.0
 django-redis>=5.4.0
 celery>=5.4.0
-
+django-cors-headers>=4.0.0
 # Image Processing
 pillow>=11.2.1
 
