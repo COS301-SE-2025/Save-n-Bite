@@ -55,6 +55,12 @@ const navigationItems = [
   route: 'donations',
   path: '/donations'
 },
+ {
+  name: 'Profile',
+  icon: ProfileIcon, 
+  route: 'profile',
+  path: '/foodprovider-profile'
+},
 
   {
     name: 'Settings',
