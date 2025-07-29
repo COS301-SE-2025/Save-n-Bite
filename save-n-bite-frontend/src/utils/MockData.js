@@ -29,6 +29,19 @@ export const sustainabilityData = {
   co2Reduced: 124.5
 };
 
+export const profileData = {
+  businessName: "Fresh Harvest Bakery",
+  logoUrl: "https://images.unsplash.com/photo-1534080564583-6be75777b70a?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2000&q=80",
+  bannerUrl: "https://images.unsplash.com/photo-1517433670267-08bbd4be890f?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2000&q=80",
+  email: "contact@freshharvestbakery.co.za",
+  phone: "+27 21 555 1234",
+  address: "123 Long Street, Cape Town, Western Cape, 8001, South Africa",
+  description: "Fresh Harvest Bakery specializes in artisanal bread and pastries made with locally sourced organic ingredients. We're committed to reducing food waste through our partnership with Save 'n Bite.",
+  verificationStatus: "Verified",
+  tags: ["Bakery", "Organic", "Local", "Sustainable", "Vegan Options"]
+};
+
+
 export const ordersData = [
   {
     id: 1,

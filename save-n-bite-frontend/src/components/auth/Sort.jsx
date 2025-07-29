@@ -4,8 +4,8 @@ import { ChevronDownIcon } from 'lucide-react';
 const sortOptions = [
   { label: 'Price: Low to High', value: 'price_asc' },
   { label: 'Price: High to Low', value: 'price_desc' },
-  { label: 'Expiry Soonest', value: 'expiry_asc' },
-  { label: 'Distance', value: 'distance' }
+  // { label: 'Expiry Soonest', value: 'expiry_asc' },
+  // { label: 'Distance', value: 'distance' }
 ];
 
 const Sort = ({ selectedSort, setSelectedSort }) => {

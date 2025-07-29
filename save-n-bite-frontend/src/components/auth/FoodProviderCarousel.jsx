@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { ChevronLeft, ChevronRight, Star } from 'lucide-react';
+import { Link } from 'react-router-dom' 
 
 // Mock data for food providers
 const foodProviders = [
@@ -55,16 +56,27 @@ const foodProviders = [
 
 const FoodProviderCarousel = () => {
   const [currentIndex, setCurrentIndex] = useState(0);
-  const itemsToShow = 4;
+  const [isHovered, setIsHovered] = useState(false);
+  const itemsToShow = 5;
   const maxIndex = Math.max(0, foodProviders.length - itemsToShow);
 
   const nextSlide = () => {
-    setCurrentIndex(prev => Math.min(prev + 1, maxIndex));
+    setCurrentIndex(prev => (prev >= maxIndex ? 0 : prev + 1));
   };
 
   const prevSlide = () => {
-    setCurrentIndex(prev => Math.max(prev - 1, 0));
+    setCurrentIndex(prev => (prev <= 0 ? maxIndex : prev - 1));
   };
+
+  useEffect(() => {
+    if (!isHovered) {
+      intervalRef.current = setInterval(nextSlide, 3000); 
+    }
+
+    return () => {
+      clearInterval(intervalRef.current);
+    };
+  }, [isHovered, currentIndex]);
 
   return (
     <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-6">
@@ -81,27 +93,18 @@ const FoodProviderCarousel = () => {
         <div className="flex space-x-2">
           <button
             onClick={prevSlide}
-            disabled={currentIndex === 0}
-            className={`p-2 rounded-full transition-all duration-200 ${
-              currentIndex === 0
-                ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                : 'bg-emerald-100 text-emerald-600 hover:bg-emerald-200'
-            }`}
+            className="p-2 rounded-full bg-emerald-100 text-emerald-600 hover:bg-emerald-200"
           >
             <ChevronLeft size={20} />
           </button>
           <button
             onClick={nextSlide}
-            disabled={currentIndex >= maxIndex}
-            className={`p-2 rounded-full transition-all duration-200 ${
-              currentIndex >= maxIndex
-                ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                : 'bg-emerald-100 text-emerald-600 hover:bg-emerald-200'
-            }`}
+            className="p-2 rounded-full bg-emerald-100 text-emerald-600 hover:bg-emerald-200"
           >
             <ChevronRight size={20} />
           </button>
         </div>
+        
       </div>
 
       <div className="relative overflow-hidden">
@@ -115,6 +118,7 @@ const FoodProviderCarousel = () => {
             <div
               key={provider.id}
               className="flex-shrink-0 w-1/4 px-2"
+              onMouseEnter={() => setIsHovered(true)}
             >
               <div className="bg-gray-50 rounded-lg overflow-hidden hover:shadow-md transition-all duration-300 transform hover:-translate-y-1 cursor-pointer group">
                 <div className="relative">
@@ -180,6 +184,9 @@ const FoodProviderCarousel = () => {
           />
         ))}
       </div>
+
+    
+
     </div>
   );
 };

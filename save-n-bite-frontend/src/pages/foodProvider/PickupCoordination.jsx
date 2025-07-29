@@ -341,6 +341,7 @@ function PickupCoordination() {
     setSearchQuery('');
   };
 
+
   // NEW: Handle date change
   const handleDateChange = (newDate) => {
     setSelectedDate(newDate);
@@ -376,6 +377,7 @@ function PickupCoordination() {
               <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-600 mx-auto mb-4"></div>
               <p className="text-gray-600">Loading pickup schedule...</p>
             </div>
+
           </div>
         </div>
       </div>
