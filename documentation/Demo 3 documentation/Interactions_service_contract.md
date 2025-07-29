@@ -74,14 +74,14 @@ python-dateutil>=2.9.0
 ## Overview
 API for managing customer shopping cart operations, checkout process, and order management. All endpoints require customer authentication.
 
-**Base URL:** `https://127.0.0.1:8000`
+**Base URL:** `https://127.0.0.1:8000/cart/`
 
 ---
 
 ## Cart Management
 
 ### 3.1 Get Cart Contents
-**GET** `/cart/`
+**GET** 
 
 Fetches all food listings in a customer's cart.
 
@@ -128,7 +128,7 @@ Authorization: Bearer YOUR_CUSTOMER_TOKEN_HERE
 ---
 
 ### 3.2 Add Item to Cart
-**POST** `/cart/add/`
+**POST** `/add/`
 
 Adds a food listing to a customer's cart.
 
@@ -172,7 +172,7 @@ Authorization: Bearer YOUR_CUSTOMER_TOKEN_HERE
 ---
 
 ### 3.3 Remove Item from Cart
-**POST** `/cart/remove/`
+**POST** `/remove/`
 
 Removes an item from a customer's cart.
 
@@ -210,7 +210,7 @@ Authorization: Bearer YOUR_CUSTOMER_TOKEN_HERE
 ## Checkout & Payment
 
 ### 3.4 Checkout Cart
-**POST** `/cart/checkout/`
+**POST** `/checkout/`
 
 Processes customer checkout and creates orders grouped by provider.
 
@@ -297,7 +297,7 @@ Authorization: Bearer YOUR_CUSTOMER_TOKEN_HERE
 ## Order Management
 
 ### 3.5 Get Specific Order
-**GET** `/cart/orders/{ORDER_ID}/`
+**GET** `/orders/{ORDER_ID}/`
 
 Retrieves detailed information about a specific customer order.
 
@@ -359,7 +359,7 @@ Authorization: Bearer YOUR_CUSTOMER_TOKEN_HERE
 ---
 
 ### 3.6 Get All Customer Orders
-**GET** `/cart/orders/`
+**GET** `/orders/`
 
 Retrieves all orders for the authenticated customer with pagination and filtering options.
 
@@ -380,7 +380,7 @@ Authorization: Bearer YOUR_CUSTOMER_TOKEN_HERE
 
 **Example Request:**
 ```
-GET /cart/orders/?page=1&limit=10&status=completed&date_from=2025-01-01
+GET /orders/?page=1&limit=10&status=completed&date_from=2025-01-01
 ```
 
 **Response (200 - Success):**
@@ -430,6 +430,112 @@ GET /cart/orders/?page=1&limit=10&status=completed&date_from=2025-01-01
 
 ---
 
+## Donation Management
+
+### 3.7 Request a donation
+**POST** `/donation/request/`
+
+Allows NGOs to request food donations from providers.
+
+**Headers:**
+```
+Authorization: Bearer YOUR_NGO_TOKEN_HERE
+```
+
+**Resquest body:**
+```json
+{
+  "listingId": "fd8a9d88-75c7-4b82-8c6d-137b5e098fa9",
+  "quantity": 2,
+  "specialInstructions": "Please provide packaging",
+  "motivationMessage": "Feeding 50 children at our shelter",
+  "verificationDocuments": [
+    "https://example.org/docs/certificate.pdf"
+  ]
+}
+```
+
+**Request Paramters:**
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| listingId | UUID | Yes | Food listing identifier |
+| quantity | integer | Yes | Requested items (min: 1) |
+| specialInstructions | string | No | Pickup instructions |
+| motivationMessage | string | No | NGO's purpose for donation |
+| verificationDocuments | array | No | URLs to NGO verification docs |
+
+**Response (201 - Created):**
+```json
+
+{
+  "message": "Donation request submitted successfully",
+  "interaction_id": "bfaa0d1c-ecf6-49df-8179-35c4f178cca9",
+  "requested_quantity": 2,
+  "available_quantity": 60
+}
+
+```
+
+---
+
+### 3.8 Accept a donation
+**POST** `/donation/{interaction_id}/accept/`
+
+Allows providers to accept pending donation requests.
+
+**Headers:**
+```
+Authorization: Bearer YOUR_NGO_TOKEN_HERE
+```
+
+**URL Parameters:**
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| interaction_id | UUID | The unique identifier of the interaction |
+
+**Response (200 - Success):**
+```json
+
+{
+  "message": "Donation accepted and marked as ready for pickup"
+}
+
+```
+
+---
+
+### 3.9 Reject a donation
+**POST** `/donation/{interaction_id}/reject/`
+
+Allows providers to reject pending donation requests.
+
+**Headers:**
+```
+Authorization: Bearer YOUR_NGO_TOKEN_HERE
+```
+
+**Resquest body:**
+```json
+
+{
+  "rejectionReason": "Currently overwhelmed with requests"
+}
+
+```
+
+**URL Parameters:**
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| interaction_id | UUID | The unique identifier of the interaction |
+
+**Response (200 - Success):**
+```json
+
+{
+  "message": "Donation request rejected"
+}
+
+```
 ## Data Types & Enums
 
 ### Payment Methods
@@ -451,6 +557,19 @@ GET /cart/orders/?page=1&limit=10&status=completed&date_from=2025-01-01
 - `completed` - Payment successful
 - `failed` - Payment failed
 - `refunded` - Payment refunded
+
+### Donation Eum Values:
+# InteractionType
+- `donation` - Donation
+# Status Additions
+- `rejected` - Rejected
+
+### Donation Status Transitions
+- PENDING → READY_FOR_PICKUP (acceptance)
+- PENDING → REJECTED (rejection)
+- READY_FOR_PICKUP → COMPLETED (pickup verification)
+
+
 
 ---
 
@@ -486,6 +605,15 @@ GET /cart/orders/?page=1&limit=10&status=completed&date_from=2025-01-01
 - **Currency**: All amounts in local currency with 2 decimal places
 - **Taxes**: Prices are inclusive of applicable taxes
 
+### Donations
+
+#### Eligibility Rules:
+- **User types**: Only users with user_type='ngo' can request donations
+- **Donation management**: Providers can only manage donations for their own listings
+
+#### Validation Rules:
+- **Rejection**: Must provide rejection reason when rejecting
+- **Donation Requests**: Quantity cannot exceed available stock
 ---
 
 ## Authentication
@@ -503,7 +631,8 @@ Authorization: Bearer <your-customer-jwt-token>
 - **Cart operations**: 60 requests per minute
 - **Checkout**: 5 requests per minute
 - **Order viewing**: 100 requests per minute
-
+- **Donation requests**: 10 requests per hour per NGO
+- **Donation management**: 30 requests per minute per provider
 ---
 
 ## Notes
