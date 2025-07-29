@@ -4,8 +4,10 @@ from django.core.exceptions import ValidationError
 from authentication.models import FoodProviderProfile
 from food_listings.models import FoodListing
 from django.contrib.postgres.fields import ArrayField
+from django.utils import timezone
 import uuid
 from django.contrib.auth import get_user_model
+from .utils import StatusTransition
 
 User = get_user_model()  # Gets the active user model
 
@@ -16,10 +18,12 @@ class Interaction(models.Model):
 
     class Status(models.TextChoices):
         PENDING = 'pending', 'Pending'
+        READY_FOR_PICKUP = 'ready', 'Ready for Pickup'
         CONFIRMED = 'confirmed', 'Confirmed'
         COMPLETED = 'completed', 'Completed'
         CANCELLED = 'cancelled', 'Cancelled'
         FAILED = 'failed', 'Failed'
+        REJECTED = 'rejected', 'Rejected'
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     interaction_type = models.CharField(max_length=10, choices=InteractionType.choices)
@@ -31,6 +35,9 @@ class Interaction(models.Model):
     completed_at = models.DateTimeField(null=True, blank=True)
     verification_code = models.CharField(max_length=20, blank=True)
     special_instructions = models.TextField(blank=True)
+    motivation_message = models.TextField(blank=True)  # For NGO requests
+    verification_documents = ArrayField(models.URLField(), blank=True, default=list)  # Can be link(s) to documents
+    rejection_reason = models.TextField(blank=True)  # Set by food provider if rejected
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='interactions')
     business = models.ForeignKey(FoodProviderProfile, on_delete=models.CASCADE, related_name='interactions')
 
@@ -41,23 +48,88 @@ class Interaction(models.Model):
         return f"{self.interaction_type} - {self.status} - {self.total_amount}"
     
     def clean(self):
+        if self.interaction_type == self.InteractionType.DONATION:
+            if self.status == self.Status.REJECTED and not self.rejection_reason:
+                raise ValidationError("Rejection reason required when status is rejected.")
+            
         if self.pk and Interaction.objects.filter(pk=self.pk).exists():
             original = Interaction.objects.get(pk=self.pk)
-            if original.status in ['completed', 'cancelled'] and self.status != original.status:
-                raise ValidationError(f"Cannot change status from {original.status}")
-            
-            # Add any other status transition rules here
-            if original.status == 'completed' and self.status != 'completed':
-                raise ValidationError("Cannot change status from completed")
+            if original.status != self.status:
+                try:
+                    StatusTransition.validate_transition('Interaction', original.status, self.status)
+                except ValidationError as e:
+                    raise ValidationError({'status': str(e)})
+    
+    def update_status(self, new_status, commit=True):
+        """Helper method to safely update status"""
+        self.status = new_status
+        if commit:
+            self.save()
     
     def save(self, *args, **kwargs):
-        self.full_clean()  # Ensure validation runs on save
+        self.full_clean()
         super().save(*args, **kwargs)
+        
+        # Create status history
+        if self.pk:
+            original = Interaction.objects.get(pk=self.pk)
+            if original.status != self.status:
+                InteractionStatusHistory.objects.create(
+                    interaction=self,
+                    old_status=original.status,
+                    new_status=self.status,
+                    changed_by=getattr(self, 'changed_by', None)
+                )
+
+    @classmethod
+    def get_business_history(cls, business_profile):
+        """
+        Returns all interactions for a business with related items and status history
+        """
+        return cls.objects.filter(business=business_profile).prefetch_related(
+            'items',
+            'status_history'
+        ).order_by('-created_at')
+
+    def get_interaction_details(self):
+        """
+        Returns detailed information about a specific interaction
+        """
+        return {
+            'id': str(self.id),
+            'type': self.interaction_type,
+            'status': self.status,
+            'total_amount': float(self.total_amount),
+            'created_at': self.created_at,
+            'completed_at': self.completed_at,
+            'user': {
+                'id': str(self.user.id),
+                'email': self.user.email,
+                'name': self.user.get_full_name()
+            },
+            'items': [{
+                'name': item.name,
+                'quantity': item.quantity,
+                'price_per_item': float(item.price_per_item),
+                'total_price': float(item.total_price),
+                'expiry_date': item.expiry_date
+            } for item in self.items.all()],
+            'status_history': [{
+                'old_status': history.old_status,
+                'new_status': history.new_status,
+                'changed_at': history.changed_at,
+                'changed_by': history.changed_by.email if history.changed_by else None
+            } for history in self.status_history.all()]
+        }
+
 class Cart(models.Model):
+    MAX_ITEMS = 50  # Maximum total items allowed in cart
+    
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='cart')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    expires_at = models.DateTimeField(null=True, blank=True)  # Add this line
 
     @property
     def total_items(self):
@@ -69,9 +141,30 @@ class Cart(models.Model):
             total=models.Sum(models.F('quantity') * models.F('food_listing__discounted_price'))
         )['total'] or 0
     
+    def is_expired(self):
+        if not self.expires_at:
+            return False
+        return timezone.now() > self.expires_at
+    
+    def clean(self):
+        if self.total_items > self.MAX_ITEMS:
+            raise ValidationError(f'Cannot have more than {self.MAX_ITEMS} items in cart')
+    
+    def save(self, *args, **kwargs):
+        # Set expiration time when cart is first created
+        if not self.pk and not self.expires_at:
+            self.expires_at = timezone.now() + timedelta(minutes=30)
+        self.full_clean()
+        super().save(*args, **kwargs)
+    
     def __str__(self):
         return f"Cart for {self.user.email}"
     
+    class Meta:
+        indexes = [
+            models.Index(fields=['expires_at']),
+        ]
+
 class CartItem(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     cart = models.ForeignKey(Cart, on_delete=models.CASCADE, related_name='items')
@@ -86,6 +179,18 @@ class CartItem(models.Model):
     class Meta:
         unique_together = ('cart', 'food_listing')
         ordering = ['-added_at']
+
+    def clean(self):
+            
+        # Check available quantity
+        if self.quantity > self.food_listing.quantity_available:
+            raise ValidationError(
+                f'Only {self.food_listing.quantity_available} available'
+            )
+    
+    def save(self, *args, **kwargs):
+        self.full_clean()
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return f"{self.quantity} x {self.food_listing.name} in cart"
@@ -113,6 +218,30 @@ class Order(models.Model):
     def __str__(self):
         return f"Order {self.id} - {self.status}"
 
+    def clean(self):
+        if self.pk and Order.objects.filter(pk=self.pk).exists():
+            original = Order.objects.get(pk=self.pk)
+            if original.status != self.status:
+                try:
+                    StatusTransition.validate_transition('Order', original.status, self.status)
+                except ValidationError as e:
+                    raise ValidationError({'status': str(e)})
+    
+    def save(self, *args, **kwargs):
+        self.full_clean()
+        super().save(*args, **kwargs)
+        
+        # Update interaction status based on order status
+        if self.status == self.Status.COMPLETED:
+            self.interaction.update_status(Interaction.Status.COMPLETED)
+            self.interaction.completed_at = self.updated_at
+            self.interaction.save()
+        elif self.status == self.Status.CANCELLED:
+            self.interaction.update_status(Interaction.Status.CANCELLED)
+        elif self.status == self.Status.CONFIRMED and self.interaction.status == Interaction.Status.PENDING:
+            self.interaction.update_status(Interaction.Status.CONFIRMED)
+
+
 class Payment(models.Model):
     class PaymentMethod(models.TextChoices):
         CARD = 'card', 'Credit/Debit Card'
@@ -136,6 +265,27 @@ class Payment(models.Model):
 
     def __str__(self):
         return f"Payment {self.id} - {self.method} - {self.status}"
+    
+    def clean(self):
+        if self.pk and Payment.objects.filter(pk=self.pk).exists():
+            original = Payment.objects.get(pk=self.pk)
+            if original.status != self.status:
+                try:
+                    StatusTransition.validate_transition('Payment', original.status, self.status)
+                except ValidationError as e:
+                    raise ValidationError({'status': str(e)})
+    
+    def save(self, *args, **kwargs):
+        self.full_clean()
+        super().save(*args, **kwargs)
+        
+        # Update interaction status based on payment status
+        if self.status == self.Status.COMPLETED and self.interaction.status == Interaction.Status.PENDING:
+            self.interaction.update_status(Interaction.Status.CONFIRMED)
+        elif self.status == self.Status.FAILED:
+            self.interaction.update_status(Interaction.Status.FAILED)
+        elif self.status == self.Status.REFUNDED:
+            self.interaction.update_status(Interaction.Status.CANCELLED)
 
 class InteractionItem(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
@@ -154,19 +304,21 @@ class InteractionItem(models.Model):
 
     def __str__(self):
         return f"{self.quantity} x {self.name} ({self.total_price})"
-
-class PickupDetails(models.Model):
-    order = models.OneToOneField(Order, on_delete=models.CASCADE, related_name='pickup_details')
-    scheduled_time = models.DateTimeField()
-    actual_time = models.DateTimeField(null=True, blank=True)
-    location = models.TextField()
-    contact_person = models.CharField(max_length=100)
-    contact_number = models.CharField(max_length=20)
-    is_completed = models.BooleanField(default=False)
-    notes = models.TextField(blank=True)
-
-    def __str__(self):
-        return f"Pickup for {self.order} at {self.scheduled_time}"
+    
+    def get_item_details(self):
+        """
+        Returns detailed information about an interaction item
+        """
+        return {
+            'id': str(self.id),
+            'name': self.name,
+            'quantity': self.quantity,
+            'price_per_item': float(self.price_per_item),
+            'total_price': float(self.total_price),
+            'expiry_date': self.expiry_date,
+            'food_listing_id': str(self.food_listing.id) if self.food_listing else None,
+            'image_url': self.image_url
+        }
 
 class InteractionStatusHistory(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
@@ -183,3 +335,33 @@ class InteractionStatusHistory(models.Model):
 
     def __str__(self):
         return f"Status change from {self.old_status} to {self.new_status}"
+    
+    def get_history_details(self):
+        """
+        Returns formatted status history details
+        """
+        return {
+            'id': str(self.id),
+            'interaction_id': str(self.interaction.id),
+            'old_status': self.old_status,
+            'new_status': self.new_status,
+            'changed_at': self.changed_at,
+            'changed_by': self.changed_by.email if self.changed_by else None,
+            'notes': self.notes
+        }
+
+class CheckoutSession(models.Model):
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    cart = models.ForeignKey(Cart, on_delete=models.CASCADE)
+    expires_at = models.DateTimeField()
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    
+    class Meta:
+        indexes = [
+            models.Index(fields=['expires_at']),
+        ]
+
+    def is_expired(self):
+        from django.utils import timezone
+        return timezone.now() > self.expires_at

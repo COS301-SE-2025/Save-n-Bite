@@ -8,12 +8,15 @@ import {
   ClockIcon,
   CheckCircleIcon,
   XIcon,
+  PhoneIcon,
+  InfoIcon,
+  StoreIcon,
 } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import StarRating from "../../components/CustomerFeedback/StarRating";
 
 // Simple feedback modal for pickup page only
-const SimplePickupFeedback = ({ orderNumber, providerName, onClose }) => {
+const SimplePickupFeedback = ({ orderNumber, onClose }) => {
   const [rating, setRating] = useState(0)
   const [comment, setComment] = useState('')
   const [isComplete, setIsComplete] = useState(false)
@@ -60,7 +63,7 @@ const SimplePickupFeedback = ({ orderNumber, providerName, onClose }) => {
                     Order #{orderNumber} Successfully Collected!
                   </h2>
                   <p className="text-gray-600">
-                    Thank you for shopping at {providerName}.
+                    Thank you for shopping.
                   </p>
                   <p className="text-sm text-gray-500">
                     We hope you enjoy your meal. Let us know how it went!
@@ -123,18 +126,49 @@ const SimplePickupFeedback = ({ orderNumber, providerName, onClose }) => {
 const PickupPage = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const {
-    itemName,
-    itemDescription,
-    providerName,
-    providerAddress,
-    pickupTime,
-    orderNumber,
-    confirmationCode
-  } = location.state || {};
   const [showFeedback, setShowFeedback] = useState(false);
 
-  if (!itemName || !providerName || !pickupTime || !orderNumber || !confirmationCode) {
+  // Extract all the enhanced data from location state
+  const {
+    // Order details
+    orderId,
+    orderNumber,
+    confirmationCode,
+    pickupId,
+    pickupStatus,
+    
+    // Food item details
+    itemName,
+    itemDescription,
+    pickupWindow,
+    
+    // Business information
+    businessName,
+    
+    // Location details
+    locationName,
+    locationAddress,
+    locationInstructions,
+    contactPerson,
+    contactPhone,
+    
+    // Timing information
+    pickupDate,
+    pickupStartTime,
+    pickupEndTime,
+    formattedPickupTime,
+    
+    // QR Code
+    qrCodeData,
+    
+    // Additional details
+    slotNumber,
+    availableSpots,
+    customerNotes
+  } = location.state || {};
+
+  // Check if we have the minimum required data
+  if (!orderNumber || !confirmationCode || !itemName || !formattedPickupTime) {
     return (
       <div className="bg-gray-50 min-h-screen w-full">
         <CustomerNavBar />
@@ -160,88 +194,190 @@ const PickupPage = () => {
         <h1 className="text-2xl font-bold mb-8 text-gray-800">
           Pickup Instructions
         </h1>
-        <div className="bg-white rounded-lg shadow-sm overflow-hidden">
+        
+        {/* Order Header */}
+        <div className="bg-white rounded-lg shadow-sm overflow-hidden mb-6">
           <div className="p-6 border-b border-gray-100">
             <div className="flex justify-between items-start mb-4">
               <div>
-               <p className="text-sm text-emerald-700 mb-1">Order Number</p>
-                  <p className="text-xl font-bold text-emerald-800 tracking-wider">
-                    #{orderNumber}
-                  </p>
-                <p className="text-gray-600">{itemDescription}</p>
+                <p className="text-sm text-emerald-700 mb-1">Order Number</p>
+                <p className="text-xl font-bold text-emerald-800 tracking-wider">
+                  #{orderNumber}
+                </p>
+                <h2 className="text-lg font-semibold text-gray-800 mt-2">{itemName}</h2>
+                {itemDescription && (
+                  <p className="text-gray-600 text-sm">{itemDescription}</p>
+                )}
               </div>
-              <span className="bg-emerald-100 text-emerald-800 px-3 py-1 rounded-full text-sm">
+              <span className="bg-emerald-100 text-emerald-800 px-3 py-1 rounded-full text-sm font-medium">
                 Ready for pickup
               </span>
             </div>
+          </div>
+        </div>
+
+        {/* Main Information Grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+          
+          {/* Pickup Details Card */}
+          <div className="bg-white rounded-lg shadow-sm p-6">
+            <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center">
+              <ClockIcon size={20} className="mr-2 text-emerald-600" />
+              Pickup Details
+            </h3>
             
-    
-            
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="flex items-start">
-                <MapPinIcon
-                  size={20}
-                  className="mr-2 text-emerald-600 mt-1"
-                />
-                <div>
-                  <p className="font-medium text-gray-800">
-                    {providerName}
-                  </p>
-                  <p className="text-sm text-gray-600">{providerAddress}</p>
-                </div>
+            <div className="space-y-4">
+              <div>
+                <p className="font-medium text-gray-700">Scheduled Time</p>
+                <p className="text-gray-600">{formattedPickupTime}</p>
+                {pickupWindow && (
+                  <p className="text-sm text-gray-500">Window: {pickupWindow}</p>
+                )}
               </div>
-              <div className="flex items-start">
-                <ClockIcon size={20} className="mr-2 text-emerald-600 mt-1" />
+              
+              {slotNumber && (
                 <div>
-                  <p className="font-medium text-gray-800">Selected pickup time slot</p>
-                  <p className="text-sm text-gray-600">{pickupTime}</p>
+                  <p className="font-medium text-gray-700">Time Slot</p>
+                  <p className="text-gray-600">Slot #{slotNumber}</p>
                 </div>
-              </div>
-              <div className="flex items-start">
-                <QrCodeIcon
-                  size={20}
-                  className="mr-2 text-emerald-600 mt-1"
-                />
-                <div>
-                  <p className="font-medium text-gray-800">
-                    Show this confirmation code at pickup
-                  </p>
-                  <p className="text-sm text-gray-600">
-                    {confirmationCode}
-                  </p>
-                </div>
+              )}
+              
+              <div>
+                <p className="font-medium text-gray-700">Confirmation Code</p>
+                <p className="text-2xl font-bold text-emerald-600 tracking-wider">
+                  {confirmationCode}
+                </p>
               </div>
             </div>
           </div>
-          <div className="p-6 bg-gray-50 flex flex-col items-center">
-            <img
-              src={`https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${orderNumber}`}
-              alt="QR Code"
-              className="w-32 h-32 mb-4"
-            />
+
+          {/* Location Details Card */}
+          <div className="bg-white rounded-lg shadow-sm p-6">
+            <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center">
+              <MapPinIcon size={20} className="mr-2 text-emerald-600" />
+              Pickup Location
+            </h3>
+            
+            <div className="space-y-4">
+              {businessName && (
+                <div>
+                  <p className="font-medium text-gray-700 flex items-center">
+                    <StoreIcon size={16} className="mr-1" />
+                    Business
+                  </p>
+                  <p className="text-gray-600">{businessName}</p>
+                </div>
+              )}
+              
+              {locationName && (
+                <div>
+                  <p className="font-medium text-gray-700">Location Name</p>
+                  <p className="text-gray-600">{locationName}</p>
+                </div>
+              )}
+              
+              {locationAddress && (
+                <div>
+                  <p className="font-medium text-gray-700">Address</p>
+                  <p className="text-gray-600">{locationAddress}</p>
+                </div>
+              )}
+              
+              {contactPhone && (
+                <div>
+                  <p className="font-medium text-gray-700 flex items-center">
+                    <PhoneIcon size={16} className="mr-1" />
+                    Contact
+                  </p>
+                  <div className="text-gray-600">
+                    {contactPerson && <p>{contactPerson}</p>}
+                    <a href={`tel:${contactPhone}`} className="text-emerald-600 hover:underline">
+                      {contactPhone}
+                    </a>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Instructions Card */}
+        {locationInstructions && (
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+            <h3 className="font-medium text-blue-800 mb-2 flex items-center">
+              <InfoIcon size={16} className="mr-1" />
+              Pickup Instructions
+            </h3>
+            <p className="text-blue-700 text-sm">{locationInstructions}</p>
+          </div>
+        )}
+
+        {/* QR Code Section */}
+        <div className="bg-white rounded-lg shadow-sm p-6 text-center">
+          <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center justify-center">
+            <QrCodeIcon size={20} className="mr-2 text-emerald-600" />
+            Show at Pickup
+          </h3>
+          
+          <div className="flex flex-col items-center space-y-4">
+            {qrCodeData ? (
+              <img
+                src={qrCodeData}
+                alt="Pickup QR Code"
+                className="w-40 h-40 border border-gray-200 rounded-lg"
+              />
+            ) : (
+              <img
+                src={`https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=${confirmationCode}`}
+                alt="Confirmation Code QR"
+                className="w-40 h-40 border border-gray-200 rounded-lg"
+              />
+            )}
+            
             <div className="text-center">
-              <p className="text-sm text-gray-600 mb-2">Confirmation Code</p>
+              <p className="text-sm text-gray-600 mb-1">Confirmation Code</p>
               <p className="text-2xl font-bold text-emerald-600 tracking-wider">
                 {confirmationCode}
               </p>
-              <p className="text-xs text-gray-500 mt-2">
-                Show this code to the provider when picking up your order
+              <p className="text-xs text-gray-500 mt-2 max-w-xs">
+                Show this QR code or confirmation code to the provider when collecting your order
               </p>
             </div>
           </div>
         </div>
-        <div className="mt-8 p-4 bg-blue-50 rounded-lg">
-          <h3 className="font-medium text-blue-800 mb-2">Reminder</h3>
-          <p className="text-blue-600 text-sm">
-            You'll get a reminder notification 30 minutes before your pickup
-            window starts.
-          </p>
+
+        {/* Reminder */}
+        <div className="mt-6 p-4 bg-amber-50 border border-amber-200 rounded-lg">
+          <h3 className="font-medium text-amber-800 mb-2">Important Reminders</h3>
+          <ul className="text-amber-700 text-sm space-y-1">
+            <li>• Arrive within your scheduled pickup window</li>
+            <li>• Have your confirmation code ready</li>
+            <li>• Contact the provider if you're running late</li>
+            {customerNotes && <li>• Note: {customerNotes}</li>}
+          </ul>
+        </div>
+
+        {/* Action Buttons */}
+        <div className="mt-6 flex gap-4 justify-center">
+          <button
+            onClick={() => setShowFeedback(true)}
+            className="px-6 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors"
+          >
+            Mark as Collected
+          </button>
+          
+          <button
+            onClick={() => navigate('/food-listing')}
+            className="px-6 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+          >
+            Order More Food
+          </button>
         </div>
       </div>
+
       {showFeedback && (
         <SimplePickupFeedback
           orderNumber={orderNumber}
-          providerName={providerName}
           onClose={() => {
             setShowFeedback(false);
           }}

@@ -3,6 +3,8 @@
 from django.db import models
 from django.contrib.auth import get_user_model
 import uuid
+from rest_framework.exceptions import ValidationError
+from django.utils import timezone
 
 User = get_user_model()
 
@@ -18,6 +20,8 @@ class FoodListing(models.Model):
         ('sold_out', 'Sold Out'),
         ('expired', 'Expired'),
         ('inactive', 'Inactive'),
+        ('removed', 'Removed'),  # FOR ADMIN REMOVAL
+        ('flagged', 'Flagged'), # FOR ADMINS
     ]
     
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
@@ -58,6 +62,43 @@ class FoodListing(models.Model):
     # Timestamps
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    #  ADMIN FUNCTIONALITY:
+    admin_flagged = models.BooleanField(default=False)
+    admin_removal_reason = models.TextField(blank=True)
+    removed_by = models.ForeignKey(
+        User, 
+        on_delete=models.SET_NULL, 
+        null=True, 
+        blank=True, 
+        related_name='removed_listings'
+    )
+    removed_at = models.DateTimeField(null=True, blank=True)
+    
+    # ADMIN METHODS:
+    def admin_remove(self, admin_user, reason=""):
+        """Remove listing by admin"""
+        from django.utils import timezone
+        self.status = 'removed'
+        self.admin_removal_reason = reason
+        self.removed_by = admin_user
+        self.removed_at = timezone.now()
+        self.save()
+    
+    def admin_flag(self, admin_user, reason=""):
+        """Flag listing for review"""
+        self.status = 'flagged'
+        self.admin_flagged = True
+        self.admin_removal_reason = reason
+        self.save()
+    
+    def admin_restore(self):
+        """Restore removed/flagged listing"""
+        self.status = 'active'
+        self.admin_flagged = False
+        self.admin_removal_reason = ""
+        self.removed_by = None
+        self.removed_at = None
+        self.save()
     
     class Meta:
         ordering = ['-created_at']
@@ -98,3 +139,11 @@ class FoodListing(models.Model):
             self.status = 'sold_out'
         
         super().save(*args, **kwargs)
+
+    @property
+    def is_expired(self):
+        return self.expiry_date and self.expiry_date < timezone.now().date()
+    
+    def clean(self):
+        if self.is_expired:
+            raise ValidationError('Cannot create or modify expired food listing')

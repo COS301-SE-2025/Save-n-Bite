@@ -3,7 +3,9 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "@esbuild/linux-x64": "^0.25.6",
     "axios": "^1.9.0",
+    "esbuild": "^0.25.6",
     "framer-motion": "^12.19.1",
     "lucide-react": "^0.511.0",
     "prop-types": "^15.8.1",

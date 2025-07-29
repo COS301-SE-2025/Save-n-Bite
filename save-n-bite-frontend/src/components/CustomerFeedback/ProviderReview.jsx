@@ -1,10 +1,12 @@
 import React, { useState } from 'react'
 import { motion } from 'framer-motion'
 import { XIcon } from 'lucide-react'
+import { useParams, useNavigate } from 'react-router-dom'
 import StarRating from './StarRating'
-import { createReview } from '../../services/reviewsAPI'
+import reviewsAPI from '../../services/reviewsAPI'
 
 const ProviderReview = ({ providerName, onClose, onComplete, orderData }) => {
+  const { orderId } = useParams() 
   const [rating, setRating] = useState(0)
   const [comment, setComment] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -15,18 +17,20 @@ const ProviderReview = ({ providerName, onClose, onComplete, orderData }) => {
     setIsSubmitting(true)
     
     try {
-      // Use mock function since backend expects Interaction model records
-      const { createReviewMock } = await import('../../services/reviewsAPI');
-      await createReviewMock({
-        providerName: providerName,
-        rating: rating,
-        comment: comment,
-        reviewType: 'provider',
-        orderId: orderData?.id,
-        orderNumber: orderData?.orderNumber,
-        itemName: orderData?.items?.[0]?.title || 'Food Item'
-      });
-      onComplete();
+      const response = await reviewsAPI.createReview({
+        interaction_id: orderId, // Use the real interaction ID
+        general_rating: rating,
+        general_comment: comment,
+        business_review: comment, // Use the same comment for business review
+        food_review: '', // Empty for provider-focused review
+        review_source: 'popup'
+      })
+
+      if (response.success) {
+        onComplete();
+      } else {
+        alert('Failed to submit review: ' + response.error);
+      }
     } catch (error) {
       console.error('Failed to submit review:', error);
       alert('Failed to submit review. Please try again.');
@@ -45,7 +49,7 @@ const ProviderReview = ({ providerName, onClose, onComplete, orderData }) => {
       <div className="p-6 space-y-6">
         <div className="flex justify-between items-center">
           <h3 className="text-xl font-semibold text-gray-800">
-            Review {providerName}
+            Review Food Provider
           </h3>
           <button
             onClick={onClose}

@@ -1,133 +1,171 @@
-const API_BASE_URL = 'http://localhost:8000/api';
+// src/services/reviewsAPI.js
+import { apiClient } from './FoodAPI.js';
 
-// Helper function to get auth token
-const getAuthToken = () => {
-  return localStorage.getItem('authToken');
-};
-
-// Helper function to make API requests
-const makeRequest = async (endpoint, options = {}) => {
-  const token = getAuthToken();
-  
-  const config = {
-    headers: {
-      'Content-Type': 'application/json',
-      ...(token && { 'Authorization': `Bearer ${token}` }),
-      ...options.headers,
-    },
-    ...options,
-  };
-
-  try {
-    const response = await fetch(`${API_BASE_URL}/reviews/${endpoint}`, config);
-    
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
+const reviewsAPI = {
+  // Check if an interaction can be reviewed
+  checkReviewStatus: async (interactionId) => {
+    try {
+      const response = await apiClient.get(`/cart/interactions/${interactionId}/review-status/`);
+      
+      return {
+        success: true,
+        data: response.data,
+        error: null
+      };
+    } catch (error) {
+      return {
+        success: false,
+        data: null,
+        error: error.response?.data?.message || error.message || 'Failed to check review status'
+      };
     }
-    
-    return await response.json();
-  } catch (error) {
-    // Don't log every API failure to reduce console noise
-    // The calling functions will handle the fallback
-    throw error;
+  },
+
+  // Update interaction status
+  updateInteractionStatus: async (interactionId, status, notes = '') => {
+    try {
+      const response = await apiClient.patch(`/cart/interactions/${interactionId}/status/`, {
+        status: status,
+        notes: notes
+      });
+      
+      return {
+        success: true,
+        data: response.data,
+        error: null
+      };
+    } catch (error) {
+      return {
+        success: false,
+        data: null,
+        error: error.response?.data?.error?.message || 
+               error.response?.data?.message || 
+               error.message || 
+               'Failed to update interaction status'
+      };
+    }
+  },
+
+  // Mark interaction as completed (convenience method)
+  markAsCompleted: async (interactionId, notes = 'Order completed') => {
+    return await reviewsAPI.updateInteractionStatus(interactionId, 'completed', notes);
+  },
+
+  // Mark interaction as confirmed (convenience method)
+  markAsConfirmed: async (interactionId, notes = 'Order confirmed') => {
+    return await reviewsAPI.updateInteractionStatus(interactionId, 'confirmed', notes);
+  },
+
+  // Cancel interaction (convenience method)
+  cancelInteraction: async (interactionId, notes = 'Order cancelled') => {
+    return await reviewsAPI.updateInteractionStatus(interactionId, 'cancelled', notes);
+  },
+
+  // Create a new review
+  createReview: async (reviewData) => {
+    try {
+      const response = await apiClient.post('/api/reviews/create/', reviewData);
+      
+      return {
+        success: true,
+        data: response.data,
+        error: null
+      };
+    } catch (error) {
+      return {
+        success: false,
+        data: null,
+        error: error.response?.data?.message || error.message || 'Failed to create review'
+      };
+    }
+  },
+
+  // Get user's reviews
+  getMyReviews: async () => {
+    try {
+      const response = await apiClient.get('/api/reviews/my-reviews/');
+      
+      return {
+        success: true,
+        data: response.data,
+        error: null
+      };
+    } catch (error) {
+      return {
+        success: false,
+        data: null,
+        error: error.response?.data?.message || error.message || 'Failed to fetch reviews'
+      };
+    }
+  },
+  
+  // Get business reviews (for food providers)
+  getBusinessReviews: async (params = {}) => {
+    try {
+      const searchParams = new URLSearchParams();
+      
+      // Add query parameters if provided
+      if (params.rating) searchParams.append('rating', params.rating);
+      if (params.date_range) searchParams.append('date_range', params.date_range);
+      if (params.page) searchParams.append('page', params.page);
+      if (params.page_size) searchParams.append('page_size', params.page_size);
+      
+      const queryString = searchParams.toString();
+      const url = `/api/business/reviews/${queryString ? `?${queryString}` : ''}`;
+      
+      const response = await apiClient.get(url);
+      
+      return {
+        success: true,
+        data: response.data,
+        error: null
+      };
+    } catch (error) {
+      return {
+        success: false,
+        data: null,
+        error: error.response?.data?.message || error.message || 'Failed to fetch business reviews'
+      };
+    }
+  },
+
+  // Get business review statistics
+  getBusinessReviewStats: async () => {
+    try {
+      const response = await apiClient.get('/api/business/reviews/stats/');
+      
+      return {
+        success: true,
+        data: response.data,
+        error: null
+      };
+    } catch (error) {
+      return {
+        success: false,
+        data: null,
+        error: error.response?.data?.message || error.message || 'Failed to fetch review statistics'
+      };
+    }
+  },
+
+  // Get review for specific interaction (business owners only)
+  getInteractionReview: async (interactionId) => {
+    try {
+      const response = await apiClient.get(`/cart/interactions/${interactionId}/review/`);
+      
+      return {
+        success: true,
+        data: response.data,
+        error: null
+      };
+    } catch (error) {
+      return {
+        success: false,
+        data: null,
+        error: error.response?.data?.message || error.message || 'Failed to fetch interaction review'
+      };
+    }
   }
 };
 
-// Customer review functions
-export const createReview = async (reviewData) => {
-  return makeRequest('create/', {
-    method: 'POST',
-    body: JSON.stringify(reviewData),
-  });
-};
-
-export const updateReview = async (reviewId, reviewData) => {
-  return makeRequest(`${reviewId}/update/`, {
-    method: 'PUT',
-    body: JSON.stringify(reviewData),
-  });
-};
-
-export const deleteReview = async (reviewId) => {
-  return makeRequest(`${reviewId}/delete/`, {
-    method: 'DELETE',
-  });
-};
-
-export const getUserReviews = async () => {
-  return makeRequest('my-reviews/');
-};
-
-export const getUserReviewSummary = async () => {
-  return makeRequest('summary/');
-};
-
-// Business review functions (for food providers)
-export const getBusinessReviews = async () => {
-  return makeRequest('business/reviews/');
-};
-
-export const getBusinessReviewStats = async () => {
-  return makeRequest('business/reviews/stats/');
-};
-
-// Mock functions for development (when backend is not available)
-export const createReviewMock = async (reviewData) => {
-  // Simulate API delay
-  await new Promise(resolve => setTimeout(resolve, 1000));
-  
-  // Store review in localStorage for demo purposes
-  const reviews = JSON.parse(localStorage.getItem('customerReviews') || '[]');
-  const newReview = {
-    id: Date.now().toString(),
-    ...reviewData,
-    createdAt: new Date().toISOString(),
-    status: 'approved'
-  };
-  reviews.push(newReview);
-  localStorage.setItem('customerReviews', JSON.stringify(reviews));
-  
-  return { success: true, review: newReview };
-};
-
-export const getBusinessReviewsMock = async () => {
-  // Simulate API delay
-  await new Promise(resolve => setTimeout(resolve, 500));
-  
-  // Get reviews from localStorage
-  const reviews = JSON.parse(localStorage.getItem('customerReviews') || '[]');
-  
-  // Filter reviews for the current business (provider)
-  const currentProvider = localStorage.getItem('providerBusinessName');
-  console.log('All reviews in localStorage:', reviews);
-  console.log('Current provider looking for:', currentProvider);
-  
-  const businessReviews = reviews.filter(review => {
-    const matches = review.providerName === currentProvider;
-    console.log(`Review provider: "${review.providerName}" vs current: "${currentProvider}" - matches: ${matches}`);
-    return matches;
-  });
-  
-  console.log('Filtered business reviews:', businessReviews);
-  return businessReviews;
-};
-
-export const getBusinessReviewStatsMock = async () => {
-  const reviews = await getBusinessReviewsMock();
-  
-  const stats = {
-    totalReviews: reviews.length,
-    averageRating: reviews.length > 0 
-      ? reviews.reduce((sum, review) => sum + review.rating, 0) / reviews.length 
-      : 0,
-    ratingDistribution: {
-      5: reviews.filter(r => r.rating === 5).length,
-      4: reviews.filter(r => r.rating === 4).length,
-      3: reviews.filter(r => r.rating === 3).length,
-      2: reviews.filter(r => r.rating === 2).length,
-      1: reviews.filter(r => r.rating === 1).length,
-    }
-  };
-  
-  return stats;
-}; 
+export default reviewsAPI;

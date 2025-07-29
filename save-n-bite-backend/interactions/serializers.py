@@ -1,7 +1,29 @@
 from rest_framework import serializers
 from food_listings.models import FoodListing
 from authentication.models import FoodProviderProfile
-from interactions.models import Cart, CartItem, Order, Payment, Interaction, InteractionItem, InteractionStatusHistory
+from interactions.models import Cart, CartItem, Order, Payment, Interaction, InteractionItem, InteractionStatusHistory, CheckoutSession
+
+# Add this to your serializers.py file (add to the end of the file)
+
+class UpdateInteractionStatusSerializer(serializers.Serializer):
+    status = serializers.ChoiceField(
+        choices=['pending', 'confirmed', 'completed', 'cancelled', 'failed'],
+        required=True,
+        help_text="New status for the interaction"
+    )
+    notes = serializers.CharField(
+        max_length=500, 
+        required=False, 
+        allow_blank=True,
+        help_text="Optional notes about the status change"
+    )
+    
+    def validate_status(self, value):
+        """Additional status validation"""
+        valid_statuses = ['pending', 'confirmed', 'completed', 'cancelled', 'failed']
+        if value not in valid_statuses:
+            raise serializers.ValidationError(f"Invalid status. Must be one of: {', '.join(valid_statuses)}")
+        return value
 
 class FoodProviderSerializer(serializers.ModelSerializer):
     class Meta:
@@ -20,7 +42,7 @@ class FoodListingsSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = FoodListing
-        fields = ['id', 'name', 'description', 'quantity', 'original_price', 'discounted_price', 'savings', 'discount_percentage', 'type', 'expiry_date', 'pickup_window', 'images', 'allergens', 'dietary_info', 'provider']
+        fields = ['id', 'name', 'description', 'quantity_available', 'original_price', 'discounted_price', 'savings', 'discount_percentage', 'type', 'expiry_date', 'pickup_window', 'images', 'allergens', 'dietary_info', 'provider']
 
     def get_savings(self, obj):
         return float(obj.original_price - obj.discounted_price)
@@ -59,6 +81,16 @@ class CartResponseSerializer(serializers.Serializer):
 class AddToCartSerializer(serializers.Serializer):
     listingId = serializers.UUIDField()
     quantity = serializers.IntegerField(min_value=1)
+
+    def validate(self, data):
+        food_listing = FoodListing.objects.filter(id=data['listingId']).first()
+        if not food_listing:
+            raise serializers.ValidationError("Food listing not found")
+        
+        if food_listing.quantity_available < 1:
+            raise serializers.ValidationError("This item is currently out of stock")
+            
+        return data
 
 class RemoveCartItemSerializer(serializers.Serializer):
     cartItemId = serializers.UUIDField()
@@ -127,3 +159,57 @@ class InteractionSerializer(serializers.ModelSerializer):
         fields = ['id', 'interaction_type', 'status', 'quantity', 'total_amount',
                  'created_at', 'completed_at', 'verification_code',
                  'special_instructions', 'items', 'payment', 'order']
+
+class DonationRequestSerializer(serializers.Serializer):
+    listingId = serializers.UUIDField()
+    quantity = serializers.IntegerField(min_value=1)
+    specialInstructions = serializers.CharField(required=False, allow_blank=True)
+    motivationMessage = serializers.CharField(required=True)
+    verificationDocuments = serializers.ListField(
+        child=serializers.URLField(),
+        required=False,
+        default=[]
+    )
+
+    def validate(self, data):
+        food_listing = FoodListing.objects.filter(id=data['listingId']).first()
+        if not food_listing:
+            raise serializers.ValidationError("Food listing not found")
+        
+        if data['quantity'] > food_listing.quantity_available:
+            raise serializers.ValidationError(
+                f"Cannot request more than available quantity ({food_listing.quantity})"
+            )
+            
+        return data
+
+class DonationDecisionSerializer(serializers.Serializer):
+    rejectionReason = serializers.CharField(allow_blank=True, required=False)
+
+class InitiateCheckoutSerializer(serializers.Serializer):
+    """Empty serializer since initiation doesn't need input data"""
+    pass
+
+class CompleteCheckoutSerializer(serializers.Serializer):
+    session_id = serializers.UUIDField()
+    paymentMethod = serializers.CharField(max_length=20)
+    paymentDetails = serializers.JSONField()
+    specialInstructions = serializers.CharField(required=False, allow_blank=True)
+
+    def validate_paymentMethod(self, value):
+        valid_methods = ['card', 'cash', 'digital_wallet']
+        if value not in valid_methods:
+            raise serializers.ValidationError(f"Invalid payment method. Must be one of {valid_methods}")
+        return value
+
+class CheckoutSessionSerializer(serializers.ModelSerializer):
+    time_left_seconds = serializers.SerializerMethodField()
+    
+    class Meta:
+        model = CheckoutSession
+        fields = ['id', 'expires_at', 'is_active', 'created_at', 'time_left_seconds']
+    
+    def get_time_left_seconds(self, obj):
+        from django.utils import timezone
+        delta = obj.expires_at - timezone.now()
+        return max(0, delta.total_seconds())

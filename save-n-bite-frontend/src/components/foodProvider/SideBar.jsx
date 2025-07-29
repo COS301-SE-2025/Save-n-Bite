@@ -9,7 +9,9 @@ import {
   SettingsIcon,
   HeartHandshakeIcon ,
   HelpCircle as HelpIcon,
+
   User as ProfileIcon,
+
 } from 'lucide-react'
 import logo from '../../assets/images/SnB_leaf_icon.png';
 import { useNavigate } from 'react-router-dom';
@@ -57,12 +59,14 @@ const navigationItems = [
   path: '/donations'
 },
 
+
 {
     name: 'Profile',
     icon: ProfileIcon, 
     route: 'foodprovider-profile',
     path: '/foodprovider-profile',
   },
+
 
   {
     name: 'Settings',
