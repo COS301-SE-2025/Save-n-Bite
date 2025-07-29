@@ -366,26 +366,27 @@ def get_business_profile(request, business_id):
 @api_view(['GET'])
 @permission_classes([AllowAny])
 def search_businesses(request):
-    """Search for businesses"""
+    """Search for businesses or get all verified businesses"""
     search_query = request.GET.get('search', '').strip()
-    
-    if not search_query:
-        return Response({
-            'businesses': [],
-            'count': 0
-        }, status=status.HTTP_200_OK)
     
     try:
         from django.db.models import Q
         
-        # Search in business profiles
-        businesses = User.objects.filter(
+        # Start with all verified businesses
+        businesses_query = User.objects.filter(
             user_type='provider',
             provider_profile__status='verified'
-        ).filter(
-            Q(provider_profile__business_name__icontains=search_query) |
-            Q(provider_profile__business_address__icontains=search_query)
-        ).select_related('provider_profile')[:20]  # Limit to 20 results
+        ).select_related('provider_profile')
+        
+        # Apply search filter if search query is provided
+        if search_query:
+            businesses_query = businesses_query.filter(
+                Q(provider_profile__business_name__icontains=search_query) |
+                Q(provider_profile__business_address__icontains=search_query)
+            )
+        
+        # Limit to 200 results
+        businesses = businesses_query[:200]
         
         business_list = []
         for business in businesses:
@@ -673,7 +674,7 @@ def change_temporary_password(request):
             
         request.user.save()
         
-        # Send confirmation notification
+        # Send confirmation notification (in-app)
         from notifications.services import NotificationService
         
         NotificationService.create_notification(
@@ -687,22 +688,25 @@ def change_temporary_password(request):
             }
         )
         
-        # Optionally send confirmation email
-        NotificationService.send_email_notification(
+        # Send confirmation email as CRITICAL (bypasses preferences for security)
+        NotificationService.send_critical_email_notification(
             user=request.user,
-            subject='Password Changed Successfully - Save n Bite',
+            subject='Password Changed Successfully - Save n Bite [SECURITY ALERT]',
             template_name='password_changed',
             context={
                 'user_name': request.user.get_full_name() or request.user.username,
                 'changed_at': timezone.now(),
-                'login_url': f"http://localhost:3000/login"  # Update with your frontend URL
+                'login_url': f"http://localhost:3000/login",  # Update with your frontend URL
+                'was_temporary': True,
+                'support_email': 'savenbite@gmail.com'
             }
         )
         
         logger.info(f"User {request.user.email} successfully changed their temporary password")
         
         return Response({
-            'message': 'Password changed successfully'
+            'message': 'Password changed successfully',
+            'info': 'A confirmation email has been sent for security purposes (regardless of your email preferences).'
         }, status=status.HTTP_200_OK)
         
     except Exception as e:
@@ -877,37 +881,41 @@ def request_password_reset(request):
         # Prepare email context (same as admin reset)
         from django.conf import settings
         context = {
-            'user_name': target_user.get_full_name() or target_user.username,
+            'user_name': NotificationService._get_user_display_name(target_user),
             'temp_password': temp_password,
             'login_url': f"{getattr(settings, 'FRONTEND_URL', 'http://localhost:3000')}/login",
             'expires_at': expires_at,
-            'admin_name': 'System'  # Since it's self-service, not admin-initiated
+            'admin_name': 'System',  # Since it's self-service, not admin-initiated
+            'is_self_service': True,  # Add this flag
+            'support_email': getattr(settings, 'SUPPORT_EMAIL', 'support@savenbite.com'),
+            'company_name': 'Save n Bite'
         }
         print(f"DEBUG: Prepared email context")  # Debug line
         
-        # Send email using existing notification system (same as admin reset)
+        # Send email using NEW critical email method (bypasses preferences)
         try:
-            email_sent = NotificationService.send_email_notification(
+            email_sent = NotificationService.send_critical_email_notification(
                 user=target_user,
-                subject='Password Reset Request - Save n Bite',
+                subject='Password Reset Request - Save n Bite [IMPORTANT]',
                 template_name='password_reset',  # Reuse existing template
                 context=context,
                 notification=notification
             )
-            print(f"DEBUG: Email sending result: {email_sent}")  # Debug line
+            print(f"DEBUG: Critical email sending result: {email_sent}")  # Debug line
         except Exception as email_error:
-            print(f"DEBUG: Failed to send email: {email_error}")  # Debug line
+            print(f"DEBUG: Failed to send critical email: {email_error}")  # Debug line
             raise email_error
         
         if email_sent:
-            logger.info(f"Self-service password reset email sent successfully to {target_user.email}")
+            logger.info(f"Self-service password reset email sent successfully to {target_user.email} (bypassed email preferences)")
             print(f"DEBUG: Email sent successfully")  # Debug line
             
             # Always return success message for security (don't reveal if email exists)
             return Response({
                 'message': 'If an account with that email exists, you will receive password reset instructions shortly.',
                 'reset_info': {
-                    'expires_in_hours': 24
+                    'expires_in_hours': 24,
+                    'note': 'This email will be sent regardless of your email notification preferences for security purposes.'
                 }
             }, status=status.HTTP_200_OK)
         else:
@@ -922,7 +930,8 @@ def request_password_reset(request):
         return Response({
             'message': 'If an account with that email exists, you will receive password reset instructions shortly.',
             'reset_info': {
-                'expires_in_hours': 24
+                'expires_in_hours': 24,
+                'note': 'This email will be sent regardless of your email notification preferences for security purposes.'
             }
         }, status=status.HTTP_200_OK)
         

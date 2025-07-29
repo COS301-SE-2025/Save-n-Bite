@@ -82,7 +82,7 @@ const RegisterForm = ({ userType = USER_TYPES.CUSTOMER, onSuccess, onError }) =>
                 break;
             case 'password':
                 if (value && !validatePassword(value)) {
-                    error = 'Password must be at least 6 characters long';
+                    error = 'Must contain at least one number and one uppercase and lowercase letter, and at least 8 or more characters';
                 } else if (value && validatePassword(value)) {
                     isValid = true;
                 }

@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Check, Trash2, ExternalLink, Store, Bell, Package, User, Gift, AlertCircle } from 'lucide-react';
 
 const NotificationCard = ({
@@ -9,6 +10,7 @@ const NotificationCard = ({
   isLast = false
 }) => {
   const [isDeleting, setIsDeleting] = useState(false);
+  const navigate = useNavigate();
 
   const getTimeAgo = (timestamp) => {
     const now = new Date();
@@ -129,12 +131,87 @@ const NotificationCard = ({
   };
 
   const handleNavigate = () => {
-    onNavigate(notification);
+    console.log('🔍 Debug - Full notification object:', notification);
+    console.log('🔍 Debug - notification.metadata:', notification.metadata);
+    console.log('🔍 Debug - notification.data:', notification.data);
+    console.log('🔍 Debug - notification itself for listing_id:', notification.listing_id);
+    
+    // Mark as read when navigating
+    if (!notification.isRead) {
+      handleMarkAsRead();
+    }
+
+    // Extract listing ID from various possible sources
+    const metadata = notification.metadata || {};
+    let listingId = null;
+
+    // Try to get listing ID from ALL possible locations
+    if (metadata.listing_id) {
+      listingId = metadata.listing_id;
+      console.log('🔍 Found listing ID in metadata.listing_id:', listingId);
+    } else if (notification.data?.listing_id) {
+      listingId = notification.data.listing_id;
+      console.log('🔍 Found listing ID in data.listing_id:', listingId);
+    } else if (notification.listing_id) {
+      listingId = notification.listing_id;
+      console.log('🔍 Found listing ID directly on notification:', listingId);
+    } else if (metadata.data?.listing_id) {
+      listingId = metadata.data.listing_id;
+      console.log('🔍 Found listing ID in metadata.data.listing_id:', listingId);
+    } else if (notification.actionUrl && notification.actionUrl.includes('/food-listings/')) {
+      // Extract from actionUrl if it follows the pattern /food-listings/{id}
+      const urlParts = notification.actionUrl.split('/');
+      const idIndex = urlParts.indexOf('food-listings') + 1;
+      if (idIndex > 0 && idIndex < urlParts.length) {
+        listingId = urlParts[idIndex];
+        console.log('🔍 Found listing ID in actionUrl:', listingId);
+      }
+    }
+
+    // For new_listing notifications, try to navigate to /item/:id
+    if (notification.type === 'new_listing' || notification.notification_type === 'new_listing') {
+      if (listingId) {
+        console.log('✅ Navigating to:', `/item/${listingId}`);
+        navigate(`/item/${listingId}`);
+        return;
+      } else {
+        console.log('❌ No listing ID found for new_listing notification');
+        console.log('🔍 Available fields:', Object.keys(notification));
+        console.log('🔍 Available metadata fields:', Object.keys(metadata));
+        // Don't navigate anywhere if we can't find the listing ID
+        return;
+      }
+    }
+
+    // Navigate to the specific listing page if we have a listing ID
+    if (listingId) {
+      console.log('✅ Navigating to:', `/item/${listingId}`);
+      navigate(`/item/${listingId}`);
+      return;
+    }
+
+    // Fallback: Default navigation based on notification type
+    console.log('🔄 Using fallback navigation for type:', notification.type);
+    switch (notification.type) {
+      case 'order_update':
+      case 'order':
+        navigate('/orders');
+        break;
+      case 'welcome':
+      case 'system':
+        navigate('/dashboard');
+        break;
+      default:
+        navigate('/dashboard');
+    }
   };
 
   // Extract metadata for additional display info
   const metadata = notification.metadata || {};
-  const hasActionableContent = notification.actionUrl || metadata.listing_id || ['new_listing', 'order_update'].includes(notification.type);
+  const hasActionableContent = notification.actionUrl || 
+                              metadata.listing_id || 
+                              notification.data?.listing_id ||
+                              ['new_listing', 'order_update'].includes(notification.type);
 
   // Debug: Log the notification object to see what fields are present
   console.log('NotificationCard notification:', notification);

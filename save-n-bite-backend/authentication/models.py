@@ -182,6 +182,8 @@ class NGOProfile(models.Model):
     def __str__(self):
         return f"NGO: {self.organisation_name}"
 
+# authentication/models.py - Add these fields to your existing FoodProviderProfile
+
 class FoodProviderProfile(models.Model):
     STATUS_CHOICES = [
         ('pending_verification', 'Pending Verification'),
@@ -189,6 +191,7 @@ class FoodProviderProfile(models.Model):
         ('rejected', 'Rejected'),
     ]
     
+    # Your existing fields (keep these unchanged)
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='provider_profile', db_column='user_id', to_field='UserID')
     business_name = models.CharField(max_length=255)
     business_address = models.TextField()
@@ -198,8 +201,100 @@ class FoodProviderProfile(models.Model):
     logo = models.ImageField(upload_to='provider_logos/', null=True, blank=True)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending_verification')
     
+    # ADD THESE NEW FIELDS FOR MAPS
+    latitude = models.DecimalField(max_digits=10, decimal_places=8, null=True, blank=True)
+    longitude = models.DecimalField(max_digits=11, decimal_places=8, null=True, blank=True)
+    geocoded_at = models.DateTimeField(null=True, blank=True)
+    geocoding_failed = models.BooleanField(default=False)
+    geocoding_error = models.TextField(blank=True)
+    
+    # Optional business info for better maps
+    business_hours = models.CharField(max_length=255, blank=True, help_text="e.g., 'Mon-Fri: 9AM-6PM'")
+    phone_number = models.CharField(max_length=20, blank=True)
+    website = models.URLField(blank=True)
+    
     class Meta:
         db_table = 'authentication_foodproviderprofile'
     
     def __str__(self):
         return f"Provider: {self.business_name}"
+    
+    def save(self, *args, **kwargs):
+        # Auto-geocode address when saving if coordinates are missing
+        if self.business_address and (not self.latitude or not self.longitude):
+            self.geocode_address()
+        super().save(*args, **kwargs)
+    
+    def geocode_address(self):
+        """
+        Free geocoding using Nominatim (OpenStreetMap's service)
+        NO API KEY REQUIRED!
+        """
+        from django.utils import timezone
+        import requests
+        import logging
+        import time
+        
+        logger = logging.getLogger(__name__)
+        
+        try:
+            # Use Nominatim - completely free geocoding service
+            base_url = 'https://nominatim.openstreetmap.org/search'
+            params = {
+                'q': self.business_address,
+                'format': 'json',
+                'countrycodes': 'za',  # Restrict to South Africa
+                'limit': 1,
+                'addressdetails': 1
+            }
+            
+            # Required User-Agent header for Nominatim
+            headers = {
+                'User-Agent': 'SaveNBite/1.0 (savenbite@gmail.com)'
+            }
+            
+            response = requests.get(base_url, params=params, headers=headers, timeout=10)
+            data = response.json()
+            
+            if data and len(data) > 0:
+                result = data[0]
+                self.latitude = float(result['lat'])
+                self.longitude = float(result['lon'])
+                self.geocoded_at = timezone.now()
+                self.geocoding_failed = False
+                self.geocoding_error = ''
+                
+                logger.info(f"Successfully geocoded {self.business_name}: {self.latitude}, {self.longitude}")
+                
+                # Respect Nominatim rate limit (1 request per second)
+                time.sleep(1)
+                
+            else:
+                self.geocoding_failed = True
+                self.geocoding_error = "No results found for address"
+                logger.warning(f"No geocoding results for {self.business_name}")
+                
+        except Exception as e:
+            self.geocoding_failed = True
+            self.geocoding_error = f"Geocoding error: {str(e)}"
+            logger.error(f"Geocoding exception for {self.business_name}: {str(e)}")
+    
+    @property
+    def coordinates(self):
+        """Return coordinates for Leaflet maps"""
+        if self.latitude and self.longitude:
+            return {
+                'lat': float(self.latitude),
+                'lng': float(self.longitude)
+            }
+        return None
+    
+    @property
+    def openstreetmap_url(self):
+        """Generate OpenStreetMap URL for directions"""
+        if self.coordinates:
+            return f"https://www.openstreetmap.org/directions?from=&to={self.latitude},{self.longitude}"
+        elif self.business_address:
+            from urllib.parse import quote
+            return f"https://www.openstreetmap.org/search?query={quote(self.business_address)}"
+        return None

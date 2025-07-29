@@ -15,23 +15,49 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
+  const decodeToken = (token) => {
+    try {
+      const base64Url = token.split('.')[1];
+      const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+      const jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
+        return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+      }).join(''));
+      return JSON.parse(jsonPayload);
+    } catch (error) {
+      console.error('Error decoding token:', error);
+      return null;
+    }
+  };
+
+  // Check if token is valid and not expired
+  const isTokenValid = (token) => {
+    if (!token) return false;
+    
+    const decodedToken = decodeToken(token);
+    if (!decodedToken) return false;
+    
+    // Check if token is expired (add 60 second buffer)
+    return decodedToken.exp * 1000 > (Date.now() + 60000);
+  };
+
   // Initialize user from localStorage on mount
   useEffect(() => {
     const initializeAuth = () => {
       try {
         const storedUser = localStorage.getItem('user');
-        const authToken = localStorage.getItem('authToken');
+        const authToken = localStorage.getItem('authToken') || localStorage.getItem('access_token');
         
-        if (storedUser && authToken) {
+        if (storedUser && authToken && isTokenValid(authToken)) {
           const parsedUser = JSON.parse(storedUser);
           setUser(parsedUser);
+        } else {
+          // Token expired or invalid, clear storage
+          clearUser();
         }
       } catch (error) {
         console.error('Error initializing auth:', error);
         // Clear corrupted data
-        localStorage.removeItem('user');
-        localStorage.removeItem('authToken');
-        localStorage.removeItem('refreshToken');
+        clearUser();
       } finally {
         setLoading(false);
       }
@@ -46,25 +72,65 @@ export const AuthProvider = ({ children }) => {
     localStorage.setItem('user', JSON.stringify(userData));
   };
 
+  // Login function (new - for handling login with token)
+  const login = (userData, token) => {
+    localStorage.setItem('access_token', token);
+    localStorage.setItem('authToken', token); // Keep both for compatibility
+    localStorage.setItem('user', JSON.stringify(userData));
+    setUser(userData);
+  };
+
   // Clear user data (called after logout)
   const clearUser = () => {
     setUser(null);
     localStorage.removeItem('user');
     localStorage.removeItem('authToken');
+    localStorage.removeItem('access_token');
+    localStorage.removeItem('refresh_token');
     localStorage.removeItem('refreshToken');
+    localStorage.removeItem('user_info');
+  };
+
+  // Logout function (alias for clearUser)
+  const logout = () => {
+    clearUser();
   };
 
   // Get user type helper
   const getUserType = () => {
-    if (!user) return null;
+    if (!user) {
+      // If user is null but we have valid token, try to get from localStorage
+      const token = localStorage.getItem('authToken') || localStorage.getItem('access_token');
+      if (token && isTokenValid(token)) {
+        const storedUser = localStorage.getItem('user');
+        if (storedUser) {
+          try {
+            const parsedUser = JSON.parse(storedUser);
+            return getUserTypeFromUser(parsedUser);
+          } catch (e) {
+            return null;
+          }
+        }
+      }
+      return null;
+    }
+    
+    return getUserTypeFromUser(user);
+  };
+
+  const getUserTypeFromUser = (userObj) => {
+    // First check if user_type is explicitly set
+    if (userObj.user_type) {
+      return userObj.user_type;
+    }
     
     // Check if user has organisation_name (NGO)
-    if (user.organisation_name || user.representative_name) {
+    if (userObj.organisation_name || userObj.representative_name) {
       return 'ngo';
     }
     
     // Check if user has business_name (Provider)
-    if (user.business_name) {
+    if (userObj.business_name) {
       return 'provider';
     }
     
@@ -72,9 +138,46 @@ export const AuthProvider = ({ children }) => {
     return 'customer';
   };
 
-  // Check if user is authenticated
+  // FIXED: More robust authentication check
   const isAuthenticated = () => {
-    return !!user && !!localStorage.getItem('authToken');
+    const token = localStorage.getItem('authToken') || localStorage.getItem('access_token');
+    
+    // First check if we have a valid token
+    if (!token || !isTokenValid(token)) {
+      return false;
+    }
+    
+    // If we have a valid token but no user in state, try to get from localStorage
+    if (!user) {
+      const storedUser = localStorage.getItem('user');
+      if (storedUser) {
+        try {
+          const parsedUser = JSON.parse(storedUser);
+          // Restore user to state if we have valid token and stored user
+          setUser(parsedUser);
+          return true;
+        } catch (e) {
+          // Corrupted user data
+          return false;
+        }
+      }
+      return false;
+    }
+    
+    return true;
+  };
+
+  // Check if user has specific role(s) - IMPROVED
+  const hasRole = (requiredRoles) => {
+    // Use more robust authentication check
+    if (!isAuthenticated()) return false;
+    
+    const userType = getUserType();
+    if (!userType) return false;
+    
+    // Convert to array if single role provided
+    const roles = Array.isArray(requiredRoles) ? requiredRoles : [requiredRoles];
+    return roles.includes(userType);
   };
 
   // Check if user is NGO
@@ -97,8 +200,11 @@ export const AuthProvider = ({ children }) => {
     loading,
     updateUser,
     clearUser,
+    login,
+    logout,
     getUserType,
     isAuthenticated,
+    hasRole,
     isNGO,
     isCustomer,
     isProvider
