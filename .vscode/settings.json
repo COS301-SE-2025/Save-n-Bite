@@ -1,7 +1,7 @@
 {
 
 
-    "workbench.colorTheme": "Night Pink",
+    "workbench.colorTheme": "Visual Studio Dark - C++",
     "python.pythonPath": "venv/bin/python",
     "python.analysis.extraPaths": ["venv/lib/python3.12/site-packages"],
     "python.linting.pylintEnabled": true
