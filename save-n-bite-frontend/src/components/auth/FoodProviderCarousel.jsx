@@ -1,8 +1,8 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { ChevronLeft, ChevronRight, Star } from 'lucide-react';
 import { Link } from 'react-router-dom' 
 
-// Mock data for food providers
+// Mock data for food providers - duplicated for seamless loop
 const foodProviders = [
   {
     id: 1,
@@ -13,7 +13,6 @@ const foodProviders = [
     specialties: ['Pastries', 'Bread', 'Cakes']
   },
   {
-    change: 1,
     id: 2,
     name: 'Green Cafe',
     image: 'https://images.unsplash.com/photo-1554118811-1e0d58224f24?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=600&q=80',
@@ -56,28 +55,82 @@ const foodProviders = [
 ];
 
 const FoodProviderCarousel = () => {
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const [isHovered, setIsHovered] = useState(false);
-  const itemsToShow = 5;
-  const maxIndex = Math.max(0, foodProviders.length - itemsToShow);
+  const [isPaused, setIsPaused] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
+  const [startX, setStartX] = useState(0);
+  const [scrollLeft, setScrollLeft] = useState(0);
+  const [currentTransform, setCurrentTransform] = useState(0);
+  const scrollRef = useRef(null);
+  
+  // Duplicate the array for seamless infinite scroll
+  const duplicatedProviders = [...foodProviders, ...foodProviders];
 
-  const nextSlide = () => {
-    setCurrentIndex(prev => (prev >= maxIndex ? 0 : prev + 1));
-  };
-
-  const prevSlide = () => {
-    setCurrentIndex(prev => (prev <= 0 ? maxIndex : prev - 1));
-  };
-
-  useEffect(() => {
-    if (!isHovered) {
-      intervalRef.current = setInterval(nextSlide, 3000); 
+  const handleMouseEnter = () => {
+    if (scrollRef.current) {
+      const computedStyle = window.getComputedStyle(scrollRef.current);
+      const transform = computedStyle.getPropertyValue('transform');
+      const matrix = new DOMMatrix(transform);
+      const translateX = matrix.m41;
+      setCurrentTransform(translateX);
+      scrollRef.current.style.transform = `translateX(${translateX}px)`;
+      scrollRef.current.style.animationPlayState = 'paused';
     }
+    setIsPaused(true);
+  };
 
-    return () => {
-      clearInterval(intervalRef.current);
-    };
-  }, [isHovered, currentIndex]);
+  const handleMouseLeave = () => {
+    if (!isDragging && scrollRef.current) {
+      scrollRef.current.style.animationPlayState = 'running';
+      setIsPaused(false);
+    }
+  };
+
+  // Mouse drag handlers
+  const handleMouseDown = (e) => {
+    if (!isPaused) return;
+    setIsDragging(true);
+    setStartX(e.pageX - scrollRef.current.offsetLeft);
+    setScrollLeft(currentTransform);
+    scrollRef.current.style.cursor = 'grabbing';
+  };
+
+  const handleMouseMove = (e) => {
+    if (!isDragging || !isPaused) return;
+    e.preventDefault();
+    const x = e.pageX - scrollRef.current.offsetLeft;
+    const walk = (x - startX) * 1; // Adjust sensitivity
+    const newTransform = scrollLeft + walk;
+    setCurrentTransform(newTransform);
+    scrollRef.current.style.transform = `translateX(${newTransform}px)`;
+  };
+
+  const handleMouseUp = () => {
+    setIsDragging(false);
+    if (scrollRef.current) {
+      scrollRef.current.style.cursor = 'grab';
+    }
+  };
+
+  // Touch handlers for mobile
+  const handleTouchStart = (e) => {
+    if (!isPaused) return;
+    setIsDragging(true);
+    setStartX(e.touches[0].pageX - scrollRef.current.offsetLeft);
+    setScrollLeft(currentTransform);
+  };
+
+  const handleTouchMove = (e) => {
+    if (!isDragging || !isPaused) return;
+    const x = e.touches[0].pageX - scrollRef.current.offsetLeft;
+    const walk = (x - startX) * 1;
+    const newTransform = scrollLeft + walk;
+    setCurrentTransform(newTransform);
+    scrollRef.current.style.transform = `translateX(${newTransform}px)`;
+  };
+
+  const handleTouchEnd = () => {
+    setIsDragging(false);
+  };
 
   return (
     <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-6">
@@ -90,36 +143,29 @@ const FoodProviderCarousel = () => {
             Discover your favorite local businesses and their available food
           </p>
         </div>
-        
-        <div className="flex space-x-2">
-          <button
-            onClick={prevSlide}
-            className="p-2 rounded-full bg-emerald-100 text-emerald-600 hover:bg-emerald-200"
-          >
-            <ChevronLeft size={20} />
-          </button>
-          <button
-            onClick={nextSlide}
-            className="p-2 rounded-full bg-emerald-100 text-emerald-600 hover:bg-emerald-200"
-          >
-            <ChevronRight size={20} />
-          </button>
-        </div>
-        
       </div>
 
       <div className="relative overflow-hidden">
         <div
-          className="flex transition-transform duration-300 ease-in-out"
+          ref={scrollRef}
+          className="flex animate-scroll-left select-none"
+          onMouseEnter={handleMouseEnter}
+          onMouseLeave={handleMouseLeave}
+          onMouseDown={handleMouseDown}
+          onMouseMove={handleMouseMove}
+          onMouseUp={handleMouseUp}
+          onTouchStart={handleTouchStart}
+          onTouchMove={handleTouchMove}
+          onTouchEnd={handleTouchEnd}
           style={{
-            transform: `translateX(-${currentIndex * (100 / itemsToShow)}%)`
+            width: `${duplicatedProviders.length * 280}px`,
+            cursor: isPaused ? (isDragging ? 'grabbing' : 'grab') : 'default'
           }}
         >
-          {foodProviders.map((provider) => (
+          {duplicatedProviders.map((provider, index) => (
             <div
-              key={provider.id}
-              className="flex-shrink-0 w-1/4 px-2"
-              onMouseEnter={() => setIsHovered(true)}
+              key={`${provider.id}-${index}`}
+              className="flex-shrink-0 w-64 px-3"
             >
               <div className="bg-gray-50 rounded-lg overflow-hidden hover:shadow-md transition-all duration-300 transform hover:-translate-y-1 cursor-pointer group">
                 <div className="relative">
@@ -146,9 +192,9 @@ const FoodProviderCarousel = () => {
                   </p>
                   
                   <div className="flex flex-wrap gap-1 mb-3">
-                    {provider.specialties.slice(0, 2).map((specialty, index) => (
+                    {provider.specialties.slice(0, 2).map((specialty, specIndex) => (
                       <span
-                        key={index}
+                        key={specIndex}
                         className="text-xs px-2 py-1 bg-emerald-100 text-emerald-700 rounded-full"
                       >
                         {specialty}
@@ -171,23 +217,20 @@ const FoodProviderCarousel = () => {
         </div>
       </div>
 
-      {/* Dots indicator */}
-      <div className="flex justify-center mt-6 space-x-2">
-        {Array.from({ length: maxIndex + 1 }).map((_, index) => (
-          <button
-            key={index}
-            onClick={() => setCurrentIndex(index)}
-            className={`w-2 h-2 rounded-full transition-colors duration-200 ${
-              index === currentIndex
-                ? 'bg-emerald-600'
-                : 'bg-gray-300 hover:bg-gray-400'
-            }`}
-          />
-        ))}
-      </div>
-
-    
-
+      <style jsx>{`
+        @keyframes scroll-left {
+          0% {
+            transform: translateX(0);
+          }
+          100% {
+            transform: translateX(-${foodProviders.length * 280}px);
+          }
+        }
+        
+        .animate-scroll-left {
+          animation: scroll-left 60s linear infinite;
+        }
+      `}</style>
     </div>
   );
 };
