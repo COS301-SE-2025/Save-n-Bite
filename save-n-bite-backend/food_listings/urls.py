@@ -15,6 +15,6 @@ urlpatterns = [
     path('food-listings/', views.browse_food_listings, name='browse_listings'),
     path('food-listings/<uuid:listing_id>/', views.get_food_listing_details, name='listing_details'),
     # Admin endpoints
-    #path('admin/listings/', admin_views.admin_get_all_listings, name='admin_get_all_listings'),
-    #path('admin/listings/moderate/', admin_views.admin_moderate_listing, name='admin_moderate_listing'),
+    path('admin/listings/', admin_views.admin_get_all_listings, name='admin_get_all_listings'),
+    path('admin/listings/moderate/', admin_views.admin_moderate_listing, name='admin_moderate_listing'),
 ]
