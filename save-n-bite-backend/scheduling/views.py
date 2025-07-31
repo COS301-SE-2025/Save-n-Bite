@@ -666,11 +666,11 @@ def schedule_pickup(request):
 @permission_classes([IsAuthenticated])
 def customer_pickups(request):
     """Get customer's scheduled pickups"""
-    if request.user.user_type != 'customer':
+    if request.user.user_type not in ['customer', 'ngo']:
         return Response({
             'error': {
                 'code': 'FORBIDDEN',
-                'message': 'Only customers can view their pickups'
+                'message': 'Only customers and NGOs can view their pickups'
             }
         }, status=status.HTTP_403_FORBIDDEN)
 

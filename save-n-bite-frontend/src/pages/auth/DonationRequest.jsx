@@ -4,6 +4,7 @@ import { ArrowLeft, Clock, MapPin, Truck, Store } from 'lucide-react';
 import foodListingsAPI from '../../services/foodListingsAPI';
 import CustomerNavBar from '../../components/auth/CustomerNavBar';
 import { useAuth } from '../../context/AuthContext';
+import donationsAPI from '../../services/DonationsAPI';
 
 const DonationRequestPage = () => {
   const { id } = useParams();
@@ -13,7 +14,8 @@ const DonationRequestPage = () => {
   const [error, setError] = useState(null);
   const [quantity, setQuantity] = useState(1);
   const [pickupMethod, setPickupMethod] = useState('pickup');
-  const [message, setMessage] = useState('');
+  const [specialInstructions, setSpecialInstructions] = useState('');
+  const [motivationMessage, setMotivationMessage] = useState('');
   const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
@@ -59,21 +61,32 @@ const DonationRequestPage = () => {
       const donationRequest = {
         listingId: id,
         quantity,
-        pickupMethod,
-        message,
-        status: 'pending',
-        requestedAt: new Date().toISOString(),
+        specialInstructions,
+        motivationMessage,
+        // verificationDocuments: [] // Add if needed
       };
 
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      console.log('Submitting donation request:', donationRequest);
+      const response = await donationsAPI.requestDonation(donationRequest);
       
-      navigate(`/donation-confirmation/${id}`, {
-        state: {
-          listing,
-          donationRequest,
-        },
-      });
+      if (response.success) {
+        navigate(`/donation-confirmation/${id}`, {
+          state: {
+            listing,
+            donationRequest: {
+              ...donationRequest,
+              interaction_id: response.data.interaction_id,
+              requested_quantity: response.data.requested_quantity,
+              available_quantity: response.data.available_quantity
+            },
+          },
+        });
+      } else {
+        setError(response.error || 'Failed to submit donation request');
+        setSubmitting(false);
+      }
     } catch (err) {
+      console.error('Donation request error:', err);
       setError('Failed to submit donation request. Please try again.');
       setSubmitting(false);
     }
@@ -308,12 +321,25 @@ const DonationRequestPage = () => {
                 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Message (Optional)
+                    Special Instructions (Optional)
                   </label>
                   <textarea
-                    value={message}
-                    onChange={(e) => setMessage(e.target.value)}
-                    placeholder="E.g., We serve 200 kids on Thursdays"
+                    value={specialInstructions}
+                    onChange={(e) => setSpecialInstructions(e.target.value)}
+                    placeholder="e.g., Please provide packaging, call when arriving"
+                    className="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                    rows={2}
+                  />
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Motivation Message (Optional)
+                  </label>
+                  <textarea
+                    value={motivationMessage}
+                    onChange={(e) => setMotivationMessage(e.target.value)}
+                    placeholder="e.g., We serve 200 kids on Thursdays, helping homeless families"
                     className="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
                     rows={3}
                   />
