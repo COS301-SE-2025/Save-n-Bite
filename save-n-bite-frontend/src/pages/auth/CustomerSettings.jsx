@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { useTheme } from '../context/ThemeContext'
+import { useTheme } from '../../context/ThemeContext'
 import {
   KeyIcon,
   BellIcon,
@@ -16,10 +16,13 @@ import {
   PauseCircleIcon,
 } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
+import CustomerNavBar from '../../components/auth/CustomerNavBar'
 const Modal = ({ isOpen, onClose, title, children, actions }) => {
   if (!isOpen) return null
   return (
+    
     <div className="fixed inset-0 z-50 overflow-y-auto">
+        
       <div className="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center">
         {/* Overlay */}
         <div
@@ -159,7 +162,9 @@ const SettingsPage = () => {
     }, 3000)
   }
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 w-full py-8 transition-colors duration-200">
+<div className="min-h-screen bg-gray-50 dark:bg-gray-900 w-full pt-0 pb-8 transition-colors duration-200">
+  <div className="fixed top-0 left-0 w-full z-50">
+        <CustomerNavBar />
       <div className="max-w-4xl mx-auto px-4">
         <h1 className="text-2xl font-bold text-gray-800 dark:text-white mb-6">
           Settings
@@ -292,7 +297,7 @@ const SettingsPage = () => {
                         </button>
                       </form>
                     </div>
-                    <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
+                    {/* <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
                       <h3 className="text-lg font-medium text-gray-700 dark:text-gray-300 mb-4">
                         Manage Linked Devices
                       </h3>
@@ -330,7 +335,7 @@ const SettingsPage = () => {
                           </button>
                         </div>
                       </div>
-                    </div>
+                    </div> */}
                   </div>
                 </div>
               )}
@@ -501,7 +506,8 @@ const SettingsPage = () => {
                     Account Settings
                   </h2>
                   <div className="space-y-6">
-                    <div className="p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                    {/* is this something the team would want? */}
+                    {/* <div className="p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
                       <h3 className="text-lg font-medium text-gray-700 dark:text-gray-300 mb-4">
                         Account Management
                       </h3>
@@ -514,67 +520,11 @@ const SettingsPage = () => {
                           Sign Out of All Devices
                         </button>
                       </div>
-                    </div>
+                    </div> */}
                     <div className="p-4 bg-red-50 dark:bg-red-900/10 border border-red-100 dark:border-red-900/30 rounded-lg">
-                      <h3 className="text-lg font-medium text-red-800 dark:text-red-300 mb-2 flex items-center">
-                        Danger Zone
-                      </h3>
-                      <p className="text-sm text-red-700 dark:text-red-400 mb-4">
-                        The following actions are irreversible or have
-                        significant consequences.
-                      </p>
+                     
                       <div className="space-y-4">
-                        {/* Deactivate Account */}
-                        <div className="p-3 bg-gray-50 dark:bg-gray-700 rounded-lg border border-gray-200 dark:border-gray-600">
-                          <div className="flex justify-between items-start mb-2">
-                            <div className="flex items-center">
-                              <PauseCircleIcon className="h-5 w-5 text-amber-500 mr-2" />
-                              <h4 className="text-md font-medium text-gray-700 dark:text-gray-300">
-                                Deactivate Account
-                              </h4>
-                            </div>
-                            <InfoTooltip
-                              content={
-                                <div>
-                                  <p className="font-medium mb-1">
-                                    Account Deactivation:
-                                  </p>
-                                  <ul className="list-disc pl-4 space-y-1">
-                                    <li>
-                                      Your profile and content will be hidden
-                                      from other users
-                                    </li>
-                                    <li>
-                                      You won't receive notifications or
-                                      communications
-                                    </li>
-                                    <li>
-                                      Your data will be preserved and can be
-                                      restored
-                                    </li>
-                                    <li>
-                                      You can reactivate your account at any
-                                      time by logging in
-                                    </li>
-                                  </ul>
-                                </div>
-                              }
-                            />
-                          </div>
-                          <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">
-                            Temporarily disable your account. Your data will be
-                            preserved, and you can reactivate it by logging in.
-                          </p>
-                          <button
-                            onClick={() =>
-                              setIsDeactivateAccountModalOpen(true)
-                            }
-                            className="w-full flex items-center justify-center px-4 py-2 bg-amber-500 text-white rounded-md hover:bg-amber-600 transition-colors"
-                          >
-                            <PauseCircleIcon className="h-4 w-4 mr-2" />
-                            Deactivate Account
-                          </button>
-                        </div>
+                     
                         {/* Delete Account */}
                         <div className="p-3 bg-gray-50 dark:bg-gray-700 rounded-lg border border-gray-200 dark:border-gray-600">
                           <div className="flex justify-between items-start mb-2">
@@ -777,6 +727,7 @@ const SettingsPage = () => {
           </div>
         </div>
       </Modal>
+    </div>
     </div>
   )
 }

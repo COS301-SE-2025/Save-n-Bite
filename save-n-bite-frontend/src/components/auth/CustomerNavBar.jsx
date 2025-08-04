@@ -42,7 +42,7 @@ const CustomerNavBar = () => {
           <Link to="/cart" className="nav-link">My Cart</Link>
           <Link to="/orders" className="nav-link">Order History</Link>
           <Link to="/profile" className="nav-link">My Profile</Link>
-          <Link to="/settings" className="nav-link">Settings</Link>
+          <Link to="/customer-settings" className="nav-link">Settings</Link>
 
           <NotificationBell />
 
