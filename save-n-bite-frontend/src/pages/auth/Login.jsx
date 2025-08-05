@@ -138,39 +138,38 @@ const Login = () => {
   };
 
   return (
-    <div className="min-h-[80vh] flex items-center justify-center px-4 py-12">
+    <div className="min-h-[80vh] flex items-center justify-center px-2 sm:px-4 py-8 sm:py-12">
       {/* Notification Popup (top right) */}
       {showPopup && unreadCountSnapshot > 0 && (
-        <div className="fixed top-5 right-5 bg-emerald-500 text-white px-4 py-2 rounded shadow-lg z-50 animate-fade-in-out">
+        <div className="fixed top-4 sm:top-5 right-4 sm:right-5 bg-emerald-500 text-white px-3 sm:px-4 py-2 rounded shadow-lg z-50 animate-fade-in-out text-sm">
           You have {unreadCountSnapshot} unread notification{unreadCountSnapshot > 1 ? 's' : ''}!
         </div>
       )}
       <div className="max-w-6xl w-full bg-white rounded-lg shadow-sm overflow-hidden">
-        <div className="md:flex">
+        <div className="flex flex-col lg:flex-row">
           {/* Left Side - Branding */}
           <div 
-            className="md:w-1/2 text-white p-8 md:p-12 flex flex-col justify-between relative"
+            className="lg:w-1/2 text-white p-6 sm:p-8 lg:p-12 flex flex-col justify-between relative"
             style={{
               background: 'linear-gradient(135deg, #62BD38 0%, #1E64D5 100%)'
             }}
           >
             <div className="flex flex-col items-center text-center">
               {/* Logo */}
-              <div className="mb-8">
+              <div className="mb-6 sm:mb-8">
                 <img 
                   src={logo} 
                   alt="Save n Bite Logo" 
-                  className="w-100 h-100 object-contain"
+                  className="w-16 h-16 sm:w-20 sm:h-20 lg:w-24 lg:h-24 object-contain"
                 />
               </div>
               
               {/* Welcome Text */}
               <h1 
-                className="text-white mb-4"
+                className="text-white mb-3 sm:mb-4 text-responsive-xl"
                 style={{ 
                   fontFamily: 'Inter, sans-serif',
                   fontWeight: 'bold',
-                  fontSize: '40.8px',
                   lineHeight: '1.2'
                 }}
               >
@@ -179,26 +178,26 @@ const Login = () => {
               </h1>
               
               {/* Subtitle */}
-              <p className="text-white text-lg opacity-90 max-w-sm">
+              <p className="text-white text-base sm:text-lg opacity-90 max-w-sm">
                 Login to continue your journey with us.
               </p>
             </div>
             
             {/* Copyright */}
-            <div className="text-white text-sm opacity-75 text-center">
+            <div className="text-white text-xs sm:text-sm opacity-75 text-center">
               © 2025 Save n Bite. All rights reserved.
             </div>
           </div>
 
           {/* Right Side - Login Form */}
-          <div className="md:w-1/2 p-8 md:p-12">
+          <div className="lg:w-1/2 p-4 sm:p-6 lg:p-8 xl:p-12">
             <div className="max-w-md mx-auto">
               {/* Page Title */}
-              <div className="mb-8 text-center">
-                <h2 className="text-2xl font-bold text-gray-900 mb-2">
+              <div className="mb-6 sm:mb-8 text-center">
+                <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-2">
                   Sign In
                 </h2>
-                <p className="text-gray-600">
+                <p className="text-sm sm:text-base text-gray-600">
                   Enter your credentials to access your account
                 </p>
               </div>
