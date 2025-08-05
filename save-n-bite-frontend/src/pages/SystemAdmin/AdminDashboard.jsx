@@ -12,21 +12,21 @@ const Dashboard = () => {
   return (
     <div className="space-y-6">
       {/* Welcome Section */}
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Welcome, Admin</h1>
-          <p className="text-gray-500">
+          <h1 className="text-xl sm:text-2xl font-bold text-gray-900">Welcome, Admin</h1>
+          <p className="text-sm sm:text-base text-gray-500">
             Here's what's happening with your platform today.
           </p>
         </div>
-        <div className="mt-4 md:mt-0">
-          <p className="text-sm text-gray-500">
+        <div className="mt-3 sm:mt-0">
+          <p className="text-xs sm:text-sm text-gray-500">
             Today: {new Date().toLocaleDateString()}
           </p>
         </div>
       </div>
       {/* KPI Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         <KpiCard
           title="Total Active Users"
           value="2,845"
@@ -59,8 +59,8 @@ const Dashboard = () => {
       </div>
       {/* Activity Feed */}
       <div className="bg-white rounded-lg shadow">
-        <div className="px-6 py-4 border-b border-gray-200">
-          <h2 className="text-lg font-medium text-gray-900">Recent Activity</h2>
+        <div className="px-4 sm:px-6 py-3 sm:py-4 border-b border-gray-200">
+          <h2 className="text-base sm:text-lg font-medium text-gray-900">Recent Activity</h2>
         </div>
         <div className="divide-y divide-gray-200">
           <ActivityItem
@@ -96,7 +96,7 @@ const Dashboard = () => {
         </div>
       </div>
       {/* Quick Links */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
         <QuickLinkCard
           title="View Verification Requests"
           description="5 pending verification requests"
