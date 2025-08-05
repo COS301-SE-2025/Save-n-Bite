@@ -368,40 +368,40 @@ const handleCheckout = async (paymentDetails) => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 w-full py-8">
+    <div className="min-h-screen bg-gray-50 w-full py-4 sm:py-8">
       <CustomerNavBar />
-      <div className="max-w-4xl mx-auto px-4">
-        <h1 className="text-2xl font-bold mb-8 text-gray-800">Your Cart</h1>
+      <div className="container-responsive max-w-4xl mx-auto">
+        <h1 className="text-xl sm:text-2xl font-bold mb-6 sm:mb-8 text-gray-800">Your Cart</h1>
         
         {cartItems.length === 0 ? (
-          <div className="text-center py-12">
-            <ShoppingCartIcon size={48} className="mx-auto text-gray-400 mb-4" />
-            <p className="text-xl text-gray-600 mb-4">Your cart is empty</p>
-            <Link to="/food-listing" className="inline-block px-6 py-3 bg-emerald-600 text-white rounded-md hover:bg-emerald-700 transition-colors">
+          <div className="text-center py-8 sm:py-12">
+            <ShoppingCartIcon size={40} className="sm:w-12 sm:h-12 mx-auto text-gray-400 mb-3 sm:mb-4" />
+            <p className="text-lg sm:text-xl text-gray-600 mb-3 sm:mb-4">Your cart is empty</p>
+            <Link to="/food-listing" className="inline-block px-4 sm:px-6 py-2 sm:py-3 bg-emerald-600 text-white rounded-md hover:bg-emerald-700 transition-colors text-sm sm:text-base touch-target">
               Browse Food
             </Link>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div className="md:col-span-2">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-8">
+            <div className="lg:col-span-2">
               {cartItems.map(item => {
                 const listingId = item.food_listing_id || item.listingId || item.listing_id || item.id;
                 const itemSlots = selectedItemSlots[listingId] || [];
                 
                 return (
-                  <div key={item.id} className="bg-white rounded-lg shadow-sm p-4 mb-4">
-                    <div className="flex items-center">
+                  <div key={item.id} className="bg-white rounded-lg shadow-sm p-3 sm:p-4 mb-3 sm:mb-4 card-responsive">
+                    <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4">
                       <img 
                         src={item.image} 
                         alt={item.name} 
-                        className="w-20 h-20 object-cover rounded-md" 
+                        className="w-16 h-16 sm:w-20 sm:h-20 object-cover rounded-md flex-shrink-0" 
                       />
-                      <div className="ml-4 flex-grow">
-                        <h3 className="font-semibold text-gray-800">
+                      <div className="flex-grow min-w-0">
+                        <h3 className="font-semibold text-gray-800 text-sm sm:text-base">
                           {item.name}
                         </h3>
-                        <p className="text-sm text-gray-600">{item.provider?.business_name}</p>
-                        <p className="text-emerald-600 font-semibold mt-1">
+                        <p className="text-xs sm:text-sm text-gray-600">{item.provider?.business_name}</p>
+                        <p className="text-emerald-600 font-semibold mt-1 text-sm sm:text-base">
                           R{item.price.toFixed(2)}
                         </p>
                         {/* Show available slots for this item */}
@@ -412,27 +412,29 @@ const handleCheckout = async (paymentDetails) => {
                           }
                         </p>
                       </div>
-                      <div className="flex items-center">
-                        <button 
-                          onClick={() => updateQuantity(item.id, item.quantity - 1)} 
-                          className="px-2 py-1 border border-gray-300 rounded-l-md hover:bg-gray-50"
-                        >
-                          -
-                        </button>
-                        <span className="px-4 py-1 border-t border-b border-gray-300">
-                          {item.quantity}
-                        </span>
-                        <button 
-                          onClick={() => updateQuantity(item.id, item.quantity + 1)} 
-                          className="px-2 py-1 border border-gray-300 rounded-r-md hover:bg-gray-50"
-                        >
-                          +
-                        </button>
+                      <div className="flex items-center justify-between sm:justify-end gap-2 sm:gap-4">
+                        <div className="flex items-center border border-gray-300 rounded-md">
+                          <button 
+                            onClick={() => updateQuantity(item.id, item.quantity - 1)} 
+                            className="px-2 py-1 sm:px-3 sm:py-2 border-r border-gray-300 hover:bg-gray-50 touch-target"
+                          >
+                            -
+                          </button>
+                          <span className="px-3 py-1 sm:px-4 sm:py-2 text-sm sm:text-base">
+                            {item.quantity}
+                          </span>
+                          <button 
+                            onClick={() => updateQuantity(item.id, item.quantity + 1)} 
+                            className="px-2 py-1 sm:px-3 sm:py-2 border-l border-gray-300 hover:bg-gray-50 touch-target"
+                          >
+                            +
+                          </button>
+                        </div>
                         <button 
                           onClick={() => removeItem(item.id)} 
-                          className="ml-4 text-gray-400 hover:text-red-500"
+                          className="text-gray-400 hover:text-red-500 touch-target p-1"
                         >
-                          <TrashIcon size={18} />
+                          <TrashIcon size={16} className="sm:w-5 sm:h-5" />
                         </button>
                       </div>
                     </div>
