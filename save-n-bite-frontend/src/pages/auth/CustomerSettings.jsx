@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
 import { useTheme } from '../../context/ThemeContext'
+
 import {
   KeyIcon,
   BellIcon,
@@ -420,37 +421,37 @@ const SettingsPage = () => {
               )}
               {/* Appearance Settings */}
               {activeSection === 'appearance' && (
-                <div>
-                  <h2 className="text-xl font-semibold text-gray-800 dark:text-white mb-6">
-                    Appearance Settings
-                  </h2>
-                  <div className="space-y-6">
-                    <div>
-                      <h3 className="text-lg font-medium text-gray-700 dark:text-gray-300 mb-4">
-                        Theme
-                      </h3>
-                      <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
-                        <div className="flex items-center">
-                          {theme === 'dark' ? (
-                            <MoonIcon className="h-6 w-6 text-gray-600 dark:text-gray-300 mr-3" />
-                          ) : (
-                            <SunIcon className="h-6 w-6 text-gray-600 dark:text-gray-300 mr-3" />
-                          )}
-                          <span className="text-gray-700 dark:text-gray-300 font-medium">
-                            {theme === 'dark' ? 'Dark Mode' : 'Light Mode'}
-                          </span>
-                        </div>
-                        <button
-                          onClick={toggleTheme}
-                          className="px-4 py-2 bg-emerald-600 dark:bg-emerald-500 text-white rounded-md hover:bg-emerald-700 dark:hover:bg-emerald-600 transition-colors"
-                        >
-                          Toggle Theme
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              )}
+  <div>
+    <h2 className="text-xl font-semibold text-gray-800 dark:text-white mb-6">
+      Appearance Settings
+    </h2>
+    <div className="space-y-6">
+      <div>
+        <h3 className="text-lg font-medium text-gray-700 dark:text-gray-300 mb-4">
+          Theme
+        </h3>
+        <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
+          <div className="flex items-center">
+            {theme === 'dark' ? (
+              <MoonIcon className="h-6 w-6 text-gray-600 dark:text-gray-300 mr-3" />
+            ) : (
+              <SunIcon className="h-6 w-6 text-gray-600 dark:text-gray-300 mr-3" />
+            )}
+            <span className="text-gray-700 dark:text-gray-300 font-medium">
+              {theme === 'dark' ? 'Dark Mode' : 'Light Mode'}
+            </span>
+          </div>
+          <button
+            onClick={toggleTheme}
+            className="px-4 py-2 bg-emerald-600 dark:bg-emerald-500 text-white rounded-md hover:bg-emerald-700 dark:hover:bg-emerald-600 transition-colors"
+          >
+            Toggle Theme
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+)}
               {/* Communication Preferences */}
               {activeSection === 'communication' && (
                 <div>
