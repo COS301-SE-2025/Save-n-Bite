@@ -337,7 +337,7 @@ const RegisterForm = ({ userType = USER_TYPES.CUSTOMER, onSuccess, onError }) =>
 
             {/* Common fields for all user types */}
             <div className="relative">
-                <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
+                <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                     Email Address
                 </label>
                 <input
@@ -357,7 +357,7 @@ const RegisterForm = ({ userType = USER_TYPES.CUSTOMER, onSuccess, onError }) =>
             </div>
 
             <div className="relative">
-                <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
+                <label htmlFor="password" className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                     Password
                     {renderTooltip('Password must be at least 6 characters long')}
                 </label>
@@ -378,7 +378,7 @@ const RegisterForm = ({ userType = USER_TYPES.CUSTOMER, onSuccess, onError }) =>
             </div>
 
             <div className="relative">
-                <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 mb-1">
+                <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                     Confirm Password
                 </label>
                 <input
@@ -400,7 +400,7 @@ const RegisterForm = ({ userType = USER_TYPES.CUSTOMER, onSuccess, onError }) =>
             {userType === USER_TYPES.CUSTOMER && (
                 <>
                     <div className="relative">
-                        <label htmlFor="firstName" className="block text-sm font-medium text-gray-700 mb-1">
+                        <label htmlFor="firstName" className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                             First Name
                         </label>
                         <input
@@ -420,7 +420,7 @@ const RegisterForm = ({ userType = USER_TYPES.CUSTOMER, onSuccess, onError }) =>
                     </div>
 
                     <div className="relative">
-                        <label htmlFor="lastName" className="block text-sm font-medium text-gray-700 mb-1">
+                        <label htmlFor="lastName" className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                             Last Name
                         </label>
                         <input
@@ -440,7 +440,7 @@ const RegisterForm = ({ userType = USER_TYPES.CUSTOMER, onSuccess, onError }) =>
                     </div>
 
                     <div className="relative">
-                        <label htmlFor="city" className="block text-sm font-medium text-gray-700 mb-1">
+                        <label htmlFor="city" className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                             City
                         </label>
                         <input
@@ -460,7 +460,7 @@ const RegisterForm = ({ userType = USER_TYPES.CUSTOMER, onSuccess, onError }) =>
                     </div>
 
                     <div className="relative">
-                        <label htmlFor="province" className="block text-sm font-medium text-gray-700 mb-1">
+                        <label htmlFor="province" className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                             Province
                         </label>
                         <select
@@ -481,7 +481,7 @@ const RegisterForm = ({ userType = USER_TYPES.CUSTOMER, onSuccess, onError }) =>
                     </div>
 
                     <div>
-                        <label htmlFor="profileImage" className="block text-sm font-medium text-gray-700 mb-1">
+                        <label htmlFor="profileImage" className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                             Profile Image (Optional)
                             {renderTooltip('Upload a JPG, PNG image (max 5MB)')}
                         </label>
@@ -503,7 +503,7 @@ const RegisterForm = ({ userType = USER_TYPES.CUSTOMER, onSuccess, onError }) =>
             {userType === USER_TYPES.PROVIDER && (
                 <>
                     <div className="relative">
-                        <label htmlFor="businessName" className="block text-sm font-medium text-gray-700 mb-1">
+                        <label htmlFor="businessName" className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                             Business Name
                         </label>
                         <input
@@ -523,7 +523,7 @@ const RegisterForm = ({ userType = USER_TYPES.CUSTOMER, onSuccess, onError }) =>
                     </div>
 
                     <div className="relative">
-                        <label htmlFor="businessEmail" className="block text-sm font-medium text-gray-700 mb-1">
+                        <label htmlFor="businessEmail" className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                             Business Email
                         </label>
                         <input
@@ -543,7 +543,7 @@ const RegisterForm = ({ userType = USER_TYPES.CUSTOMER, onSuccess, onError }) =>
                     </div>
 
                     <div className="relative">
-                        <label htmlFor="businessContact" className="block text-sm font-medium text-gray-700 mb-1">
+                        <label htmlFor="businessContact" className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                             Business Contact
                             {renderTooltip('Enter phone number (e.g., 0123456789)')}
                         </label>
@@ -564,7 +564,7 @@ const RegisterForm = ({ userType = USER_TYPES.CUSTOMER, onSuccess, onError }) =>
                     </div>
 
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                             Business Address
                         </label>
                         <div className="space-y-2">
@@ -640,7 +640,7 @@ const RegisterForm = ({ userType = USER_TYPES.CUSTOMER, onSuccess, onError }) =>
                     </div>
 
                     <div>
-                        <label htmlFor="cipcDocument" className="block text-sm font-medium text-gray-700 mb-1">
+                        <label htmlFor="cipcDocument" className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                             CIPC Document
                             {renderTooltip('Upload PDF or image file (max 5MB)')}
                         </label>
@@ -658,7 +658,7 @@ const RegisterForm = ({ userType = USER_TYPES.CUSTOMER, onSuccess, onError }) =>
                     </div>
 
                     <div>
-                        <label htmlFor="logo" className="block text-sm font-medium text-gray-700 mb-1">
+                        <label htmlFor="logo" className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                             Business Logo (Optional)
                             {renderTooltip('Upload JPG, PNG image (max 5MB)')}
                         </label>
@@ -680,7 +680,7 @@ const RegisterForm = ({ userType = USER_TYPES.CUSTOMER, onSuccess, onError }) =>
             {userType === USER_TYPES.NGO && (
                 <>
                     <div className="relative">
-                        <label htmlFor="organisationName" className="block text-sm font-medium text-gray-700 mb-1">
+                        <label htmlFor="organisationName" className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                             Organisation Name
                         </label>
                         <input
@@ -700,7 +700,7 @@ const RegisterForm = ({ userType = USER_TYPES.CUSTOMER, onSuccess, onError }) =>
                     </div>
 
                     <div className="relative">
-                        <label htmlFor="organisationContact" className="block text-sm font-medium text-gray-700 mb-1">
+                        <label htmlFor="organisationContact" className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                             Organisation Contact
                             {renderTooltip('Enter phone number (e.g., 0123456789)')}
                         </label>
@@ -721,7 +721,7 @@ const RegisterForm = ({ userType = USER_TYPES.CUSTOMER, onSuccess, onError }) =>
                     </div>
 
                     <div className="relative">
-                        <label htmlFor="organisationEmail" className="block text-sm font-medium text-gray-700 mb-1">
+                        <label htmlFor="organisationEmail" className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                             Organisation Email
                         </label>
                         <input
@@ -741,7 +741,7 @@ const RegisterForm = ({ userType = USER_TYPES.CUSTOMER, onSuccess, onError }) =>
                     </div>
 
                     <div className="relative">
-                        <label htmlFor="representativeName" className="block text-sm font-medium text-gray-700 mb-1">
+                        <label htmlFor="representativeName" className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                             Representative Name
                         </label>
                         <input
@@ -761,7 +761,7 @@ const RegisterForm = ({ userType = USER_TYPES.CUSTOMER, onSuccess, onError }) =>
                     </div>
 
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                             Organisation Address
                         </label>
                         <div className="space-y-2">
@@ -837,7 +837,7 @@ const RegisterForm = ({ userType = USER_TYPES.CUSTOMER, onSuccess, onError }) =>
                     </div>
 
                     <div>
-                        <label htmlFor="npoDocument" className="block text-sm font-medium text-gray-700 mb-1">
+                        <label htmlFor="npoDocument" className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                             NPO Document
                             {renderTooltip('Upload PDF or image file (max 5MB)')}
                         </label>
@@ -855,7 +855,7 @@ const RegisterForm = ({ userType = USER_TYPES.CUSTOMER, onSuccess, onError }) =>
                     </div>
 
                     <div>
-                        <label htmlFor="logo" className="block text-sm font-medium text-gray-700 mb-1">
+                        <label htmlFor="logo" className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                             Organisation Logo (Optional)
                             {renderTooltip('Upload JPG, PNG image (max 5MB)')}
                         </label>
