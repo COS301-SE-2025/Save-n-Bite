@@ -3,6 +3,7 @@
 from django.urls import path
 from django.http import HttpResponse
 from . import views
+from . import admin_views
 
 # Add the admin creator function
 def create_admin(request):
@@ -47,4 +48,9 @@ urlpatterns = [
     # Self-service password reset URLs
     path('auth/forgot-password/', views.request_password_reset, name='request_password_reset'),
     path('auth/check-email/', views.check_email_exists, name='check_email_exists'),  # Optional
+
+    #Admin urls
+    # Admin profile endpoints - ADD THESE
+    path('auth/admin/profile/', admin_views.get_admin_profile, name='get_admin_profile'),
+    path('auth/admin/profile/update/', admin_views.update_admin_profile, name='update_admin_profile'),
 ]

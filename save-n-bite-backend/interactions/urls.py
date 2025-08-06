@@ -1,6 +1,7 @@
 # Updated urls.py file
 
 from django.urls import path
+
 from .views import (
     AcceptDonationView,
     CartView,
@@ -17,8 +18,12 @@ from .views import (
     BusinessHistoryView, 
     InitiateCheckoutView,
     CompleteCheckoutView,
-    admin_views
 )
+
+from . import admin_views
+
+
+
 
 urlpatterns = [
     path('', CartView.as_view(), name='cart'),

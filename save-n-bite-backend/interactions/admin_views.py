@@ -1,4 +1,4 @@
-# interactions/admin_views.py
+# interactions/admin_views.py - Create this new file
 
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes

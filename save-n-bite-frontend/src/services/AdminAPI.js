@@ -1,3 +1,4 @@
+// AdminAPI.js - Complete integration with your Django backend
 import { apiClient } from './FoodAPI.js';
 import { 
   transformUserData, 
@@ -5,13 +6,8 @@ import {
   transformUserTypeToBackend 
 } from '../utils/adminDataTransformers.js';
 
-///api/admim/  POST
-
-// ==================== AUTHENTICATION ====================
-
-
-
 const AdminAPI = {
+  // ==================== AUTHENTICATION ====================
   getAdminInfo: async (userEmail) => {
     try {
       const response = await apiClient.post('/api/admin/', {
@@ -32,7 +28,7 @@ const AdminAPI = {
     }
   },
 
-    // ==================== DASHBOARD ====================
+  // ==================== DASHBOARD ====================
   getDashboard: async () => {
     try {
       const response = await apiClient.get('/api/admin/dashboard/');
@@ -109,9 +105,9 @@ const AdminAPI = {
     }
   },
 
-  resetUserPassword: async (userId, reason = '') => { // NOT DONE 
+  resetUserPassword: async (userId, reason = '') => {
     try {
-      const response = await apiClient.post('', {
+      const response = await apiClient.post('/api/admin/users/reset-password/', {
         user_id: userId,
         reason: reason
       });
@@ -130,7 +126,7 @@ const AdminAPI = {
     }
   },
 
-    // ==================== VERIFICATION MANAGEMENT ====================
+  // ==================== VERIFICATION MANAGEMENT ====================
   getPendingVerifications: async () => {
     try {
       const response = await apiClient.get('/api/admin/verifications/pending/');
@@ -318,4 +314,229 @@ const AdminAPI = {
     }
   },
 
-}
+  // ==================== ANALYTICS ====================
+  getAnalytics: async () => {
+    try {
+      const response = await apiClient.get('/api/admin/analytics/');
+      
+      return {
+        data: response.data.analytics,
+        success: true,
+        error: null
+      };
+    } catch (error) {
+      return {
+        data: null,
+        success: false,
+        error: error.response?.data?.error?.message || "Failed to fetch analytics"
+      };
+    }
+  },
+
+  // ==================== AUDIT LOGS ====================
+  getAdminActionLogs: async (page = 1, search = '', actionType = '', startDate = '', endDate = '', perPage = 20) => {
+    try {
+      const params = new URLSearchParams({
+        page: page.toString(),
+        per_page: perPage.toString()
+      });
+      
+      if (search) params.append('search', search);
+      if (actionType) params.append('action_type', actionType);
+      if (startDate) params.append('start_date', startDate);
+      if (endDate) params.append('end_date', endDate);
+
+      const response = await apiClient.get(`/api/admin/logs/admin-actions/?${params.toString()}`);
+      
+      return {
+        data: response.data,
+        success: true,
+        error: null
+      };
+    } catch (error) {
+      return {
+        data: null,
+        success: false,
+        error: error.response?.data?.error?.message || "Failed to fetch audit logs"
+      };
+    }
+  },
+
+  getSystemLogs: async (page = 1, search = '', logLevel = '', startDate = '', endDate = '', perPage = 20) => {
+    try {
+      const params = new URLSearchParams({
+        page: page.toString(),
+        per_page: perPage.toString()
+      });
+      
+      if (search) params.append('search', search);
+      if (logLevel) params.append('log_level', logLevel);
+      if (startDate) params.append('start_date', startDate);
+      if (endDate) params.append('end_date', endDate);
+
+      const response = await apiClient.get(`/api/admin/logs/system/?${params.toString()}`);
+      
+      return {
+        data: response.data,
+        success: true,
+        error: null
+      };
+    } catch (error) {
+      return {
+        data: null,
+        success: false,
+        error: error.response?.data?.error?.message || "Failed to fetch system logs"
+      };
+    }
+  },
+
+  resolveSystemLog: async (logId, resolutionNotes = '') => {
+    try {
+      const response = await apiClient.post('/api/admin/logs/system/resolve/', {
+        log_id: logId,
+        resolution_notes: resolutionNotes
+      });
+      
+      return {
+        data: response.data,
+        success: true,
+        error: null
+      };
+    } catch (error) {
+      return {
+        data: null,
+        success: false,
+        error: error.response?.data?.error?.message || "Failed to resolve system log"
+      };
+    }
+  },
+
+  // ==================== NOTIFICATIONS (using existing endpoints) ====================
+  sendCustomNotification: async (subject, body, targetAudience) => {
+    try {
+      const response = await apiClient.post('/api/admin/notifications/send/', {
+        subject: subject,
+        body: body,
+        target_audience: targetAudience
+      });
+      
+      return {
+        data: response.data,
+        success: true,
+        error: null
+      };
+    } catch (error) {
+      return {
+        data: null,
+        success: false,
+        error: error.response?.data?.error?.message || "Failed to send notification"
+      };
+    }
+  },
+
+  getNotificationAnalytics: async (targetAudience = '') => {
+    try {
+      const params = new URLSearchParams();
+      if (targetAudience) params.append('target_audience', targetAudience);
+
+      const response = await apiClient.get(`/api/admin/notifications/analytics/?${params.toString()}`);
+      
+      return {
+        data: response.data.analytics,
+        success: true,
+        error: null
+      };
+    } catch (error) {
+      return {
+        data: null,
+        success: false,
+        error: error.response?.data?.error?.message || "Failed to fetch notification analytics"
+      };
+    }
+  },
+
+  getAudienceCounts: async (targetAudience) => {
+    try {
+      const response = await apiClient.post('/api/admin/notifications/audience-counts/', {
+        target_audience: targetAudience
+      });
+      
+      return {
+        data: response.data,
+        success: true,
+        error: null
+      };
+    } catch (error) {
+      return {
+        data: null,
+        success: false,
+        error: error.response?.data?.error?.message || "Failed to fetch audience counts"
+      };
+    }
+  },
+
+  // ==================== ADMIN PROFILE (using new endpoints) ====================
+  getAdminProfile: async () => {
+    try {
+      const response = await apiClient.get('/auth/admin/profile/');
+      return {
+        data: response.data.profile,
+        success: true,
+        error: null
+      };
+    } catch (error) {
+      return {
+        data: null,
+        success: false,
+        error: error.response?.data?.error?.message || "Failed to fetch admin profile"
+      };
+    }
+  },
+
+  updateAdminProfile: async (profileData) => {
+    try {
+      const response = await apiClient.put('/auth/admin/profile/update/', profileData);
+      return {
+        data: response.data,
+        success: true,
+        error: null
+      };
+    } catch (error) {
+      return {
+        data: null,
+        success: false,
+        error: error.response?.data?.error?.message || "Failed to update admin profile"
+      };
+    }
+  },
+
+  // ==================== DATA EXPORT ====================
+  exportData: async (exportType, dateFrom = '', dateTo = '') => {
+    try {
+      const params = new URLSearchParams({
+        export_type: exportType
+      });
+      
+      if (dateFrom) params.append('date_from', dateFrom);
+      if (dateTo) params.append('date_to', dateTo);
+
+      const response = await apiClient.get(`/api/admin/export/?${params.toString()}`, {
+        responseType: 'blob'
+      });
+      
+      return {
+        data: response.data,
+        success: true,
+        error: null
+      };
+    } catch (error) {
+      return {
+        data: null,
+        success: false,
+        error: error.response?.data?.error?.message || "Failed to export data"
+      };
+    }
+  }
+};
+
+export default AdminAPI;
