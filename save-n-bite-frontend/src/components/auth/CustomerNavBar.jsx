@@ -90,6 +90,7 @@ const CustomerNavBar = () => {
             <Link to="/cart" className="nav-link">My Cart</Link>
             <Link to="/orders" className="nav-link">Order History</Link>
             <Link to="/profile" className="nav-link">Profile</Link>
+             <Link to="/customer-settings" className="nav-link">Settings</Link>
             <button
               onClick={handleLogout}
               className="text-center py-2 bg-red-600 text-white rounded-md hover:bg-red-700"

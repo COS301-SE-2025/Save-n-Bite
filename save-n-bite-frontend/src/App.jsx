@@ -3,7 +3,8 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import ProtectedRoute from './components/ProtectedRoutes';
-import { ThemeProvider } from '../src/context/ThemeContext';
+import { ThemeProvider } from "./context/ThemeContext";
+
 
 import { USER_TYPES } from './config/routes';
 
@@ -54,7 +55,7 @@ import ForgotPassword from './pages/auth/ForgotPassword';
 
 function App() {
   return (
-    <ThemeProvider>
+       <ThemeProvider>
     <AuthProvider>
       <Router>
         <Routes>
@@ -237,6 +238,7 @@ function App() {
       </Router>
     </AuthProvider>
     </ThemeProvider>
+ 
   );
 }
 
