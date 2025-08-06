@@ -114,13 +114,13 @@ const FoodCard = ({ item }) => {
   return (
     <Link 
       to={getLinkDestination()}  
-      className="bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-all duration-300 transform hover:-translate-y-1 group"
+      className="bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-all duration-300 transform hover:-translate-y-1 group card-responsive"
     >
       <div className="relative">
         <img 
           src={item.image} 
           alt={item.title} 
-          className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300" 
+          className="w-full h-32 sm:h-40 lg:h-48 object-cover group-hover:scale-105 transition-transform duration-300" 
         />
         <div className="absolute top-0 right-0 m-2">
           <span className={`text-xs font-medium px-2 py-1 rounded-full backdrop-blur-sm ${
@@ -141,57 +141,49 @@ const FoodCard = ({ item }) => {
         )}
       </div>
       
-      <div className="p-4">
-        <h3 className="font-semibold text-lg mb-1 text-gray-800 group-hover:text-emerald-600 transition-colors">
+      <div className="p-2 sm:p-3 lg:p-4">
+        <h3 className="font-semibold text-xs sm:text-base lg:text-lg mb-1 sm:mb-2 text-gray-800 group-hover:text-emerald-600 transition-colors line-clamp-2">
           {item.title}
         </h3>
         <div className="flex items-center justify-between mb-3">
-          <p className="text-gray-600 text-sm flex items-center">
-            <MapPin size={14} className="mr-1" />
-            {item.provider.business_name}
+          <p className="text-gray-600 text-xs sm:text-sm flex items-center flex-1 min-w-0">
+            <MapPin size={12} className="mr-1 flex-shrink-0" />
+            <span className="truncate">{item.provider.business_name}</span>
           </p>
-   
-          {/* <button
-            onClick={handleFollowClick}
-            className="text-2xl ml-2 transition-transform duration-200 hover:scale-110 disabled:opacity-50"
-            title={isFollowing ? 'Unlike item' : 'Like item'}
-            disabled={followStatusLoading}
-          >
-            {followStatusLoading ? '⏳' : (isFollowing ? '❤️' : '🤍')}
-          </button> */}
         </div>
         
         <div className="flex justify-between items-center mb-3">
           <div>
             {item.type === 'Discount' ? (
-              <div className="flex items-center">
-                <span className="font-bold text-lg text-emerald-600">
+              <div className="flex items-center flex-wrap">
+                <span className="font-bold text-base sm:text-lg text-emerald-600">
                   R{item.discountPrice.toFixed(2)}
                 </span>
-                <span className="text-sm text-gray-500 line-through ml-2">
+                <span className="text-xs sm:text-sm text-gray-500 line-through ml-2">
                   R{item.originalPrice.toFixed(2)}
                 </span>
               </div>
             ) : (
-              <span className="font-bold text-lg text-emerald-600">
+              <span className="font-bold text-base sm:text-lg text-emerald-600">
                 Free
               </span>
             )}
           </div>
-          <span className="text-sm text-gray-500 flex items-center">
-            <MapPin size={12} className="mr-1" />
-            {item.distance}
+          <span className="text-xs sm:text-sm text-gray-500 flex items-center ml-2">
+            <MapPin size={10} className="mr-1 flex-shrink-0" />
+            <span className="hidden sm:inline">{item.distance}</span>
+            <span className="sm:hidden">{item.distance.split(' ')[0]}</span>
           </span>
         </div>
         
         <div className="flex justify-between items-center">
-          <span className="text-xs text-gray-500 flex items-center">
-            <Clock size={12} className="mr-1" />
-            Expires: {item.expirationTime}
+          <span className="text-xs text-gray-500 flex items-center flex-1 min-w-0">
+            <Clock size={10} className="mr-1 flex-shrink-0" />
+            <span className="truncate">Expires: {item.expirationTime}</span>
           </span>
           <button 
-          type="button"
-          className={`px-3 py-1 text-sm rounded-full font-medium transition-all duration-200 ${getButtonStyling()}`}>
+            type="button"
+            className={`px-3 py-2 text-xs sm:text-sm rounded-full font-medium transition-all duration-200 touch-target ${getButtonStyling()}`}>
             {getButtonText()}
           </button>
         </div>

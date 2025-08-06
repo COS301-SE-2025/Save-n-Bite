@@ -18,6 +18,7 @@ const NotificationBell = () => {
   const dropdownRef = useRef(null);
   const bellRef = useRef(null);
   const [showPopup, setShowPopup] = useState(false);
+  
   // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -111,7 +112,6 @@ const NotificationBell = () => {
 
   return (
     <div className="relative">
-
       <button
         ref={bellRef}
         onClick={handleBellClick}
@@ -126,11 +126,19 @@ const NotificationBell = () => {
         )}
       </button>
 
-      {/* Notification Dropdown */}
+      {/* Notification Dropdown - Mobile Responsive Positioning */}
       {isOpen && (
         <div
           ref={dropdownRef}
-          className="absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-lg border border-gray-200 z-50 max-h-96 overflow-hidden"
+          className="absolute mt-2 bg-white rounded-lg shadow-lg border border-gray-200 z-50 max-h-96 overflow-hidden
+                     /* Mobile: Center dropdown and make it wider */
+                     right-0 w-80
+                     sm:right-0 sm:w-80
+                     /* On very small screens, position it better */
+                     max-[480px]:right-[-50px] max-[480px]:w-[300px]
+                     max-[360px]:right-[-80px] max-[360px]:w-[280px]
+                     /* Ensure it doesn't go off screen */
+                     max-[320px]:right-[-100px] max-[320px]:w-[260px]"
         >
           {/* Header */}
           <div className="px-4 py-3 border-b border-gray-200 flex items-center justify-between">
@@ -143,7 +151,8 @@ const NotificationBell = () => {
                   title="Mark all as read"
                 >
                   <CheckCheck size={16} />
-                  <span>Mark all read</span>
+                  <span className="hidden sm:inline">Mark all read</span>
+                  <span className="sm:hidden">Read all</span>
                 </button>
               )}
               <button

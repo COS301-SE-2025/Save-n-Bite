@@ -178,25 +178,23 @@ const getAvailableTypeFilters = () => {
       
       <br />
       
-      <div className="max-w-6xl mx-auto p-4 md:p-6">
+      <div className="container-responsive max-w-6xl mx-auto">
         
-        
-
         {/* Error message */}
         {error && (
-          <div className="mb-6 bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-md">
-            <p className="font-medium">Error loading listings</p>
-            <p className="text-sm">{error}</p>
+          <div className="mb-4 sm:mb-6 bg-red-50 border border-red-200 text-red-600 px-3 py-3 sm:px-4 sm:py-3 rounded-md">
+            <p className="font-medium text-sm sm:text-base">Error loading listings</p>
+            <p className="text-xs sm:text-sm mt-1">{error}</p>
             <button 
               onClick={fetchFoodListings}
-              className="mt-2 text-sm underline hover:no-underline"
+              className="mt-2 text-xs sm:text-sm underline hover:no-underline touch-target"
             >
               Try again
             </button>
           </div>
         )}
 
-        <div className="flex flex-col md:flex-row gap-6">
+        <div className="flex flex-col lg:flex-row gap-4 sm:gap-6">
           <FilterSidebar 
             showFilters={showFilters}
             filters={filters}
@@ -207,8 +205,8 @@ const getAvailableTypeFilters = () => {
           />
           
           <div className="flex-grow">
-            <div className="flex items-center justify-between mb-4">
-              <div className="text-sm text-gray-600">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-4 mb-4">
+              <div className="text-xs sm:text-sm text-gray-600">
                 {loading ? 'Loading...' : `${totalCount} listings found`}
               </div>
               <Sort 
@@ -219,8 +217,8 @@ const getAvailableTypeFilters = () => {
             
             {loading && filteredListings.length > 0 && (
               <div className="mb-4 text-center">
-                <div className="inline-flex items-center px-4 py-2 bg-emerald-50 text-emerald-600 rounded-md">
-                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-emerald-600 mr-2"></div>
+                <div className="inline-flex items-center px-3 py-2 sm:px-4 sm:py-2 bg-emerald-50 text-emerald-600 rounded-md text-sm">
+                  <div className="animate-spin rounded-full h-3 w-3 sm:h-4 sm:w-4 border-b-2 border-emerald-600 mr-2"></div>
                   Updating listings...
                 </div>
               </div>

@@ -13,19 +13,19 @@ const FilterSidebar = ({ showFilters, filters, setFilters, providerOptions, onRe
   };
 
   return (
-    <div className="w-full md:w-64 bg-white p-4 rounded-lg shadow-sm border border-gray-100">
-      <h3 className="font-semibold text-lg mb-4 text-gray-800">
+    <div className="w-full lg:w-64 bg-white p-3 sm:p-4 rounded-lg shadow-sm border border-gray-100 card-responsive">
+      <h3 className="font-semibold text-base sm:text-lg mb-3 sm:mb-4 text-gray-800">
         Filters
       </h3>
       
       {/* Price Range Filter */}
-      <div className="mb-6">
-        <h4 className="font-medium mb-2 text-gray-700">Price Range</h4>
+      <div className="mb-4 sm:mb-6">
+        <h4 className="font-medium mb-2 text-sm sm:text-base text-gray-700">Price Range</h4>
         <div className="flex items-center justify-between mb-2">
-          <span className="text-sm text-gray-600">
+          <span className="text-xs sm:text-sm text-gray-600">
             R{filters.priceRange[0]}
           </span>
-          <span className="text-sm text-gray-600">
+          <span className="text-xs sm:text-sm text-gray-600">
             R{filters.priceRange[1]}
           </span>
         </div>
@@ -36,7 +36,7 @@ const FilterSidebar = ({ showFilters, filters, setFilters, providerOptions, onRe
           step="100"
           value={filters.priceRange[1]} 
           onChange={handlePriceRangeChange}
-          className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-emerald-600" 
+          className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-emerald-600 touch-target" 
         />
         <div className="flex justify-between text-xs text-gray-500 mt-1">
           <span>R0</span>

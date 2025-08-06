@@ -218,31 +218,31 @@ const NotificationCard = ({
 
   return (
     <div
-      className={`p-4 hover:bg-gray-50 transition-colors ${
+      className={`p-3 sm:p-4 hover:bg-gray-50 transition-colors ${
         !notification.isRead ? 'bg-emerald-50' : ''
       } ${!isLast ? 'border-b border-gray-100' : ''}`}
     >
-      <div className="flex items-start space-x-3">
+      <div className="flex items-start space-x-2 sm:space-x-3">
         {getNotificationIcon(notification.type, notification.priority)}
 
         <div className="flex-1 min-w-0">
-          <div className="flex items-start justify-between">
+          <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between">
             <div className="flex-1 min-w-0">
               <div className="flex items-center space-x-2 mb-1">
-                <p className="text-sm font-semibold text-gray-900 truncate">
+                <p className="text-xs sm:text-sm font-semibold text-gray-900 truncate">
                   {notification.title}
                 </p>
                 {!notification.isRead && (
-                  <span className="inline-block w-2 h-2 bg-emerald-500 rounded-full flex-shrink-0"></span>
+                  <span className="inline-block w-1.5 h-1.5 sm:w-2 sm:h-2 bg-emerald-500 rounded-full flex-shrink-0"></span>
                 )}
                 {notification.priority === 'high' && (
-                  <span className="inline-block px-2 py-0.5 text-xs font-medium bg-red-100 text-red-800 rounded-full">
+                  <span className="inline-block px-1.5 sm:px-2 py-0.5 text-xs font-medium bg-red-100 text-red-800 rounded-full">
                     High Priority
                   </span>
                 )}
               </div>
 
-              <p className="text-sm text-gray-600 mb-2 leading-relaxed">
+              <p className="text-xs sm:text-sm text-gray-600 mb-2 leading-relaxed">
                 {notification.message || notification.data?.message || notification.title || JSON.stringify(notification)}
               </p>
 
@@ -264,7 +264,7 @@ const NotificationCard = ({
                 </div>
               )}
 
-              <div className="flex items-center space-x-4 text-xs text-gray-500">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-4 text-xs text-gray-500 space-y-1 sm:space-y-0">
                 <span className="font-medium">{getNotificationTypeText(notification.type)}</span>
                 <span>{getTimeAgo(notification.createdAt)}</span>
                 {notification.sender_name && notification.sender_name !== 'System' && (
@@ -275,32 +275,32 @@ const NotificationCard = ({
               </div>
             </div>
 
-            <div className="flex space-x-1 ml-4 flex-shrink-0">
+            <div className="flex space-x-1 mt-2 sm:mt-0 sm:ml-4 flex-shrink-0 justify-end sm:justify-start">
               {!notification.isRead && (
                 <button
                   onClick={handleMarkAsRead}
                   title="Mark as read"
-                  className="p-1 text-emerald-600 hover:text-emerald-800 hover:bg-emerald-100 rounded transition-colors"
+                  className="p-1 text-emerald-600 hover:text-emerald-800 hover:bg-emerald-100 rounded transition-colors touch-target"
                 >
-                  <Check size={16} />
+                  <Check size={14} className="sm:w-4 sm:h-4" />
                 </button>
               )}
               {hasActionableContent && (
                 <button
                   onClick={handleNavigate}
                   title="View details"
-                  className="p-1 text-blue-600 hover:text-blue-800 hover:bg-blue-100 rounded transition-colors"
+                  className="p-1 text-blue-600 hover:text-blue-800 hover:bg-blue-100 rounded transition-colors touch-target"
                 >
-                  <ExternalLink size={16} />
+                  <ExternalLink size={14} className="sm:w-4 sm:h-4" />
                 </button>
               )}
               <button
                 onClick={handleDelete}
                 title="Delete notification"
                 disabled={isDeleting}
-                className="p-1 text-red-600 hover:text-red-800 hover:bg-red-100 rounded transition-colors disabled:opacity-50"
+                className="p-1 text-red-600 hover:text-red-800 hover:bg-red-100 rounded transition-colors disabled:opacity-50 touch-target"
               >
-                <Trash2 size={16} />
+                <Trash2 size={14} className="sm:w-4 sm:h-4" />
               </button>
             </div>
           </div>

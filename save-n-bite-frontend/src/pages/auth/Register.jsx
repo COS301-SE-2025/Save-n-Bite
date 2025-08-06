@@ -49,7 +49,7 @@ const Register = () => {
   };
 
   return (
-    <div className="min-h-[80vh] flex items-center justify-center px-4 py-12">
+    <div className="min-h-[80vh] flex items-center justify-center px-4 py-12 ">
       <div className="max-w-6xl w-full bg-white rounded-lg shadow-sm overflow-hidden">
         <div className="md:flex">
           {/* Left Side - Branding */}
