@@ -27,6 +27,7 @@ const CustomerNavBar = () => {
           </span>
         </Link>
 
+
         {/* Desktop Navigation */}
         <div className="hidden md:flex items-center space-x-6 lg:space-x-8">
           <Link to="/food-listing" className="nav-link text-sm lg:text-base">Browse Food</Link>
@@ -34,7 +35,10 @@ const CustomerNavBar = () => {
           <Link to="/cart" className="nav-link text-sm lg:text-base">My Cart</Link>
           <Link to="/orders" className="nav-link text-sm lg:text-base">Order History</Link>
           <Link to="/profile" className="nav-link text-sm lg:text-base">My Profile</Link>
-          <Link to="/settings" className="nav-link text-sm lg:text-base">Settings</Link>
+        
+     
+          <Link to="/customer-settings" className="nav-link">Settings</Link>
+
 
           <NotificationBell />
 
@@ -76,6 +80,7 @@ const CustomerNavBar = () => {
 
       {/* Mobile Menu Links */}
       {isMenuOpen && (
+
         <div className="md:hidden mt-3 pb-4 px-4 border-t border-gray-200 bg-white dark:bg-gray-800">
           <div className="flex flex-col space-y-2 pt-4">
             <Link to="/food-listing" className="mobile-nav-link">Browse Food</Link>
@@ -83,7 +88,7 @@ const CustomerNavBar = () => {
             <Link to="/cart" className="mobile-nav-link">My Cart</Link>
             <Link to="/orders" className="mobile-nav-link">Order History</Link>
             <Link to="/profile" className="mobile-nav-link">My Profile</Link>
-            <Link to="/settings" className="mobile-nav-link">Settings</Link>
+            <Link to="/customer-settings" className="mobile-nav-link">Settings</Link>
             
             <div className="pt-2 border-t border-gray-200">
               <button
@@ -94,6 +99,9 @@ const CustomerNavBar = () => {
               </button>
             </div>
             
+
+             
+   
             <button
               onClick={() => setIsHelpOpen(true)}
               className="flex items-center mobile-nav-link"

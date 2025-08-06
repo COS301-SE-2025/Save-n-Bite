@@ -47,4 +47,9 @@ urlpatterns = [
     # Self-service password reset URLs
     path('auth/forgot-password/', views.request_password_reset, name='request_password_reset'),
     path('auth/check-email/', views.check_email_exists, name='check_email_exists'),  # Optional
+
+    # Food Providers endpoints
+    path('auth/providers/', views.get_food_providers, name='get_food_providers'),
+    path('auth/providers/<uuid:provider_id>/', views.get_food_provider_by_id, name='get_food_provider_by_id'),
+    path('auth/providers/locations/', views.get_food_providers_locations, name='get_food_providers_locations'),
 ]

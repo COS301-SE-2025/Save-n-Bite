@@ -983,3 +983,418 @@ def check_email_exists(request):
                 'message': 'Failed to check email'
             }
         }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    
+@api_view(['GET'])
+@permission_classes([AllowAny])  # Allow anyone to view food providers
+def get_food_providers(request):
+    """
+    Get all verified food providers with their complete information
+    Supports optional filtering and search parameters
+    """
+    try:
+        from django.db.models import Q, Count
+        from django.core.paginator import Paginator
+        
+        # Start with all verified food providers
+        providers_query = User.objects.filter(
+            user_type='provider',
+            provider_profile__status='verified',
+            is_active=True
+        ).select_related('provider_profile')
+        
+        # Optional search parameter
+        search = request.GET.get('search', '').strip()
+        if search:
+            providers_query = providers_query.filter(
+                Q(provider_profile__business_name__icontains=search) |
+                Q(provider_profile__business_address__icontains=search) |
+                Q(provider_profile__business_email__icontains=search)
+            )
+        
+        # Optional status filter (though we're already filtering for verified)
+        status_filter = request.GET.get('status')
+        if status_filter and status_filter in ['pending_verification', 'verified', 'rejected']:
+            providers_query = providers_query.filter(provider_profile__status=status_filter)
+        
+        # Optional location filter (city)
+        city_filter = request.GET.get('city')
+        if city_filter:
+            providers_query = providers_query.filter(
+                provider_profile__business_address__icontains=city_filter
+            )
+        
+        # Optional filter for providers with coordinates (for map view)
+        has_coordinates = request.GET.get('has_coordinates')
+        if has_coordinates and has_coordinates.lower() == 'true':
+            providers_query = providers_query.filter(
+                provider_profile__latitude__isnull=False,
+                provider_profile__longitude__isnull=False
+            )
+        
+        # Pagination
+        page_size = min(int(request.GET.get('page_size', 50)), 200)  # Max 200 items
+        page_number = int(request.GET.get('page', 1))
+        
+        paginator = Paginator(providers_query, page_size)
+        page_obj = paginator.get_page(page_number)
+        
+        providers_list = []
+        for provider_user in page_obj:
+            profile = provider_user.provider_profile
+            
+            # Get additional stats (follower count, active listings count)
+            try:
+                from notifications.models import BusinessFollower
+                follower_count = BusinessFollower.objects.filter(business=profile).count()
+            except:
+                follower_count = 0
+            
+            try:
+                from food_listings.models import FoodListing
+                active_listings_count = FoodListing.objects.filter(
+                    provider=provider_user,
+                    status='active'
+                ).count()
+                total_listings_count = FoodListing.objects.filter(
+                    provider=provider_user
+                ).count()
+            except:
+                active_listings_count = 0
+                total_listings_count = 0
+            
+            # Build provider data
+            provider_data = {
+                'id': str(provider_user.UserID),  # Using UserID as per your model
+                'business_name': profile.business_name,
+                'business_email': profile.business_email,
+                'business_address': profile.business_address,
+                'business_contact': profile.business_contact,
+                'phone_number': profile.phone_number,
+                'business_hours': profile.business_hours,
+                'website': profile.website,
+                'status': profile.status,
+                'logo': profile.logo.url if profile.logo else None,
+                
+                # Location data
+                'coordinates': profile.coordinates,  # This uses the @property from your model
+                'latitude': float(profile.latitude) if profile.latitude else None,
+                'longitude': float(profile.longitude) if profile.longitude else None,
+                'geocoded_at': profile.geocoded_at.isoformat() if profile.geocoded_at else None,
+                'geocoding_failed': profile.geocoding_failed,
+                'openstreetmap_url': profile.openstreetmap_url,  # This uses the @property from your model
+                
+                # Stats
+                'follower_count': follower_count,
+                'active_listings_count': active_listings_count,
+                'total_listings_count': total_listings_count,
+                
+                # Account info
+                'joined_date': provider_user.date_joined.isoformat() if hasattr(provider_user, 'date_joined') else None,
+                'last_login': provider_user.last_login.isoformat() if provider_user.last_login else None,
+                
+                # Check if current user is following (if authenticated)
+                'is_following': False  # Will be updated below if user is authenticated
+            }
+            
+            # Add follow status if user is authenticated
+            if request.user.is_authenticated and request.user.user_type in ['customer', 'ngo']:
+                try:
+                    from notifications.models import BusinessFollower
+                    is_following = BusinessFollower.objects.filter(
+                        user=request.user,
+                        business=profile
+                    ).exists()
+                    provider_data['is_following'] = is_following
+                except:
+                    pass
+            
+            providers_list.append(provider_data)
+        
+        # Prepare response with pagination info
+        response_data = {
+            'providers': providers_list,
+            'pagination': {
+                'current_page': page_obj.number,
+                'total_pages': paginator.num_pages,
+                'total_count': paginator.count,
+                'has_next': page_obj.has_next(),
+                'has_previous': page_obj.has_previous(),
+                'page_size': page_size
+            },
+            'filters_applied': {
+                'search': search,
+                'status': status_filter,
+                'city': city_filter,
+                'has_coordinates': has_coordinates
+            }
+        }
+        
+        # Add summary stats
+        total_verified_providers = User.objects.filter(
+            user_type='provider',
+            provider_profile__status='verified',
+            is_active=True
+        ).count()
+        
+        response_data['summary'] = {
+            'total_verified_providers': total_verified_providers,
+            'providers_with_coordinates': User.objects.filter(
+                user_type='provider',
+                provider_profile__status='verified',
+                is_active=True,
+                provider_profile__latitude__isnull=False,
+                provider_profile__longitude__isnull=False
+            ).count()
+        }
+        
+        return Response(response_data, status=status.HTTP_200_OK)
+        
+    except ValueError as e:
+        return Response({
+            'error': {
+                'code': 'INVALID_PARAMETERS',
+                'message': 'Invalid request parameters',
+                'details': str(e)
+            }
+        }, status=status.HTTP_400_BAD_REQUEST)
+        
+    except Exception as e:
+        logger.error(f"Get food providers error: {str(e)}")
+        return Response({
+            'error': {
+                'code': 'PROVIDERS_FETCH_ERROR',
+                'message': 'Failed to fetch food providers',
+                'details': str(e)
+            }
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def get_food_provider_by_id(request, provider_id):
+    """
+    Get a specific food provider by their ID with detailed information
+    """
+    try:
+        # Get the provider user by UserID
+        provider_user = User.objects.select_related('provider_profile').get(
+            UserID=provider_id,
+            user_type='provider',
+            is_active=True
+        )
+        
+        profile = provider_user.provider_profile
+        
+        # Get additional stats
+        try:
+            from notifications.models import BusinessFollower
+            follower_count = BusinessFollower.objects.filter(business=profile).count()
+            
+            # Get list of followers if requested
+            include_followers = request.GET.get('include_followers', 'false').lower() == 'true'
+            followers_list = []
+            if include_followers:
+                followers = BusinessFollower.objects.filter(business=profile).select_related('user')[:10]  # Limit to 10
+                for follower in followers:
+                    followers_list.append({
+                        'id': str(follower.user.UserID),
+                        'name': follower.user.get_full_name(),
+                        'user_type': follower.user.user_type,
+                        'followed_since': follower.created_at.isoformat()
+                    })
+        except:
+            follower_count = 0
+            followers_list = []
+        
+        try:
+            from food_listings.models import FoodListing
+            active_listings_count = FoodListing.objects.filter(
+                provider=provider_user,
+                status='active'
+            ).count()
+            total_listings_count = FoodListing.objects.filter(
+                provider=provider_user
+            ).count()
+            
+            # Get recent listings if requested
+            include_recent_listings = request.GET.get('include_recent_listings', 'false').lower() == 'true'
+            recent_listings = []
+            if include_recent_listings:
+                listings = FoodListing.objects.filter(
+                    provider=provider_user,
+                    status='active'
+                ).order_by('-created_at')[:5]  # Last 5 active listings
+                
+                for listing in listings:
+                    recent_listings.append({
+                        'id': str(listing.id),
+                        'name': listing.name,
+                        'type': listing.type,
+                        'original_price': float(listing.original_price),
+                        'discounted_price': float(listing.discounted_price),
+                        'quantity_available': listing.quantity_available,
+                        'expiry_date': listing.expiry_date.isoformat(),
+                        'created_at': listing.created_at.isoformat()
+                    })
+        except:
+            active_listings_count = 0
+            total_listings_count = 0
+            recent_listings = []
+        
+        # Check if current user is following
+        is_following = False
+        if request.user.is_authenticated and request.user.user_type in ['customer', 'ngo']:
+            try:
+                from notifications.models import BusinessFollower
+                is_following = BusinessFollower.objects.filter(
+                    user=request.user,
+                    business=profile
+                ).exists()
+            except:
+                pass
+        
+        # Build comprehensive provider data
+        provider_data = {
+            'id': str(provider_user.UserID),
+            'business_name': profile.business_name,
+            'business_email': profile.business_email,
+            'business_address': profile.business_address,
+            'business_contact': profile.business_contact,
+            'phone_number': profile.phone_number,
+            'business_hours': profile.business_hours,
+            'website': profile.website,
+            'status': profile.status,
+            'logo': profile.logo.url if profile.logo else None,
+            
+            # Location data
+            'coordinates': profile.coordinates,
+            'latitude': float(profile.latitude) if profile.latitude else None,
+            'longitude': float(profile.longitude) if profile.longitude else None,
+            'geocoded_at': profile.geocoded_at.isoformat() if profile.geocoded_at else None,
+            'geocoding_failed': profile.geocoding_failed,
+            'geocoding_error': profile.geocoding_error,
+            'openstreetmap_url': profile.openstreetmap_url,
+            
+            # Account information
+            'joined_date': provider_user.date_joined.isoformat() if hasattr(provider_user, 'date_joined') else None,
+            'last_login': provider_user.last_login.isoformat() if provider_user.last_login else None,
+            'email_verified': provider_user.is_active,
+            
+            # Stats and engagement
+            'follower_count': follower_count,
+            'active_listings_count': active_listings_count,
+            'total_listings_count': total_listings_count,
+            'is_following': is_following,
+            
+            # Optional detailed data
+            'followers': followers_list if include_followers else [],
+            'recent_listings': recent_listings if include_recent_listings else []
+        }
+        
+        return Response({
+            'provider': provider_data
+        }, status=status.HTTP_200_OK)
+        
+    except User.DoesNotExist:
+        return Response({
+            'error': {
+                'code': 'PROVIDER_NOT_FOUND',
+                'message': 'Food provider not found'
+            }
+        }, status=status.HTTP_404_NOT_FOUND)
+        
+    except Exception as e:
+        logger.error(f"Get food provider by ID error: {str(e)}")
+        return Response({
+            'error': {
+                'code': 'PROVIDER_FETCH_ERROR',
+                'message': 'Failed to fetch food provider details',
+                'details': str(e)
+            }
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+# Optional: Lightweight endpoint for maps/location services
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def get_food_providers_locations(request):
+    """
+    Lightweight endpoint returning only location data for food providers
+    Useful for map views and location-based services
+    """
+    try:
+        # Only get providers with valid coordinates
+        providers = User.objects.filter(
+            user_type='provider',
+            provider_profile__status='verified',
+            is_active=True,
+            provider_profile__latitude__isnull=False,
+            provider_profile__longitude__isnull=False
+        ).select_related('provider_profile')
+        
+        # Optional bounding box filter for map viewport
+        north = request.GET.get('north')
+        south = request.GET.get('south') 
+        east = request.GET.get('east')
+        west = request.GET.get('west')
+        
+        if all([north, south, east, west]):
+            try:
+                providers = providers.filter(
+                    provider_profile__latitude__lte=float(north),
+                    provider_profile__latitude__gte=float(south),
+                    provider_profile__longitude__lte=float(east),
+                    provider_profile__longitude__gte=float(west)
+                )
+            except ValueError:
+                pass  # Ignore invalid bounding box values
+        
+        locations_data = []
+        for provider_user in providers:
+            profile = provider_user.provider_profile
+            
+            # Get active listings count for marker
+            try:
+                from food_listings.models import FoodListing
+                active_listings = FoodListing.objects.filter(
+                    provider=provider_user,
+                    status='active'
+                ).count()
+            except:
+                active_listings = 0
+            
+            locations_data.append({
+                'id': str(provider_user.UserID),
+                'business_name': profile.business_name,
+                'business_address': profile.business_address,
+                'coordinates': {
+                    'lat': float(profile.latitude),
+                    'lng': float(profile.longitude)
+                },
+                'business_hours': profile.business_hours,
+                'phone_number': profile.phone_number,
+                'active_listings_count': active_listings,
+                'logo': profile.logo.url if profile.logo else None,
+                'openstreetmap_url': profile.openstreetmap_url
+            })
+        
+        return Response({
+            'providers': locations_data,
+            'total_count': len(locations_data),
+            'bounding_box': {
+                'north': north,
+                'south': south,
+                'east': east,
+                'west': west
+            } if all([north, south, east, west]) else None
+        }, status=status.HTTP_200_OK)
+        
+    except Exception as e:
+        logger.error(f"Get food providers locations error: {str(e)}")
+        return Response({
+            'error': {
+                'code': 'LOCATIONS_FETCH_ERROR',
+                'message': 'Failed to fetch provider locations',
+                'details': str(e)
+            }
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
