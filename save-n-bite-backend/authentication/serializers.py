@@ -4,8 +4,11 @@ from rest_framework import serializers
 from django.contrib.auth import authenticate
 from django.contrib.auth.password_validation import validate_password
 from .models import User, CustomerProfile, NGOProfile, FoodProviderProfile
+from django.contrib.auth import get_user_model
 import base64
 from django.core.files.base import ContentFile
+
+User = get_user_model()
 
 class BaseRegistrationSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True, validators=[validate_password])
@@ -233,85 +236,87 @@ class LoginSerializer(serializers.Serializer):
 
         return attrs
 
-# authentication/serializers.py - Update your existing UserProfileSerializer
-
 class UserProfileSerializer(serializers.ModelSerializer):
-    profile = serializers.SerializerMethodField()
-    notification_preferences = serializers.SerializerMethodField()
-    following_count = serializers.SerializerMethodField()
-    followers_count = serializers.SerializerMethodField()
-
+    """FIXED: Corrected serializer for user profile information"""
+    member_since = serializers.SerializerMethodField()
+    profile_type = serializers.SerializerMethodField()
+    full_name = serializers.SerializerMethodField()
+    verification_status = serializers.SerializerMethodField()
+    profile_details = serializers.SerializerMethodField()
+    
     class Meta:
         model = User
-        fields = ['id', 'email', 'user_type', 'role', 'profile', 'notification_preferences', 'following_count', 'followers_count']
-
-    def get_profile(self, obj):
-        if obj.user_type == 'customer' and hasattr(obj, 'customer_profile'):
-            return {
-                'full_name': obj.customer_profile.full_name,
-                'profile_image': obj.customer_profile.profile_image.url if obj.customer_profile.profile_image else None
-            }
-        elif obj.user_type == 'ngo' and hasattr(obj, 'ngo_profile'):
-            return {
-                'organisation_name': obj.ngo_profile.organisation_name,
-                'representative_name': obj.ngo_profile.representative_name,
-                'organisation_email': obj.ngo_profile.organisation_email,
-                'status': obj.ngo_profile.status,
-                'organisation_logo': obj.ngo_profile.organisation_logo.url if obj.ngo_profile.organisation_logo else None
-            }
-        elif obj.user_type == 'provider' and hasattr(obj, 'provider_profile'):
-            return {
-                'business_name': obj.provider_profile.business_name,
-                'business_email': obj.provider_profile.business_email,
-                'business_address': obj.provider_profile.business_address,
-                'business_contact': obj.provider_profile.business_contact,
-                'phone_number': obj.provider_profile.phone_number,
-                'business_hours': obj.provider_profile.business_hours,
-                'website': obj.provider_profile.website,
-                'status': obj.provider_profile.status,
-                'logo': obj.provider_profile.logo.url if obj.provider_profile.logo else None,
-                # ADD THESE NEW FIELDS:
-                'coordinates': obj.provider_profile.coordinates,
-                'openstreetmap_url': obj.provider_profile.openstreetmap_url
-            }
-        return {}
-
-    # Keep your existing notification and following methods unchanged
-    def get_notification_preferences(self, obj):
-        """Get user's notification preferences"""
+        fields = [
+            'UserID', 'email', 'phone_number', 'profile_picture', 
+            'user_type', 'member_since', 'profile_type', 'full_name',
+            'verification_status', 'profile_details'
+        ]
+    
+    def get_member_since(self, obj):
+        return obj.date_joined.strftime('%B %Y')
+    
+    def get_profile_type(self, obj):
+        type_mapping = {
+            'customer': 'Individual Consumer',
+            'ngo': 'Organization',
+            'provider': 'Food Provider'
+        }
+        return type_mapping.get(obj.user_type, 'Unknown')
+    
+    def get_full_name(self, obj):
+        """Get the appropriate display name based on user type"""
         try:
-            from notifications.models import NotificationPreferences
-            prefs, created = NotificationPreferences.objects.get_or_create(user=obj)
-            return {
-                'email_notifications': prefs.email_notifications,
-                'new_listing_notifications': prefs.new_listing_notifications,
-                'promotional_notifications': prefs.promotional_notifications,
-                'weekly_digest': prefs.weekly_digest
-            }
-        except:
-            return {
-                'email_notifications': True,
-                'new_listing_notifications': True,
-                'promotional_notifications': False,
-                'weekly_digest': True
-            }
-
-    def get_following_count(self, obj):
-        """Get count of businesses user is following (for customers/NGOs)"""
-        if obj.user_type in ['customer', 'ngo']:
-            try:
-                from notifications.models import BusinessFollower
-                return BusinessFollower.objects.filter(user=obj).count()
-            except:
-                return 0
-        return 0
-
-    def get_followers_count(self, obj):
-        """Get count of followers for business (for providers)"""
-        if obj.user_type == 'provider' and hasattr(obj, 'provider_profile'):
-            try:
-                from notifications.models import BusinessFollower
-                return BusinessFollower.objects.filter(business=obj.provider_profile).count()
-            except:
-                return 0
-        return 0
+            if obj.user_type == 'customer' and hasattr(obj, 'customer_profile'):
+                return obj.customer_profile.full_name
+            elif obj.user_type == 'ngo' and hasattr(obj, 'ngo_profile'):
+                return obj.ngo_profile.representative_name
+            elif obj.user_type == 'provider' and hasattr(obj, 'provider_profile'):
+                return obj.provider_profile.business_name
+            return obj.get_full_name() or obj.username
+        except Exception:
+            return obj.get_full_name() or obj.username
+    
+    def get_verification_status(self, obj):
+        """Get verification status - FIXED to handle missing attributes"""
+        try:
+            if obj.user_type == 'customer':
+                # Customers don't have verification_status field - they're auto-verified
+                return 'verified'
+            elif obj.user_type == 'ngo' and hasattr(obj, 'ngo_profile'):
+                return obj.ngo_profile.status
+            elif obj.user_type == 'provider' and hasattr(obj, 'provider_profile'):
+                return obj.provider_profile.status
+            return 'pending'
+        except Exception:
+            return 'pending'
+    
+    def get_profile_details(self, obj):
+        """Get additional profile details based on user type"""
+        try:
+            if obj.user_type == 'customer' and hasattr(obj, 'customer_profile'):
+                profile = obj.customer_profile
+                return {
+                    'profile_image': profile.profile_image.url if profile.profile_image else None,
+                }
+            elif obj.user_type == 'ngo' and hasattr(obj, 'ngo_profile'):
+                profile = obj.ngo_profile
+                return {
+                    'organisation_name': profile.organisation_name,
+                    'organisation_contact': profile.organisation_contact,
+                    'organisation_email': profile.organisation_email,
+                    'representative_name': profile.representative_name,
+                    'city': profile.city,
+                    'organisation_logo': profile.organisation_logo.url if profile.organisation_logo else None,
+                }
+            elif obj.user_type == 'provider' and hasattr(obj, 'provider_profile'):
+                profile = obj.provider_profile
+                return {
+                    'business_name': profile.business_name,
+                    'business_email': profile.business_email,
+                    'business_contact': profile.business_contact,
+                    'business_address': profile.business_address,
+                    'logo': profile.logo.url if profile.logo else None,
+                }
+            return {}
+        except Exception:
+            return {}

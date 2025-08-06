@@ -52,4 +52,9 @@ urlpatterns = [
     path('auth/providers/', views.get_food_providers, name='get_food_providers'),
     path('auth/providers/<uuid:provider_id>/', views.get_food_provider_by_id, name='get_food_provider_by_id'),
     path('auth/providers/locations/', views.get_food_providers_locations, name='get_food_providers_locations'),
+
+    # Profile endpoints
+    path('auth/profile/me/', views.get_my_profile, name='get_my_profile'),
+    path('auth/profile/me/update/', views.update_my_profile, name='update_my_profile'),
+    path('auth/profile/me/orders/', views.get_order_history, name='get_order_history'),
 ]

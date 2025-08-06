@@ -9,7 +9,9 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.settings import api_settings
 from django.contrib.auth import authenticate, login
 from django.contrib.auth import get_user_model
+from django.db.models import Count, Sum, Q, Avg
 from django.utils import timezone
+from decimal import Decimal
 from rest_framework.response import Response
 from datetime import timedelta
 import logging
@@ -23,7 +25,10 @@ from .serializers import (
     LoginSerializer,
     UserProfileSerializer
 )
-from .models import User
+from .models import User, FoodProviderProfile, CustomerProfile, NGOProfile
+from interactions.models import Interaction, Order
+from reviews.models import Review
+from notifications.models import BusinessFollower
 logger = logging.getLogger(__name__)
 
 def get_tokens_for_user(user):
@@ -1395,6 +1400,456 @@ def get_food_providers_locations(request):
             'error': {
                 'code': 'LOCATIONS_FETCH_ERROR',
                 'message': 'Failed to fetch provider locations',
+                'details': str(e)
+            }
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_my_profile(request):
+    """
+    Get comprehensive profile data for the current user including:
+    - User details
+    - Order history and statistics
+    - Businesses they follow
+    - Reviews they've written
+    - Impact statistics
+    """
+    user = request.user
+    
+    try:
+        # Get user profile based on type
+        profile_data = {}
+        
+        if user.user_type == 'customer':
+            try:
+                customer_profile = user.customer_profile
+                profile_data = {
+                    'full_name': customer_profile.full_name,
+                    'profile_type': 'Individual Consumer',
+                    'verification_status': 'verified',  # FIXED: Customers are auto-verified
+                    'profile_image': customer_profile.profile_image.url if customer_profile.profile_image else None,
+                }
+            except CustomerProfile.DoesNotExist:
+                profile_data = {
+                    'full_name': user.get_full_name() or user.username,
+                    'profile_type': 'Individual Consumer',
+                    'verification_status': 'verified'  # FIXED: Default to verified for customers
+                }
+                
+        elif user.user_type == 'ngo':
+            try:
+                ngo_profile = user.ngo_profile
+                profile_data = {
+                    'full_name': ngo_profile.representative_name,
+                    'organisation_name': ngo_profile.organisation_name,
+                    'profile_type': 'Organization',
+                    'verification_status': ngo_profile.status,
+                    'organisation_contact': ngo_profile.organisation_contact,
+                    'organisation_email': ngo_profile.organisation_email
+                }
+            except NGOProfile.DoesNotExist:
+                profile_data = {
+                    'full_name': user.get_full_name() or user.username,
+                    'profile_type': 'Organization',
+                    'verification_status': 'pending'
+                }
+                
+        elif user.user_type == 'provider':
+            try:
+                provider_profile = user.provider_profile
+                profile_data = {
+                    'full_name': provider_profile.business_name,
+                    'business_name': provider_profile.business_name,
+                    'profile_type': 'Food Provider',
+                    'verification_status': provider_profile.status,
+                    'business_email': provider_profile.business_email,
+                    'business_contact': provider_profile.business_contact,
+                    'business_address': provider_profile.business_address
+                }
+            except FoodProviderProfile.DoesNotExist:
+                profile_data = {
+                    'full_name': user.get_full_name() or user.username,
+                    'profile_type': 'Food Provider',
+                    'verification_status': 'pending'
+                }
+        
+        # Base user information
+        user_data = {
+            'id': str(user.UserID),
+            'email': user.email,
+            'phone_number': user.phone_number,
+            'profile_picture': user.profile_picture,
+            'member_since': user.date_joined.strftime('%B %Y'),
+            'user_type': user.user_type,
+            **profile_data
+        }
+        
+        # Get order statistics
+        current_month = timezone.now().replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+        
+        # Get all interactions for this user
+        user_interactions = Interaction.objects.filter(user=user)
+        user_orders = Order.objects.filter(interaction__user=user)
+        
+        # Order statistics
+        completed_orders = user_orders.filter(status='completed').count()
+        cancelled_orders = user_orders.filter(status='cancelled').count()
+        missed_pickups = user_orders.filter(status='missed').count()
+        
+        # This month's orders for impact calculation
+        this_month_orders = user_orders.filter(
+            interaction__created_at__gte=current_month,
+            status='completed'
+        )
+        
+        order_statistics = {
+            'completed_orders': completed_orders,
+            'cancelled_orders': cancelled_orders,
+            'missed_pickups': missed_pickups,
+            'total_orders': completed_orders + cancelled_orders + missed_pickups
+        }
+        
+        # Get businesses they follow (only for customers and NGOs)
+        followed_businesses = []
+        if user.user_type in ['customer', 'ngo']:
+            try:
+                following_relationships = BusinessFollower.objects.filter(user=user).select_related(
+                    'business__user'
+                )
+                
+                for follow in following_relationships:
+                    business = follow.business
+                    followed_businesses.append({
+                        'id': str(business.user.UserID),
+                        'business_name': business.business_name,
+                        'business_email': business.business_email,
+                        'logo': business.logo.url if business.logo else None,
+                        'status': business.status,
+                        'followed_since': follow.created_at.strftime('%B %Y'),
+                        'business_address': business.business_address
+                    })
+            except Exception as e:
+                logger.error(f"Error fetching followed businesses: {str(e)}")
+                followed_businesses = []
+        
+        # Get user's reviews - FIXED: Don't slice before using in other queries
+        all_user_reviews = Review.objects.filter(
+            reviewer=user,
+            status__in=['active', 'flagged']
+        ).select_related('business')
+        
+        # Get latest 10 reviews for display
+        recent_reviews = all_user_reviews.order_by('-created_at')[:10]
+        
+        reviews_data = []
+        for review in recent_reviews:
+            reviews_data.append({
+                'id': str(review.id),
+                'business_name': review.business.business_name,
+                'general_rating': review.general_rating,
+                'general_comment': review.general_comment,
+                'food_review': review.food_review,
+                'business_review': review.business_review,
+                'created_at': review.created_at.strftime('%B %d, %Y'),
+                'review_source': review.review_source
+            })
+        
+        # Calculate impact statistics - FIXED: Don't use sliced querysets in aggregations
+        try:
+            current_month = timezone.now().replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+            
+            # Get completed orders this month - separate count and sum queries
+            this_month_completed = Order.objects.filter(
+                interaction__user=user,
+                interaction__created_at__gte=current_month,
+                status='completed'
+            )
+            
+            meals_this_month = sum(order.interaction.quantity for order in this_month_completed)
+            money_saved = sum(float(order.interaction.total_amount) for order in this_month_completed)
+            
+            # Get total completed orders - separate query
+            all_completed = Order.objects.filter(
+                interaction__user=user,
+                status='completed'
+            )
+            
+            total_meals = sum(order.interaction.quantity for order in all_completed)
+            
+            impact_statistics = {
+                'meals_rescued_this_month': meals_this_month,
+                'co2_emissions_prevented_kg': round(meals_this_month * 1.3, 1),
+                'total_meals_rescued': total_meals,
+                'total_co2_prevented_kg': round(total_meals * 1.3, 1),
+                'money_saved_this_month': round(money_saved, 2)
+            }
+            
+        except Exception as e:
+            logger.error(f"Error calculating impact: {str(e)}")
+            impact_statistics = {
+                'meals_rescued_this_month': 0,
+                'co2_emissions_prevented_kg': 0.0,
+                'total_meals_rescued': 0,
+                'total_co2_prevented_kg': 0.0,
+                'money_saved_this_month': 0.0
+            }
+        
+        # Review statistics - FIXED: Use count() instead of len() on sliced queryset
+        review_stats = {
+            'total_reviews': all_user_reviews.count(),
+            'average_rating_given': round(float(
+                all_user_reviews.filter(
+                    general_rating__isnull=False
+                ).aggregate(Avg('general_rating'))['general_rating__avg'] or 0
+            ), 2)
+        }
+        
+        # Response data
+        response_data = {
+            'user_details': user_data,
+            'order_statistics': order_statistics,
+            'followed_businesses': {
+                'count': len(followed_businesses),
+                'businesses': followed_businesses
+            },
+            'reviews': {
+                'count': len(reviews_data),
+                'recent_reviews': reviews_data,
+                'statistics': review_stats
+            },
+            'impact_statistics': impact_statistics,
+            'notification_preferences': get_user_notification_preferences(user)
+        }
+        
+        return Response(response_data, status=status.HTTP_200_OK)
+        
+    except Exception as e:
+        logger.error(f"Error fetching profile data for user {user.email}: {str(e)}")
+        return Response({
+            'error': {
+                'code': 'PROFILE_FETCH_ERROR',
+                'message': 'Failed to fetch profile data',
+                'details': str(e)
+            }
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+def get_user_notification_preferences(user):
+    """Helper function to get user notification preferences"""
+    try:
+        from notifications.models import NotificationPreferences
+        prefs, created = NotificationPreferences.objects.get_or_create(user=user)
+        return {
+            'email_notifications': prefs.email_notifications,
+            'new_listing_notifications': prefs.new_listing_notifications,
+            'promotional_notifications': prefs.promotional_notifications,
+            'weekly_digest': prefs.weekly_digest
+        }
+    except Exception:
+        return {
+            'email_notifications': True,
+            'new_listing_notifications': True,
+            'promotional_notifications': False,
+            'weekly_digest': True
+        }
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_order_history(request):
+    """
+    Get detailed order history for the current user
+    Supports pagination and filtering
+    """
+    user = request.user
+    
+    # Get query parameters
+    page = int(request.GET.get('page', 1))
+    limit = int(request.GET.get('limit', 20))
+    order_status = request.GET.get('status', 'all')  # all, completed, cancelled, pending
+    order_type = request.GET.get('type', 'all')  # all, purchase, donation
+    
+    try:
+        # Base queryset
+        orders_query = Order.objects.filter(
+            interaction__user=user
+        ).select_related(
+            'interaction',
+            'interaction__business',
+            'interaction__business__user'
+        ).prefetch_related(
+            'interaction__items',
+            'interaction__items__food_listing'
+        ).order_by('-created_at')
+        
+        # Apply filters
+        if order_status != 'all':
+            orders_query = orders_query.filter(status=order_status)
+        
+        if order_type != 'all':
+            if order_type == 'purchase':
+                orders_query = orders_query.filter(interaction__interaction_type='Purchase')
+            elif order_type == 'donation':
+                orders_query = orders_query.filter(interaction__interaction_type='Donation')
+        
+        # Pagination
+        total_count = orders_query.count()
+        offset = (page - 1) * limit
+        orders = orders_query[offset:offset + limit]
+        
+        # Serialize orders
+        orders_data = []
+        for order in orders:
+            interaction = order.interaction
+            business = interaction.business
+            
+            # Get food items
+            items_data = []
+            for item in interaction.items.all():
+                items_data.append({
+                    'food_listing_id': str(item.food_listing.id),
+                    'name': item.food_listing.name,
+                    'description': item.food_listing.description,
+                    'quantity': item.quantity,
+                    'unit_price': float(item.unit_price),
+                    'total_price': float(item.total_price),
+                    'expiry_date': item.food_listing.expiry_date.isoformat() if item.food_listing.expiry_date else None
+                })
+            
+            orders_data.append({
+                'order_id': str(order.id),
+                'interaction_id': str(interaction.id),
+                'business': {
+                    'id': str(business.user.UserID),
+                    'name': business.business_name,
+                    'logo': business.logo.url if business.logo else None,
+                    'email': business.business_email
+                },
+                'order_type': interaction.interaction_type,
+                'status': order.status,
+                'total_amount': float(interaction.total_amount),
+                'quantity': interaction.quantity,
+                'pickup_window': order.pickup_window,
+                'pickup_code': order.pickup_code,
+                'items': items_data,
+                'created_at': order.created_at.isoformat(),
+                'completed_at': order.completed_at.isoformat() if order.completed_at else None,
+                'can_review': order.status == 'completed' and not hasattr(interaction, 'review')
+            })
+        
+        # Pagination info
+        total_pages = (total_count + limit - 1) // limit
+        has_next = page < total_pages
+        has_previous = page > 1
+        
+        return Response({
+            'orders': orders_data,
+            'pagination': {
+                'current_page': page,
+                'total_pages': total_pages,
+                'total_count': total_count,
+                'has_next': has_next,
+                'has_previous': has_previous,
+                'limit': limit
+            },
+            'filters': {
+                'status': order_status,
+                'type': order_type
+            }
+        }, status=status.HTTP_200_OK)
+        
+    except Exception as e:
+        logger.error(f"Error fetching order history for user {user.email}: {str(e)}")
+        return Response({
+            'error': {
+                'code': 'ORDER_HISTORY_ERROR',
+                'message': 'Failed to fetch order history',
+                'details': str(e)
+            }
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@api_view(['PUT'])
+@permission_classes([IsAuthenticated])
+def update_my_profile(request):
+    """
+    Update user profile information
+    """
+    user = request.user
+    data = request.data
+    
+    try:
+        # Update base user fields
+        if 'email' in data:
+            user.email = data['email']
+        if 'phone_number' in data:
+            user.phone_number = data['phone_number']
+        if 'profile_picture' in data:
+            user.profile_picture = data['profile_picture']
+        
+        user.save()
+        
+        # Update profile-specific fields based on user type
+        if user.user_type == 'customer':
+            try:
+                customer_profile = user.customer_profile
+                if 'full_name' in data:
+                    customer_profile.full_name = data['full_name']
+                # Note: CustomerProfile doesn't have dietary_restrictions or preferred_pickup_areas
+                # Only update fields that actually exist
+                customer_profile.save()
+            except CustomerProfile.DoesNotExist:
+                # Create profile if it doesn't exist
+                CustomerProfile.objects.create(
+                    user=user,
+                    full_name=data.get('full_name', user.get_full_name() or user.username)
+                )
+                
+        elif user.user_type == 'ngo':
+            try:
+                ngo_profile = user.ngo_profile
+                if 'representative_name' in data:
+                    ngo_profile.representative_name = data['representative_name']
+                if 'organisation_contact' in data:
+                    ngo_profile.organisation_contact = data['organisation_contact']
+                if 'organisation_email' in data:
+                    ngo_profile.organisation_email = data['organisation_email']
+                ngo_profile.save()
+            except NGOProfile.DoesNotExist:
+                pass  # Cannot create NGO profile without required verification docs
+                
+        elif user.user_type == 'provider':
+            try:
+                provider_profile = user.provider_profile
+                if 'business_name' in data:
+                    provider_profile.business_name = data['business_name']
+                if 'business_email' in data:
+                    provider_profile.business_email = data['business_email']
+                if 'business_contact' in data:
+                    provider_profile.business_contact = data['business_contact']
+                if 'business_address' in data:
+                    provider_profile.business_address = data['business_address']
+                provider_profile.save()
+            except FoodProviderProfile.DoesNotExist:
+                pass  # Cannot create provider profile without required verification docs
+        
+        return Response({
+            'message': 'Profile updated successfully',
+            'user': {
+                'id': str(user.UserID),
+                'email': user.email,
+                'phone_number': user.phone_number,
+                'profile_picture': user.profile_picture
+            }
+        }, status=status.HTTP_200_OK)
+        
+    except Exception as e:
+        logger.error(f"Error updating profile for user {user.email}: {str(e)}")
+        return Response({
+            'error': {
+                'code': 'PROFILE_UPDATE_ERROR',
+                'message': 'Failed to update profile',
                 'details': str(e)
             }
         }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
