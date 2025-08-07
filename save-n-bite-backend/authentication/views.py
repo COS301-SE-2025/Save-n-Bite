@@ -23,7 +23,11 @@ from .serializers import (
     NGORegistrationSerializer,
     FoodProviderRegistrationSerializer,
     LoginSerializer,
-    UserProfileSerializer
+    UserProfileSerializer,
+    FoodProviderProfileUpdateSerializer,
+    BusinessPublicProfileSerializer,
+    BusinessTagSerializer,
+    PopularTagsSerializer
 )
 from .models import User, FoodProviderProfile, CustomerProfile, NGOProfile
 from interactions.models import Interaction, Order
@@ -167,28 +171,69 @@ def register_provider(request):
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def login_user(request):
-    """Login user with email and password"""
-    serializer = LoginSerializer(data=request.data)
+    """Login user with email and password - FIXED VERSION"""
     
-    if serializer.is_valid():
-        user = serializer.validated_data['user']
-        tokens = get_tokens_for_user(user)
-        user_serializer = UserProfileSerializer(user)
-        
+    # Manual validation instead of using LoginSerializer to avoid the KeyError
+    email = request.data.get('email')
+    password = request.data.get('password')
+    
+    if not email or not password:
         return Response({
-            'message': 'Login successful',
-            'user': user_serializer.data,
-            'token': tokens['token'],
-            'refreshToken': tokens['refresh_token']
-        }, status=status.HTTP_200_OK)
+            'error': {
+                'code': 'MISSING_CREDENTIALS', 
+                'message': 'Email and password are required',
+                'details': [
+                    {'field': 'email', 'message': 'Email is required'} if not email else {},
+                    {'field': 'password', 'message': 'Password is required'} if not password else {}
+                ]
+            }
+        }, status=status.HTTP_400_BAD_REQUEST)
     
-    return Response({
-        'error': {
-            'code': 'AUTHENTICATION_ERROR',
-            'message': 'Login failed',
-            'details': [{'field': field, 'message': errors[0]} for field, errors in serializer.errors.items()]
-        }
-    }, status=status.HTTP_401_UNAUTHORIZED)
+    try:
+        # Try to authenticate the user
+        user = authenticate(request, username=email, password=password)
+        
+        if user is not None:
+            # Check if user is active
+            if not user.is_active:
+                return Response({
+                    'error': {
+                        'code': 'ACCOUNT_DISABLED',
+                        'message': 'User account is disabled',
+                        'details': [{'field': 'general', 'message': 'Account has been deactivated'}]
+                    }
+                }, status=status.HTTP_401_UNAUTHORIZED)
+            
+            # Generate tokens
+            tokens = get_tokens_for_user(user)
+            user_serializer = UserProfileSerializer(user)
+            
+            return Response({
+                'message': 'Login successful',
+                'user': user_serializer.data,
+                'token': tokens['token'],
+                'refreshToken': tokens['refresh_token']
+            }, status=status.HTTP_200_OK)
+        
+        else:
+            # Authentication failed - invalid credentials
+            return Response({
+                'error': {
+                    'code': 'AUTHENTICATION_ERROR',
+                    'message': 'Invalid credentials',
+                    'details': [{'field': 'general', 'message': 'Invalid email or password'}]
+                }
+            }, status=status.HTTP_401_UNAUTHORIZED)
+            
+    except Exception as e:
+        logger.error(f"Login error: {str(e)}")
+        return Response({
+            'error': {
+                'code': 'LOGIN_ERROR',
+                'message': 'Login failed due to server error',
+                'details': [{'field': 'general', 'message': 'Please try again later'}]
+            }
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 @api_view(['POST'])
 @permission_classes([AllowAny])
@@ -1850,6 +1895,651 @@ def update_my_profile(request):
             'error': {
                 'code': 'PROFILE_UPDATE_ERROR',
                 'message': 'Failed to update profile',
+                'details': str(e)
+            }
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def get_food_providers(request):
+    """
+    ENHANCED: Get all verified food providers with their complete information including new fields
+    Supports optional filtering and search parameters
+    """
+    try:
+        from django.db.models import Q, Count
+        from django.core.paginator import Paginator
+        
+        # Start with all verified food providers
+        providers_query = User.objects.filter(
+            user_type='provider',
+            provider_profile__status='verified',
+            is_active=True
+        ).select_related('provider_profile')
+        
+        # Optional search parameter - NOW INCLUDES DESCRIPTION AND TAGS
+        search = request.GET.get('search', '').strip()
+        if search:
+            providers_query = providers_query.filter(
+                Q(provider_profile__business_name__icontains=search) |
+                Q(provider_profile__business_address__icontains=search) |
+                Q(provider_profile__business_email__icontains=search) |
+                Q(provider_profile__business_description__icontains=search) |
+                Q(provider_profile__business_tags__icontains=search)  # Search in tags JSON
+            )
+        
+        # NEW: Filter by business tags
+        tags_filter = request.GET.get('tags')
+        if tags_filter:
+            # Support multiple tags separated by commas
+            tag_list = [tag.strip().title() for tag in tags_filter.split(',') if tag.strip()]
+            for tag in tag_list:
+                providers_query = providers_query.filter(
+                    provider_profile__business_tags__icontains=tag
+                )
+        
+        # Optional status filter (though we're already filtering for verified)
+        status_filter = request.GET.get('status')
+        if status_filter and status_filter in ['pending_verification', 'verified', 'rejected']:
+            providers_query = providers_query.filter(provider_profile__status=status_filter)
+        
+        # Optional location filter (city)
+        city_filter = request.GET.get('city')
+        if city_filter:
+            providers_query = providers_query.filter(
+                provider_profile__business_address__icontains=city_filter
+            )
+        
+        # Optional filter for providers with coordinates (for map view)
+        has_coordinates = request.GET.get('has_coordinates')
+        if has_coordinates and has_coordinates.lower() == 'true':
+            providers_query = providers_query.filter(
+                provider_profile__latitude__isnull=False,
+                provider_profile__longitude__isnull=False
+            )
+        
+        # NEW: Filter by profile completeness
+        complete_profiles_only = request.GET.get('complete_profiles')
+        if complete_profiles_only and complete_profiles_only.lower() == 'true':
+            # This will be checked in the serialization since it's a computed property
+            pass
+        
+        # Pagination
+        page_size = min(int(request.GET.get('page_size', 50)), 200)  # Max 200 items
+        page_number = int(request.GET.get('page', 1))
+        
+        paginator = Paginator(providers_query, page_size)
+        page_obj = paginator.get_page(page_number)
+        
+        providers_list = []
+        for provider_user in page_obj:
+            profile = provider_user.provider_profile
+            
+            # Skip incomplete profiles if requested
+            if complete_profiles_only and complete_profiles_only.lower() == 'true':
+                if not profile.has_complete_profile():
+                    continue
+            
+            # Get additional stats (follower count, active listings count)
+            try:
+                from notifications.models import BusinessFollower
+                follower_count = BusinessFollower.objects.filter(business=profile).count()
+            except:
+                follower_count = 0
+            
+            try:
+                from food_listings.models import FoodListing
+                active_listings_count = FoodListing.objects.filter(
+                    provider=provider_user,
+                    status='active'
+                ).count()
+                total_listings_count = FoodListing.objects.filter(
+                    provider=provider_user
+                ).count()
+            except:
+                active_listings_count = 0
+                total_listings_count = 0
+            
+            # Build provider data - ENHANCED with new fields
+            provider_data = {
+                'id': str(provider_user.UserID),
+                'business_name': profile.business_name,
+                'business_email': profile.business_email,
+                'business_address': profile.business_address,
+                'business_contact': profile.business_contact,
+                'phone_number': profile.phone_number,
+                'business_hours': profile.business_hours,
+                'website': profile.website,
+                'status': profile.status,
+                'logo': profile.logo.url if profile.logo else None,
+                
+                # NEW FIELDS
+                'banner': profile.banner.url if profile.banner else None,
+                'business_description': profile.business_description,
+                'business_tags': profile.get_tag_display(),
+                'profile_completeness': profile.has_complete_profile(),
+                
+                # Location data
+                'coordinates': profile.coordinates,
+                'latitude': float(profile.latitude) if profile.latitude else None,
+                'longitude': float(profile.longitude) if profile.longitude else None,
+                'geocoded_at': profile.geocoded_at.isoformat() if profile.geocoded_at else None,
+                'geocoding_failed': profile.geocoding_failed,
+                'openstreetmap_url': profile.openstreetmap_url,
+                
+                # Stats
+                'follower_count': follower_count,
+                'active_listings_count': active_listings_count,
+                'total_listings_count': total_listings_count,
+                
+                # Account info
+                'joined_date': provider_user.date_joined.isoformat() if hasattr(provider_user, 'date_joined') else None,
+                'last_login': provider_user.last_login.isoformat() if provider_user.last_login else None,
+                
+                # Check if current user is following (if authenticated)
+                'is_following': False  # Will be updated below if user is authenticated
+            }
+            
+            # Add follow status if user is authenticated
+            if request.user.is_authenticated and request.user.user_type in ['customer', 'ngo']:
+                try:
+                    from notifications.models import BusinessFollower
+                    is_following = BusinessFollower.objects.filter(
+                        user=request.user,
+                        business=profile
+                    ).exists()
+                    provider_data['is_following'] = is_following
+                except:
+                    pass
+            
+            providers_list.append(provider_data)
+        
+        # Prepare response with pagination info
+        response_data = {
+            'providers': providers_list,
+            'pagination': {
+                'current_page': page_obj.number,
+                'total_pages': paginator.num_pages,
+                'total_count': paginator.count,
+                'has_next': page_obj.has_next(),
+                'has_previous': page_obj.has_previous(),
+                'page_size': page_size
+            },
+            'filters_applied': {
+                'search': search,
+                'status': status_filter,
+                'city': city_filter,
+                'has_coordinates': has_coordinates,
+                'tags': tags_filter,  # NEW
+                'complete_profiles_only': complete_profiles_only  # NEW
+            }
+        }
+        
+        # Add summary stats
+        total_verified_providers = User.objects.filter(
+            user_type='provider',
+            provider_profile__status='verified',
+            is_active=True
+        ).count()
+        
+        response_data['summary'] = {
+            'total_verified_providers': total_verified_providers,
+            'providers_with_coordinates': User.objects.filter(
+                user_type='provider',
+                provider_profile__status='verified',
+                is_active=True,
+                provider_profile__latitude__isnull=False,
+                provider_profile__longitude__isnull=False
+            ).count(),
+            # NEW: Add tag statistics
+            'providers_with_tags': User.objects.filter(
+                user_type='provider',
+                provider_profile__status='verified',
+                is_active=True
+            ).exclude(provider_profile__business_tags=[]).count(),
+            'providers_with_descriptions': User.objects.filter(
+                user_type='provider',
+                provider_profile__status='verified',
+                is_active=True
+            ).exclude(provider_profile__business_description='').count()
+        }
+        
+        return Response(response_data, status=status.HTTP_200_OK)
+        
+    except ValueError as e:
+        return Response({
+            'error': {
+                'code': 'INVALID_PARAMETERS',
+                'message': 'Invalid request parameters',
+                'details': str(e)
+            }
+        }, status=status.HTTP_400_BAD_REQUEST)
+        
+    except Exception as e:
+        logger.error(f"Get food providers error: {str(e)}")
+        return Response({
+            'error': {
+                'code': 'PROVIDERS_FETCH_ERROR',
+                'message': 'Failed to fetch food providers',
+                'details': str(e)
+            }
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def get_food_provider_by_id(request, provider_id):
+    """
+    ENHANCED: Get a specific food provider by their ID with detailed information including new fields
+    """
+    try:
+        # Get the provider user by UserID
+        provider_user = User.objects.select_related('provider_profile').get(
+            UserID=provider_id,
+            user_type='provider',
+            is_active=True
+        )
+        
+        profile = provider_user.provider_profile
+        
+        # Get additional stats
+        try:
+            from notifications.models import BusinessFollower
+            follower_count = BusinessFollower.objects.filter(business=profile).count()
+            
+            # Get list of followers if requested
+            include_followers = request.GET.get('include_followers', 'false').lower() == 'true'
+            followers_list = []
+            if include_followers:
+                followers = BusinessFollower.objects.filter(business=profile).select_related('user')[:10]
+                for follower in followers:
+                    followers_list.append({
+                        'id': str(follower.user.UserID),
+                        'name': follower.user.get_full_name(),
+                        'user_type': follower.user.user_type,
+                        'followed_since': follower.created_at.isoformat()
+                    })
+        except:
+            follower_count = 0
+            followers_list = []
+        
+        try:
+            from food_listings.models import FoodListing
+            active_listings_count = FoodListing.objects.filter(
+                provider=provider_user,
+                status='active'
+            ).count()
+            total_listings_count = FoodListing.objects.filter(
+                provider=provider_user
+            ).count()
+            
+            # Get recent listings if requested
+            include_recent_listings = request.GET.get('include_recent_listings', 'false').lower() == 'true'
+            recent_listings = []
+            if include_recent_listings:
+                listings = FoodListing.objects.filter(
+                    provider=provider_user,
+                    status='active'
+                ).order_by('-created_at')[:5]
+                
+                for listing in listings:
+                    recent_listings.append({
+                        'id': str(listing.id),
+                        'name': listing.name,
+                        'type': listing.type,
+                        'original_price': float(listing.original_price),
+                        'discounted_price': float(listing.discounted_price),
+                        'quantity_available': listing.quantity_available,
+                        'expiry_date': listing.expiry_date.isoformat(),
+                        'created_at': listing.created_at.isoformat()
+                    })
+        except:
+            active_listings_count = 0
+            total_listings_count = 0
+            recent_listings = []
+        
+        # Check if current user is following
+        is_following = False
+        if request.user.is_authenticated and request.user.user_type in ['customer', 'ngo']:
+            try:
+                from notifications.models import BusinessFollower
+                is_following = BusinessFollower.objects.filter(
+                    user=request.user,
+                    business=profile
+                ).exists()
+            except:
+                pass
+        
+        # Build comprehensive provider data - ENHANCED with new fields
+        provider_data = {
+            'id': str(provider_user.UserID),
+            'business_name': profile.business_name,
+            'business_email': profile.business_email,
+            'business_address': profile.business_address,
+            'business_contact': profile.business_contact,
+            'phone_number': profile.phone_number,
+            'business_hours': profile.business_hours,
+            'website': profile.website,
+            'status': profile.status,
+            'logo': profile.logo.url if profile.logo else None,
+            
+            # NEW FIELDS
+            'banner': profile.banner.url if profile.banner else None,
+            'business_description': profile.business_description,
+            'business_tags': profile.get_tag_display(),
+            'profile_completeness': profile.has_complete_profile(),
+            'banner_updated_at': profile.banner_updated_at.isoformat() if profile.banner_updated_at else None,
+            'description_updated_at': profile.description_updated_at.isoformat() if profile.description_updated_at else None,
+            'tags_updated_at': profile.tags_updated_at.isoformat() if profile.tags_updated_at else None,
+            
+            # Location data
+            'coordinates': profile.coordinates,
+            'latitude': float(profile.latitude) if profile.latitude else None,
+            'longitude': float(profile.longitude) if profile.longitude else None,
+            'geocoded_at': profile.geocoded_at.isoformat() if profile.geocoded_at else None,
+            'geocoding_failed': profile.geocoding_failed,
+            'geocoding_error': profile.geocoding_error,
+            'openstreetmap_url': profile.openstreetmap_url,
+            
+            # Account information
+            'joined_date': provider_user.date_joined.isoformat() if hasattr(provider_user, 'date_joined') else None,
+            'last_login': provider_user.last_login.isoformat() if provider_user.last_login else None,
+            'email_verified': provider_user.is_active,
+            
+            # Stats and engagement
+            'follower_count': follower_count,
+            'active_listings_count': active_listings_count,
+            'total_listings_count': total_listings_count,
+            'is_following': is_following,
+            
+            # Optional detailed data
+            'followers': followers_list if include_followers else [],
+            'recent_listings': recent_listings if include_recent_listings else []
+        }
+        
+        return Response({
+            'provider': provider_data
+        }, status=status.HTTP_200_OK)
+        
+    except User.DoesNotExist:
+        return Response({
+            'error': {
+                'code': 'PROVIDER_NOT_FOUND',
+                'message': 'Food provider not found'
+            }
+        }, status=status.HTTP_404_NOT_FOUND)
+        
+    except Exception as e:
+        logger.error(f"Get food provider by ID error: {str(e)}")
+        return Response({
+            'error': {
+                'code': 'PROVIDER_FETCH_ERROR',
+                'message': 'Failed to fetch food provider details',
+                'details': str(e)
+            }
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+# NEW VIEW: Update business profile with new fields
+@api_view(['PUT'])
+@permission_classes([IsAuthenticated])
+def update_business_profile(request):
+    """
+    Update business profile information including new fields
+    Only accessible by food providers
+    """
+    if request.user.user_type != 'provider':
+        return Response({
+            'error': {
+                'code': 'ACCESS_DENIED',
+                'message': 'Only food providers can update business profiles'
+            }
+        }, status=status.HTTP_403_FORBIDDEN)
+    
+    try:
+        profile = request.user.provider_profile
+    except FoodProviderProfile.DoesNotExist:
+        return Response({
+            'error': {
+                'code': 'PROFILE_NOT_FOUND',
+                'message': 'Food provider profile not found'
+            }
+        }, status=status.HTTP_404_NOT_FOUND)
+    
+    serializer = FoodProviderProfileUpdateSerializer(profile, data=request.data, partial=True)
+    
+    if serializer.is_valid():
+        try:
+            updated_profile = serializer.save()
+            
+            # Log the update for audit purposes
+            logger.info(f"Business profile updated for {updated_profile.business_name} (User: {request.user.email})")
+            
+            # Return updated profile data
+            response_serializer = BusinessPublicProfileSerializer(updated_profile)
+            
+            return Response({
+                'message': 'Business profile updated successfully',
+                'profile': response_serializer.data
+            }, status=status.HTTP_200_OK)
+            
+        except Exception as e:
+            logger.error(f"Profile update error for user {request.user.email}: {str(e)}")
+            return Response({
+                'error': {
+                    'code': 'UPDATE_ERROR',
+                    'message': 'Failed to update business profile',
+                    'details': str(e)
+                }
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    
+    return Response({
+        'error': {
+            'code': 'VALIDATION_ERROR',
+            'message': 'Profile validation failed',
+            'details': [{'field': field, 'message': errors[0]} for field, errors in serializer.errors.items()]
+        }
+    }, status=status.HTTP_400_BAD_REQUEST)
+
+# NEW VIEW: Manage business tags
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def manage_business_tags(request):
+    """
+    Add, remove, or set business tags
+    Actions: 'add', 'remove', 'set'
+    """
+    if request.user.user_type != 'provider':
+        return Response({
+            'error': {
+                'code': 'ACCESS_DENIED',
+                'message': 'Only food providers can manage business tags'
+            }
+        }, status=status.HTTP_403_FORBIDDEN)
+    
+    try:
+        profile = request.user.provider_profile
+    except FoodProviderProfile.DoesNotExist:
+        return Response({
+            'error': {
+                'code': 'PROFILE_NOT_FOUND',
+                'message': 'Food provider profile not found'
+            }
+        }, status=status.HTTP_404_NOT_FOUND)
+    
+    serializer = BusinessTagSerializer(data=request.data)
+    
+    if serializer.is_valid():
+        action = serializer.validated_data['action']
+        
+        try:
+            if action == 'add':
+                tag = serializer.validated_data['tag']
+                success = profile.add_tag(tag)
+                if success:
+                    message = f"Tag '{tag}' added successfully"
+                else:
+                    message = f"Tag '{tag}' already exists"
+                    
+            elif action == 'remove':
+                tag = serializer.validated_data['tag']
+                success = profile.remove_tag(tag)
+                if success:
+                    message = f"Tag '{tag}' removed successfully"
+                else:
+                    message = f"Tag '{tag}' not found"
+                    
+            elif action == 'set':
+                tags = serializer.validated_data['tags']
+                profile.business_tags = tags
+                profile.save()
+                message = "Tags updated successfully"
+            
+            return Response({
+                'message': message,
+                'tags': profile.get_tag_display()
+            }, status=status.HTTP_200_OK)
+            
+        except Exception as e:
+            logger.error(f"Tag management error for user {request.user.email}: {str(e)}")
+            return Response({
+                'error': {
+                    'code': 'TAG_UPDATE_ERROR',
+                    'message': 'Failed to update tags',
+                    'details': str(e)
+                }
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    
+    return Response({
+        'error': {
+            'code': 'VALIDATION_ERROR',
+            'message': 'Tag validation failed',
+            'details': [{'field': field, 'message': errors[0]} for field, errors in serializer.errors.items()]
+        }
+    }, status=status.HTTP_400_BAD_REQUEST)
+
+# NEW VIEW: Get popular business tags
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def get_popular_business_tags(request):
+    """
+    Get popular business tags across all verified providers
+    Useful for autocomplete and discovery
+    """
+    try:
+        limit = min(int(request.GET.get('limit', 20)), 50)  # Max 50 tags
+        include_providers = request.GET.get('include_providers', 'false').lower() == 'true'
+        
+        popular_tags = FoodProviderProfile.get_popular_tags(limit=limit)
+        
+        # Optionally include provider names for each tag
+        if include_providers:
+            for tag_data in popular_tags:
+                tag = tag_data['tag']
+                providers_with_tag = FoodProviderProfile.objects.filter(
+                    status='verified',
+                    business_tags__icontains=tag
+                ).values_list('business_name', flat=True)[:5]  # Limit to 5 examples
+                
+                tag_data['example_providers'] = list(providers_with_tag)
+        
+        return Response({
+            'popular_tags': popular_tags,
+            'total_unique_tags': len(popular_tags)
+        }, status=status.HTTP_200_OK)
+        
+    except Exception as e:
+        logger.error(f"Get popular tags error: {str(e)}")
+        return Response({
+            'error': {
+                'code': 'TAGS_FETCH_ERROR',
+                'message': 'Failed to fetch popular tags',
+                'details': str(e)
+            }
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+# NEW VIEW: Search providers by tags
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def search_providers_by_tags(request):
+    """
+    Search food providers specifically by their business tags
+    """
+    tags_param = request.GET.get('tags', '').strip()
+    
+    if not tags_param:
+        return Response({
+            'error': {
+                'code': 'MISSING_TAGS',
+                'message': 'Tags parameter is required'
+            }
+        }, status=status.HTTP_400_BAD_REQUEST)
+    
+    try:
+        # Parse tags (support comma-separated values)
+        search_tags = [tag.strip().title() for tag in tags_param.split(',') if tag.strip()]
+        
+        if not search_tags:
+            return Response({
+                'providers': [],
+                'search_tags': [],
+                'total_count': 0
+            }, status=status.HTTP_200_OK)
+        
+        # Find providers with any of the specified tags
+        providers_query = User.objects.filter(
+            user_type='provider',
+            provider_profile__status='verified',
+            is_active=True
+        ).select_related('provider_profile')
+        
+        # Filter by tags
+        for tag in search_tags:
+            providers_query = providers_query.filter(
+                provider_profile__business_tags__icontains=tag
+            )
+        
+        # Limit results
+        limit = min(int(request.GET.get('limit', 50)), 100)
+        providers = providers_query[:limit]
+        
+        providers_list = []
+        for provider_user in providers:
+            profile = provider_user.provider_profile
+            
+            # Get active listings count
+            try:
+                from food_listings.models import FoodListing
+                active_listings = FoodListing.objects.filter(
+                    provider=provider_user,
+                    status='active'
+                ).count()
+            except:
+                active_listings = 0
+            
+            providers_list.append({
+                'id': str(provider_user.UserID),
+                'business_name': profile.business_name,
+                'business_address': profile.business_address,
+                'business_description': profile.business_description,
+                'business_tags': profile.get_tag_display(),
+                'logo': profile.logo.url if profile.logo else None,
+                'banner': profile.banner.url if profile.banner else None,
+                'coordinates': profile.coordinates,
+                'active_listings_count': active_listings,
+                'matching_tags': [tag for tag in search_tags if tag in profile.get_tag_display()]
+            })
+        
+        return Response({
+            'providers': providers_list,
+            'search_tags': search_tags,
+            'total_count': len(providers_list)
+        }, status=status.HTTP_200_OK)
+        
+    except Exception as e:
+        logger.error(f"Search providers by tags error: {str(e)}")
+        return Response({
+            'error': {
+                'code': 'TAG_SEARCH_ERROR',
+                'message': 'Failed to search providers by tags',
                 'details': str(e)
             }
         }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
