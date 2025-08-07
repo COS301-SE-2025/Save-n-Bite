@@ -2,6 +2,7 @@
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
+from rest_framework.permissions import AllowAny
 from django.core.paginator import Paginator
 from django.db.models import Q
 from django.contrib.auth import get_user_model
@@ -41,6 +42,56 @@ def get_client_ip(request):
         ip = request.META.get('REMOTE_ADDR')
     return ip
 
+# # ======================== LOGIN =========================
+
+@api_view(['POST'])
+@permission_classes([AllowAny])  # Allow anyone to attempt admin login
+def admin_login_check(request):
+    """Check if provided email belongs to an admin user"""
+    try:
+        email = request.data.get('email')
+        
+        if not email:
+            return Response({
+                'error': 'Email is required'
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
+        # Check if user exists and has admin rights OR is superuser
+        try:
+            user = User.objects.get(
+                email=email, 
+                is_active=True
+            ).filter(
+                Q(admin_rights=True) | Q(is_superuser=True)
+            ).first()
+            
+            if not user:
+                return Response({
+                    'error': 'Invalid admin credentials or insufficient permissions'
+                }, status=status.HTTP_401_UNAUTHORIZED)
+            
+            return Response({
+                'message': 'Admin user found',
+                'admin_info': {
+                    'id': str(user.UserID),
+                    'email': user.email,
+                    'username': user.username,
+                    'is_superuser': user.is_superuser,
+                    'admin_rights': user.admin_rights
+                }
+            }, status=status.HTTP_200_OK)
+            
+        except User.DoesNotExist:
+            return Response({
+                'error': 'Invalid admin credentials or insufficient permissions'
+            }, status=status.HTTP_401_UNAUTHORIZED)
+    
+    except Exception as e:
+        logger.error(f"Admin login check error: {str(e)}")
+        return Response({
+            'error': 'Failed to verify admin credentials'
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    
 # ==================== DASHBOARD VIEWS ====================
 
 @api_view(['GET'])

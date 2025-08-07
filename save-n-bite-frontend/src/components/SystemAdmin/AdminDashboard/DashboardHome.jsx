@@ -1,4 +1,6 @@
 import React from 'react'
+import QuickLinkCard from '../../components/SystemAdmin/AdminDashboard/QuickLinkCard'
+
 import {
   UsersIcon,
   ShoppingBagIcon,
@@ -97,7 +99,7 @@ const DashboardHome = () => {
         </div>
       </div>
 
-      {/* Quick Links */}
+      {/* Quick Links
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <QuickLinkCard
           title="View Verification Requests"
@@ -108,7 +110,7 @@ const DashboardHome = () => {
         <QuickLinkCard
           title="Send Platform Notification"
           description="Reach all users with important updates"
-          link="/notifications"
+          link="/admin-notifications"
           color="purple"
         />
         <QuickLinkCard
@@ -116,8 +118,8 @@ const DashboardHome = () => {
           description="Review recent admin activities"
           link="/audit-logs"
           color="green"
-        />
-      </div>
+        /> */}
+      {/* </div> */}
     </div>
   )
 }
