@@ -22,6 +22,10 @@ const RegisterForm = ({ userType = USER_TYPES.CUSTOMER, onSuccess, onError }) =>
         businessEmail: '',
         cipcDocument: null,
         logo: null,
+        businessDescription: '',
+        businessTags: [],
+        banner: null,
+        businessTagsInput: '',
         
         // NGO fields
         organisationName: '',
@@ -94,6 +98,27 @@ const RegisterForm = ({ userType = USER_TYPES.CUSTOMER, onSuccess, onError }) =>
                     isValid = true;
                 }
                 break;
+            case 'businessDescription':
+            // Optional field, but if provided should have reasonable length
+            if (value && value.length > 1000) {
+                error = 'Description should be less than 1000 characters';
+            } else if (value) {
+                isValid = true;
+            }
+            break;
+        case 'businessTags':
+            // Optional field, but if provided should be an array
+            if (value && Array.isArray(value)) {
+                isValid = true;
+            } else if (!value || value.length === 0) {
+                isValid = true; // Empty is valid since it's optional
+            }
+            break;
+        case 'banner':
+            if (value) {
+                isValid = true;
+            }
+            break;
             case 'firstName':
             case 'lastName':
             case 'businessName':
@@ -132,6 +157,37 @@ const RegisterForm = ({ userType = USER_TYPES.CUSTOMER, onSuccess, onError }) =>
         return { error, isValid };
     };
 
+const handleTagsChange = (e) => {
+    const { value } = e.target;
+    
+    // Update the raw input value in state for display
+    setFormData(prev => ({
+        ...prev,
+        businessTagsInput: value, // Store the raw input
+        businessTags: value ? value.split(',').map(tag => tag.trim()).filter(tag => tag) : []
+    }));
+
+    // Clear server error when user starts typing
+    if (serverError) {
+        setServerError('');
+    }
+
+    // Convert to tags array for validation
+    const tags = value ? value.split(',').map(tag => tag.trim()).filter(tag => tag) : [];
+    
+    // Validate tags
+    const { error, isValid } = validateField('businessTags', tags);
+    
+    setErrors(prev => ({
+        ...prev,
+        businessTags: error
+    }));
+
+    setValidFields(prev => ({
+        ...prev,
+        businessTags: isValid
+    }));
+};
     const handleInputChange = (e) => {
         const { name, value } = e.target;
         setFormData(prev => ({
@@ -674,6 +730,91 @@ const RegisterForm = ({ userType = USER_TYPES.CUSTOMER, onSuccess, onError }) =>
                             <p className="mt-1 text-sm text-red-600">{errors.logo}</p>
                         )}
                     </div>
+                    <div>
+    <label htmlFor="banner" className="block text-sm font-medium text-gray-700 mb-1">
+        Business Banner (Optional)
+        {renderTooltip('Upload JPG, PNG image for business banner (max 5MB)')}
+    </label>
+    <input
+        type="file"
+        id="banner"
+        name="banner"
+        onChange={handleFileChange}
+        accept=".jpg,.jpeg,.png"
+        className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-emerald-500 focus:border-emerald-500"
+    />
+    {errors.banner && (
+        <p className="mt-1 text-sm text-red-600">{errors.banner}</p>
+    )}
+</div>
+
+<div className="relative">
+    <label htmlFor="businessDescription" className="block text-sm font-medium text-gray-700 mb-1">
+        Business Description (Optional)
+        {renderTooltip('Describe your business, specialties, and what makes you unique (max 1000 characters)')}
+    </label>
+    <textarea
+        id="businessDescription"
+        name="businessDescription"
+        value={formData.businessDescription}
+        onChange={handleInputChange}
+        onBlur={handleBlur}
+        rows={4}
+        maxLength={1000}
+        className={getFieldClassName('businessDescription')}
+        placeholder="Describe your business, specialties, and what makes you unique..."
+    />
+    {renderValidationIcon('businessDescription')}
+    {errors.businessDescription && touchedFields.businessDescription && (
+        <p className="mt-1 text-sm text-red-600">{errors.businessDescription}</p>
+    )}
+    <p className="mt-1 text-sm text-gray-500">
+        {formData.businessDescription.length}/1000 characters
+    </p>
+</div>
+
+<div className="relative">
+    <label htmlFor="businessTags" className="block text-sm font-medium text-gray-700 mb-1">
+        Business Tags (Optional)
+        {renderTooltip('Add tags to help customers find you (e.g., Bakery, Artisan, Local). Separate with commas.')}
+    </label>
+    <input
+        type="text"
+        id="businessTags"
+        name="businessTags"
+        value={formData.businessTagsInput || formData.businessTags.join(', ')}
+        onChange={handleTagsChange}
+        onBlur={handleBlur}
+        className={getFieldClassName('businessTags')}
+        placeholder="e.g., Bakery, Artisan, Local, Fresh Daily"
+    />
+    {renderValidationIcon('businessTags')}
+    {errors.businessTags && touchedFields.businessTags && (
+        <p className="mt-1 text-sm text-red-600">{errors.businessTags}</p>
+    )}
+    {formData.businessTags.length > 0 && (
+        <div className="mt-2 flex flex-wrap gap-2">
+            {formData.businessTags.map((tag, index) => (
+                <span
+                    key={index}
+                    className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-100 text-emerald-800"
+                >
+                    {tag}
+                    <button
+                        type="button"
+                        onClick={() => removeTag(index)}
+                        className="ml-1 inline-flex items-center justify-center w-4 h-4 text-emerald-600 hover:text-emerald-800 hover:bg-emerald-200 rounded-full"
+                    >
+                        ×
+                    </button>
+                </span>
+            ))}
+        </div>
+    )}
+    <p className="mt-1 text-sm text-gray-500">
+        Separate tags with commas. These help customers find your business.
+    </p>
+</div>
                 </>
             )}
 
