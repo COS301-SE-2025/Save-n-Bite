@@ -15,6 +15,7 @@ celery>=5.4.0
 django-cors-headers>=4.0.0
 # Image Processing
 pillow>=11.2.1
+requests>=2.28.0
 
 # Configuration
 python-decouple>=3.8
