@@ -30,7 +30,7 @@ import ManageDonations from './pages/foodProvider/Donations';
 import CustomerSettings from './pages/auth/CustomerSettings';
 //FoodProvider
 import FoodProvidersPage from './pages/auth/AllFoodproviders';
-import SpecificFoodProvider from './pages/auth//SpecificFoodProvider'
+import SpecificFoodProvider from './pages/auth/SpecificFoodProvider';
 import ProfilePage from './components/auth/Profile';
 import FoodproviderProfile from './pages/foodProvider/Profile'
 import FoodproviderSettings from './pages/foodProvider/Settings'
@@ -147,7 +147,7 @@ function App() {
        
          
           <Route path="/providers" element={<FoodProvidersPage />} />
-           <Route path="/providers/:id" element={<SpecificFoodProvider />} />
+           <Route path="/provider/:id" element={<SpecificFoodProvider />} />
             <Route path="/profile" element={<ProfilePage />} />
             <Route path="/edit-profile" element={<EditProfilePage />} />
             <Route path="/foodprovider-profile" element={<FoodproviderProfile />} />
