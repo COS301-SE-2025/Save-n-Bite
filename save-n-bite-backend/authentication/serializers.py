@@ -150,12 +150,24 @@ class FoodProviderRegistrationSerializer(BaseRegistrationSerializer):
     business_postal_code = serializers.CharField(max_length=10)
     cipc_document = serializers.CharField(required=True)
     logo = serializers.CharField(required=False, allow_blank=True)
+    
+    # NEW FIELDS for registration
+    banner = serializers.CharField(required=False, allow_blank=True)
+    business_description = serializers.CharField(max_length=1000, required=False, allow_blank=True)
+    business_tags = serializers.ListField(
+        child=serializers.CharField(max_length=50),
+        required=False,
+        allow_empty=True,
+        help_text="List of tags describing your business (e.g., ['Bakery', 'Vegan Options'])"
+    )
 
     class Meta(BaseRegistrationSerializer.Meta):
         fields = BaseRegistrationSerializer.Meta.fields + [
             'business_email', 'business_name', 'business_contact',
             'business_street', 'business_city', 'business_province',
-            'business_postal_code', 'cipc_document', 'logo'
+            'business_postal_code', 'cipc_document', 'logo',
+            # NEW FIELDS
+            'banner', 'business_description', 'business_tags'
         ]
 
     def validate_cipc_document(self, value):
@@ -164,6 +176,33 @@ class FoodProviderRegistrationSerializer(BaseRegistrationSerializer):
         if not value.startswith('data:'):
             raise serializers.ValidationError("Invalid file format")
         return value
+
+    def validate_business_tags(self, value):
+        """Validate business tags"""
+        if not isinstance(value, list):
+            raise serializers.ValidationError("Tags must be a list")
+        
+        # Clean and validate tags
+        cleaned_tags = []
+        for tag in value:
+            if isinstance(tag, str):
+                cleaned_tag = tag.strip().title()
+                if cleaned_tag and len(cleaned_tag) <= 50:
+                    cleaned_tags.append(cleaned_tag)
+        
+        # Remove duplicates while preserving order
+        seen = set()
+        unique_tags = []
+        for tag in cleaned_tags:
+            if tag not in seen:
+                seen.add(tag)
+                unique_tags.append(tag)
+        
+        # Limit to 10 tags maximum
+        if len(unique_tags) > 10:
+            raise serializers.ValidationError("Maximum 10 tags allowed")
+        
+        return unique_tags
 
     def create(self, validated_data):
         try:
@@ -180,9 +219,14 @@ class FoodProviderRegistrationSerializer(BaseRegistrationSerializer):
                 'business_contact': validated_data.pop('business_contact'),
                 'business_address': business_address,
                 'business_email': validated_data.pop('business_email'),
+                # NEW FIELDS
+                'business_description': validated_data.pop('business_description', ''),
+                'business_tags': validated_data.pop('business_tags', []),
             }
+            
             cipc_document_data = validated_data.pop('cipc_document')
             logo_data = validated_data.pop('logo', None)
+            banner_data = validated_data.pop('banner', None)  # NEW: Handle banner
             validated_data['user_type'] = 'provider'
 
             user = super().create(validated_data)
@@ -192,6 +236,7 @@ class FoodProviderRegistrationSerializer(BaseRegistrationSerializer):
                 **provider_data
             )
 
+            # Handle CIPC document upload
             if cipc_document_data:
                 try:
                     format, docstr = cipc_document_data.split(';base64,')
@@ -201,6 +246,7 @@ class FoodProviderRegistrationSerializer(BaseRegistrationSerializer):
                 except Exception as e:
                     raise serializers.ValidationError("Invalid CIPC document format")
 
+            # Handle logo upload
             if logo_data:
                 try:
                     format, imgstr = logo_data.split(';base64,')
@@ -210,10 +256,111 @@ class FoodProviderRegistrationSerializer(BaseRegistrationSerializer):
                 except Exception as e:
                     pass
 
+            # NEW: Handle banner upload
+            if banner_data:
+                try:
+                    format, imgstr = banner_data.split(';base64,')
+                    ext = format.split('/')[-1]
+                    banner_file = ContentFile(base64.b64decode(imgstr), name=f'provider_banner_{user.id}.{ext}')
+                    provider_profile.banner = banner_file
+                except Exception as e:
+                    pass  # Banner is optional, so don't fail registration
+
             provider_profile.save()
             return user
+            
         except Exception as e:
             raise serializers.ValidationError(str(e))
+        
+# NEW: Serializer for updating business profile (separate from registration)
+class FoodProviderProfileUpdateSerializer(serializers.ModelSerializer):
+    """Serializer for updating food provider profile information"""
+    banner = serializers.CharField(required=False, allow_blank=True)
+    logo = serializers.CharField(required=False, allow_blank=True)
+    business_tags = serializers.ListField(
+        child=serializers.CharField(max_length=50),
+        required=False,
+        allow_empty=True
+    )
+    
+    class Meta:
+        model = FoodProviderProfile
+        fields = [
+            'business_name', 'business_email', 'business_contact', 
+            'business_address', 'business_hours', 'phone_number', 
+            'website', 'business_description', 'business_tags',
+            'banner', 'logo'
+        ]
+    
+    def validate_business_tags(self, value):
+        """Validate business tags for updates"""
+        if not isinstance(value, list):
+            raise serializers.ValidationError("Tags must be a list")
+        
+        # Clean and validate tags
+        cleaned_tags = []
+        for tag in value:
+            if isinstance(tag, str):
+                cleaned_tag = tag.strip().title()
+                if cleaned_tag and len(cleaned_tag) <= 50:
+                    cleaned_tags.append(cleaned_tag)
+        
+        # Remove duplicates while preserving order
+        seen = set()
+        unique_tags = []
+        for tag in cleaned_tags:
+            if tag not in seen:
+                seen.add(tag)
+                unique_tags.append(tag)
+        
+        # Limit to 10 tags maximum
+        if len(unique_tags) > 10:
+            raise serializers.ValidationError("Maximum 10 tags allowed")
+        
+        return unique_tags
+    
+    def update(self, instance, validated_data):
+        """Update provider profile with new fields"""
+        from django.utils import timezone
+        
+        # Handle banner upload
+        banner_data = validated_data.pop('banner', None)
+        if banner_data:
+            try:
+                if banner_data.startswith('data:'):
+                    format, imgstr = banner_data.split(';base64,')
+                    ext = format.split('/')[-1]
+                    banner_file = ContentFile(
+                        base64.b64decode(imgstr), 
+                        name=f'provider_banner_{instance.user.UserID}.{ext}'
+                    )
+                    instance.banner = banner_file
+                    instance.banner_updated_at = timezone.now()
+            except Exception as e:
+                pass  # Don't fail update if banner upload fails
+        
+        # Handle logo upload
+        logo_data = validated_data.pop('logo', None)
+        if logo_data:
+            try:
+                if logo_data.startswith('data:'):
+                    format, imgstr = logo_data.split(';base64,')
+                    ext = format.split('/')[-1]
+                    logo_file = ContentFile(
+                        base64.b64decode(imgstr), 
+                        name=f'provider_logo_{instance.user.UserID}.{ext}'
+                    )
+                    instance.logo = logo_file
+            except Exception as e:
+                pass
+        
+        # Update other fields
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+        
+        # Track when description and tags are updated (handled in model save method)
+        instance.save()
+        return instance
 
 class LoginSerializer(serializers.Serializer):
     email = serializers.EmailField()
@@ -236,8 +383,9 @@ class LoginSerializer(serializers.Serializer):
 
         return attrs
 
+# Enhanced UserProfileSerializer to include new fields
 class UserProfileSerializer(serializers.ModelSerializer):
-    """FIXED: Corrected serializer for user profile information"""
+    """Enhanced serializer for user profile information with new provider fields"""
     member_since = serializers.SerializerMethodField()
     profile_type = serializers.SerializerMethodField()
     full_name = serializers.SerializerMethodField()
@@ -277,10 +425,9 @@ class UserProfileSerializer(serializers.ModelSerializer):
             return obj.get_full_name() or obj.username
     
     def get_verification_status(self, obj):
-        """Get verification status - FIXED to handle missing attributes"""
+        """Get verification status"""
         try:
             if obj.user_type == 'customer':
-                # Customers don't have verification_status field - they're auto-verified
                 return 'verified'
             elif obj.user_type == 'ngo' and hasattr(obj, 'ngo_profile'):
                 return obj.ngo_profile.status
@@ -291,7 +438,7 @@ class UserProfileSerializer(serializers.ModelSerializer):
             return 'pending'
     
     def get_profile_details(self, obj):
-        """Get additional profile details based on user type"""
+        """Get additional profile details based on user type - UPDATED with new provider fields"""
         try:
             if obj.user_type == 'customer' and hasattr(obj, 'customer_profile'):
                 profile = obj.customer_profile
@@ -315,8 +462,108 @@ class UserProfileSerializer(serializers.ModelSerializer):
                     'business_email': profile.business_email,
                     'business_contact': profile.business_contact,
                     'business_address': profile.business_address,
+                    'business_hours': profile.business_hours,
+                    'phone_number': profile.phone_number,
+                    'website': profile.website,
                     'logo': profile.logo.url if profile.logo else None,
+                    # NEW FIELDS
+                    'banner': profile.banner.url if profile.banner else None,
+                    'business_description': profile.business_description,
+                    'business_tags': profile.get_tag_display(),
+                    'profile_completeness': profile.has_complete_profile(),
                 }
             return {}
         except Exception:
             return {}
+        
+class BusinessPublicProfileSerializer(serializers.ModelSerializer):
+    """Enhanced serializer for public business profiles with new fields"""
+    business_id = serializers.UUIDField(source='user.UserID', read_only=True)
+    logo = serializers.SerializerMethodField()
+    banner = serializers.SerializerMethodField()
+    business_tags = serializers.SerializerMethodField()
+    coordinates = serializers.SerializerMethodField()
+    profile_completeness = serializers.SerializerMethodField()
+    
+    class Meta:
+        model = FoodProviderProfile
+        fields = [
+            'business_id', 'business_name', 'business_email', 'business_contact',
+            'business_address', 'business_hours', 'phone_number', 'website',
+            'business_description', 'business_tags', 'status',
+            'logo', 'banner', 'coordinates', 'profile_completeness'
+        ]
+    
+    def get_logo(self, obj):
+        return obj.logo.url if obj.logo else None
+    
+    def get_banner(self, obj):
+        return obj.banner.url if obj.banner else None
+    
+    def get_business_tags(self, obj):
+        return obj.get_tag_display()
+    
+    def get_coordinates(self, obj):
+        return obj.coordinates
+    
+    def get_profile_completeness(self, obj):
+        return obj.has_complete_profile()
+
+# NEW: Serializer for business tag management
+class BusinessTagSerializer(serializers.Serializer):
+    """Serializer for managing business tags"""
+    action = serializers.ChoiceField(choices=['add', 'remove', 'set'])
+    tag = serializers.CharField(max_length=50, required=False)
+    tags = serializers.ListField(
+        child=serializers.CharField(max_length=50),
+        required=False,
+        allow_empty=True
+    )
+    
+    def validate(self, data):
+        action = data.get('action')
+        
+        if action in ['add', 'remove']:
+            if not data.get('tag'):
+                raise serializers.ValidationError("Tag is required for add/remove actions")
+        elif action == 'set':
+            if 'tags' not in data:
+                raise serializers.ValidationError("Tags list is required for set action")
+        
+        # Clean tag data
+        if 'tag' in data:
+            data['tag'] = data['tag'].strip().title()
+        
+        if 'tags' in data:
+            cleaned_tags = []
+            for tag in data['tags']:
+                if isinstance(tag, str):
+                    cleaned_tag = tag.strip().title()
+                    if cleaned_tag and len(cleaned_tag) <= 50:
+                        cleaned_tags.append(cleaned_tag)
+            
+            # Remove duplicates
+            seen = set()
+            unique_tags = []
+            for tag in cleaned_tags:
+                if tag not in seen:
+                    seen.add(tag)
+                    unique_tags.append(tag)
+            
+            if len(unique_tags) > 10:
+                raise serializers.ValidationError("Maximum 10 tags allowed")
+            
+            data['tags'] = unique_tags
+        
+        return data
+
+# NEW: Serializer for popular tags endpoint
+class PopularTagsSerializer(serializers.Serializer):
+    """Serializer for popular business tags"""
+    tag = serializers.CharField()
+    count = serializers.IntegerField()
+    providers = serializers.ListField(child=serializers.CharField(), required=False)
+
+class LoginSerializer(serializers.Serializer):
+    # ... (keep existing LoginSerializer unchanged)
+    pass
