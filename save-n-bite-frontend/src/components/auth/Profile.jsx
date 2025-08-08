@@ -1,139 +1,155 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import {
   EditIcon,
   ShoppingBagIcon,
   HeartIcon,
   StarIcon,
-  BuildingIcon,
-  CheckCircleIcon,
-  FileTextIcon,
   XIcon,
-  AlertTriangleIcon,
+  Loader,
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import CustomerNavBar from './CustomerNavBar';
+import ProfileAPI from '../../services/ProfileAPI';
 
-
-const mockUserData = {
-  name: 'Sarah Johnson',
-  email: 'sarah@example.com',
-  phone: '072 123 4567',
-  address: '123 Green Street, Randburg, Gauteng, 0086',
-  avatar:
-    'https://images.unsplash.com/photo-1494790108377-be9c29b29330?ixlib=rb-4.0.3&auto=format&fit=crop&w=150&q=80',
-  userType: 'customer',
-  joinDate: 'August 2022',
-  gardenStats: {
-    totalPlants: 5,
-    plantsGrown: 2,
-    co2Reduced: 15.5,
-    level: 3,
-    lastPickup: '2023-08-15',
-    mealsRescued: 12,
-  },
-  orderStats: {
-    completed: 15,
-    canceled: 2,
-    missed: 1,
-  },
-  reviews: [
-    {
-      id: 1,
-      providerName: 'Sweet Bakery',
-      rating: 5,
-      date: '2023-08-10',
-      comment: 'Great pastries and excellent service!',
-    },
-    {
-      id: 2,
-      providerName: 'Green Grocers',
-      rating: 4,
-      date: '2023-07-28',
-      comment: 'Fresh produce and friendly staff.',
-    },
-  ],
-  followedProviders: [
-    {
-      id: 1,
-      name: 'Sweet Bakery',
-      image:
-        'https://images.unsplash.com/photo-1608198093002-ad4e005484ec?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&q=80',
-    },
-    {
-      id: 2,
-      name: 'Green Grocers',
-      image:
-        'https://images.unsplash.com/photo-1542838132-92c53300491e?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&q=80',
-    },
-    {
-      id: 3,
-      name: 'Farm Fresh',
-      image:
-        'https://images.unsplash.com/photo-1488459716781-31db52582fe9?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&q=80',
-    },
-  ],
-};
+// Placeholder image for users without profile pictures
+const PLACEHOLDER_AVATAR = 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-4.0.3&auto=format&fit=crop&w=150&q=80';
 
 const ProfilePage = () => {
   const { user: authUser } = useAuth();
-
-  const [user, setUser] = useState({
-    ...mockUserData,
-    ...(authUser || {}),
-  });
-
+  const [profileData, setProfileData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [activeTab, setActiveTab] = useState('profile');
 
-  const handleUnfollow = (providerId) => {
-    const updatedProviders = user.followedProviders.filter(
-      (provider) => provider.id !== providerId
-    );
-    setUser((prev) => ({
-      ...prev,
-      followedProviders: updatedProviders,
-    }));
+  // Load profile data
+  useEffect(() => {
+    const loadProfile = async () => {
+      try {
+        setLoading(true);
+        const profileAPI = new ProfileAPI();
+        const result = await profileAPI.getMyProfile();
+        
+        if (result.success) {
+          setProfileData(result.data);
+          setError(null);
+        } else {
+          setError(result.error);
+        }
+      } catch (err) {
+        setError('Failed to load profile data');
+        console.error('Error loading profile:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadProfile();
+  }, []);
+
+  const handleUnfollow = async (businessId) => {
+    // TODO: Implement unfollow API call
+    // For now, just update the UI
+    if (profileData?.followed_businesses?.businesses) {
+      const updatedBusinesses = profileData.followed_businesses.businesses.filter(
+        (business) => business.id !== businessId
+      );
+      setProfileData(prev => ({
+        ...prev,
+        followed_businesses: {
+          ...prev.followed_businesses,
+          businesses: updatedBusinesses,
+          count: updatedBusinesses.length
+        }
+      }));
+    }
   };
 
+  // Loading state
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 w-full transition-colors duration-200">
+        <CustomerNavBar />
+        <div className="flex items-center justify-center min-h-[60vh]">
+          <div className="text-center">
+            <Loader className="h-8 w-8 animate-spin mx-auto mb-4 text-emerald-600" />
+            <p className="text-gray-600 dark:text-gray-300">Loading profile...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Error state
+  if (error && !profileData) {
+    return (
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 w-full transition-colors duration-200">
+        <CustomerNavBar />
+        <div className="flex items-center justify-center min-h-[60vh]">
+          <div className="text-center">
+            <p className="text-red-600 mb-4">Error: {error}</p>
+            <button 
+              onClick={() => window.location.reload()}
+              className="px-4 py-2 bg-emerald-600 text-white rounded-md hover:bg-emerald-700"
+            >
+              Retry
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (!profileData) return null;
+
+  const userDetails = profileData.user_details;
+  const orderStats = profileData.order_statistics;
+  const impactStats = profileData.impact_statistics;
+  const reviews = profileData.reviews;
+  const followedBusinesses = profileData.followed_businesses;
+
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 w-full py-8 transition-colors duration-200">
-              <CustomerNavBar/>
-      <div className="max-w-4xl mx-auto px-4">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 w-full transition-colors duration-200">
+      <CustomerNavBar />
+      <div className="max-w-4xl mx-auto px-4 py-8">
         <h1 className="text-2xl font-bold text-gray-800 dark:text-white mb-6">
           My Profile
         </h1>
+        
+        {/* Error message */}
+        {error && (
+          <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-md">
+            <p className="text-red-600 text-sm">{error}</p>
+          </div>
+        )}
+
         {/* Profile Header Card */}
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6 mb-6">
           <div className="flex flex-col sm:flex-row items-center sm:items-start">
             <div className="relative mb-4 sm:mb-0">
               <img
-                src={user.avatar}
-                alt={user.name}
+                src={userDetails.profile_image || PLACEHOLDER_AVATAR}
+                alt={userDetails.full_name}
                 className="w-24 h-24 rounded-full object-cover border-4 border-white dark:border-gray-700 shadow-sm"
               />
-              {/* <span className="absolute bottom-0 right-0 bg-emerald-100 dark:bg-emerald-900 text-emerald-800 dark:text-emerald-200 text-xs font-medium px-2 py-1 rounded-full border border-white dark:border-gray-700">
-                {user.userType === 'customer' ? '🎯 Customer' : '🤝 NGO'}
-              </span> */}
             </div>
             <div className="sm:ml-6 text-center sm:text-left flex-grow">
               <h2 className="text-xl font-bold text-gray-800 dark:text-white">
-                {user.name}
+                {userDetails.full_name}
               </h2>
               <p className="text-gray-600 dark:text-gray-300 mb-1">
-                {user.email}
+                {userDetails.email}
               </p>
-              <p className="text-gray-600 dark:text-gray-300 mb-1">
-                {user.phone}
+              {userDetails.phone_number && (
+                <p className="text-gray-600 dark:text-gray-300 mb-1">
+                  {userDetails.phone_number}
+                </p>
+              )}
+              <p className="text-sm text-gray-500 dark:text-gray-400 mb-2">
+                {userDetails.profile_type} • {userDetails.verification_status}
               </p>
-              <p className="text-gray-600 dark:text-gray-300 mb-2">
-                {user.address}
-              </p>
-              <p className="text-gray-600 dark:text-gray-300 mb-1">
-                {user.bio}
-            </p>
-
               <p className="text-sm text-gray-500 dark:text-gray-400">
-                Member since {user.joinDate}
+                Member since {userDetails.member_since}
               </p>
             </div>
             <div className="mt-4 sm:mt-0">
@@ -147,20 +163,21 @@ const ProfilePage = () => {
             </div>
           </div>
         </div>
+
         {/* Impact Snapshot */}
         <div className="bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-100 dark:border-emerald-800 rounded-lg p-4 mb-6">
           <div className="flex items-center justify-center">
             <div className="text-center">
               <p className="text-emerald-700 dark:text-emerald-300 font-medium">
-                You've rescued {user.gardenStats.mealsRescued} meals this month!
+                You've rescued {impactStats.total_meals_rescued} meals in total!
               </p>
               <p className="text-sm text-emerald-600 dark:text-emerald-400">
-                That's approximately {user.gardenStats.co2Reduced} kg of CO2
-                emissions prevented
+                That's approximately {impactStats.total_co2_prevented_kg} kg of CO2 emissions prevented
               </p>
             </div>
           </div>
         </div>
+
         {/* Navigation Tabs */}
         <div className="flex border-b border-gray-200 dark:border-gray-700 mb-6 overflow-x-auto">
           <button
@@ -169,132 +186,81 @@ const ProfilePage = () => {
           >
             Overview
           </button>
-          {user.userType === 'customer' && (
-            <button
-              className={`px-6 py-3 font-medium whitespace-nowrap ${activeTab === 'providers' ? 'text-emerald-600 dark:text-emerald-400 border-b-2 border-emerald-600 dark:border-emerald-400' : 'text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200'}`}
-              onClick={() => setActiveTab('providers')}
-            >
-              Followed Providers
-            </button>
-          )}
-          {user.userType === 'customer' && (
-            <button
-              className={`px-6 py-3 font-medium whitespace-nowrap ${activeTab === 'reviews' ? 'text-emerald-600 dark:text-emerald-400 border-b-2 border-emerald-600 dark:border-emerald-400' : 'text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200'}`}
-              onClick={() => setActiveTab('reviews')}
-            >
-              My Reviews
-            </button>
-          )}
-          {user.userType === 'ngo' && (
-            <button
-              className={`px-6 py-3 font-medium whitespace-nowrap ${activeTab === 'organization' ? 'text-emerald-600 dark:text-emerald-400 border-b-2 border-emerald-600 dark:border-emerald-400' : 'text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200'}`}
-              onClick={() => setActiveTab('organization')}
-            >
-              Organization
-            </button>
-          )}
+          <button
+            className={`px-6 py-3 font-medium whitespace-nowrap ${activeTab === 'providers' ? 'text-emerald-600 dark:text-emerald-400 border-b-2 border-emerald-600 dark:border-emerald-400' : 'text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200'}`}
+            onClick={() => setActiveTab('providers')}
+          >
+            Followed Providers
+          </button>
+          <button
+            className={`px-6 py-3 font-medium whitespace-nowrap ${activeTab === 'reviews' ? 'text-emerald-600 dark:text-emerald-400 border-b-2 border-emerald-600 dark:border-emerald-400' : 'text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200'}`}
+            onClick={() => setActiveTab('reviews')}
+          >
+            My Reviews
+          </button>
         </div>
+
         {/* Content */}
         {activeTab === 'profile' && (
           <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6">
             <h3 className="text-lg font-medium text-gray-800 dark:text-white mb-4">
               Account Overview
             </h3>
-            {/* Order Stats for Customer */}
-            {user.userType === 'customer' && (
-              <div className="mb-6">
-                <h4 className="text-md font-medium text-gray-700 dark:text-gray-300 mb-3">
-                  Order Statistics
-                </h4>
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                  <div className="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
-                    <div className="flex items-center">
-                      <div className="p-2 bg-emerald-100 dark:bg-emerald-800 rounded-full mr-3">
-                        <ShoppingBagIcon className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
-                      </div>
-                      <div>
-                        <p className="text-sm text-gray-500 dark:text-gray-400">
-                          Completed Orders
-                        </p>
-                        <p className="text-xl font-semibold text-gray-800 dark:text-white">
-                          {user.orderStats.completed}
-                        </p>
-                      </div>
+            
+            {/* Order Statistics */}
+            <div className="mb-6">
+              <h4 className="text-md font-medium text-gray-700 dark:text-gray-300 mb-3">
+                Order Statistics
+              </h4>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div className="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
+                  <div className="flex items-center">
+                    <div className="p-2 bg-emerald-100 dark:bg-emerald-800 rounded-full mr-3">
+                      <ShoppingBagIcon className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
+                    </div>
+                    <div>
+                      <p className="text-sm text-gray-500 dark:text-gray-400">
+                        Completed Orders
+                      </p>
+                      <p className="text-xl font-semibold text-gray-800 dark:text-white">
+                        {orderStats.completed_orders}
+                      </p>
                     </div>
                   </div>
-                  <div className="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
-                    <div className="flex items-center">
-                      <div className="p-2 bg-red-100 dark:bg-red-900/30 rounded-full mr-3">
-                        <ShoppingBagIcon className="h-5 w-5 text-red-600 dark:text-red-400" />
-                      </div>
-                      <div>
-                        <p className="text-sm text-gray-500 dark:text-gray-400">
-                          Canceled Orders
-                        </p>
-                        <p className="text-xl font-semibold text-gray-800 dark:text-white">
-                          {user.orderStats.canceled}
-                        </p>
-                      </div>
+                </div>
+                <div className="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
+                  <div className="flex items-center">
+                    <div className="p-2 bg-red-100 dark:bg-red-900/30 rounded-full mr-3">
+                      <ShoppingBagIcon className="h-5 w-5 text-red-600 dark:text-red-400" />
+                    </div>
+                    <div>
+                      <p className="text-sm text-gray-500 dark:text-gray-400">
+                        Cancelled Orders
+                      </p>
+                      <p className="text-xl font-semibold text-gray-800 dark:text-white">
+                        {orderStats.cancelled_orders}
+                      </p>
                     </div>
                   </div>
-                  <div className="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
-                    <div className="flex items-center">
-                      <div className="p-2 bg-amber-100 dark:bg-amber-900/30 rounded-full mr-3">
-                        <ShoppingBagIcon className="h-5 w-5 text-amber-600 dark:text-amber-400" />
-                      </div>
-                      <div>
-                        <p className="text-sm text-gray-500 dark:text-gray-400">
-                          Missed Pickups
-                        </p>
-                        <p className="text-xl font-semibold text-gray-800 dark:text-white">
-                          {user.orderStats.missed}
-                        </p>
-                      </div>
+                </div>
+                <div className="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
+                  <div className="flex items-center">
+                    <div className="p-2 bg-amber-100 dark:bg-amber-900/30 rounded-full mr-3">
+                      <ShoppingBagIcon className="h-5 w-5 text-amber-600 dark:text-amber-400" />
+                    </div>
+                    <div>
+                      <p className="text-sm text-gray-500 dark:text-gray-400">
+                        Missed Pickups
+                      </p>
+                      <p className="text-xl font-semibold text-gray-800 dark:text-white">
+                        {orderStats.missed_pickups}
+                      </p>
                     </div>
                   </div>
                 </div>
               </div>
-            )}
-            {/* Donation Stats for NGO */}
-            {user.userType === 'ngo' && (
-              <div className="mb-6">
-                <h4 className="text-md font-medium text-gray-700 dark:text-gray-300 mb-3">
-                  Donation Statistics
-                </h4>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div className="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
-                    <div className="flex items-center">
-                      <div className="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-full mr-3">
-                        <ShoppingBagIcon className="h-5 w-5 text-blue-600 dark:text-blue-400" />
-                      </div>
-                      <div>
-                        <p className="text-sm text-gray-500 dark:text-gray-400">
-                          Requested Donations
-                        </p>
-                        <p className="text-xl font-semibold text-gray-800 dark:text-white">
-                          {user.organization.donationStats.requested}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
-                    <div className="flex items-center">
-                      <div className="p-2 bg-emerald-100 dark:bg-emerald-800 rounded-full mr-3">
-                        <ShoppingBagIcon className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
-                      </div>
-                      <div>
-                        <p className="text-sm text-gray-500 dark:text-gray-400">
-                          Received Donations
-                        </p>
-                        <p className="text-xl font-semibold text-gray-800 dark:text-white">
-                          {user.organization.donationStats.received}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
+            </div>
+
             <div className="flex justify-center">
               <Link
                 to="/orders"
@@ -305,39 +271,47 @@ const ProfilePage = () => {
             </div>
           </div>
         )}
-        {activeTab === 'providers' && user.userType === 'customer' && (
+
+        {activeTab === 'providers' && (
           <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6">
             <h3 className="text-lg font-medium text-gray-800 dark:text-white mb-4">
-              Followed Providers
+              Followed Providers ({followedBusinesses.count})
             </h3>
-            {user.followedProviders.length > 0 ? (
+            {followedBusinesses.businesses && followedBusinesses.businesses.length > 0 ? (
               <div className="space-y-4">
-                {user.followedProviders.map((provider) => (
+                {followedBusinesses.businesses.map((business) => (
                   <div
-                    key={provider.id}
+                    key={business.id}
                     className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700 rounded-lg"
                   >
                     <div className="flex items-center">
                       <img
-                        src={provider.image}
-                        alt={provider.name}
+                        src={business.logo || PLACEHOLDER_AVATAR}
+                        alt={business.business_name}
                         className="w-12 h-12 rounded-full object-cover mr-4"
                       />
                       <div>
                         <h4 className="font-medium text-gray-800 dark:text-white">
-                          {provider.name}
+                          {business.business_name}
                         </h4>
-                        <Link
-                          to={`/providers/${provider.id}`}
-                          className="text-sm text-emerald-600 dark:text-emerald-400 hover:underline"
-                        >
-                          View Provider
-                        </Link>
+                        <p className="text-sm text-gray-600 dark:text-gray-400">
+                          {business.business_address}
+                        </p>
+                        <p className="text-xs text-gray-500 dark:text-gray-500">
+                          Following since {business.followed_since}
+                        </p>
                       </div>
                     </div>
                     <div className="flex items-center">
+                      <span className={`px-2 py-1 rounded-full text-xs mr-3 ${
+                        business.status === 'verified' 
+                          ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300' 
+                          : 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300'
+                      }`}>
+                        {business.status}
+                      </span>
                       <button
-                        onClick={() => handleUnfollow(provider.id)}
+                        onClick={() => handleUnfollow(business.id)}
                         className="flex items-center px-3 py-1 bg-gray-200 dark:bg-gray-600 text-gray-700 dark:text-gray-300 rounded-md hover:bg-gray-300 dark:hover:bg-gray-500 transition-colors"
                       >
                         <XIcon size={14} className="mr-1" />
@@ -368,45 +342,56 @@ const ProfilePage = () => {
             )}
           </div>
         )}
-        {activeTab === 'reviews' && user.userType === 'customer' && (
+
+        {activeTab === 'reviews' && (
           <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6">
             <h3 className="text-lg font-medium text-gray-800 dark:text-white mb-4">
-              My Reviews
+              My Reviews ({reviews.count})
             </h3>
-            <div className="space-y-4">
-              {user.reviews.map((review) => (
-                <div
-                  key={review.id}
-                  className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4"
-                >
-                  <div className="flex justify-between mb-2">
-                    <h4 className="font-medium text-gray-800 dark:text-white">
-                      {review.providerName}
-                    </h4>
-                    <div className="flex items-center">
-                      {[...Array(5)].map((_, i) => (
-                        <StarIcon
-                          key={i}
-                          className={`h-4 w-4 ${i < review.rating ? 'text-amber-400 fill-amber-400' : 'text-gray-300 dark:text-gray-600'}`}
-                        />
-                      ))}
+            {reviews.recent_reviews && reviews.recent_reviews.length > 0 ? (
+              <div className="space-y-4">
+                {reviews.recent_reviews.map((review) => (
+                  <div
+                    key={review.id}
+                    className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4"
+                  >
+                    <div className="flex justify-between mb-2">
+                      <h4 className="font-medium text-gray-800 dark:text-white">
+                        {review.business_name}
+                      </h4>
+                      <div className="flex items-center">
+                        {[...Array(5)].map((_, i) => (
+                          <StarIcon
+                            key={i}
+                            className={`h-4 w-4 ${i < review.general_rating ? 'text-amber-400 fill-amber-400' : 'text-gray-300 dark:text-gray-600'}`}
+                          />
+                        ))}
+                      </div>
+                    </div>
+                    {review.general_comment && (
+                      <p className="text-gray-600 dark:text-gray-300 text-sm mb-2">
+                        {review.general_comment}
+                      </p>
+                    )}
+                    {review.food_review && (
+                      <p className="text-gray-600 dark:text-gray-300 text-sm mb-2">
+                        <span className="font-medium">Food:</span> {review.food_review}
+                      </p>
+                    )}
+                    {review.business_review && (
+                      <p className="text-gray-600 dark:text-gray-300 text-sm mb-2">
+                        <span className="font-medium">Service:</span> {review.business_review}
+                      </p>
+                    )}
+                    <div className="flex justify-between items-center">
+                      <span className="text-xs text-gray-500 dark:text-gray-400">
+                        {review.created_at}
+                      </span>
                     </div>
                   </div>
-                  <p className="text-gray-600 dark:text-gray-300 text-sm mb-2">
-                    {review.comment}
-                  </p>
-                  <div className="flex justify-between items-center">
-                    <span className="text-xs text-gray-500 dark:text-gray-400">
-                      {review.date}
-                    </span>
-                    {/* <button className="text-sm text-emerald-600 dark:text-emerald-400 hover:underline">
-                      Edit Review
-                    </button> */}
-                  </div>
-                </div>
-              ))}
-            </div>
-            {user.reviews.length === 0 && (
+                ))}
+              </div>
+            ) : (
               <div className="text-center py-10 bg-gray-50 dark:bg-gray-700 rounded-lg">
                 <div className="inline-flex items-center justify-center w-16 h-16 bg-gray-100 dark:bg-gray-600 rounded-full mb-4">
                   <StarIcon className="h-8 w-8 text-gray-400 dark:text-gray-500" />
@@ -419,75 +404,19 @@ const ProfilePage = () => {
                 </p>
               </div>
             )}
-          </div>
-        )}
-        {activeTab === 'organization' && user.userType === 'ngo' && (
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6">
-            <h3 className="text-lg font-medium text-gray-800 dark:text-white mb-4">
-              Organization Details
-            </h3>
-            <div className="mb-6">
-              <h4 className="text-md font-medium text-gray-700 dark:text-gray-300 mb-2">
-                Mission Statement
-              </h4>
-              <p className="text-gray-600 dark:text-gray-300 bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
-                {user.organization.mission}
-              </p>
-            </div>
-            <div className="mb-6">
-              <div className="flex items-center mb-3">
-                <h4 className="text-md font-medium text-gray-700 dark:text-gray-300">
-                  Verification Status
-                </h4>
-                <span
-                  className={`ml-2 px-2 py-1 text-xs font-medium rounded-full ${user.organization.verificationStatus === 'verified' ? 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-800 dark:text-emerald-300' : user.organization.verificationStatus === 'pending' ? 'bg-amber-100 dark:bg-amber-900/30 text-amber-800 dark:text-amber-300' : 'bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300'}`}
-                >
-                  {user.organization.verificationStatus === 'verified' && (
-                    <span className="flex items-center">
-                      <CheckCircleIcon className="h-3 w-3 mr-1" />
-                      Verified
-                    </span>
-                  )}
-                  {user.organization.verificationStatus === 'pending' &&
-                    'Pending'}
-                  {user.organization.verificationStatus === 'rejected' &&
-                    'Rejected'}
-                </span>
+            
+            {reviews.statistics && (
+              <div className="mt-6 pt-4 border-t border-gray-200 dark:border-gray-600">
+                <p className="text-sm text-gray-600 dark:text-gray-400">
+                  Average rating given: <span className="font-medium">{reviews.statistics.average_rating_given}/5</span>
+                </p>
               </div>
-              <div className="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
-                <h5 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
-                  Uploaded Documents
-                </h5>
-                <div className="space-y-2">
-                  {user.organization.documents.map((doc) => (
-                    <div
-                      key={doc.id}
-                      className="flex justify-between items-center p-2 border-b border-gray-200 dark:border-gray-600 last:border-0"
-                    >
-                      <div className="flex items-center">
-                        <FileTextIcon className="h-4 w-4 text-gray-500 dark:text-gray-400 mr-2" />
-                        <span className="text-gray-700 dark:text-gray-300">
-                          {doc.name}
-                        </span>
-                      </div>
-                      <div className="flex items-center">
-                        <span className="text-xs text-gray-500 dark:text-gray-400 mr-3">
-                          Uploaded: {doc.date}
-                        </span>
-                        <button className="text-xs text-emerald-600 dark:text-emerald-400 hover:underline">
-                          Re-upload
-                        </button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
+            )}
           </div>
         )}
       </div>
     </div>
-  )
-}
-export default ProfilePage
- 
+  );
+};
+
+export default ProfilePage;

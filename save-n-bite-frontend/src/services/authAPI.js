@@ -68,7 +68,10 @@ const transformFormData = (formData, userType) => {
                 business_postal_code: formData.zipCode,
                 cipc_document: formData.cipcDocument || '',
                 logo: formData.logo || '',
-                user_type: 'provider'  // Add user_type explicitly
+                user_type: 'provider',  // Add user_type explicitly
+                banner: formData.banner || '',
+                business_description: formData.businessDescription || '',
+                business_tags: formData.businessTags || []
             };
 
         case 'ngo':
