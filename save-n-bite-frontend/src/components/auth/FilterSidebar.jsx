@@ -124,20 +124,21 @@ const FilterSidebar = ({ showFilters, filters, setFilters, providerOptions, onRe
         <h4 className="font-medium mb-2 text-gray-700 dark:text-gray-200">Provider</h4>
         <div className="relative">
           <select 
-            className="w-full p-2 border border-gray-300 dark:border-gray-700 rounded-md appearance-none focus:ring-emerald-500 focus:border-emerald-500 dark:bg-gray-900 dark:text-gray-100 transition-colors" 
-            value={filters.provider}
-            onChange={(e) => setFilters({
-              ...filters,
-              provider: e.target.value
-            })}
-          >
-            <option value="all">All Providers</option>
-            {providerOptions.map((provider, idx) => (
-              <option key={idx} value={provider}>
-                {provider}
-              </option>
-            ))}
-          </select>
+  className="w-full p-2 border border-gray-300 dark:border-gray-700 rounded-md appearance-none focus:ring-emerald-500 focus:border-emerald-500 dark:bg-gray-900 dark:text-gray-100 transition-colors" 
+  value={filters.provider}
+  onChange={(e) => setFilters({
+    ...filters,
+    provider: e.target.value
+  })}
+>
+  <option value="all">All Providers</option>
+  {providerOptions.map((provider, idx) => (
+    <option key={idx} value={provider.value}>
+      {provider.label}
+    </option>
+  ))}
+</select>
+
           <ChevronDownIcon 
             size={16} 
             className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-gray-500" 

@@ -263,30 +263,7 @@ const RegisterForm = ({ userType = USER_TYPES.CUSTOMER, onSuccess, onError }) =>
             const response = await authAPI.register({ ...formData, userType });
             onSuccess(response);
         } catch (error) {
-            // Improved error handling
-            let errorMessage = 'Registration failed. Please check your details.';
-            // Backend validation errors (field-specific)
-            if (error?.response?.data) {
-                const data = error.response.data;
-                if (typeof data === 'object') {
-                    // Django REST Framework style: { field: ["error message"] }
-                    const fieldErrors = [];
-                    Object.entries(data).forEach(([field, messages]) => {
-                        if (Array.isArray(messages)) {
-                            fieldErrors.push(`${field.charAt(0).toUpperCase() + field.slice(1)}: ${messages.join(', ')}`);
-                        } else if (typeof messages === 'string') {
-                            fieldErrors.push(`${field.charAt(0).toUpperCase() + field.slice(1)}: ${messages}`);
-                        }
-                    });
-                    if (fieldErrors.length > 0) {
-                        errorMessage = fieldErrors.join(' | ');
-                    }
-                } else if (typeof data === 'string') {
-                    errorMessage = data;
-                }
-            } else if (error?.message) {
-                errorMessage = error.message;
-            }
+            const errorMessage = error?.message || 'Registration failed. Please try again.';
             setServerError(errorMessage);
             onError(errorMessage);
         } finally {
@@ -422,7 +399,6 @@ const RegisterForm = ({ userType = USER_TYPES.CUSTOMER, onSuccess, onError }) =>
 
             {userType === USER_TYPES.CUSTOMER && (
                 <>
-                    {/* First Name */}
                     <div className="relative">
                         <label htmlFor="firstName" className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                             First Name
@@ -443,7 +419,6 @@ const RegisterForm = ({ userType = USER_TYPES.CUSTOMER, onSuccess, onError }) =>
                         )}
                     </div>
 
-                    {/* Last Name */}
                     <div className="relative">
                         <label htmlFor="lastName" className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                             Last Name
@@ -464,28 +439,6 @@ const RegisterForm = ({ userType = USER_TYPES.CUSTOMER, onSuccess, onError }) =>
                         )}
                     </div>
 
-                    {/* Email */}
-                    <div className="relative">
-                        <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
-                            Email Address
-                        </label>
-                        <input
-                            type="email"
-                            id="email"
-                            name="email"
-                            value={formData.email}
-                            onChange={handleInputChange}
-                            onBlur={handleBlur}
-                            className={getFieldClassName('email')}
-                            placeholder="Enter your email address"
-                        />
-                        {renderValidationIcon('email')}
-                        {errors.email && touchedFields.email && (
-                            <p className="mt-1 text-sm text-red-600">{errors.email}</p>
-                        )}
-                    </div>
-
-                    {/* City */}
                     <div className="relative">
                         <label htmlFor="city" className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                             City
@@ -506,7 +459,6 @@ const RegisterForm = ({ userType = USER_TYPES.CUSTOMER, onSuccess, onError }) =>
                         )}
                     </div>
 
-                    {/* Province */}
                     <div className="relative">
                         <label htmlFor="province" className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                             Province
@@ -528,50 +480,6 @@ const RegisterForm = ({ userType = USER_TYPES.CUSTOMER, onSuccess, onError }) =>
                         )}
                     </div>
 
-                    {/* Password */}
-                    <div className="relative">
-                        <label htmlFor="password" className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
-                            Password
-                            {renderTooltip('Password must be at least 6 characters long')}
-                        </label>
-                        <input
-                            type="password"
-                            id="password"
-                            name="password"
-                            value={formData.password}
-                            onChange={handleInputChange}
-                            onBlur={handleBlur}
-                            className={getFieldClassName('password')}
-                            placeholder="Create a secure password"
-                        />
-                        {renderValidationIcon('password')}
-                        {errors.password && touchedFields.password && (
-                            <p className="mt-1 text-sm text-red-600">{errors.password}</p>
-                        )}
-                    </div>
-
-                    {/* Confirm Password */}
-                    <div className="relative">
-                        <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
-                            Confirm Password
-                        </label>
-                        <input
-                            type="password"
-                            id="confirmPassword"
-                            name="confirmPassword"
-                            value={formData.confirmPassword}
-                            onChange={handleInputChange}
-                            onBlur={handleBlur}
-                            className={getFieldClassName('confirmPassword')}
-                            placeholder="Confirm your password"
-                        />
-                        {renderValidationIcon('confirmPassword')}
-                        {errors.confirmPassword && touchedFields.confirmPassword && (
-                            <p className="mt-1 text-sm text-red-600">{errors.confirmPassword}</p>
-                        )}
-                    </div>
-
-                    {/* Profile Image (Optional) */}
                     <div>
                         <label htmlFor="profileImage" className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                             Profile Image (Optional)
@@ -972,7 +880,7 @@ const RegisterForm = ({ userType = USER_TYPES.CUSTOMER, onSuccess, onError }) =>
                     <div className="flex">
                         <div className="flex-shrink-0">
                             <svg className="h-5 w-5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
-                                <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                                <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
                             </svg>
                         </div>
                         <div className="ml-3">

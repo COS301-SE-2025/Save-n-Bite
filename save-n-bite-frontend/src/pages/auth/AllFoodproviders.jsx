@@ -122,14 +122,14 @@ const FoodProvidersPage = () => {
     return matchesSearch && matchesCategory
   })
   return (
-    <div className="bg-gray-50 min-h-screen w-full">
-        <CustomerNavBar />
+    <div className="bg-gray-50 dark:bg-gray-900 min-h-screen w-full transition-colors duration-300">
+      <CustomerNavBar />
       <div className="max-w-6xl mx-auto p-4 md:p-6">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-800 mb-2">
+          <h1 className="text-3xl font-bold text-gray-800 dark:text-gray-100 mb-2">
             Food Providers
           </h1>
-          <p className="text-gray-600">
+          <p className="text-gray-600 dark:text-gray-300">
             Discover local businesses committed to reducing food waste
           </p>
         </div>
@@ -140,18 +140,18 @@ const FoodProvidersPage = () => {
               <input
                 type="text"
                 placeholder="Search providers..."
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:ring-emerald-500 focus:border-emerald-500"
+                className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md focus:ring-emerald-500 focus:border-emerald-500 bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-100"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
               <SearchIcon
                 size={20}
-                className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
+                className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-gray-500"
               />
             </div>
             <div className="md:w-64">
               <select
-                className="w-full p-2 border border-gray-300 rounded-md focus:ring-emerald-500 focus:border-emerald-500"
+                className="w-full p-2 border border-gray-300 dark:border-gray-700 rounded-md focus:ring-emerald-500 focus:border-emerald-500 bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-100"
                 value={selectedCategory}
                 onChange={(e) => setSelectedCategory(e.target.value)}
               >
@@ -171,7 +171,7 @@ const FoodProvidersPage = () => {
             <Link
               to={`/providers/${provider.id}`}
               key={provider.id}
-              className="bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow"
+              className="bg-white dark:bg-gray-800 rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow"
             >
               <div className="relative h-48">
                 <img
@@ -181,10 +181,10 @@ const FoodProvidersPage = () => {
                 />
               </div>
               <div className="p-4">
-                <h3 className="font-semibold text-lg text-gray-800">
+                <h3 className="font-semibold text-lg text-gray-800 dark:text-gray-100">
                   {provider.name}
                 </h3>
-                <p className="text-gray-600 text-sm mt-1 line-clamp-2">
+                <p className="text-gray-600 dark:text-gray-300 text-sm mt-1 line-clamp-2">
                   {provider.description}
                 </p>
                 <div className="flex items-center mt-2">
@@ -192,20 +192,19 @@ const FoodProvidersPage = () => {
                     <StarIcon size={16} className="fill-current" />
                     <span className="ml-1 text-sm">{provider.rating}</span>
                   </div>
-                  <span className="mx-2 text-gray-300">•</span>
-                 
+                  <span className="mx-2 text-gray-300 dark:text-gray-700">•</span>
                 </div>
                 <div className="flex flex-wrap gap-1 mt-3">
                   {provider.categories.slice(0, 3).map((category) => (
                     <span
                       key={category}
-                      className="px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded-full"
+                      className="px-2 py-1 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 text-xs rounded-full"
                     >
                       {category}
                     </span>
                   ))}
                 </div>
-                <div className="mt-3 text-sm text-gray-600">
+                <div className="mt-3 text-sm text-gray-600 dark:text-gray-300">
                   {provider.itemCount} items available
                 </div>
               </div>
@@ -215,8 +214,12 @@ const FoodProvidersPage = () => {
         {/* Empty state */}
         {filteredProviders.length === 0 && (
           <div className="text-center py-12">
-            <p className="text-xl text-gray-600 mb-4">No providers found</p>
-            <p className="text-gray-500">Try adjusting your search or filter</p>
+            <p className="text-xl text-gray-600 dark:text-gray-300 mb-4">
+              No providers found
+            </p>
+            <p className="text-gray-500 dark:text-gray-400">
+              Try adjusting your search or filter
+            </p>
           </div>
         )}
       </div>

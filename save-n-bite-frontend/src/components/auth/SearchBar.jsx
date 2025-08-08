@@ -18,19 +18,24 @@ const SearchBar = ({ searchQuery, setSearchQuery, showFilters, setShowFilters })
             className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-gray-300" 
           />
         </div>
-        <button 
-          className="ml-4 px-4 py-2 bg-emerald-600 text-white rounded-md flex items-center hover:bg-emerald-700 dark:bg-emerald-700 dark:hover:bg-emerald-800 transition-colors duration-200" 
-          onClick={() => setShowFilters(!showFilters)}
-        >
-          {showFilters ? (
-            <XIcon size={18} className="mr-1" />
-          ) : (
-            <FilterIcon size={18} className="mr-1" />
-          )}
-          <span className="hidden sm:inline">
-            {showFilters ? 'Hide Filters' : 'Filters'}
-          </span>
-        </button>
+       <button 
+  type="button"
+  className="ml-4 px-4 py-2 bg-emerald-600 text-white rounded-md flex items-center hover:bg-emerald-700 dark:bg-emerald-700 dark:hover:bg-emerald-800 transition-colors duration-200" 
+  onClick={(e) => {
+    e.preventDefault(); 
+    setShowFilters(!showFilters);
+  }}
+>
+  {showFilters ? (
+    <XIcon size={18} className="mr-1" />
+  ) : (
+    <FilterIcon size={18} className="mr-1" />
+  )}
+  <span className="hidden sm:inline">
+    {showFilters ? 'Hide Filters' : 'Filters'}
+  </span>
+</button>
+
       </div>
     </div>
   );

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useContext } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import {
   MapPinIcon,
@@ -17,6 +17,7 @@ import FilterSidebar from '../../components/auth/FilterSidebar'
 import FoodListingsGrid from '../../components/auth/FoodListingsGrid'
 import Sort from '../../components/auth/Sort'
 import foodListingsAPI from '../../services/foodListingsAPI'
+import { ThemeContext } from '../../context/ThemeContext' // Add ThemeContext import
 
 // Mock data for a single provider
 const provider = {
@@ -152,10 +153,9 @@ const providerReviews = [
 
 const FoodProviderDetailPage = () => {
   const { id } = useParams()
+  const { theme } = useContext(ThemeContext) // Use ThemeContext
   const [isFollowing, setIsFollowing] = useState(false)
   const [isReviewsModalOpen, setIsReviewsModalOpen] = useState(false)
-  
-  // Reused state from FoodListings
   const [showFilters, setShowFilters] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
   const [filters, setFilters] = useState({
@@ -165,15 +165,12 @@ const FoodProviderDetailPage = () => {
     provider: 'all'
   })
   const [selectedSort, setSelectedSort] = useState('')
-  
-
   const [allFoodListings, setAllFoodListings] = useState([])
   const [filteredListings, setFilteredListings] = useState([])
   const [loading, setLoading] = useState(true)
   const [totalCount, setTotalCount] = useState(0)
   const [userType, setUserType] = useState('customer')
 
- 
   const isCustomer = () => userType === 'customer'
   const isNGO = () => userType === 'ngo'
 
@@ -329,12 +326,12 @@ const FoodProviderDetailPage = () => {
 
   if (loading && filteredListings.length === 0) {
     return (
-      <div className="bg-gray-50 min-h-screen w-full">
+      <div className="bg-gray-50 dark:bg-gray-900 min-h-screen w-full transition-colors duration-300">
         <CustomerNavBar />
         <div className="flex items-center justify-center min-h-[60vh]">
           <div className="text-center">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-600 mx-auto mb-4"></div>
-            <p className="text-gray-600">Loading provider details...</p>
+            <p className="text-gray-600 dark:text-gray-300">Loading provider details...</p>
           </div>
         </div>
       </div>
@@ -342,14 +339,14 @@ const FoodProviderDetailPage = () => {
   }
 
   return (
-    <div className="bg-gray-50 min-h-screen w-full">
+    <div className="bg-gray-50 dark:bg-gray-900 min-h-screen w-full transition-colors duration-300">
       <CustomerNavBar />
       
       <div className="max-w-6xl mx-auto p-4 md:p-6">
         <div className="mb-6">
           <Link
             to="/providers"
-            className="text-emerald-600 hover:text-emerald-700"
+            className="text-emerald-600 hover:text-emerald-700 dark:text-emerald-400 dark:hover:text-emerald-300"
           >
             &larr; Back to providers
           </Link>
@@ -364,12 +361,12 @@ const FoodProviderDetailPage = () => {
               className="w-full h-full object-cover"
             />
           </div>
-          <div className="bg-white rounded-b-lg shadow-sm p-6 md:p-8">
+          <div className="bg-white dark:bg-gray-800 rounded-b-lg shadow-sm p-6 md:p-8 transition-colors duration-300">
             <div className="flex flex-col md:flex-row">
               <div className="md:flex-grow">
                 <div className="flex items-start">
                   <div className="relative -mt-16 mr-4">
-                    <div className="w-20 h-20 rounded-full overflow-hidden border-4 border-white shadow-sm">
+                    <div className="w-20 h-20 rounded-full overflow-hidden border-4 border-white dark:border-gray-900 shadow-sm">
                       <img
                         src={provider.logo}
                         alt={provider.name}
@@ -378,7 +375,7 @@ const FoodProviderDetailPage = () => {
                     </div>
                   </div>
                   <div>
-                    <h1 className="text-2xl font-bold text-gray-800">
+                    <h1 className="text-2xl font-bold text-gray-800 dark:text-gray-100">
                       {provider.name}
                     </h1>
                     <div className="flex items-center mt-1 text-sm">
@@ -387,7 +384,7 @@ const FoodProviderDetailPage = () => {
                         <span className="ml-1">{provider.rating}</span>
                       </div>
                       <button 
-                        className="ml-2 text-emerald-600 hover:text-emerald-700 text-sm font-medium"
+                        className="ml-2 text-emerald-600 hover:text-emerald-700 dark:text-emerald-400 dark:hover:text-emerald-300 text-sm font-medium"
                         onClick={openReviewsModal}
                       >
                         Read Reviews
@@ -397,20 +394,20 @@ const FoodProviderDetailPage = () => {
                 </div>
                 <div className="mt-4 grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div className="flex items-center">
-                    <MapPinIcon size={16} className="text-gray-500 mr-2" />
-                    <span className="text-gray-600 text-sm">
+                    <MapPinIcon size={16} className="text-gray-500 dark:text-gray-400 mr-2" />
+                    <span className="text-gray-600 dark:text-gray-300 text-sm">
                       {provider.address}
                     </span>
                   </div>
                   <div className="flex items-center">
-                    <PhoneIcon size={16} className="text-gray-500 mr-2" />
-                    <span className="text-gray-600 text-sm">
+                    <PhoneIcon size={16} className="text-gray-500 dark:text-gray-400 mr-2" />
+                    <span className="text-gray-600 dark:text-gray-300 text-sm">
                       {provider.phone}
                     </span>
                   </div>
                   <div className="flex items-center">
-                    <ClockIcon size={16} className="text-gray-500 mr-2" />
-                    <span className="text-gray-600 text-sm">
+                    <ClockIcon size={16} className="text-gray-500 dark:text-gray-400 mr-2" />
+                    <span className="text-gray-600 dark:text-gray-300 text-sm">
                       {provider.hours}
                     </span>
                   </div>
@@ -419,7 +416,7 @@ const FoodProviderDetailPage = () => {
                   {provider.categories.map((category) => (
                     <span
                       key={category}
-                      className="px-3 py-1 bg-gray-100 text-gray-600 text-sm rounded-full"
+                      className="px-3 py-1 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 text-sm rounded-full"
                     >
                       {category}
                     </span>
@@ -431,8 +428,8 @@ const FoodProviderDetailPage = () => {
                   onClick={handleFollow}
                   className={`px-6 py-2 rounded-md flex items-center justify-center transition-colors ${
                     isFollowing 
-                      ? 'bg-gray-100 text-gray-800 hover:bg-gray-200' 
-                      : 'bg-emerald-600 text-white hover:bg-emerald-700'
+                      ? 'bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-100 hover:bg-gray-200 dark:hover:bg-gray-600' 
+                      : 'bg-emerald-600 text-white hover:bg-emerald-700 dark:bg-emerald-700 dark:hover:bg-emerald-800'
                   }`}
                 >
                   <HeartIcon
@@ -458,18 +455,21 @@ const FoodProviderDetailPage = () => {
 
         
         <div className="flex flex-col md:flex-row gap-6">
-          <FilterSidebar 
-            showFilters={showFilters}
-            filters={filters}
-            setFilters={setFilters}
-            providerOptions={[{ value: provider.id, label: provider.name }]}
-            typeOptions={getAvailableTypeFilters()}
-            onResetFilters={handleResetFilters}
-          />
+          {showFilters && (
+  <FilterSidebar 
+    showFilters={showFilters}
+    filters={filters}
+    setFilters={setFilters}
+    providerOptions={[{ value: provider.id, label: provider.name }]}
+    typeOptions={getAvailableTypeFilters()}
+    onResetFilters={handleResetFilters}
+  />
+)}
+
           
           <div className="flex-grow">
             <div className="flex items-center justify-between mb-4">
-              <div className="text-sm text-gray-600">
+              <div className="text-sm text-gray-600 dark:text-gray-300">
                 {loading ? 'Loading...' : `${totalCount} items available from ${provider.name}`}
               </div>
               <Sort 
@@ -480,7 +480,7 @@ const FoodProviderDetailPage = () => {
             
             {loading && filteredListings.length > 0 && (
               <div className="mb-4 text-center">
-                <div className="inline-flex items-center px-4 py-2 bg-emerald-50 text-emerald-600 rounded-md">
+                <div className="inline-flex items-center px-4 py-2 bg-emerald-50 dark:bg-emerald-900 text-emerald-600 dark:text-emerald-200 rounded-md">
                   <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-emerald-600 mr-2"></div>
                   Updating listings...
                 </div>
@@ -491,9 +491,9 @@ const FoodProviderDetailPage = () => {
             
             
             {!loading && filteredListings.length === 0 && (
-              <div className="text-center py-12 bg-white rounded-lg shadow-sm">
-                <p className="text-xl text-gray-600 mb-4">No items available</p>
-                <p className="text-gray-500">
+              <div className="text-center py-12 bg-white dark:bg-gray-800 rounded-lg shadow-sm">
+                <p className="text-xl text-gray-600 dark:text-gray-300 mb-4">No items available</p>
+                <p className="text-gray-500 dark:text-gray-400">
                   {userType === 'customer' 
                     ? 'No discounted items available from this provider right now'
                     : 'No items available from this provider right now'

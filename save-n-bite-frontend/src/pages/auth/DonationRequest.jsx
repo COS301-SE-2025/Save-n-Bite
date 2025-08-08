@@ -111,10 +111,10 @@ const DonationRequestPage = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 p-4 flex items-center justify-center">
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-4 flex items-center justify-center transition-colors duration-300">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading donation details...</p>
+          <p className="text-gray-600 dark:text-gray-300">Loading donation details...</p>
         </div>
       </div>
     );
@@ -122,17 +122,15 @@ const DonationRequestPage = () => {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-gray-50 p-4">
-        <div className="max-w-3xl mx-auto bg-white rounded-lg shadow-md p-6">
-          <div className="text-red-600 mb-4">
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-4 transition-colors duration-300">
+        <div className="max-w-3xl mx-auto bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
+          <div className="text-red-600 dark:text-red-400 mb-4">
             <p className="font-medium">Error</p>
             <p>{error}</p>
           </div>
-      
-          
           <button
             onClick={() => navigate('/food-listing')}
-            className="flex items-center text-emerald-600 hover:text-emerald-800 mt-4"
+            className="flex items-center text-emerald-600 hover:text-emerald-800 dark:text-emerald-400 dark:hover:text-emerald-300 mt-4"
           >
             <ArrowLeft size={16} className="mr-1" />
             Back to Listings
@@ -144,16 +142,15 @@ const DonationRequestPage = () => {
 
   if (!listing) {
     return (
-      <div className="min-h-screen bg-gray-50 p-4">
-        <div className="max-w-3xl mx-auto bg-white rounded-lg shadow-md p-6">
-          <div className="text-orange-600 mb-4">
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-4 transition-colors duration-300">
+        <div className="max-w-3xl mx-auto bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
+          <div className="text-orange-600 dark:text-orange-400 mb-4">
             <p className="font-medium">No Data Available</p>
             <p>The listing data could not be loaded or is incomplete.</p>
           </div>
-        
           <button
             onClick={() => navigate('/food-listing')}
-            className="flex items-center text-emerald-600 hover:text-emerald-800 mt-4"
+            className="flex items-center text-emerald-600 hover:text-emerald-800 dark:text-emerald-400 dark:hover:text-emerald-300 mt-4"
           >
             <ArrowLeft size={16} className="mr-1" />
             Back to Listings
@@ -164,18 +161,17 @@ const DonationRequestPage = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 p-4">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-4 transition-colors duration-300">
       <CustomerNavBar/>
       <div className="max-w-3xl mx-auto">
         <button
           onClick={() => navigate(-1)}
-          className="flex items-center text-emerald-600 hover:text-emerald-800 mb-4"
+          className="flex items-center text-emerald-600 hover:text-emerald-800 dark:text-emerald-400 dark:hover:text-emerald-300 mb-4"
         >
           <ArrowLeft size={16} className="mr-1" />
           Back to Listings
         </button>
-        
-        <div className="bg-white rounded-lg shadow-md overflow-hidden">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden transition-colors duration-300">
           <div className="relative h-64">
             <img
               src={listing.image}
@@ -186,52 +182,45 @@ const DonationRequestPage = () => {
               }}
             />
             <div className="absolute top-0 right-0 m-3">
-              <span className="bg-emerald-100 text-emerald-800 text-xs font-medium px-2.5 py-1 rounded-full border border-emerald-200">
+              <span className="bg-emerald-100 dark:bg-emerald-900 text-emerald-800 dark:text-emerald-200 text-xs font-medium px-2.5 py-1 rounded-full border border-emerald-200 dark:border-emerald-800">
                 {listing.type}
               </span>
             </div>
           </div>
-          
           <div className="p-6">
-            <h1 className="text-2xl font-bold text-gray-800 mb-2">
+            <h1 className="text-2xl font-bold text-gray-800 dark:text-gray-100 mb-2">
               {listing.title}
             </h1>
-            
-            <div className="flex items-center text-gray-600 mb-4">
+            <div className="flex items-center text-gray-600 dark:text-gray-300 mb-4">
               <MapPin size={16} className="mr-1" />
               <span>{listing.provider?.business_name}</span>
             </div>
-            
-            <div className="flex items-center text-gray-600 mb-4">
+            <div className="flex items-center text-gray-600 dark:text-gray-300 mb-4">
               <Clock size={16} className="mr-1" />
               <span>Available until: {listing.expirationTime}</span>
             </div>
-            
             {listing.description && listing.description !== 'No description available' && (
               <div className="mb-6">
-                <p className="text-gray-700">{listing.description}</p>
+                <p className="text-gray-700 dark:text-gray-300">{listing.description}</p>
               </div>
             )}
-            
-            {/* Show additional info if available */}
             {listing.quantityAvailable > 0 && (
-              <div className="text-sm text-gray-600 mb-4">
+              <div className="text-sm text-gray-600 dark:text-gray-300 mb-4">
                 Available quantity: {listing.quantityAvailable}
               </div>
             )}
-            
-            <div className="border-t border-gray-100 pt-6">
-              <h2 className="text-xl font-semibold mb-4">Request Donation</h2>
+            <div className="border-t border-gray-100 dark:border-gray-700 pt-6">
+              <h2 className="text-xl font-semibold mb-4 text-gray-800 dark:text-gray-100">Request Donation</h2>
               <form onSubmit={handleSubmit} className="space-y-6">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                     Quantity
                   </label>
                   <div className="flex items-center">
                     <button
                       type="button"
                       onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                      className="px-3 py-2 bg-gray-100 rounded-l-md border border-gray-300 hover:bg-gray-200"
+                      className="px-3 py-2 bg-gray-100 dark:bg-gray-700 rounded-l-md border border-gray-300 dark:border-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600"
                     >
                       -
                     </button>
@@ -243,20 +232,19 @@ const DonationRequestPage = () => {
                       onChange={(e) =>
                         setQuantity(Math.max(1, parseInt(e.target.value) || 1))
                       }
-                      className="w-16 text-center border-t border-b border-gray-300 py-2 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                      className="w-16 text-center border-t border-b border-gray-300 dark:border-gray-700 py-2 focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-100"
                     />
                     <button
                       type="button"
                       onClick={() => setQuantity(Math.min(listing.quantityAvailable || 999, quantity + 1))}
-                      className="px-3 py-2 bg-gray-100 rounded-r-md border border-gray-300 hover:bg-gray-200"
+                      className="px-3 py-2 bg-gray-100 dark:bg-gray-700 rounded-r-md border border-gray-300 dark:border-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600"
                     >
                       +
                     </button>
                   </div>
                 </div>
-                
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                     Collection Method
                   </label>
                   <div className="grid grid-cols-2 gap-4">
@@ -265,8 +253,8 @@ const DonationRequestPage = () => {
                       onClick={() => setPickupMethod('pickup')}
                       className={`flex items-center justify-center p-4 border rounded-md transition-colors ${
                         pickupMethod === 'pickup' 
-                          ? 'bg-emerald-50 border-emerald-500 text-emerald-700' 
-                          : 'border-gray-300 text-gray-600 hover:bg-gray-50'
+                          ? 'bg-emerald-50 dark:bg-emerald-900 border-emerald-500 dark:border-emerald-700 text-emerald-700 dark:text-emerald-200' 
+                          : 'border-gray-300 dark:border-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'
                       }`}
                     >
                       <Store size={20} className="mr-2" />
@@ -274,25 +262,23 @@ const DonationRequestPage = () => {
                     </button>
                   </div>
                 </div>
-                
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                     Message (Optional)
                   </label>
                   <textarea
                     value={message}
                     onChange={(e) => setMessage(e.target.value)}
                     placeholder="E.g., We serve 200 kids on Thursdays"
-                    className="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                    className="w-full p-3 border border-gray-300 dark:border-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-100"
                     rows={3}
                   />
                 </div>
-                
                 <div className="flex justify-end">
                   <button
                     type="submit"
                     disabled={submitting}
-                    className={`px-6 py-2 bg-emerald-600 text-white font-medium rounded-md hover:bg-emerald-700 transition-colors ${
+                    className={`px-6 py-2 bg-emerald-600 text-white font-medium rounded-md hover:bg-emerald-700 dark:bg-emerald-700 dark:hover:bg-emerald-800 transition-colors ${
                       submitting ? 'opacity-70 cursor-not-allowed' : ''
                     }`}
                   >
@@ -303,7 +289,6 @@ const DonationRequestPage = () => {
             </div>
           </div>
         </div>
-  
       </div>
     </div>
   );
