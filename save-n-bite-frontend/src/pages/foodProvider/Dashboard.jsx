@@ -126,7 +126,7 @@ function Dashboard() {
   const aiSuggestion = getAISuggestion(analyticsData)
 
   return (
-    <div className="w-full flex min-h-screen">
+    <div className="w-full flex min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
       <SideBar onNavigate={() => {}} currentPage="dashboard" />
       <div className="flex-1 p-6 overflow-auto">
         <div className="flex justify-between items-center mb-6">
@@ -151,7 +151,7 @@ function Dashboard() {
         {/* KPI Cards */}
         <div className="grid grid-cols-1 gap-5 mb-8 sm:grid-cols-2 lg:grid-cols-4">
           {/* Total Orders */}
-          <div className="bg-white rounded-lg shadow-md p-5">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-5 transition-colors duration-300">
             <div className="flex justify-between items-start">
               <div>
                 <p className="text-gray-500 text-sm">Total Orders Fulfilled</p>
@@ -167,7 +167,7 @@ function Dashboard() {
           </div>
 
           {/* Number of Donations */}
-          <div className="bg-white rounded-lg shadow-md p-5">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-5 transition-colors duration-300">
             <div className="flex justify-between items-start">
               <div>
                 <p className="text-gray-500 text-sm">Number of Donations</p>
@@ -183,7 +183,7 @@ function Dashboard() {
           </div>
 
           {/* Profile Followers */}
-          <div className="bg-white rounded-lg shadow-md p-5">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-5 transition-colors duration-300">
             <div className="flex justify-between items-start">
               <div>
                 <p className="text-gray-500 text-sm">Profile Followers</p>
@@ -199,7 +199,7 @@ function Dashboard() {
           </div>
 
           {/* Meals Saved (replacing Average Rating since we don't have rating data) */}
-          <div className="bg-white rounded-lg shadow-md p-5">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-5 transition-colors duration-300">
             <div className="flex justify-between items-start">
               <div>
                 <p className="text-gray-500 text-sm">Meals Saved</p>
@@ -223,7 +223,7 @@ function Dashboard() {
         {/* Charts Section */}
         <div className="grid grid-cols-1 gap-6 mb-8 lg:grid-cols-2">
           {/* Orders Chart */}
-          <div className="bg-white rounded-lg shadow-md p-5">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-5 transition-colors duration-300">
             <div className="flex justify-between items-center mb-4">
               <h3 className="text-lg font-medium">Orders per Month</h3>
               <div className="relative group">
@@ -268,7 +268,7 @@ function Dashboard() {
           </div>
 
           {/* Sales vs Donations Chart */}
-          <div className="bg-white rounded-lg shadow-md p-5">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-5 transition-colors duration-300">
             <div className="flex justify-between items-center mb-4">
               <h3 className="text-lg font-medium">Sales vs Donations Split</h3>
               <div className="relative group">
@@ -330,7 +330,7 @@ function Dashboard() {
           </div>
 
           {/* Followers Chart */}
-          <div className="bg-white rounded-lg shadow-md p-5">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-5 transition-colors duration-300">
             <div className="flex justify-between items-center mb-4">
               <h3 className="text-lg font-medium">Followers Growth</h3>
               <div className="relative group">
@@ -371,7 +371,7 @@ function Dashboard() {
           </div>
 
           {/* Sustainability Metrics */}
-          <div className="bg-white rounded-lg shadow-md p-5">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-5 transition-colors duration-300">
             <div className="flex justify-between items-center mb-4">
               <h3 className="text-lg font-medium">Sustainability Impact</h3>
               <div className="relative group">

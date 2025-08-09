@@ -291,7 +291,7 @@ function OrdersAndFeedback() {
   }
 
   return (
-    <div className="w-full flex min-h-screen">
+    <div className="w-full flex min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
       <SideBar onNavigate={() => {}} currentPage="dashboard" />
       <div className="flex-1 p-6 overflow-auto">
         <div className="flex justify-between items-center mb-6">
@@ -322,7 +322,7 @@ function OrdersAndFeedback() {
         </div>
 
         {/* Enhanced Business Feedback Summary Bar */}
-        <div className="bg-white rounded-lg shadow-md p-6 mb-6 border-l-4 border-blue-500">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 mb-6 border-l-4 border-blue-500 transition-colors duration-300">
           <div className="grid grid-cols-1 md:grid-cols-5 gap-6">
             <div className="text-center">
               <div className="flex items-center justify-center space-x-1 mb-2">
@@ -423,13 +423,13 @@ function OrdersAndFeedback() {
               <input
                 type="text"
                 placeholder="Search by order ID, item or customer..."
-                className="pl-10 pr-4 py-2 border border-gray-300 rounded-md w-full focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className="pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md w-full bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-100"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
             </div>
             <select
-              className="px-4 py-2 border border-gray-300 rounded-md bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              className="px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-100"
               value={filterType}
               onChange={(e) => setFilterType(e.target.value)}
             >
@@ -438,7 +438,7 @@ function OrdersAndFeedback() {
               <option value="donation">Donations</option>
             </select>
             <select
-              className="px-4 py-2 border border-gray-300 rounded-md bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              className="px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-100"
               value={filterStatus}
               onChange={(e) => setFilterStatus(e.target.value)}
             >

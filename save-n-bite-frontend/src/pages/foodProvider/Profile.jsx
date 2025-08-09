@@ -58,13 +58,13 @@ function ProfilePage() {
 
 
   return (
-    <div className="w-full flex min-h-screen">
+    <div className="w-full flex min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
     <SideBar onNavigate={() => {}} currentPage="foodprovider-profile" />
     <div className="max-w-5xl mx-auto">
       {/* <h1 className="text-2xl font-bold mb-6">Business Profile</h1> */}
 
       {/* Banner Section */}
-        <div className="relative h-64 rounded-lg overflow-hidden mb-8 bg-blue-100">
+        <div className="relative h-64 rounded-lg overflow-hidden mb-8 bg-blue-100 dark:bg-blue-900 transition-colors duration-300">
           <img
             src={formData.bannerUrl}
             alt="Business Banner"
@@ -91,7 +91,7 @@ function ProfilePage() {
         </div>
 
       {/* Business Info Section */}
-      <div className="bg-white rounded-lg shadow-md overflow-hidden mb-8">
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden mb-8 transition-colors duration-300">
         <div className="p-6">
           <div className="flex justify-between items-center mb-4">
             <h3 className="text-xl font-semibold">Business Information</h3>
@@ -321,7 +321,7 @@ function ProfilePage() {
       </div>
 
       {/* Impact Snapshot Section */}
-      <div className="bg-white rounded-lg shadow-md overflow-hidden mb-8">
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden mb-8 transition-colors duration-300">
         <div className="p-6">
           <h3 className="text-xl font-semibold mb-4">Your Impact</h3>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -358,7 +358,7 @@ function ProfilePage() {
         {/* <button className="px-6 py-3 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors">
           View Order History
         </button> */}
-        <button className="px-6 py-3 bg-white border border-blue-600 text-blue-600 rounded-md hover:bg-blue-50 transition-colors">
+        <button className="px-6 py-3 bg-white dark:bg-gray-800 border border-blue-600 dark:border-blue-700 text-blue-600 dark:text-blue-400 rounded-md hover:bg-blue-50 dark:hover:bg-blue-900 transition-colors">
           Download Impact Report
         </button>
       </div>

@@ -1,9 +1,11 @@
-import React, { useState } from 'react'
+import React, { useState, useContext } from 'react'
 import { AlertCircleIcon, CheckIcon, XIcon, InfoIcon, EyeIcon, EyeOffIcon } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import SideBar from '../../components/foodProvider/SideBar';
+import { ThemeContext } from '../../context/ThemeContext' // <-- Import ThemeContext
 
 function SettingsPage() {
+  const { theme, setTheme } = useContext(ThemeContext) // <-- Use ThemeContext
   const navigate = useNavigate()
   const [passwordData, setPasswordData] = useState({
     currentPassword: '',
@@ -29,7 +31,9 @@ function SettingsPage() {
     donationRequests: true,
     allInApp: true,
   })
-  const [darkMode, setDarkMode] = useState(false)
+  // const [darkMode, setDarkMode] = useState(false)
+  const darkMode = theme === 'dark'
+
   const [communicationPrefs, setCommunicationPrefs] = useState({
     platformAnnouncements: true,
     appFeedback: true,
@@ -130,364 +134,364 @@ function SettingsPage() {
     }, 3000)
   }
 
+  const handleToggleDarkMode = () => {
+    setTheme(darkMode ? 'light' : 'dark')
+  }
+
   return (
-    <div className="w-full flex min-h-screen">
-           <SideBar onNavigate={() => {}} currentPage="settings" />
-    <div className="max-w-3xl mx-auto">
-    
-      {/* <h1 className="text-2xl font-bold mb-6">Settings</h1> */}
-      {/* General Settings Section */}
-      <div className="bg-white rounded-lg shadow-md overflow-hidden mb-8">
-        <div className="p-6">
-          <h2 className="text-xl font-semibold mb-4">General Settings</h2>
-          {/* Change Password Form */}
-          <div className="mb-8">
-            <h3 className="text-lg font-medium mb-4">Change Password</h3>
-            <form onSubmit={handlePasswordSubmit} className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Current Password
-                </label>
-                <div className="relative">
-                  <input
-                    type={showPasswords.currentPassword ? "text" : "password"}
-                    name="currentPassword"
-                    value={passwordData.currentPassword}
-                    onChange={handlePasswordChange}
-                    required
-                    className="w-full p-2 border border-gray-300 rounded-md pr-10"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => togglePasswordVisibility('currentPassword')}
-                    className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
-                  >
-                    {showPasswords.currentPassword ? (
-                      <EyeOffIcon className="h-5 w-5" />
-                    ) : (
-                      <EyeIcon className="h-5 w-5" />
-                    )}
-                  </button>
+    <div className={`w-full flex min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-300`}>
+      <SideBar onNavigate={() => {}} currentPage="settings" />
+      <div className="max-w-3xl mx-auto">
+        {/* General Settings Section */}
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden mb-8 transition-colors duration-300">
+          <div className="p-6">
+            <h2 className="text-xl font-semibold mb-4 text-gray-800 dark:text-gray-100">General Settings</h2>
+            {/* Change Password Form */}
+            <div className="mb-8">
+              <h3 className="text-lg font-medium mb-4 text-gray-800 dark:text-gray-100">Change Password</h3>
+              <form onSubmit={handlePasswordSubmit} className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Current Password
+                  </label>
+                  <div className="relative">
+                    <input
+                      type={showPasswords.currentPassword ? "text" : "password"}
+                      name="currentPassword"
+                      value={passwordData.currentPassword}
+                      onChange={handlePasswordChange}
+                      required
+                      className="w-full p-2 border border-gray-300 dark:border-gray-700 rounded-md pr-10 bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-100"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => togglePasswordVisibility('currentPassword')}
+                      className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                    >
+                      {showPasswords.currentPassword ? (
+                        <EyeOffIcon className="h-5 w-5" />
+                      ) : (
+                        <EyeIcon className="h-5 w-5" />
+                      )}
+                    </button>
+                  </div>
                 </div>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  New Password
-                </label>
-                <div className="relative">
-                  <input
-                    type={showPasswords.newPassword ? "text" : "password"}
-                    name="newPassword"
-                    value={passwordData.newPassword}
-                    onChange={handlePasswordChange}
-                    required
-                    className={`w-full p-2 border rounded-md pr-10 ${passwordErrors.newPassword ? 'border-red-500' : 'border-gray-300'}`}
-                  />
-                  <button
-                    type="button"
-                    onClick={() => togglePasswordVisibility('newPassword')}
-                    className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
-                  >
-                    {showPasswords.newPassword ? (
-                      <EyeOffIcon className="h-5 w-5" />
-                    ) : (
-                      <EyeIcon className="h-5 w-5" />
-                    )}
-                  </button>
-                </div>
-                {passwordErrors.newPassword && (
-                  <p className="mt-1 text-sm text-red-600">
-                    {passwordErrors.newPassword}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    New Password
+                  </label>
+                  <div className="relative">
+                    <input
+                      type={showPasswords.newPassword ? "text" : "password"}
+                      name="newPassword"
+                      value={passwordData.newPassword}
+                      onChange={handlePasswordChange}
+                      required
+                      className={`w-full p-2 border rounded-md pr-10 ${passwordErrors.newPassword ? 'border-red-500' : 'border-gray-300'} bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-100`}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => togglePasswordVisibility('newPassword')}
+                      className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                    >
+                      {showPasswords.newPassword ? (
+                        <EyeOffIcon className="h-5 w-5" />
+                      ) : (
+                        <EyeIcon className="h-5 w-5" />
+                      )}
+                    </button>
+                  </div>
+                  {passwordErrors.newPassword && (
+                    <p className="mt-1 text-sm text-red-600">
+                      {passwordErrors.newPassword}
+                    </p>
+                  )}
+                  <p className="mt-1 text-xs text-gray-500">
+                    Password must be at least 8 characters and include uppercase,
+                    lowercase, number, and special character.
                   </p>
-                )}
-                <p className="mt-1 text-xs text-gray-500">
-                  Password must be at least 8 characters and include uppercase,
-                  lowercase, number, and special character.
-                </p>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Confirm New Password
-                </label>
-                <div className="relative">
-                  <input
-                    type={showPasswords.confirmPassword ? "text" : "password"}
-                    name="confirmPassword"
-                    value={passwordData.confirmPassword}
-                    onChange={handlePasswordChange}
-                    required
-                    className={`w-full p-2 border rounded-md pr-10 ${passwordErrors.confirmPassword ? 'border-red-500' : 'border-gray-300'}`}
-                  />
-                  <button
-                    type="button"
-                    onClick={() => togglePasswordVisibility('confirmPassword')}
-                    className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
-                  >
-                    {showPasswords.confirmPassword ? (
-                      <EyeOffIcon className="h-5 w-5" />
-                    ) : (
-                      <EyeIcon className="h-5 w-5" />
-                    )}
-                  </button>
                 </div>
-                {passwordErrors.confirmPassword && (
-                  <p className="mt-1 text-sm text-red-600">
-                    {passwordErrors.confirmPassword}
-                  </p>
-                )}
-              </div>
-              <button
-                type="submit"
-                className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
-              >
-                Update Password
-              </button>
-            </form>
-          </div>
-        </div>
-      </div>
-      {/* Notification Preferences Section */}
-      <div className="bg-white rounded-lg shadow-md overflow-hidden mb-8">
-        <div className="p-6">
-          <h2 className="text-xl font-semibold mb-4">
-            Notification Preferences
-          </h2>
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <h3 className="font-medium">New Orders</h3>
-                <p className="text-sm text-gray-500">
-                  Get notified when you receive a new order
-                </p>
-              </div>
-              <label className="relative inline-flex items-center cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={notificationSettings.newOrders}
-                  onChange={() => toggleNotification('newOrders')}
-                  className="sr-only peer"
-                />
-                <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
-              </label>
-            </div>
-            <div className="flex items-center justify-between">
-              <div>
-                <h3 className="font-medium">Pickup Confirmations</h3>
-                <p className="text-sm text-gray-500">
-                  Get notified when an order is picked up
-                </p>
-              </div>
-              <label className="relative inline-flex items-center cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={notificationSettings.pickupConfirmations}
-                  onChange={() => toggleNotification('pickupConfirmations')}
-                  className="sr-only peer"
-                />
-                <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
-              </label>
-            </div>
-            <div className="flex items-center justify-between">
-              <div>
-                <h3 className="font-medium">Donation Requests</h3>
-                <p className="text-sm text-gray-500">
-                  Get notified about new donation requests
-                </p>
-              </div>
-              <label className="relative inline-flex items-center cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={notificationSettings.donationRequests}
-                  onChange={() => toggleNotification('donationRequests')}
-                  className="sr-only peer"
-                />
-                <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
-              </label>
-            </div>
-            <div className="pt-4 mt-4 border-t border-gray-200 flex items-center justify-between">
-              <div>
-                <h3 className="font-medium">All In-App Notifications</h3>
-                <p className="text-sm text-gray-500">
-                  Master toggle for all notifications
-                </p>
-              </div>
-              <label className="relative inline-flex items-center cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={notificationSettings.allInApp}
-                  onChange={toggleAllNotifications}
-                  className="sr-only peer"
-                />
-                <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
-              </label>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Confirm New Password
+                  </label>
+                  <div className="relative">
+                    <input
+                      type={showPasswords.confirmPassword ? "text" : "password"}
+                      name="confirmPassword"
+                      value={passwordData.confirmPassword}
+                      onChange={handlePasswordChange}
+                      required
+                      className={`w-full p-2 border rounded-md pr-10 ${passwordErrors.confirmPassword ? 'border-red-500' : 'border-gray-300'} bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-100`}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => togglePasswordVisibility('confirmPassword')}
+                      className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                    >
+                      {showPasswords.confirmPassword ? (
+                        <EyeOffIcon className="h-5 w-5" />
+                      ) : (
+                        <EyeIcon className="h-5 w-5" />
+                      )}
+                    </button>
+                  </div>
+                  {passwordErrors.confirmPassword && (
+                    <p className="mt-1 text-sm text-red-600">
+                      {passwordErrors.confirmPassword}
+                    </p>
+                  )}
+                </div>
+                <button
+                  type="submit"
+                  className="px-4 py-2 bg-blue-600 dark:bg-blue-700 text-white rounded-md hover:bg-blue-700 dark:hover:bg-blue-800 transition-colors"
+                >
+                  Update Password
+                </button>
+              </form>
             </div>
           </div>
         </div>
-      </div>
-      {/* Appearance Section */}
-      <div className="bg-white rounded-lg shadow-md overflow-hidden mb-8">
-        <div className="p-6">
-          <h2 className="text-xl font-semibold mb-4">Appearance</h2>
-          <div className="flex items-center justify-between">
-            <div>
-              <h3 className="font-medium">Dark Mode</h3>
-              <p className="text-sm text-gray-500">
-                Switch between light and dark themes
+        {/* Notification Preferences Section */}
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden mb-8 transition-colors duration-300">
+          <div className="p-6">
+            <h2 className="text-xl font-semibold mb-4 text-gray-800 dark:text-gray-100">Notification Preferences</h2>
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="font-medium">New Orders</h3>
+                  <p className="text-sm text-gray-500">
+                    Get notified when you receive a new order
+                  </p>
+                </div>
+                <label className="relative inline-flex items-center cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={notificationSettings.newOrders}
+                    onChange={() => toggleNotification('newOrders')}
+                    className="sr-only peer"
+                  />
+                  <div className="w-11 h-6 bg-gray-200 dark:bg-gray-700 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white dark:after:bg-gray-900 after:border-gray-300 dark:after:border-gray-700 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600 dark:peer-checked:bg-blue-700"></div>
+                </label>
+              </div>
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="font-medium">Pickup Confirmations</h3>
+                  <p className="text-sm text-gray-500">
+                    Get notified when an order is picked up
+                  </p>
+                </div>
+                <label className="relative inline-flex items-center cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={notificationSettings.pickupConfirmations}
+                    onChange={() => toggleNotification('pickupConfirmations')}
+                    className="sr-only peer"
+                  />
+                  <div className="w-11 h-6 bg-gray-200 dark:bg-gray-700 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white dark:after:bg-gray-900 after:border-gray-300 dark:after:border-gray-700 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600 dark:peer-checked:bg-blue-700"></div>
+                </label>
+              </div>
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="font-medium">Donation Requests</h3>
+                  <p className="text-sm text-gray-500">
+                    Get notified about new donation requests
+                  </p>
+                </div>
+                <label className="relative inline-flex items-center cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={notificationSettings.donationRequests}
+                    onChange={() => toggleNotification('donationRequests')}
+                    className="sr-only peer"
+                  />
+                  <div className="w-11 h-6 bg-gray-200 dark:bg-gray-700 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white dark:after:bg-gray-900 after:border-gray-300 dark:after:border-gray-700 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600 dark:peer-checked:bg-blue-700"></div>
+                </label>
+              </div>
+              <div className="pt-4 mt-4 border-t border-gray-200 flex items-center justify-between">
+                <div>
+                  <h3 className="font-medium">All In-App Notifications</h3>
+                  <p className="text-sm text-gray-500">
+                    Master toggle for all notifications
+                  </p>
+                </div>
+                <label className="relative inline-flex items-center cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={notificationSettings.allInApp}
+                    onChange={toggleAllNotifications}
+                    className="sr-only peer"
+                  />
+                  <div className="w-11 h-6 bg-gray-200 dark:bg-gray-700 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white dark:after:bg-gray-900 after:border-gray-300 dark:after:border-gray-700 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600 dark:peer-checked:bg-blue-700"></div>
+                </label>
+              </div>
+            </div>
+          </div>
+        </div>
+        {/* Appearance Section */}
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden mb-8 transition-colors duration-300">
+          <div className="p-6">
+            <h2 className="text-xl font-semibold mb-4 text-gray-800 dark:text-gray-100">Appearance</h2>
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="font-medium text-gray-800 dark:text-gray-100">Dark Mode</h3>
+                <p className="text-sm text-gray-500 dark:text-gray-400">
+                  Switch between light and dark themes
+                </p>
+              </div>
+              <label className="relative inline-flex items-center cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={darkMode}
+                  onChange={handleToggleDarkMode}
+                  className="sr-only peer"
+                />
+                <div className="w-11 h-6 bg-gray-200 dark:bg-gray-700 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white dark:after:bg-gray-900 after:border-gray-300 dark:after:border-gray-700 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600 dark:peer-checked:bg-blue-700"></div>
+              </label>
+            </div>
+          </div>
+        </div>
+        {/* Communication Preferences Section */}
+        <div className="bg-white rounded-lg shadow-md overflow-hidden mb-8">
+          <div className="p-6">
+            <h2 className="text-xl font-semibold mb-4">
+              Communication Preferences
+            </h2>
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="font-medium">Platform Announcements</h3>
+                  <p className="text-sm text-gray-500">
+                    Receive updates about new features and platform changes
+                  </p>
+                </div>
+                <label className="relative inline-flex items-center cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={communicationPrefs.platformAnnouncements}
+                    onChange={() =>
+                      toggleCommunicationPref('platformAnnouncements')
+                    }
+                    className="sr-only peer"
+                  />
+                  <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                </label>
+              </div>
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="font-medium">App Feedback</h3>
+                  <p className="text-sm text-gray-500">
+                    Allow Save 'n Bite to contact me for app feedback
+                  </p>
+                </div>
+                <label className="relative inline-flex items-center cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={communicationPrefs.appFeedback}
+                    onChange={() => toggleCommunicationPref('appFeedback')}
+                    className="sr-only peer"
+                  />
+                  <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                </label>
+              </div>
+            </div>
+          </div>
+        </div>
+        {/* Account Deactivation - Moved to the end */}
+        <div className="bg-white rounded-lg shadow-md overflow-hidden mb-8">
+          <div className="p-6">
+            <h2 className="text-xl font-semibold mb-4 text-red-600">
+              Account Deactivation
+            </h2>
+            <div className="bg-red-50 p-4 rounded-md mb-4">
+              <p className="text-red-700">
+                Deactivating your account will remove your business from the
+                platform. All your data will be preserved if you decide to
+                reactivate in the future.
               </p>
             </div>
-            <label className="relative inline-flex items-center cursor-pointer">
-              <input
-                type="checkbox"
-                checked={darkMode}
-                onChange={() => setDarkMode(!darkMode)}
-                className="sr-only peer"
-              />
-              <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
-            </label>
+            <button
+              onClick={() => setShowDeleteModal(true)}
+              className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors"
+            >
+              Deactivate Account
+            </button>
           </div>
         </div>
-      </div>
-      {/* Communication Preferences Section */}
-      <div className="bg-white rounded-lg shadow-md overflow-hidden mb-8">
-        <div className="p-6">
-          <h2 className="text-xl font-semibold mb-4">
-            Communication Preferences
-          </h2>
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <h3 className="font-medium">Platform Announcements</h3>
-                <p className="text-sm text-gray-500">
-                  Receive updates about new features and platform changes
-                </p>
+        {/* Success Modal */}
+        {showSuccessModal && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div className="bg-white rounded-lg p-6 max-w-md w-full">
+              <div className="flex items-center mb-4 text-green-600">
+                <CheckIcon className="h-6 w-6 mr-2" />
+                <h3 className="text-lg font-bold">Success</h3>
               </div>
-              <label className="relative inline-flex items-center cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={communicationPrefs.platformAnnouncements}
-                  onChange={() =>
-                    toggleCommunicationPref('platformAnnouncements')
-                  }
-                  className="sr-only peer"
-                />
-                <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
-              </label>
-            </div>
-            <div className="flex items-center justify-between">
-              <div>
-                <h3 className="font-medium">App Feedback</h3>
-                <p className="text-sm text-gray-500">
-                  Allow Save 'n Bite to contact me for app feedback
-                </p>
+              <p className="mb-6">{successMessage}</p>
+              <div className="flex justify-end">
+                <button
+                  onClick={() => setShowSuccessModal(false)}
+                  className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+                >
+                  Close
+                </button>
               </div>
-              <label className="relative inline-flex items-center cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={communicationPrefs.appFeedback}
-                  onChange={() => toggleCommunicationPref('appFeedback')}
-                  className="sr-only peer"
-                />
-                <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
-              </label>
             </div>
           </div>
-        </div>
+        )}
+        {/* Delete Account Confirmation Modal */}
+        {showDeleteModal && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div className="bg-white rounded-lg p-6 max-w-md w-full">
+              <div className="flex items-center mb-4 text-red-600">
+                <AlertCircleIcon className="h-6 w-6 mr-2" />
+                <h3 className="text-lg font-bold">
+                  Confirm Account Deactivation
+                </h3>
+              </div>
+              <p className="mb-6">
+                Are you sure you want to deactivate your account? This action will
+                remove your business from the platform and you will no longer
+                receive orders or donation requests.
+              </p>
+              <div className="flex justify-end space-x-3">
+                <button
+                  onClick={() => setShowDeleteModal(false)}
+                  className="px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleDeactivateAccount}
+                  className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors flex items-center"
+                >
+                  <XIcon className="h-4 w-4 mr-2" />
+                  Deactivate Account
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+        {/* Account Deactivated Success Modal */}
+        {showDeactivatedModal && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div className="bg-white rounded-lg p-6 max-w-md w-full">
+              <div className="flex items-center mb-4 text-green-600">
+                <CheckIcon className="h-6 w-6 mr-2" />
+                <h3 className="text-lg font-bold">
+                  Account Deactivated Successfully
+                </h3>
+              </div>
+              <p className="mb-6">
+                Your account has been deactivated. You will be redirected to the
+                login page in a few seconds.
+              </p>
+              <div className="w-full bg-gray-200 rounded-full h-2.5">
+                <div className="bg-green-600 h-2.5 rounded-full animate-[grow_3s_ease-in-out]"></div>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
-      {/* Account Deactivation - Moved to the end */}
-      <div className="bg-white rounded-lg shadow-md overflow-hidden mb-8">
-        <div className="p-6">
-          <h2 className="text-xl font-semibold mb-4 text-red-600">
-            Account Deactivation
-          </h2>
-          <div className="bg-red-50 p-4 rounded-md mb-4">
-            <p className="text-red-700">
-              Deactivating your account will remove your business from the
-              platform. All your data will be preserved if you decide to
-              reactivate in the future.
-            </p>
-          </div>
-          <button
-            onClick={() => setShowDeleteModal(true)}
-            className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors"
-          >
-            Deactivate Account
-          </button>
-        </div>
-      </div>
-      {/* Success Modal */}
-      {showSuccessModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 max-w-md w-full">
-            <div className="flex items-center mb-4 text-green-600">
-              <CheckIcon className="h-6 w-6 mr-2" />
-              <h3 className="text-lg font-bold">Success</h3>
-            </div>
-            <p className="mb-6">{successMessage}</p>
-            <div className="flex justify-end">
-              <button
-                onClick={() => setShowSuccessModal(false)}
-                className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
-              >
-                Close
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-      {/* Delete Account Confirmation Modal */}
-      {showDeleteModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 max-w-md w-full">
-            <div className="flex items-center mb-4 text-red-600">
-              <AlertCircleIcon className="h-6 w-6 mr-2" />
-              <h3 className="text-lg font-bold">
-                Confirm Account Deactivation
-              </h3>
-            </div>
-            <p className="mb-6">
-              Are you sure you want to deactivate your account? This action will
-              remove your business from the platform and you will no longer
-              receive orders or donation requests.
-            </p>
-            <div className="flex justify-end space-x-3">
-              <button
-                onClick={() => setShowDeleteModal(false)}
-                className="px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300 transition-colors"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleDeactivateAccount}
-                className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors flex items-center"
-              >
-                <XIcon className="h-4 w-4 mr-2" />
-                Deactivate Account
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-      {/* Account Deactivated Success Modal */}
-      {showDeactivatedModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 max-w-md w-full">
-            <div className="flex items-center mb-4 text-green-600">
-              <CheckIcon className="h-6 w-6 mr-2" />
-              <h3 className="text-lg font-bold">
-                Account Deactivated Successfully
-              </h3>
-            </div>
-            <p className="mb-6">
-              Your account has been deactivated. You will be redirected to the
-              login page in a few seconds.
-            </p>
-            <div className="w-full bg-gray-200 rounded-full h-2.5">
-              <div className="bg-green-600 h-2.5 rounded-full animate-[grow_3s_ease-in-out]"></div>
-            </div>
-          </div>
-        </div>
-      )}
-    </div>
     </div>
   )
 }

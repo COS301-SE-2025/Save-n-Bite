@@ -29,23 +29,22 @@ function ManageDonations() {
   ).length
 
   return (
-    <div className="flex w-full min-h-screen">
-      {/* Sidebar with pending count passed in */}
+    <div className="flex w-full min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
       <SideBar currentPage="donations" pendingCount={pendingCount} />
-
-   
       <div className="flex-1 p-6">
         <div className="flex justify-between items-center mb-6">
           <div>
-            <h1 className="text-2xl font-bold">Manage Donations</h1>
-            <p className="text-gray-600 mt-1">
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
+              Manage Donations
+            </h1>
+            <p className="text-gray-600 dark:text-gray-300 mt-1">
               Review, approve and track donations to nonprofit organizations
             </p>
           </div>
         </div>
 
         {/* Stats Bar */}
-        <div className="bg-white rounded-lg shadow-md p-4 mb-6">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-4 mb-6 transition-colors duration-300">
           <div className="grid grid-cols-4 gap-6">
             <div className="text-center">
               <div className="text-2xl font-bold text-gray-900">
@@ -90,11 +89,11 @@ function ManageDonations() {
         <div className="mb-6">
           <div className="flex items-center gap-4 mb-4">
             <div className="relative flex-1">
-              <SearchIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
+              <SearchIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-gray-500 h-5 w-5" />
               <input
                 type="text"
                 placeholder="Search by request ID, item or NGO..."
-                className="pl-10 pr-4 py-2 border border-gray-300 rounded-md w-full"
+                className="pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md w-full bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-100"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
               />

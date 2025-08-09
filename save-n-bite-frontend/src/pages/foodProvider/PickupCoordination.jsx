@@ -407,7 +407,7 @@ function PickupCoordination() {
   }
 
   return (
-    <div className="w-full flex min-h-screen">
+    <div className="w-full flex min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
       <SideBar onNavigate={() => {}} currentPage="dashboard" />
       <div className="flex-1 p-6 overflow-auto">
         <div className="mb-6">
@@ -417,7 +417,7 @@ function PickupCoordination() {
           </p>
           
           {/* Date Selection Section */}
-          <div className="mt-4 bg-white rounded-lg shadow-sm border p-4">
+          <div className="mt-4 bg-white dark:bg-gray-800 rounded-lg shadow-sm border p-4">
             <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
               <div className="flex items-center gap-2">
                 <Calendar className="h-5 w-5 text-gray-500" />
@@ -523,7 +523,7 @@ function PickupCoordination() {
         </div>
 
         {/* Filters and Controls */}
-        <div className="bg-white rounded-lg shadow-md p-4 mb-6">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-4 mb-6 transition-colors duration-300">
           <div className="flex items-center gap-4 flex-wrap">
             <div className="relative flex-1 min-w-64">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
@@ -579,12 +579,7 @@ function PickupCoordination() {
             return (
               <div
                 key={pickup.id}
-                className={`bg-white rounded-lg shadow-md overflow-hidden border-l-4 ${
-                  pickup.status === 'scheduled' 
-                    ? isUrgent ? 'border-amber-500' : 'border-blue-500'
-                    : pickup.status === 'completed' ? 'border-green-500' 
-                    : 'border-red-500'
-                }`}
+                className={`bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden border-l-4 transition-colors duration-300`}
               >
                 <div className="p-5">
                   <div className="flex justify-between items-start mb-3">
@@ -766,7 +761,7 @@ function PickupCoordination() {
         </div>
 
         {sortedPickups.length === 0 && (
-          <div className="bg-white rounded-lg shadow-md p-8 text-center">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-8 text-center">
             <h3 className="text-lg font-medium text-gray-900 mb-2">
               No pickups match your filters
             </h3>
@@ -779,7 +774,7 @@ function PickupCoordination() {
         {/* Verify Code Modal */}
         {showVerifyModal && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-            <div className="bg-white rounded-lg max-w-md w-full p-6">
+            <div className="bg-white dark:bg-gray-900 rounded-lg max-w-md w-full p-6 transition-colors duration-300">
               <h2 className="text-xl font-semibold mb-4">Verify Pickup Code</h2>
               <div className="space-y-4">
                 <div>
