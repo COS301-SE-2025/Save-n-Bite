@@ -267,7 +267,7 @@ const AdminAPI = {
   },
 
   // ==================== REVIEW MANAGEMENT (using existing endpoints) ====================
-  getAllReviews: async (page = 1, search = '', statusFilter = '', perPage = 20) => {
+  getAllReviews: async (page = 1, search = '', statusFilter = '', ratingsFilter = '', perPage = 20) => {
     try {
       const params = new URLSearchParams({
         page: page.toString(),
@@ -276,6 +276,7 @@ const AdminAPI = {
       
       if (search) params.append('search', search);
       if (statusFilter && statusFilter !== 'All') params.append('status', statusFilter);
+      if (ratingsFilter && ratingsFilter !== 'All') params.append('rating', ratingsFilter);
 
       const response = await apiClient.get(`/api/admin/reviews/?${params.toString()}`);
       

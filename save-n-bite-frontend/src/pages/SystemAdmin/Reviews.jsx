@@ -1,79 +1,18 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import ReviewFilters from '../../components/SystemAdmin/Reviews/ReviewFilters'
 import ReviewTable from '../../components/SystemAdmin/Reviews/ReviewTable'
 import ReviewModal from '../../components/SystemAdmin/Reviews/ReviewModal'
 import ConfirmationModal from '../../components/SystemAdmin/UI/ConfirmationModal'
 import { toast } from 'sonner'
+import AdminAPI from '../../services/AdminAPI'
+import { apiClient } from '../../services/FoodAPI.js'
 
-// Updated mock data with correct backend status values
-const mockReviews = [
-  {
-    id: 'REV001',
-    reviewer: { name: 'John Smith', id: 'USR001' },
-    subject: { name: 'Fresh Harvest Market', id: 'USR003', type: 'Provider' },
-    rating: 4,
-    content:
-      'Great quality food at a reasonable price. The vegetables were fresh and lasted well.',
-    date: '2023-08-10',
-    status: 'active',
-  },
-  {
-    id: 'REV002',
-    reviewer: { name: 'Jane Doe', id: 'USR002' },
-    subject: { name: 'Local Bakery', id: 'USR008', type: 'Provider' },
-    rating: 5,
-    content:
-      'Amazing bread and pastries. Everything was delicious and freshly baked!',
-    date: '2023-08-09',
-    status: 'active',
-  },
-  {
-    id: 'REV003',
-    reviewer: { name: 'Alex Johnson', id: 'USR007' },
-    subject: { name: 'Green Grocers', id: 'USR005', type: 'Provider' },
-    rating: 2,
-    content:
-      'The produce was not as fresh as advertised. Some items were already going bad when I picked them up.',
-    date: '2023-08-08',
-    status: 'flagged',
-    reason: 'Dispute from provider about accuracy - under investigation',
-  },
-  {
-    id: 'REV004',
-    reviewer: { name: 'Community Food Bank', id: 'USR006' },
-    subject: { name: 'Fresh Harvest Market', id: 'USR003', type: 'Provider' },
-    rating: 5,
-    content:
-      'Excellent partner for our food bank. They consistently provide high-quality donations that help many families in need.',
-    date: '2023-08-07',
-    status: 'active',
-  },
-  {
-    id: 'REV005',
-    reviewer: { name: 'Sarah Williams', id: 'USR009' },
-    subject: { name: 'Local Bakery', id: 'USR008', type: 'Provider' },
-    rating: 1,
-    content:
-      'Terrible experience. The bread was stale and the service was rude. Would not recommend to anyone!',
-    date: '2023-08-06',
-    status: 'censored',
-    reason: 'Contains inappropriate language and personal attacks',
-  },
-  {
-    id: 'REV006',
-    reviewer: { name: 'Mike Johnson', id: 'USR010' },
-    subject: { name: 'City Market', id: 'USR011', type: 'Provider' },
-    rating: 3,
-    content:
-      'This review contained spam content and fake information about the business.',
-    date: '2023-08-05',
-    status: 'deleted',
-    reason: 'Spam content and misinformation',
-  },
-]
 
 const Reviews = () => {
-  const [reviews, setReviews] = useState(mockReviews)
+  const [reviews, setReviews] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
+  //exisiting UI state
   const [search, setSearch] = useState('')
   const [ratingFilter, setRatingFilter] = useState('All')
   const [statusFilter, setStatusFilter] = useState('All')
@@ -82,20 +21,107 @@ const Reviews = () => {
   const [showConfirmModal, setShowConfirmModal] = useState(false)
   const [confirmAction, setConfirmAction] = useState(null)
 
-  const filteredReviews = reviews.filter((review) => {
-    const matchesSearch =
-      review.reviewer.name.toLowerCase().includes(search.toLowerCase()) ||
-      review.subject.name.toLowerCase().includes(search.toLowerCase()) ||
-      review.content.toLowerCase().includes(search.toLowerCase())
+  useEffect(() => {
+    setupAuthAndFetchReviews()
+  }, [])
+  
+  const setupAuthAndFetchReviews = async () => {
+    try {
+      const token = localStorage.getItem('adminToken')
+      if (!token) {
+        throw new Error('No admin token found. Please log in again.')
+      }
+      apiClient.defaults.headers.common['Authorization'] = `Bearer ${token}`
+        
+        await fetchReviews()
+        
+      } catch (error) {
+        console.error('Authentication setup error:', error)
+        setError('Authentication failed. Please log in again.')
+        setLoading(false)
+    }
+  }
 
-    const matchesRating =
-      ratingFilter === 'All' || review.rating.toString() === ratingFilter
+  //new function to fetrch reviews from API
+  const fetchReviews = async () => {
+    try {
+      setLoading(true)
+      console.log('Fetching reviews from API...')
+      
+      // STEP 4A: Call our AdminAPI service (which calls /api/admin/reviews/)
+      const response = await AdminAPI.getAllReviews(1, '', 'All', 'All', 20) 
+      //console.log('reviews API response:', response)
+      
+      if (response.success) {
+        // STEP 4B: Store the real data
+        setReviews(response.data.reviews)
+        setError(null)
+        console.log('reviews loaded successfully:', response.data.reviews.length, 'revies')
+      } else {
+        console.error('reviews API error:', response.error)
+        setError(response.error)
+        toast.error(response.error || 'Failed to load reviews')
+      }
+    } catch (error) {
+      console.error('reviews fetch error:', error)
+      
+      // STEP 4C: Handle different error types
+      if (error.response?.status === 401) {
+        setError('Session expired. Please log in again.')
+        localStorage.removeItem('adminToken')
+        localStorage.removeItem('adminUser')
+      } else if (error.response?.status === 403) {
+        setError('Access denied. Admin privileges required.')
+      } else {
+        setError('Failed to fetch reviews')
+      }
+      
+      toast.error('Failed to load reviews')
+    } finally {
+      setLoading(false)
+    }
+  }
 
-    const matchesStatus =
-      statusFilter === 'All' || review.status === statusFilter
+  if (loading) {
+  return (
+    <div className="space-y-6">
+      <div className="animate-pulse">
+        <div className="h-8 bg-gray-200 rounded w-1/3 mb-2"></div>
+        <div className="h-4 bg-gray-200 rounded w-1/2 mb-6"></div>
+      </div>
+      {/* Add loading skeleton */}
+    </div>
+  )
+}
 
-    return matchesSearch && matchesRating && matchesStatus
-  })
+if (error) {
+  return (
+    <div className="space-y-6">
+      <div className="bg-red-50 border border-red-200 rounded-md p-4">
+        <h3 className="text-sm font-medium text-red-800">Error Loading Reviews</h3>
+        <p className="mt-1 text-sm text-red-700">{error}</p>
+        <button onClick={fetchReviews} className="mt-2 text-sm text-red-600 hover:text-red-500 underline">
+          Try Again
+        </button>
+      </div>
+    </div>
+  )
+}
+
+const filteredReviews = (reviews || []).filter((review) => {
+  const matchesSearch =
+    review.reviewer?.name?.toLowerCase().includes(search.toLowerCase()) ||
+    review.subject?.name?.toLowerCase().includes(search.toLowerCase()) ||
+    review.content?.toLowerCase().includes(search.toLowerCase())
+
+  const matchesRating =
+    ratingFilter === 'All' || review.rating?.toString() === ratingFilter
+
+  const matchesStatus =
+    statusFilter === 'All' || review.status === statusFilter
+
+  return matchesSearch && matchesRating && matchesStatus
+})
 
   const handleViewReview = (review) => {
     setSelectedReview(review)
@@ -125,43 +151,58 @@ const Reviews = () => {
     setShowConfirmModal(true)
   }
 
-  const executeAction = () => {
-    if (!confirmAction) return
-    
-    const { type, reviewId, reason } = confirmAction
+const executeAction = async () => {
+  if (!confirmAction) return
+  
+  const { type, reviewId, reason } = confirmAction
 
-    if (type === 'flag') {
-      setReviews(
-        reviews.map((review) =>
-          review.id === reviewId
-            ? { 
-                ...review, 
-                status: 'flagged',
-                reason: reason || 'No reason provided'
-              }
-            : review
+  try {
+    //console.log('Processing review action:', type, reviewId, reason)
+
+    // Call the real API
+    const response = await AdminAPI.moderateReview(reviewId, type, reason)
+
+    if (response.success) {
+      // Update local state after successful API call
+      if (type === 'flag') {
+        setReviews(
+          reviews.map((review) =>
+            review.id === reviewId
+              ? { 
+                  ...review, 
+                  status: 'flagged',
+                  reason: reason || 'No reason provided'
+                }
+              : review
+          )
         )
-      )
-      toast.success(`Review ${reviewId} has been flagged for review`)
-    } else if (type === 'delete') {
-      setReviews(
-        reviews.map((review) =>
-          review.id === reviewId
-            ? { 
-                ...review, 
-                status: 'deleted',
-                reason: reason || 'No reason provided'
-              }
-            : review
+        toast.success(`Review ${reviewId} has been flagged for review`)
+      } else if (type === 'delete') {
+        setReviews(
+          reviews.map((review) =>
+            review.id === reviewId
+              ? { 
+                  ...review, 
+                  status: 'deleted',
+                  reason: reason || 'No reason provided'
+                }
+              : review
+          )
         )
-      )
-      toast.success(`Review ${reviewId} has been deleted`)
+        toast.success(`Review ${reviewId} has been deleted`)
+      }
+    } else {
+      toast.error(response.error || `Failed to ${type} review`)
     }
-
-    setShowConfirmModal(false)
-    setConfirmAction(null)
-    setShowReviewModal(false)
+  } catch (error) {
+    //console.error('Error executing review action:', error)
+    toast.error(`Failed to ${type} review`)
   }
+
+  setShowConfirmModal(false)
+  setConfirmAction(null)
+  setShowReviewModal(false)
+}
 
   return (
     <div className="space-y-6">
@@ -203,7 +244,7 @@ const Reviews = () => {
           }
           message={
             confirmAction.type === 'flag'
-              ? 'Are you sure you want to flag this review? It will be marked for further review and may be hidden from users.'
+              ? 'Are you sure you want to flag this review? It will be marked for further review and may be hidden from reviews.'
               : 'Are you sure you want to delete this review? This action cannot be undone and the review will be permanently removed.'
           }
           confirmButtonText="Confirm"

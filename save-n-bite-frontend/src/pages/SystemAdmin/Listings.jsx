@@ -1,95 +1,17 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { toast } from 'sonner'
 import ListingFilters from '../../components/SystemAdmin/Listings/ListingFilters'
 import ListingTable from '../../components/SystemAdmin/Listings/ListingTable'
 import ListingModal from '../../components/SystemAdmin/Listings/ListingModal'
 import ConfirmationModal from '../../components/SystemAdmin/UI/ConfirmationModal'
-
-// Updated mock data with correct backend status values
-const mockListings = [
-  {
-    id: 'LST001',
-    name: 'Fresh Vegetables Bundle',
-    provider: 'Fresh Harvest Market',
-    type: 'Sale',
-    price: '$12.99',
-    created: '2023-08-10',
-    status: 'active',
-    image:
-      'https://images.unsplash.com/photo-1540420773420-3366772f4999?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=200&h=200&q=80',
-  },
-  {
-    id: 'LST002',
-    name: 'Bread and Pastries',
-    provider: 'Local Bakery',
-    type: 'Donation',
-    price: 'Free',
-    created: '2023-08-09',
-    status: 'active',
-    image:
-      'https://images.unsplash.com/photo-1608198093002-ad4e005484ec?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=200&h=200&q=80',
-  },
-  {
-    id: 'LST003',
-    name: 'Canned Goods Assortment',
-    provider: 'Green Grocers',
-    type: 'Sale',
-    price: '$8.50',
-    created: '2023-08-08',
-    status: 'active',
-    image:
-      'https://images.unsplash.com/photo-1584263347416-85a696b4eda7?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=200&h=200&q=80',
-  },
-  {
-    id: 'LST004',
-    name: 'Prepared Meals - 5 Pack',
-    provider: 'Fresh Harvest Market',
-    type: 'Sale',
-    price: '$24.99',
-    created: '2023-08-07',
-    status: 'flagged',
-    reason: 'Suspicious pricing - significantly overpriced for expired items',
-    image:
-      'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=200&h=200&q=80',
-  },
-  {
-    id: 'LST005',
-    name: 'Fruits Assortment',
-    provider: 'Green Grocers',
-    type: 'Donation',
-    price: 'Free',
-    created: '2023-08-06',
-    status: 'removed',
-    reason: 'Inappropriate content in listing description',
-    image:
-      'https://images.unsplash.com/photo-1610832958506-aa56368176cf?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=200&h=200&q=80',
-  },
-  {
-    id: 'LST006',
-    name: 'Dairy Products Mix',
-    provider: 'City Supermarket',
-    type: 'Sale',
-    price: '$15.50',
-    created: '2023-08-05',
-    status: 'sold_out',
-    image:
-      'https://images.unsplash.com/photo-1563636619-e9143da7973b?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=200&h=200&q=80',
-  },
-  {
-    id: 'LST007',
-    name: 'Frozen Meals Pack',
-    provider: 'Quick Mart',
-    type: 'Sale',
-    price: '$18.99',
-    created: '2023-08-04',
-    status: 'expired',
-    image:
-      'https://images.unsplash.com/photo-1574781330855-d0db2706b3d0?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=200&h=200&q=80',
-  },
-]
+import AdminAPI from '../../services/AdminAPI'
+import { apiClient } from '../../services/FoodAPI.js'
 
 const Listings = () => {
-  const [listings, setListings] = useState(mockListings)
+  const [listings, setListings] = useState([]) //start with empty array
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
+  //exsisitng UI state
   const [search, setSearch] = useState('')
   const [typeFilter, setTypeFilter] = useState('All')
   const [statusFilter, setStatusFilter] = useState('All')
@@ -97,6 +19,68 @@ const Listings = () => {
   const [showListingModal, setShowListingModal] = useState(false)
   const [showConfirmModal, setShowConfirmModal] = useState(false)
   const [confirmAction, setConfirmAction] = useState(null)
+
+    useEffect(() => {
+      setupAuthAndFetchlistings()
+    }, [])
+  
+    const setupAuthAndFetchlistings = async () => {
+      try {
+        // STEP 3A: Set up authentication (same pattern as dashboard/verifications)
+        const token = localStorage.getItem('adminToken')
+        if (!token) {
+          throw new Error('No admin token found. Please log in again.')
+        }
+        apiClient.defaults.headers.common['Authorization'] = `Bearer ${token}`
+        
+        // STEP 3B: Fetch the actual data
+        await getListings()
+        
+      } catch (error) {
+        console.error('Authentication setup error:', error)
+        setError('Authentication failed. Please log in again.')
+        setLoading(false)
+      }
+    }
+
+//New function to get listings and populate:
+const getListings = async () => {
+  try {
+    setLoading(true);
+
+    const response = await AdminAPI.getAllListings(1, '', 'All', 'All', 20)
+
+    if(response.success){
+      setListings(response.data.listings)
+      setError(null)
+    } else {
+      console.log('Error fetching listings data: ', response.error)
+      setError(response.error)
+      toast.error(response.error || 'Failed to load listing')
+    }
+  } catch (error){
+      console.error('listings fetch error:', error)
+          
+      //Handle different error types
+      if (error.response?.status === 401) {
+        setError('Session expired. Please log in again.')
+        localStorage.removeItem('adminToken')
+        localStorage.removeItem('adminUser')
+      } else if (error.response?.status === 403) {
+        setError('Access denied. Admin privileges required.')
+      } else {
+          setError('Failed to fetch listings')
+      }
+          
+      toast.error('Failed to load listings')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  //UR OVER HERE !!!efq#($y!g$(346247@#)r@#)))
+
+
 
   const filteredListings = listings.filter((listing) => {
     const matchesSearch =
@@ -215,8 +199,8 @@ const Listings = () => {
           }
           message={
             confirmAction.type === 'remove'
-              ? 'Are you sure you want to remove this listing? It will no longer be visible to users.'
-              : 'Are you sure you want to flag this listing? It will be marked for review and may be hidden from users.'
+              ? 'Are you sure you want to remove this listing? It will no longer be visible to listings.'
+              : 'Are you sure you want to flag this listing? It will be marked for review and may be hidden from listings.'
           }
           confirmButtonText="Confirm"
           confirmButtonColor={confirmAction.type === 'remove' ? 'red' : 'amber'}
