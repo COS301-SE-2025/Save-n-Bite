@@ -32,54 +32,54 @@ const NotificationCard = ({
 
   const getNotificationIcon = (type, priority = 'normal') => {
     const iconSize = 16;
-    let bgColor = 'bg-blue-100';
-    let iconColor = 'text-blue-600';
+    let bgColor = 'bg-blue-100 dark:bg-blue-900';
+    let iconColor = 'text-blue-600 dark:text-blue-300';
     let IconComponent = Bell;
 
     switch (type) {
       case 'new_listing':
-        bgColor = 'bg-emerald-100';
-        iconColor = 'text-emerald-600';
+        bgColor = 'bg-emerald-100 dark:bg-emerald-900';
+        iconColor = 'text-emerald-600 dark:text-emerald-400';
         IconComponent = Store;
         break;
       case 'order_update':
       case 'order':
-        bgColor = 'bg-orange-100';
-        iconColor = 'text-orange-600';
+        bgColor = 'bg-orange-100 dark:bg-orange-900';
+        iconColor = 'text-orange-600 dark:text-orange-400';
         IconComponent = Package;
         break;
       case 'welcome':
-        bgColor = 'bg-purple-100';
-        iconColor = 'text-purple-600';
+        bgColor = 'bg-purple-100 dark:bg-purple-900';
+        iconColor = 'text-purple-600 dark:text-purple-400';
         IconComponent = User;
         break;
       case 'promotion':
       case 'discount':
-        bgColor = 'bg-pink-100';
-        iconColor = 'text-pink-600';
+        bgColor = 'bg-pink-100 dark:bg-pink-900';
+        iconColor = 'text-pink-600 dark:text-pink-400';
         IconComponent = Gift;
         break;
       case 'alert':
       case 'warning':
-        bgColor = 'bg-red-100';
-        iconColor = 'text-red-600';
+        bgColor = 'bg-red-100 dark:bg-red-900';
+        iconColor = 'text-red-600 dark:text-red-400';
         IconComponent = AlertCircle;
         break;
       case 'system':
       default:
-        bgColor = 'bg-blue-100';
-        iconColor = 'text-blue-600';
+        bgColor = 'bg-blue-100 dark:bg-blue-900';
+        iconColor = 'text-blue-600 dark:text-blue-300';
         IconComponent = Bell;
         break;
     }
 
     // Adjust colors based on priority
     if (priority === 'high') {
-      bgColor = 'bg-red-100';
-      iconColor = 'text-red-600';
+      bgColor = 'bg-red-100 dark:bg-red-900';
+      iconColor = 'text-red-600 dark:text-red-400';
     } else if (priority === 'low') {
-      bgColor = 'bg-gray-100';
-      iconColor = 'text-gray-600';
+      bgColor = 'bg-gray-100 dark:bg-gray-800';
+      iconColor = 'text-gray-600 dark:text-gray-300';
     }
 
     return (
@@ -218,9 +218,9 @@ const NotificationCard = ({
 
   return (
     <div
-      className={`p-4 hover:bg-gray-50 transition-colors ${
-        !notification.isRead ? 'bg-emerald-50' : ''
-      } ${!isLast ? 'border-b border-gray-100' : ''}`}
+      className={`p-4 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors ${
+        !notification.isRead ? 'bg-emerald-50 dark:bg-emerald-900' : 'bg-white dark:bg-gray-800'
+      } ${!isLast ? 'border-b border-gray-100 dark:border-gray-700' : ''}`}
     >
       <div className="flex items-start space-x-3">
         {getNotificationIcon(notification.type, notification.priority)}
@@ -229,26 +229,26 @@ const NotificationCard = ({
           <div className="flex items-start justify-between">
             <div className="flex-1 min-w-0">
               <div className="flex items-center space-x-2 mb-1">
-                <p className="text-sm font-semibold text-gray-900 truncate">
+                <p className="text-sm font-semibold text-gray-900 dark:text-gray-100 truncate">
                   {notification.title}
                 </p>
                 {!notification.isRead && (
                   <span className="inline-block w-2 h-2 bg-emerald-500 rounded-full flex-shrink-0"></span>
                 )}
                 {notification.priority === 'high' && (
-                  <span className="inline-block px-2 py-0.5 text-xs font-medium bg-red-100 text-red-800 rounded-full">
+                  <span className="inline-block px-2 py-0.5 text-xs font-medium bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-400 rounded-full">
                     High Priority
                   </span>
                 )}
               </div>
 
-              <p className="text-sm text-gray-600 mb-2 leading-relaxed">
+              <p className="text-sm text-gray-600 dark:text-gray-300 mb-2 leading-relaxed">
                 {notification.message || notification.data?.message || notification.title || JSON.stringify(notification)}
               </p>
 
               {/* Additional metadata display */}
               {metadata.listing_name && (
-                <div className="text-xs text-gray-500 mb-2">
+                <div className="text-xs text-gray-500 dark:text-gray-400 mb-2">
                   <span className="font-medium">Item:</span> {metadata.listing_name}
                   {metadata.listing_price && (
                     <span className="ml-2">
@@ -259,12 +259,12 @@ const NotificationCard = ({
               )}
 
               {metadata.expiry_date && (
-                <div className="text-xs text-gray-500 mb-2">
+                <div className="text-xs text-gray-500 dark:text-gray-400 mb-2">
                   <span className="font-medium">Expires:</span> {new Date(metadata.expiry_date).toLocaleDateString()}
                 </div>
               )}
 
-              <div className="flex items-center space-x-4 text-xs text-gray-500">
+              <div className="flex items-center space-x-4 text-xs text-gray-500 dark:text-gray-400">
                 <span className="font-medium">{getNotificationTypeText(notification.type)}</span>
                 <span>{getTimeAgo(notification.createdAt)}</span>
                 {notification.sender_name && notification.sender_name !== 'System' && (
@@ -280,7 +280,7 @@ const NotificationCard = ({
                 <button
                   onClick={handleMarkAsRead}
                   title="Mark as read"
-                  className="p-1 text-emerald-600 hover:text-emerald-800 hover:bg-emerald-100 rounded transition-colors"
+                  className="p-1 text-emerald-600 dark:text-emerald-400 hover:text-emerald-800 dark:hover:text-emerald-300 hover:bg-emerald-100 dark:hover:bg-emerald-800 rounded transition-colors"
                 >
                   <Check size={16} />
                 </button>
@@ -289,7 +289,7 @@ const NotificationCard = ({
                 <button
                   onClick={handleNavigate}
                   title="View details"
-                  className="p-1 text-blue-600 hover:text-blue-800 hover:bg-blue-100 rounded transition-colors"
+                  className="p-1 text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 hover:bg-blue-100 dark:hover:bg-blue-900 rounded transition-colors"
                 >
                   <ExternalLink size={16} />
                 </button>
@@ -298,7 +298,7 @@ const NotificationCard = ({
                 onClick={handleDelete}
                 title="Delete notification"
                 disabled={isDeleting}
-                className="p-1 text-red-600 hover:text-red-800 hover:bg-red-100 rounded transition-colors disabled:opacity-50"
+                className="p-1 text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300 hover:bg-red-100 dark:hover:bg-red-900 rounded transition-colors disabled:opacity-50"
               >
                 <Trash2 size={16} />
               </button>
