@@ -296,11 +296,11 @@ function OrdersAndFeedback() {
       <div className="flex-1 p-6 overflow-auto">
         <div className="flex justify-between items-center mb-6">
           <div>
-            <h1 className="text-2xl font-bold">Orders & Feedback</h1>
-            <p className="text-gray-600 mt-1">
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Orders & Feedback</h1>
+            <p className="text-gray-600 dark:text-gray-300 mt-1">
               Manage your orders and customer reviews
               {currentProvider && (
-                <span className="ml-2 text-blue-600 font-medium">
+                <span className="ml-2 text-blue-600 dark:text-blue-400 font-medium">
                   • {currentProvider}
                 </span>
               )}
@@ -326,30 +326,28 @@ function OrdersAndFeedback() {
           <div className="grid grid-cols-1 md:grid-cols-5 gap-6">
             <div className="text-center">
               <div className="flex items-center justify-center space-x-1 mb-2">
-                <span className="text-3xl font-bold text-gray-900">
+                <span className="text-3xl font-bold text-gray-900 dark:text-gray-100">
                   {realFeedbackData.averageRating}
                 </span>
                 <Star className="h-6 w-6 text-yellow-400 fill-current" />
               </div>
-              <p className="text-sm text-gray-500 font-medium">Average Rating</p>
-              <p className="text-xs text-gray-400">
+              <p className="text-sm text-gray-500 dark:text-gray-300 font-medium">Average Rating</p>
+              <p className="text-xs text-gray-400 dark:text-gray-400">
                 Based on {realFeedbackData.totalReviews} reviews
               </p>
             </div>
-            
             <div className="text-center">
               <div className="flex items-center justify-center space-x-1 mb-2">
                 <MessageCircle className="h-6 w-6 text-blue-500" />
-                <span className="text-3xl font-bold text-gray-900">
+                <span className="text-3xl font-bold text-gray-900 dark:text-gray-100">
                   {realFeedbackData.totalReviews}
                 </span>
               </div>
-              <p className="text-sm text-gray-500 font-medium">Total Reviews</p>
-              <p className="text-xs text-gray-400">
+              <p className="text-sm text-gray-500 dark:text-gray-300 font-medium">Total Reviews</p>
+              <p className="text-xs text-gray-400 dark:text-gray-400">
                 {realFeedbackData.reviewsThisMonth} this month
               </p>
             </div>
-            
             <div className="text-center">
               <div className="flex items-center justify-center space-x-1 mb-2">
                 <svg
@@ -366,19 +364,18 @@ function OrdersAndFeedback() {
                     d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
                   />
                 </svg>
-                <span className="text-3xl font-bold text-gray-900">
+                <span className="text-3xl font-bold text-gray-900 dark:text-gray-100">
                   {realFeedbackData.followers}
                 </span>
               </div>
-              <p className="text-sm text-gray-500 font-medium">Satisfied Customers</p>
-              <p className="text-xs text-gray-400">
+              <p className="text-sm text-gray-500 dark:text-gray-300 font-medium">Satisfied Customers</p>
+              <p className="text-xs text-gray-400 dark:text-gray-400">
                 {ordersWithReviews.length} left reviews
               </p>
             </div>
-            
             {/* Rating Breakdown */}
             <div className="text-center">
-              <p className="text-sm text-gray-500 font-medium mb-2">Rating Breakdown</p>
+              <p className="text-sm text-gray-500 dark:text-gray-300 font-medium mb-2">Rating Breakdown</p>
               <div className="space-y-1">
                 {[5, 4, 3, 2, 1].map((star) => (
                   <div key={star} className="flex items-center justify-between text-xs">
@@ -386,7 +383,7 @@ function OrdersAndFeedback() {
                       <Star size={12} className="text-yellow-400 fill-current mr-1" />
                       {star}
                     </span>
-                    <span className="text-gray-600">
+                    <span className="text-gray-600 dark:text-gray-300">
                       {reviewStats.rating_breakdown[`${star}_star`] || 0}
                     </span>
                   </div>
@@ -396,7 +393,7 @@ function OrdersAndFeedback() {
             
             {/* Recent Highlight */}
             <div className="col-span-1 md:col-span-1">
-              <div className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg p-4 h-full flex flex-col justify-center border border-blue-100">
+              <div className="bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900 dark:to-purple-900 rounded-lg p-4 h-full flex flex-col justify-center border border-blue-100 dark:border-blue-900">
                 {realFeedbackData.recentHighlight.rating > 0 && (
                   <div className="flex items-center mb-2">
                     {[...Array(realFeedbackData.recentHighlight.rating)].map((_, i) => (
@@ -404,10 +401,10 @@ function OrdersAndFeedback() {
                     ))}
                   </div>
                 )}
-                <p className="text-sm text-blue-800 mb-2 italic line-clamp-2">
+                <p className="text-sm text-blue-800 dark:text-blue-200 mb-2 italic line-clamp-2">
                   "{realFeedbackData.recentHighlight.comment}"
                 </p>
-                <p className="text-xs text-blue-600">
+                <p className="text-xs text-blue-600 dark:text-blue-400">
                   - {realFeedbackData.recentHighlight.author} •{' '}
                   {realFeedbackData.recentHighlight.date}
                 </p>
@@ -419,11 +416,11 @@ function OrdersAndFeedback() {
         <div className="mb-6">
           <div className="flex items-center gap-4 mb-4">
             <div className="relative flex-1">
-              <SearchIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
+              <SearchIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-gray-400 h-5 w-5" />
               <input
                 type="text"
                 placeholder="Search by order ID, item or customer..."
-                className="pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md w-full bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-100"
+                className="pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md w-full bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
@@ -456,16 +453,16 @@ function OrdersAndFeedback() {
           </div>
         </div>
 
-        <div className="bg-white rounded-lg shadow-md overflow-hidden">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden">
           {filteredOrders.length === 0 ? (
             <div className="p-8 text-center">
-              <div className="text-gray-400 mb-4">
+              <div className="text-gray-400 dark:text-gray-500 mb-4">
                 <svg className="w-16 h-16 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                 </svg>
               </div>
-              <h3 className="text-lg font-medium text-gray-900 mb-2">No orders found</h3>
-              <p className="text-gray-600 mb-4">
+              <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">No orders found</h3>
+              <p className="text-gray-600 dark:text-gray-300 mb-4">
                 {searchQuery || filterType !== 'all' || filterStatus !== 'all' 
                   ? 'Try adjusting your search or filters'
                   : 'You haven\'t received any orders yet. Orders will appear here once customers place them.'
@@ -486,62 +483,62 @@ function OrdersAndFeedback() {
             </div>
           ) : (
             <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50">
+              <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                <thead className="bg-gray-50 dark:bg-gray-800">
                   <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                       Order
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                       Customer
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                       Type
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                       Amount
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                       Status
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                       Review
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                       Actions
                     </th>
                   </tr>
                 </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
+                <tbody className="bg-white dark:bg-gray-900 divide-y divide-gray-200 dark:divide-gray-700">
                   {filteredOrders.map((order) => (
-                    <tr key={order.id} className="hover:bg-gray-50">
+                    <tr key={order.id} className="hover:bg-gray-50 dark:hover:bg-gray-800">
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="flex items-center">
                           <img className="h-10 w-10 rounded-full object-cover" src={order.imageUrl} alt="" />
                           <div className="ml-4">
-                            <div className="text-sm font-medium text-gray-900">{order.orderId}</div>
-                            <div className="text-sm text-gray-500">{order.itemName}</div>
+                            <div className="text-sm font-medium text-gray-900 dark:text-gray-100">{order.orderId}</div>
+                            <div className="text-sm text-gray-500 dark:text-gray-300">{order.itemName}</div>
                           </div>
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm font-medium text-gray-900">{order.customerName}</div>
-                        <div className="text-sm text-gray-500">{order.timeAgo}</div>
+                        <div className="text-sm font-medium text-gray-900 dark:text-gray-100">{order.customerName}</div>
+                        <div className="text-sm text-gray-500 dark:text-gray-300">{order.timeAgo}</div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
                           order.type === 'Sale' 
-                            ? 'bg-green-100 text-green-800' 
-                            : 'bg-blue-100 text-blue-800'
+                            ? 'bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-300' 
+                            : 'bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-300'
                         }`}>
                           {order.type}
                         </span>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
                         {order.amount}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">
+                        <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-300">
                           {order.status}
                         </span>
                       </td>
@@ -551,7 +548,7 @@ function OrdersAndFeedback() {
                             <>
                               <button
                                 onClick={() => handleQuickReviewView(order)}
-                                className="inline-flex items-center px-2 py-1 bg-blue-100 text-blue-800 rounded-full hover:bg-blue-200 transition-colors cursor-pointer"
+                                className="inline-flex items-center px-2 py-1 bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-300 rounded-full hover:bg-blue-200 dark:hover:bg-blue-800 transition-colors cursor-pointer"
                                 title="Click to view review quickly"
                               >
                                 <MessageCircle size={14} className="mr-1" />
@@ -562,7 +559,7 @@ function OrdersAndFeedback() {
                                   <Star key={i} size={12} className="text-yellow-400 fill-current" />
                                 ))}
                                 {[...Array(5 - order.rating)].map((_, i) => (
-                                  <Star key={i} size={12} className="text-gray-300" />
+                                  <Star key={i} size={12} className="text-gray-300 dark:text-gray-600" />
                                 ))}
                               </div>
                             </>
@@ -572,7 +569,7 @@ function OrdersAndFeedback() {
                       <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                         <button
                           onClick={() => handleViewReviews(order)}
-                          className="text-blue-600 hover:text-blue-900 mr-2"
+                          className="text-blue-600 dark:text-blue-400 hover:text-blue-900 dark:hover:text-blue-200 mr-2"
                         >
                           View Details
                         </button>
@@ -588,13 +585,13 @@ function OrdersAndFeedback() {
         {/* Quick Review Modal */}
         {showQuickReview && quickReviewData && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-            <div className="bg-white rounded-lg shadow-xl max-w-md w-full">
+            <div className="bg-white dark:bg-gray-900 rounded-lg shadow-xl max-w-md w-full">
               <div className="p-6">
                 <div className="flex justify-between items-start mb-4">
-                  <h3 className="text-lg font-semibold text-gray-900">Quick Review</h3>
+                  <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Quick Review</h3>
                   <button
                     onClick={() => setShowQuickReview(false)}
-                    className="text-gray-400 hover:text-gray-600"
+                    className="text-gray-400 dark:text-gray-300 hover:text-gray-600 dark:hover:text-gray-100"
                   >
                     <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -605,8 +602,8 @@ function OrdersAndFeedback() {
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="font-medium text-gray-900">{quickReviewData.customerName}</p>
-                      <p className="text-sm text-gray-500">{quickReviewData.timeAgo}</p>
+                      <p className="font-medium text-gray-900 dark:text-gray-100">{quickReviewData.customerName}</p>
+                      <p className="text-sm text-gray-500 dark:text-gray-300">{quickReviewData.timeAgo}</p>
                     </div>
                     <div className="flex items-center">
                       {[...Array(quickReviewData.rating)].map((_, i) => (
@@ -615,15 +612,15 @@ function OrdersAndFeedback() {
                     </div>
                   </div>
                   
-                  <div className="bg-gray-50 rounded-lg p-4">
+                  <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4">
                     <div className="flex items-center mb-2">
                       <span className="text-lg mr-2">{quickReviewData.reviewIcon}</span>
-                      <span className="text-sm font-medium text-gray-700">{quickReviewData.reviewType}</span>
+                      <span className="text-sm font-medium text-gray-700 dark:text-gray-200">{quickReviewData.reviewType}</span>
                     </div>
-                    <p className="text-gray-800 italic">"{quickReviewData.reviewComment}"</p>
+                    <p className="text-gray-800 dark:text-gray-100 italic">"{quickReviewData.reviewComment}"</p>
                   </div>
                   
-                  <div className="flex justify-between text-sm text-gray-600">
+                  <div className="flex justify-between text-sm text-gray-600 dark:text-gray-300">
                     <span>Order Type: <span className="font-medium">{quickReviewData.orderType}</span></span>
                     <span>Amount: <span className="font-medium">{quickReviewData.orderAmount}</span></span>
                   </div>
@@ -635,7 +632,7 @@ function OrdersAndFeedback() {
 
         {showReviews && selectedOrder && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-            <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="bg-white dark:bg-gray-900 rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
               <ReviewPanel
                 order={selectedOrder}
                 onClose={() => setShowReviews(false)}

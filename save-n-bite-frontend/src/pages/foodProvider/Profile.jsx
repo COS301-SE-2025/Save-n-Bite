@@ -94,7 +94,7 @@ function ProfilePage() {
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden mb-8 transition-colors duration-300">
         <div className="p-6">
           <div className="flex justify-between items-center mb-4">
-            <h3 className="text-xl font-semibold">Business Information</h3>
+            <h3 className="text-xl font-semibold text-gray-900 dark:text-gray-100">Business Information</h3>
             {!isEditing ? (
               <button
                 onClick={() => setIsEditing(true)}
@@ -126,48 +126,47 @@ function ProfilePage() {
             )}
           </div>
 
-      <div className="flex items-center mb-6 relative">
-              <div className="h-24 w-24 bg-gray-200 rounded-full overflow-hidden mr-6">
-                <img
-                  src={formData.logoUrl}
-                  alt="Business Logo"
-                  className="h-full w-full object-cover"
-                />
-              </div>
-              <button
-                onClick={() => logoInputRef.current.click()}
-                className="absolute left-16 top-16 bg-white/80 hover:bg-white p-2 rounded-full shadow-md transition-colors"
-              >
-                <Edit2Icon className="h-4 w-4 text-blue-900" />
-              </button>
-              <input
-                type="file"
-                accept="image/*"
-                ref={logoInputRef}
-                style={{ display: 'none' }}
-                onChange={(e) => handleImageChange(e, 'logoUrl')}
+          <div className="flex items-center mb-6 relative">
+            <div className="h-24 w-24 bg-gray-200 dark:bg-gray-900 rounded-full overflow-hidden mr-6">
+              <img
+                src={formData.logoUrl}
+                alt="Business Logo"
+                className="h-full w-full object-cover"
               />
-              <div>
-                <span className="inline-block px-3 py-1 bg-blue-100 text-blue-800 rounded-full font-medium text-sm">
-                  {formData.verificationStatus === 'Verified' ? (
-                    <span className="flex items-center">
-                      <CheckIcon className="h-4 w-4 mr-1 text-green-600" />
-                      Verified Business
-                    </span>
-                  ) : formData.verificationStatus === 'Pending' ? (
-                    <span className="text-yellow-600">Verification Pending</span>
-                  ) : (
-                    <span className="text-red-600">Verification Required</span>
-                  )}
-                </span>
-              </div>
             </div>
-
+            <button
+              onClick={() => logoInputRef.current.click()}
+              className="absolute left-16 top-16 bg-white/80 hover:bg-white p-2 rounded-full shadow-md transition-colors"
+            >
+              <Edit2Icon className="h-4 w-4 text-blue-900" />
+            </button>
+            <input
+              type="file"
+              accept="image/*"
+              ref={logoInputRef}
+              style={{ display: 'none' }}
+              onChange={(e) => handleImageChange(e, 'logoUrl')}
+            />
+            <div>
+              <span className="inline-block px-3 py-1 bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-300 rounded-full font-medium text-sm">
+                {formData.verificationStatus === 'Verified' ? (
+                  <span className="flex items-center">
+                    <CheckIcon className="h-4 w-4 mr-1 text-green-600 dark:text-green-400" />
+                    Verified Business
+                  </span>
+                ) : formData.verificationStatus === 'Pending' ? (
+                  <span className="text-yellow-600 dark:text-yellow-400">Verification Pending</span>
+                ) : (
+                  <span className="text-red-600 dark:text-red-400">Verification Required</span>
+                )}
+              </span>
+            </div>
+          </div>
 
           {isEditing ? (
             <form className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                   Business Name
                 </label>
                 <input
@@ -175,11 +174,11 @@ function ProfilePage() {
                   name="businessName"
                   value={formData.businessName}
                   onChange={handleChange}
-                  className="w-full p-2 border border-gray-300 rounded-md"
+                  className="w-full p-2 border border-gray-300 dark:border-gray-700 rounded-md bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                   Contact Email
                 </label>
                 <input
@@ -187,11 +186,11 @@ function ProfilePage() {
                   name="email"
                   value={formData.email}
                   onChange={handleChange}
-                  className="w-full p-2 border border-gray-300 rounded-md"
+                  className="w-full p-2 border border-gray-300 dark:border-gray-700 rounded-md bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                   Phone Number
                 </label>
                 <input
@@ -199,11 +198,11 @@ function ProfilePage() {
                   name="phone"
                   value={formData.phone}
                   onChange={handleChange}
-                  className="w-full p-2 border border-gray-300 rounded-md"
+                  className="w-full p-2 border border-gray-300 dark:border-gray-700 rounded-md bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                   Business Address
                 </label>
                 <input
@@ -211,11 +210,11 @@ function ProfilePage() {
                   name="address"
                   value={formData.address}
                   onChange={handleChange}
-                  className="w-full p-2 border border-gray-300 rounded-md"
+                  className="w-full p-2 border border-gray-300 dark:border-gray-700 rounded-md bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                   Business Description
                 </label>
                 <textarea
@@ -223,24 +222,24 @@ function ProfilePage() {
                   value={formData.description}
                   onChange={handleChange}
                   rows="4"
-                  className="w-full p-2 border border-gray-300 rounded-md"
+                  className="w-full p-2 border border-gray-300 dark:border-gray-700 rounded-md bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                   Business Tags
                 </label>
                 <div className="flex flex-wrap gap-2 mb-2">
                   {tags.map((tag) => (
                     <span
                       key={tag}
-                      className="inline-flex items-center px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm"
+                      className="inline-flex items-center px-3 py-1 bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-300 rounded-full text-sm"
                     >
                       {tag}
                       <button
                         type="button"
                         onClick={() => handleRemoveTag(tag)}
-                        className="ml-2 text-blue-600 hover:text-blue-800"
+                        className="ml-2 text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-200"
                       >
                         <XIcon className="h-3 w-3" />
                       </button>
@@ -254,7 +253,7 @@ function ProfilePage() {
                     onChange={(e) => setNewTag(e.target.value)}
                     onKeyDown={handleKeyDown}
                     placeholder="Add a tag"
-                    className="flex-1 p-2 border border-gray-300 rounded-l-md"
+                    className="flex-1 p-2 border border-gray-300 dark:border-gray-700 rounded-l-md bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500"
                   />
                   <button
                     type="button"
@@ -270,45 +269,45 @@ function ProfilePage() {
             <div className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <h4 className="text-sm font-medium text-gray-500">
+                  <h4 className="text-sm font-medium text-gray-500 dark:text-gray-300">
                     Business Name
                   </h4>
-                  <p>{formData.businessName}</p>
+                  <p className="text-gray-900 dark:text-gray-100">{formData.businessName}</p>
                 </div>
                 <div>
-                  <h4 className="text-sm font-medium text-gray-500">
+                  <h4 className="text-sm font-medium text-gray-500 dark:text-gray-300">
                     Contact Email
                   </h4>
-                  <p>{formData.email}</p>
+                  <p className="text-gray-900 dark:text-gray-100">{formData.email}</p>
                 </div>
                 <div>
-                  <h4 className="text-sm font-medium text-gray-500">
+                  <h4 className="text-sm font-medium text-gray-500 dark:text-gray-300">
                     Phone Number
                   </h4>
-                  <p>{formData.phone}</p>
+                  <p className="text-gray-900 dark:text-gray-100">{formData.phone}</p>
                 </div>
                 <div>
-                  <h4 className="text-sm font-medium text-gray-500">
+                  <h4 className="text-sm font-medium text-gray-500 dark:text-gray-300">
                     Business Address
                   </h4>
-                  <p>{formData.address}</p>
+                  <p className="text-gray-900 dark:text-gray-100">{formData.address}</p>
                 </div>
               </div>
               <div>
-                <h4 className="text-sm font-medium text-gray-500">
+                <h4 className="text-sm font-medium text-gray-500 dark:text-gray-300">
                   Business Description
                 </h4>
-                <p className="mt-1">{formData.description}</p>
+                <p className="mt-1 text-gray-900 dark:text-gray-100">{formData.description}</p>
               </div>
               <div>
-                <h4 className="text-sm font-medium text-gray-500">
+                <h4 className="text-sm font-medium text-gray-500 dark:text-gray-300">
                   Business Tags
                 </h4>
                 <div className="flex flex-wrap gap-2 mt-1">
                   {tags.map((tag) => (
                     <span
                       key={tag}
-                      className="inline-block px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm"
+                      className="inline-block px-3 py-1 bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-300 rounded-full text-sm"
                     >
                       {tag}
                     </span>
@@ -323,29 +322,29 @@ function ProfilePage() {
       {/* Impact Snapshot Section */}
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden mb-8 transition-colors duration-300">
         <div className="p-6">
-          <h3 className="text-xl font-semibold mb-4">Your Impact</h3>
+          <h3 className="text-xl font-semibold mb-4 text-gray-900 dark:text-gray-100">Your Impact</h3>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="bg-green-50 p-4 rounded-lg">
-              <h4 className="text-sm font-medium text-gray-500">
+            <div className="bg-green-50 dark:bg-green-900 p-4 rounded-lg">
+              <h4 className="text-sm font-medium text-gray-500 dark:text-gray-300">
                 Meals Donated
               </h4>
-              <p className="text-3xl font-bold text-green-600">
+              <p className="text-3xl font-bold text-green-600 dark:text-green-400">
                 {sustainabilityData.mealsSaved}
               </p>
             </div>
-            <div className="bg-blue-50 p-4 rounded-lg">
-              <h4 className="text-sm font-medium text-gray-500">
+            <div className="bg-blue-50 dark:bg-blue-900 p-4 rounded-lg">
+              <h4 className="text-sm font-medium text-gray-500 dark:text-gray-300">
                 Food Weight Saved (kg)
               </h4>
-              <p className="text-3xl font-bold text-blue-600">
+              <p className="text-3xl font-bold text-blue-600 dark:text-blue-400">
                 {sustainabilityData.mealsSaved * 0.5}
               </p>
             </div>
-            <div className="bg-yellow-50 p-4 rounded-lg">
-              <h4 className="text-sm font-medium text-gray-500">
+            <div className="bg-yellow-50 dark:bg-yellow-900 p-4 rounded-lg">
+              <h4 className="text-sm font-medium text-gray-500 dark:text-gray-300">
                 CO₂ Reduced (kg)
               </h4>
-              <p className="text-3xl font-bold text-yellow-600">
+              <p className="text-3xl font-bold text-yellow-600 dark:text-yellow-400">
                 {sustainabilityData.co2Reduced}
               </p>
             </div>
@@ -355,9 +354,6 @@ function ProfilePage() {
 
       {/* Quick Access Buttons */}
       <div className="flex flex-wrap gap-4 mb-8">
-        {/* <button className="px-6 py-3 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors">
-          View Order History
-        </button> */}
         <button className="px-6 py-3 bg-white dark:bg-gray-800 border border-blue-600 dark:border-blue-700 text-blue-600 dark:text-blue-400 rounded-md hover:bg-blue-50 dark:hover:bg-blue-900 transition-colors">
           Download Impact Report
         </button>

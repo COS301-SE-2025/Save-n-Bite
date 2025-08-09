@@ -47,33 +47,33 @@ function ManageDonations() {
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-4 mb-6 transition-colors duration-300">
           <div className="grid grid-cols-4 gap-6">
             <div className="text-center">
-              <div className="text-2xl font-bold text-gray-900">
+              <div className="text-2xl font-bold text-gray-900 dark:text-gray-100">
                 {pendingCount}
               </div>
-              <p className="text-sm text-gray-500">Pending Requests</p>
+              <p className="text-sm text-gray-500 dark:text-gray-300">Pending Requests</p>
             </div>
             <div className="text-center">
-              <div className="text-2xl font-bold text-gray-900">
+              <div className="text-2xl font-bold text-gray-900 dark:text-gray-100">
                 {
                   donationRequestsData.filter(
                     (donation) => donation.status === 'Ready for Pickup'
                   ).length
                 }
               </div>
-              <p className="text-sm text-gray-500">Ready for Pickup</p>
+              <p className="text-sm text-gray-500 dark:text-gray-300">Ready for Pickup</p>
             </div>
             <div className="text-center">
-              <div className="text-2xl font-bold text-gray-900">
+              <div className="text-2xl font-bold text-gray-900 dark:text-gray-100">
                 {
                   donationRequestsData.filter(
                     (donation) => donation.status === 'Completed'
                   ).length
                 }
               </div>
-              <p className="text-sm text-gray-500">Completed Donations</p>
+              <p className="text-sm text-gray-500 dark:text-gray-300">Completed Donations</p>
             </div>
             <div className="text-center">
-              <div className="text-2xl font-bold text-green-600">
+              <div className="text-2xl font-bold text-green-600 dark:text-green-400">
                 {
                   donationRequestsData.filter(
                     (donation) => donation.status === 'Completed'
@@ -81,7 +81,7 @@ function ManageDonations() {
                 }{' '}
                 kg
               </div>
-              <p className="text-sm text-gray-500">Food Waste Saved</p>
+              <p className="text-sm text-gray-500 dark:text-gray-300">Food Waste Saved</p>
             </div>
           </div>
         </div>
@@ -93,11 +93,29 @@ function ManageDonations() {
               <input
                 type="text"
                 placeholder="Search by request ID, item or NGO..."
-                className="pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md w-full bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-100"
+                className="pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md w-full bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
             </div>
+            <select
+              className="px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-100"
+              value={filterNGO}
+              onChange={(e) => setFilterNGO(e.target.value)}
+            >
+              <option value="all">All NGOs</option>
+              {/* Add more NGO options here if needed */}
+            </select>
+            <select
+              className="px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-100"
+              value={filterStatus}
+              onChange={(e) => setFilterStatus(e.target.value)}
+            >
+              <option value="all">All Statuses</option>
+              <option value="pending">Pending</option>
+              <option value="ready for pickup">Ready for Pickup</option>
+              <option value="completed">Completed</option>
+            </select>
           </div>
         </div>
 

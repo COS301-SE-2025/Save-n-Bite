@@ -151,7 +151,7 @@ function SettingsPage() {
               <h3 className="text-lg font-medium mb-4 text-gray-800 dark:text-gray-100">Change Password</h3>
               <form onSubmit={handlePasswordSubmit} className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                     Current Password
                   </label>
                   <div className="relative">
@@ -161,7 +161,7 @@ function SettingsPage() {
                       value={passwordData.currentPassword}
                       onChange={handlePasswordChange}
                       required
-                      className="w-full p-2 border border-gray-300 dark:border-gray-700 rounded-md pr-10 bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-100"
+                      className="w-full p-2 border border-gray-300 dark:border-gray-700 rounded-md pr-10 bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500"
                     />
                     <button
                       type="button"
@@ -177,7 +177,7 @@ function SettingsPage() {
                   </div>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                     New Password
                   </label>
                   <div className="relative">
@@ -187,7 +187,7 @@ function SettingsPage() {
                       value={passwordData.newPassword}
                       onChange={handlePasswordChange}
                       required
-                      className={`w-full p-2 border rounded-md pr-10 ${passwordErrors.newPassword ? 'border-red-500' : 'border-gray-300'} bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-100`}
+                      className={`w-full p-2 border rounded-md pr-10 ${passwordErrors.newPassword ? 'border-red-500' : 'border-gray-300 dark:border-gray-700'} bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500`}
                     />
                     <button
                       type="button"
@@ -206,13 +206,13 @@ function SettingsPage() {
                       {passwordErrors.newPassword}
                     </p>
                   )}
-                  <p className="mt-1 text-xs text-gray-500">
+                  <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
                     Password must be at least 8 characters and include uppercase,
                     lowercase, number, and special character.
                   </p>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                     Confirm New Password
                   </label>
                   <div className="relative">
@@ -222,7 +222,7 @@ function SettingsPage() {
                       value={passwordData.confirmPassword}
                       onChange={handlePasswordChange}
                       required
-                      className={`w-full p-2 border rounded-md pr-10 ${passwordErrors.confirmPassword ? 'border-red-500' : 'border-gray-300'} bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-100`}
+                      className={`w-full p-2 border rounded-md pr-10 ${passwordErrors.confirmPassword ? 'border-red-500' : 'border-gray-300 dark:border-gray-700'} bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500`}
                     />
                     <button
                       type="button"
@@ -259,8 +259,8 @@ function SettingsPage() {
             <div className="space-y-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <h3 className="font-medium">New Orders</h3>
-                  <p className="text-sm text-gray-500">
+                  <h3 className="font-medium text-gray-800 dark:text-gray-100">New Orders</h3>
+                  <p className="text-sm text-gray-500 dark:text-gray-300">
                     Get notified when you receive a new order
                   </p>
                 </div>
@@ -276,8 +276,8 @@ function SettingsPage() {
               </div>
               <div className="flex items-center justify-between">
                 <div>
-                  <h3 className="font-medium">Pickup Confirmations</h3>
-                  <p className="text-sm text-gray-500">
+                  <h3 className="font-medium text-gray-800 dark:text-gray-100">Pickup Confirmations</h3>
+                  <p className="text-sm text-gray-500 dark:text-gray-300">
                     Get notified when an order is picked up
                   </p>
                 </div>
@@ -293,8 +293,8 @@ function SettingsPage() {
               </div>
               <div className="flex items-center justify-between">
                 <div>
-                  <h3 className="font-medium">Donation Requests</h3>
-                  <p className="text-sm text-gray-500">
+                  <h3 className="font-medium text-gray-800 dark:text-gray-100">Donation Requests</h3>
+                  <p className="text-sm text-gray-500 dark:text-gray-300">
                     Get notified about new donation requests
                   </p>
                 </div>
@@ -308,10 +308,10 @@ function SettingsPage() {
                   <div className="w-11 h-6 bg-gray-200 dark:bg-gray-700 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white dark:after:bg-gray-900 after:border-gray-300 dark:after:border-gray-700 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600 dark:peer-checked:bg-blue-700"></div>
                 </label>
               </div>
-              <div className="pt-4 mt-4 border-t border-gray-200 flex items-center justify-between">
+              <div className="pt-4 mt-4 border-t border-gray-200 dark:border-gray-700 flex items-center justify-between">
                 <div>
-                  <h3 className="font-medium">All In-App Notifications</h3>
-                  <p className="text-sm text-gray-500">
+                  <h3 className="font-medium text-gray-800 dark:text-gray-100">All In-App Notifications</h3>
+                  <p className="text-sm text-gray-500 dark:text-gray-300">
                     Master toggle for all notifications
                   </p>
                 </div>
@@ -352,16 +352,16 @@ function SettingsPage() {
           </div>
         </div>
         {/* Communication Preferences Section */}
-        <div className="bg-white rounded-lg shadow-md overflow-hidden mb-8">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden mb-8 transition-colors duration-300">
           <div className="p-6">
-            <h2 className="text-xl font-semibold mb-4">
+            <h2 className="text-xl font-semibold mb-4 text-gray-800 dark:text-gray-100">
               Communication Preferences
             </h2>
             <div className="space-y-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <h3 className="font-medium">Platform Announcements</h3>
-                  <p className="text-sm text-gray-500">
+                  <h3 className="font-medium text-gray-800 dark:text-gray-100">Platform Announcements</h3>
+                  <p className="text-sm text-gray-500 dark:text-gray-300">
                     Receive updates about new features and platform changes
                   </p>
                 </div>
@@ -374,13 +374,13 @@ function SettingsPage() {
                     }
                     className="sr-only peer"
                   />
-                  <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                  <div className="w-11 h-6 bg-gray-200 dark:bg-gray-700 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600 dark:peer-checked:bg-blue-700"></div>
                 </label>
               </div>
               <div className="flex items-center justify-between">
                 <div>
-                  <h3 className="font-medium">App Feedback</h3>
-                  <p className="text-sm text-gray-500">
+                  <h3 className="font-medium text-gray-800 dark:text-gray-100">App Feedback</h3>
+                  <p className="text-sm text-gray-500 dark:text-gray-300">
                     Allow Save 'n Bite to contact me for app feedback
                   </p>
                 </div>
@@ -391,20 +391,20 @@ function SettingsPage() {
                     onChange={() => toggleCommunicationPref('appFeedback')}
                     className="sr-only peer"
                   />
-                  <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                  <div className="w-11 h-6 bg-gray-200 dark:bg-gray-700 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600 dark:peer-checked:bg-blue-700"></div>
                 </label>
               </div>
             </div>
           </div>
         </div>
         {/* Account Deactivation - Moved to the end */}
-        <div className="bg-white rounded-lg shadow-md overflow-hidden mb-8">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden mb-8 transition-colors duration-300">
           <div className="p-6">
-            <h2 className="text-xl font-semibold mb-4 text-red-600">
+            <h2 className="text-xl font-semibold mb-4 text-red-600 dark:text-red-400">
               Account Deactivation
             </h2>
-            <div className="bg-red-50 p-4 rounded-md mb-4">
-              <p className="text-red-700">
+            <div className="bg-red-50 dark:bg-red-900 p-4 rounded-md mb-4">
+              <p className="text-red-700 dark:text-red-300">
                 Deactivating your account will remove your business from the
                 platform. All your data will be preserved if you decide to
                 reactivate in the future.

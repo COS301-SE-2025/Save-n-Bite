@@ -285,7 +285,7 @@ export function ListingForm() {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 max-w-3xl">
+    <form onSubmit={handleSubmit} className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6 max-w-3xl transition-colors duration-300">
       {errors.submit && (
         <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg">
           <p className="text-red-600">{errors.submit}</p>
@@ -294,7 +294,7 @@ export function ListingForm() {
       <div className="space-y-6">
         {/* Food Name */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
             Food Name
           </label>
           <input
@@ -302,31 +302,31 @@ export function ListingForm() {
             name="name"
             value={formData.name}
             onChange={handleInputChange}
-            className={`w-full p-2 border rounded-lg ${errors.name ? 'border-red-500' : 'border-gray-300'}`}
+            className={`w-full p-2 border rounded-lg ${errors.name ? 'border-red-500' : 'border-gray-300 dark:border-gray-700'} bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500`}
             placeholder="e.g., Fresh Baked Bread"
           />
-          {errors.name && <p className="text-red-500 text-sm mt-1">{errors.name}</p>}
+          {errors.name && <p className="text-red-500 dark:text-red-400 text-sm mt-1">{errors.name}</p>}
         </div>
 
         {/* Description */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
             Description
           </label>
           <textarea
             name="description"
             value={formData.description}
             onChange={handleInputChange}
-            className={`w-full p-2 border rounded-lg ${errors.description ? 'border-red-500' : 'border-gray-300'}`}
+            className={`w-full p-2 border rounded-lg ${errors.description ? 'border-red-500' : 'border-gray-300 dark:border-gray-700'} bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500`}
             placeholder="Describe your food item..."
           />
-          {errors.description && <p className="text-red-500 text-sm mt-1">{errors.description}</p>}
+          {errors.description && <p className="text-red-500 dark:text-red-400 text-sm mt-1">{errors.description}</p>}
         </div>
 
         {/* Quantity and Price/Donation Row */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
               Quantity
             </label>
             <input
@@ -334,13 +334,13 @@ export function ListingForm() {
               name="quantity"
               value={formData.quantity}
               onChange={handleInputChange}
-              className={`w-full p-2 border rounded-lg ${errors.quantity ? 'border-red-500' : 'border-gray-300'}`}
+              className={`w-full p-2 border rounded-lg ${errors.quantity ? 'border-red-500' : 'border-gray-300 dark:border-gray-700'} bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500`}
               placeholder="Number of items"
             />
-            {errors.quantity && <p className="text-red-500 text-sm mt-1">{errors.quantity}</p>}
+            {errors.quantity && <p className="text-red-500 dark:text-red-400 text-sm mt-1">{errors.quantity}</p>}
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
               Price Setting
             </label>
             <div className="flex items-center space-x-4">
@@ -351,7 +351,7 @@ export function ListingForm() {
                   onChange={e => setIsDonation(e.target.checked)}
                   className="w-4 h-4 text-blue-600"
                 />
-                <span className="ml-2 text-sm text-gray-600">
+                <span className="ml-2 text-sm text-gray-600 dark:text-gray-300">
                   Mark as Donation
                 </span>
               </label>
@@ -362,7 +362,7 @@ export function ListingForm() {
         {/* Price Fields */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
               Original Price (R)
             </label>
             <input
@@ -370,16 +370,16 @@ export function ListingForm() {
               name="original_price"
               value={formData.original_price}
               onChange={handleInputChange}
-              className={`w-full p-2 border rounded-lg ${errors.original_price ? 'border-red-500' : 'border-gray-300'}`}
+              className={`w-full p-2 border rounded-lg ${errors.original_price ? 'border-red-500' : 'border-gray-300 dark:border-gray-700'} bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500`}
               placeholder="0.00"
               step="0.01"
               min="0"
               disabled={isDonation}
             />
-            {errors.original_price && <p className="text-red-500 text-sm mt-1">{errors.original_price}</p>}
+            {errors.original_price && <p className="text-red-500 dark:text-red-400 text-sm mt-1">{errors.original_price}</p>}
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
               Discounted Price (R)
             </label>
             <input
@@ -387,20 +387,20 @@ export function ListingForm() {
               name="discounted_price"
               value={formData.discounted_price}
               onChange={handleInputChange}
-              className={`w-full p-2 border rounded-lg ${errors.discounted_price ? 'border-red-500' : 'border-gray-300'}`}
+              className={`w-full p-2 border rounded-lg ${errors.discounted_price ? 'border-red-500' : 'border-gray-300 dark:border-gray-700'} bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500`}
               placeholder="0.00"
               step="0.01"
               min="0"
               disabled={isDonation}
             />
-            {errors.discounted_price && <p className="text-red-500 text-sm mt-1">{errors.discounted_price}</p>}
+            {errors.discounted_price && <p className="text-red-500 dark:text-red-400 text-sm mt-1">{errors.discounted_price}</p>}
           </div>
         </div>
 
         {/* Expiration Date and Pickup Time Row */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
               Expiration Date
             </label>
             <input
@@ -408,13 +408,13 @@ export function ListingForm() {
               name="expiry_date"
               value={formData.expiry_date}
               onChange={handleInputChange}
-              className={`w-full p-2 border rounded-lg ${errors.expiry_date ? 'border-red-500' : 'border-gray-300'}`}
-              min={new Date().toISOString().split('T')[0]} // Set minimum date to today
+              className={`w-full p-2 border rounded-lg ${errors.expiry_date ? 'border-red-500' : 'border-gray-300 dark:border-gray-700'} bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500`}
+              min={new Date().toISOString().split('T')[0]}
             />
-            {errors.expiry_date && <p className="text-red-500 text-sm mt-1">{errors.expiry_date}</p>}
+            {errors.expiry_date && <p className="text-red-500 dark:text-red-400 text-sm mt-1">{errors.expiry_date}</p>}
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
               Pickup Time Range
             </label>
             <div className="grid grid-cols-2 gap-2">
@@ -424,9 +424,9 @@ export function ListingForm() {
                   name="pickup_start_time"
                   value={formData.pickup_start_time}
                   onChange={handleInputChange}
-                  className={`w-full p-2 border rounded-lg ${errors.pickup_window ? 'border-red-500' : 'border-gray-300'}`}
+                  className={`w-full p-2 border rounded-lg ${errors.pickup_window ? 'border-red-500' : 'border-gray-300 dark:border-gray-700'} bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500`}
                 />
-                <span className="absolute left-2 top-2.5 text-xs text-gray-500">From</span>
+                <span className="absolute left-2 top-2.5 text-xs text-gray-500 dark:text-gray-400">From</span>
               </div>
               <div className="relative">
                 <input
@@ -434,31 +434,29 @@ export function ListingForm() {
                   name="pickup_end_time"
                   value={formData.pickup_end_time}
                   onChange={handleInputChange}
-                  className={`w-full p-2 border rounded-lg ${errors.pickup_window ? 'border-red-500' : 'border-gray-300'}`}
+                  className={`w-full p-2 border rounded-lg ${errors.pickup_window ? 'border-red-500' : 'border-gray-300 dark:border-gray-700'} bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500`}
                 />
-                <span className="absolute left-2 top-2.5 text-xs text-gray-500">To</span>
+                <span className="absolute left-2 top-2.5 text-xs text-gray-500 dark:text-gray-400">To</span>
               </div>
             </div>
             {formData.pickup_start_time && formData.pickup_end_time && (
-              <p className="text-sm text-gray-600 mt-1">
+              <p className="text-sm text-gray-600 dark:text-gray-300 mt-1">
                 Pickup window: {formData.pickup_start_time}-{formData.pickup_end_time}
               </p>
             )}
-            {errors.pickup_window && <p className="text-red-500 text-sm mt-1">{errors.pickup_window}</p>}
+            {errors.pickup_window && <p className="text-red-500 dark:text-red-400 text-sm mt-1">{errors.pickup_window}</p>}
           </div>
         </div>
 
-        {/* NEW PICKUP LOCATION SECTION */}
+        {/* Pickup Location Section */}
         <div className="border-t pt-6">
-          <h3 className="text-lg font-medium text-gray-900 mb-4 flex items-center">
-            <MapPinIcon className="w-5 h-5 mr-2 text-blue-600" />
+          <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4 flex items-center">
+            <MapPinIcon className="w-5 h-5 mr-2 text-blue-600 dark:text-blue-400" />
             Pickup Location Details
           </h3>
-          
           <div className="space-y-4">
-            {/* Address */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                 Pickup Address
               </label>
               <input
@@ -466,31 +464,27 @@ export function ListingForm() {
                 name="pickup_address"
                 value={formData.pickup_address}
                 onChange={handleInputChange}
-                className={`w-full p-2 border rounded-lg ${errors.pickup_address ? 'border-red-500' : 'border-gray-300'}`}
+                className={`w-full p-2 border rounded-lg ${errors.pickup_address ? 'border-red-500' : 'border-gray-300 dark:border-gray-700'} bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500`}
                 placeholder="Complete pickup address"
               />
-              {errors.pickup_address && <p className="text-red-500 text-sm mt-1">{errors.pickup_address}</p>}
+              {errors.pickup_address && <p className="text-red-500 dark:text-red-400 text-sm mt-1">{errors.pickup_address}</p>}
             </div>
-
-            {/* Instructions */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                 Pickup Instructions
               </label>
               <textarea
                 name="pickup_instructions"
                 value={formData.pickup_instructions}
                 onChange={handleInputChange}
-                className="w-full p-2 border rounded-lg border-gray-300"
+                className="w-full p-2 border rounded-lg border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500"
                 placeholder="Special instructions for pickup (e.g., 'Use back entrance', 'Ask at counter')"
                 rows="2"
               />
             </div>
-
-            {/* Contact Info Row */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                   Contact Person
                 </label>
                 <div className="relative">
@@ -499,15 +493,15 @@ export function ListingForm() {
                     name="pickup_contact_person"
                     value={formData.pickup_contact_person}
                     onChange={handleInputChange}
-                    className={`w-full p-2 border rounded-lg ${errors.pickup_contact_person ? 'border-red-500' : 'border-gray-300'}`}
+                    className={`w-full p-2 border rounded-lg ${errors.pickup_contact_person ? 'border-red-500' : 'border-gray-300 dark:border-gray-700'} bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500`}
                     placeholder="Contact person name"
                   />
-                  <UserIcon className="absolute right-3 top-2.5 w-5 h-5 text-gray-400" />
+                  <UserIcon className="absolute right-3 top-2.5 w-5 h-5 text-gray-400 dark:text-gray-500" />
                 </div>
-                {errors.pickup_contact_person && <p className="text-red-500 text-sm mt-1">{errors.pickup_contact_person}</p>}
+                {errors.pickup_contact_person && <p className="text-red-500 dark:text-red-400 text-sm mt-1">{errors.pickup_contact_person}</p>}
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                   Contact Phone
                 </label>
                 <div className="relative">
@@ -516,64 +510,33 @@ export function ListingForm() {
                     name="pickup_contact_phone"
                     value={formData.pickup_contact_phone}
                     onChange={handleInputChange}
-                    className={`w-full p-2 border rounded-lg ${errors.pickup_contact_phone ? 'border-red-500' : 'border-gray-300'}`}
+                    className={`w-full p-2 border rounded-lg ${errors.pickup_contact_phone ? 'border-red-500' : 'border-gray-300 dark:border-gray-700'} bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500`}
                     placeholder="+27123456789"
                   />
-                  <PhoneIcon className="absolute right-3 top-2.5 w-5 h-5 text-gray-400" />
+                  <PhoneIcon className="absolute right-3 top-2.5 w-5 h-5 text-gray-400 dark:text-gray-500" />
                 </div>
-                {errors.pickup_contact_phone && <p className="text-red-500 text-sm mt-1">{errors.pickup_contact_phone}</p>}
+                {errors.pickup_contact_phone && <p className="text-red-500 dark:text-red-400 text-sm mt-1">{errors.pickup_contact_phone}</p>}
               </div>
             </div>
-
-            {/* Coordinates (Optional) */}
-            {/* <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Latitude (Optional)
-                </label>
-                <input
-                  type="text"
-                  name="pickup_latitude"
-                  value={formData.pickup_latitude}
-                  onChange={handleInputChange}
-                  className="w-full p-2 border rounded-lg border-gray-300"
-                  placeholder="e.g., -26.2041"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Longitude (Optional)
-                </label>
-                <input
-                  type="text"
-                  name="pickup_longitude"
-                  value={formData.pickup_longitude}
-                  onChange={handleInputChange}
-                  className="w-full p-2 border rounded-lg border-gray-300"
-                  placeholder="e.g., 28.0473"
-                />
-              </div>
-            </div> */}
           </div>
         </div>
 
-        {/* NEW SCHEDULING SECTION */}
+        {/* Scheduling Section */}
         <div className="border-t pt-6">
-          <h3 className="text-lg font-medium text-gray-900 mb-4 flex items-center">
-            <ClockIcon className="w-5 h-5 mr-2 text-blue-600" />
+          <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4 flex items-center">
+            <ClockIcon className="w-5 h-5 mr-2 text-blue-600 dark:text-blue-400" />
             Scheduling Settings
           </h3>
-          
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                 Total Time Slots
               </label>
               <select
                 name="total_slots"
                 value={formData.total_slots}
                 onChange={handleInputChange}
-                className="w-full p-2 border rounded-lg border-gray-300"
+                className="w-full p-2 border rounded-lg border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100"
               >
                 <option value="2">2 slots</option>
                 <option value="3">3 slots</option>
@@ -583,14 +546,14 @@ export function ListingForm() {
               </select>
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                 Max Orders per Slot
               </label>
               <select
                 name="max_orders_per_slot"
                 value={formData.max_orders_per_slot}
                 onChange={handleInputChange}
-                className="w-full p-2 border rounded-lg border-gray-300"
+                className="w-full p-2 border rounded-lg border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100"
               >
                 <option value="1">1 order</option>
                 <option value="2">2 orders</option>
@@ -600,14 +563,14 @@ export function ListingForm() {
               </select>
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                 Buffer Time (minutes)
               </label>
               <select
                 name="slot_buffer_minutes"
                 value={formData.slot_buffer_minutes}
                 onChange={handleInputChange}
-                className="w-full p-2 border rounded-lg border-gray-300"
+                className="w-full p-2 border rounded-lg border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100"
               >
                 <option value="5">5 minutes</option>
                 <option value="10">10 minutes</option>
@@ -620,10 +583,10 @@ export function ListingForm() {
 
         {/* Image Upload */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
             Upload Image
           </label>
-          <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center">
+          <div className="border-2 border-dashed border-gray-300 dark:border-gray-700 rounded-lg p-8 text-center bg-white dark:bg-gray-900 transition-colors duration-300">
             <input
               type="file"
               accept="image/*"
@@ -649,38 +612,38 @@ export function ListingForm() {
                       setImagePreview(null);
                       setFormData(prev => ({ ...prev, image: null }));
                     }}
-                    className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600"
+                    className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 dark:hover:bg-red-700"
                   >
                     ×
                   </button>
                 </div>
               ) : (
                 <>
-                  <ImageIcon className="w-8 h-8 text-gray-400 mb-2" />
-                  <p className="text-sm text-gray-600">
+                  <ImageIcon className="w-8 h-8 text-gray-400 dark:text-gray-500 mb-2" />
+                  <p className="text-sm text-gray-600 dark:text-gray-300">
                     Drag and drop an image, or{' '}
-                    <span className="text-blue-600">browse</span>
+                    <span className="text-blue-600 dark:text-blue-400">browse</span>
                   </p>
-                  <p className="text-xs text-gray-500 mt-1">PNG, JPG up to 5MB</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">PNG, JPG up to 5MB</p>
                 </>
               )}
             </label>
-            {errors.image && <p className="text-red-500 text-sm mt-1">{errors.image}</p>}
+            {errors.image && <p className="text-red-500 dark:text-red-400 text-sm mt-1">{errors.image}</p>}
           </div>
         </div>
 
         {/* Action Buttons */}
-        <div className="flex justify-end space-x-4 pt-4 border-t">
+        <div className="flex justify-end space-x-4 pt-4 border-t border-gray-200 dark:border-gray-700">
           <button
             type="button"
-            className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50"
+            className="px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg text-gray-700 dark:text-gray-100 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
           >
             Save Draft
           </button>
           <button
             type="submit"
             disabled={isSubmitting}
-            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50"
+            className="px-4 py-2 bg-blue-600 dark:bg-blue-700 text-white rounded-lg hover:bg-blue-700 dark:hover:bg-blue-800 disabled:opacity-50"
           >
             {isSubmitting ? 'Creating...' : 'Publish Listing'}
           </button>

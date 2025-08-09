@@ -16,9 +16,9 @@ import {
 
 export function BusinessFeedback({ data }) {
   return (
-    <div className="bg-white rounded-lg shadow-md">
+    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md transition-colors duration-300">
       <div className="p-6">
-        <h3 className="text-lg font-medium text-gray-900 mb-4">
+        <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">
           Business Feedback Overview
         </h3>
 
@@ -55,7 +55,7 @@ export function BusinessFeedback({ data }) {
         </div>
 
         <div className="mb-6">
-          <h4 className="text-sm font-medium text-gray-700 mb-2">
+          <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
             Rating Distribution
           </h4>
           <div className="h-48">
@@ -70,20 +70,20 @@ export function BusinessFeedback({ data }) {
           </div>
         </div>
 
-        <div className="bg-blue-50 rounded-lg p-4">
-          <h4 className="text-sm font-medium text-blue-900 mb-2">
+        <div className="bg-blue-50 dark:bg-blue-900 rounded-lg p-4">
+          <h4 className="text-sm font-medium text-blue-900 dark:text-blue-200 mb-2">
             Recent Highlight
           </h4>
-          <p className="text-sm text-blue-800 mb-2">
+          <p className="text-sm text-blue-800 dark:text-blue-100 mb-2">
             "{data.recentHighlight.comment}"
           </p>
-          <p className="text-xs text-blue-600">
+          <p className="text-xs text-blue-600 dark:text-blue-300">
             - {data.recentHighlight.author} •{' '}
             {new Date(data.recentHighlight.date).toLocaleDateString()}
           </p>
         </div>
 
-        <p className="text-xs text-gray-500 mt-4 text-center">
+        <p className="text-xs text-gray-500 dark:text-gray-400 mt-4 text-center">
           This rating appears on your public profile
         </p>
       </div>
