@@ -277,7 +277,7 @@ function OrdersAndFeedback() {
   if (loading) {
     return (
       <div className="w-full flex min-h-screen">
-        <SideBar onNavigate={() => {}} currentPage="dashboard" />
+        <SideBar onNavigate={() => {}} currentPage="orders-and-feedback" />
         <div className="flex-1 p-6 overflow-auto">
           <div className="flex items-center justify-center h-64">
             <div className="text-center">
