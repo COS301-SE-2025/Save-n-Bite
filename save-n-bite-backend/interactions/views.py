@@ -21,7 +21,8 @@ from .serializers import (
     OrderSerializer,
     CheckoutResponseSerializer,
     UpdateInteractionStatusSerializer,
-    InteractionSerializer
+    InteractionSerializer,
+    CancelDonationSerializer
 )
 from django.db import transaction as db_transaction
 import uuid
@@ -789,6 +790,57 @@ class RejectDonationView(APIView):
         # Optionally: trigger notification to NGO
 
         return Response({'message': 'Donation request rejected'}, status=200)
+    
+class CancelDonationView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, interaction_id):
+        serializer = CancelDonationSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        reason = serializer.validated_data.get('reason', '')
+
+        interaction = get_object_or_404(
+            Interaction,
+            id=interaction_id,
+            user=request.user,
+            interaction_type=Interaction.InteractionType.DONATION
+        )
+
+        if interaction.status != Interaction.Status.PENDING:
+            return Response(
+                {'error': 'You can only cancel a pending donation request.'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        with db_transaction.atomic():
+            # Restore stock
+            for item in interaction.items.all():
+                food_listing = item.food_listing
+                food_listing.quantity_available += item.quantity
+                food_listing.save()
+
+            # Cancel interaction
+            interaction.status = Interaction.Status.CANCELLED
+            interaction.save()
+
+            # Cancel linked order if it exists
+            if hasattr(interaction, 'order'):
+                interaction.order.status = Order.Status.CANCELLED
+                interaction.order.save()
+
+            # Record status change
+            InteractionStatusHistory.objects.create(
+                interaction=interaction,
+                old_status=Interaction.Status.PENDING,
+                new_status=Interaction.Status.CANCELLED,
+                changed_by=request.user,
+                notes=reason
+            )
+
+        return Response(
+            {'message': 'Donation request cancelled successfully and stock restored'},
+            status=status.HTTP_200_OK
+        )
 
 class BusinessHistoryView(APIView):
     permission_classes = [IsAuthenticated]
