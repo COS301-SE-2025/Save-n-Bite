@@ -4,84 +4,24 @@ import NotificationList from '../../components/SystemAdmin/Notifications/Notific
 import NotificationComposer from '../../components/SystemAdmin/Notifications/NotificationComposer'
 import ConfirmationModal from '../../components/SystemAdmin/UI/ConfirmationModal'
 import { toast } from 'sonner'
+import AdminAPI from '../../services/AdminAPI'
+import { apiClient } from '../../services/FoodAPI.js'
 
-// Enhanced mock data with scheduled notifications
-const mockNotifications = [
-  {
-    id: 'NOT001',
-    title: 'System Maintenance',
-    message:
-      'The platform will be undergoing scheduled maintenance tonight from 2 AM to 4 AM UTC. Some features may be unavailable during this time.',
-    audience: 'All Users',
-    sender: 'System',
-    date: '2023-08-10',
-    status: 'Sent',
-    readCount: 1245,
-    type: 'maintenance',
-    scheduledFor: null,
-  },
-  {
-    id: 'NOT002',
-    title: 'New Feature: Bulk Listings',
-    message:
-      'Food providers can now create multiple listings at once using our new bulk upload feature. Check it out in your dashboard!',
-    audience: 'Providers',
-    sender: 'Admin',
-    date: '2023-08-08',
-    status: 'Sent',
-    readCount: 387,
-    type: 'update',
-    scheduledFor: null,
-  },
-  {
-    id: 'NOT003',
-    title: 'Weekly Platform Update',
-    message:
-      'This week we launched improved search functionality and faster loading times. Check out the latest updates in your app!',
-    audience: 'All Users',
-    sender: 'Admin',
-    date: '2023-08-15',
-    status: 'Scheduled',
-    readCount: 0,
-    type: 'update',
-    scheduledFor: '2023-08-15T10:00:00',
-  },
-  {
-    id: 'NOT004',
-    title: 'Holiday Hours Reminder',
-    message:
-      'Many of our providers will have modified hours during the upcoming holiday. Please check listing details before planning pickups.',
-    audience: 'Consumers',
-    sender: 'Admin',
-    date: '2023-08-20',
-    status: 'Scheduled',
-    readCount: 0,
-    type: 'announcement',
-    scheduledFor: '2023-08-20T08:00:00',
-  },
-  {
-    id: 'NOT005',
-    title: 'Verification Process Update',
-    message:
-      "We've streamlined our verification process for NGOs. You can now get verified faster with fewer document requirements.",
-    audience: 'NGOs',
-    sender: 'Admin',
-    date: '2023-08-05',
-    status: 'Sent',
-    readCount: 98,
-    type: 'announcement',
-    scheduledFor: null,
-  },
-]
 
 const Notifications = () => {
-  const [notifications, setNotifications] = useState(mockNotifications)
+  const [notifications, setNotifications] = useState([])
+  const [loading, setLoading] = useState(true)  
+  const [error, setError] = useState(null)
+  //existing UI state
   const [search, setSearch] = useState('')
   const [audienceFilter, setAudienceFilter] = useState('All')
   const [statusFilter, setStatusFilter] = useState('All')
   const [showComposer, setShowComposer] = useState(false)
   const [showConfirmModal, setShowConfirmModal] = useState(false)
   const [notificationToDelete, setNotificationToDelete] = useState(null)
+
+  //set up authentication and such
+
 
   // Enhanced filtering with status
   const filteredNotifications = notifications.filter((notification) => {

@@ -56,7 +56,7 @@ const Reviews = () => {
         // STEP 4B: Store the real data
         setReviews(response.data.reviews)
         setError(null)
-        console.log('reviews loaded successfully:', response.data.reviews.length, 'revies')
+        //console.log('reviews loaded successfully:', response.data.reviews.length, 'reviews')
       } else {
         console.error('reviews API error:', response.error)
         setError(response.error)
