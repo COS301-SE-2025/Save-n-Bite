@@ -198,6 +198,37 @@ const reviewsAPI = {
     }
   },
 
+  
+  // 🆕 NEW: Get comprehensive provider reviews (includes provider info, summary stats, and reviews)
+  getProviderReviews: async (providerId, params = {}) => {
+    try {
+      const searchParams = new URLSearchParams();
+      
+      // Add query parameters if provided
+      if (params.page) searchParams.append('page', params.page);
+      if (params.page_size) searchParams.append('page_size', params.page_size);
+      if (params.rating) searchParams.append('rating', params.rating);
+      if (params.sort) searchParams.append('sort', params.sort);
+      
+      const queryString = searchParams.toString();
+      const url = `/api/reviews/provider/${providerId}/${queryString ? `?${queryString}` : ''}`;
+      
+      const response = await apiClient.get(url);
+      
+      return {
+        success: true,
+        data: response.data,
+        error: null
+      };
+    } catch (error) {
+      return {
+        success: false,
+        data: null,
+        error: error.response?.data?.message || error.message || 'Failed to fetch provider reviews'
+      };
+    }
+  },
+
   // Get review for specific interaction (business owners only)
   getInteractionReview: async (interactionId) => {
     try {

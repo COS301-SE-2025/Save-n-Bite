@@ -2,9 +2,11 @@ import React, { useEffect, useState, useRef } from 'react';
 import { ChevronLeft, ChevronRight, Star } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import FoodProvidersAPI from '../../services/FoodProvidersAPI';
+import reviewsAPI from '../../services/reviewsAPI';
 
 const FoodProviderCarousel = () => {
   const [foodProviders, setFoodProviders] = useState([]);
+  const [providersWithReviews, setProvidersWithReviews] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [isPaused, setIsPaused] = useState(false);
@@ -24,6 +26,9 @@ const FoodProviderCarousel = () => {
         if (result.success && result.data?.providers) {
           setFoodProviders(result.data.providers);
           setError(null);
+          
+          // Load review data for each provider
+          await loadProvidersReviewData(result.data.providers);
         } else {
           setError(result.error || 'Failed to load providers');
         }
@@ -38,8 +43,68 @@ const FoodProviderCarousel = () => {
     loadProviders();
   }, []);
 
+  // Load review data for all providers
+  const loadProvidersReviewData = async (providersList) => {
+    try {
+      // Create an array to store providers with their review data
+      const providersWithReviewData = await Promise.all(
+        providersList.map(async (provider) => {
+          try {
+            // Fetch review data for this provider
+            const reviewResult = await reviewsAPI.getProviderReviews(provider.id, {
+              page: 1,
+              page_size: 1 // We only need summary data, not individual reviews
+            });
+            
+            if (reviewResult.success && reviewResult.data?.results) {
+              const { reviews_summary } = reviewResult.data.results;
+              
+              return {
+                ...provider,
+                rating: reviews_summary?.average_rating || 0, // Use 0 if no reviews
+                total_reviews: reviews_summary?.total_reviews || 0,
+                rating_distribution: reviews_summary?.rating_distribution || null
+              };
+            } else {
+              // If API fails, use 0 rating (no reviews)
+              return {
+                ...provider,
+                rating: 0,
+                total_reviews: 0,
+                rating_distribution: null
+              };
+            }
+          } catch (error) {
+            console.error(`Error loading reviews for provider ${provider.business_name}:`, error);
+            // Return provider with 0 rating on error
+            return {
+              ...provider,
+              rating: 0,
+              total_reviews: 0,
+              rating_distribution: null
+            };
+          }
+        })
+      );
+      
+      setProvidersWithReviews(providersWithReviewData);
+    } catch (error) {
+      console.error('Error loading providers review data:', error);
+      // Fallback to original providers with 0 ratings if review loading fails
+      setProvidersWithReviews(providersList.map(provider => ({
+        ...provider,
+        rating: 0,
+        total_reviews: 0,
+        rating_distribution: null
+      })));
+    }
+  };
+
+  // Use providers with review data if available, otherwise use original providers
+  const displayProviders = providersWithReviews.length > 0 ? providersWithReviews : foodProviders;
+
   // Duplicate the array for seamless infinite scroll (only if we have providers)
-  const duplicatedProviders = foodProviders.length > 0 ? [...foodProviders, ...foodProviders] : [];
+  const duplicatedProviders = displayProviders.length > 0 ? [...displayProviders, ...displayProviders] : [];
 
   // Helper function to get fallback image
   const getProviderImage = (provider) => {
@@ -49,10 +114,12 @@ const FoodProviderCarousel = () => {
     return 'https://images.unsplash.com/photo-1555507036-ab794f575c5f?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80';
   };
 
-  // Helper function to get rating (fallback to 4.5 if not available)
+  // Helper function to get rating (show 0 if no reviews, format to 1 decimal if there are reviews)
   const getProviderRating = (provider) => {
-    // You might have a rating field in the future, for now use a default
-    return provider.rating || 4.5;
+    if (provider.total_reviews === 0) {
+      return '0';
+    }
+    return typeof provider.rating === 'number' ? provider.rating.toFixed(1) : '0';
   };
 
   // Helper function to format business tags as specialties
@@ -195,7 +262,7 @@ const FoodProviderCarousel = () => {
   }
 
   // Empty state
-  if (foodProviders.length === 0) {
+  if (displayProviders.length === 0) {
     return (
       <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-6">
         <div className="flex items-center justify-between mb-6">
@@ -261,8 +328,17 @@ const FoodProviderCarousel = () => {
                       e.target.src = 'https://images.unsplash.com/photo-1555507036-ab794f575c5f?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80';
                     }}
                   />
-                  <div className="absolute top-2 right-2 bg-white/90 backdrop-blur-sm rounded-full px-2 py-1 flex items-center">
-                    <Star size={12} className="text-yellow-400 fill-current mr-1" />
+                  <div className={`absolute top-2 right-2 bg-white/90 backdrop-blur-sm rounded-full px-2 py-1 flex items-center ${
+                    provider.total_reviews === 0 ? 'opacity-50' : ''
+                  }`}>
+                    <Star 
+                      size={12} 
+                      className={`mr-1 ${
+                        provider.total_reviews === 0 
+                          ? 'text-gray-400' 
+                          : 'text-yellow-400 fill-current'
+                      }`} 
+                    />
                     <span className="text-xs font-semibold text-gray-700">
                       {getProviderRating(provider)}
                     </span>
@@ -276,6 +352,11 @@ const FoodProviderCarousel = () => {
                   
                   <p className="text-xs text-gray-600 mb-2">
                     {provider.active_listings_count || 0} listings available
+                    {provider.total_reviews > 0 && (
+                      <span className="ml-2">
+                        • {provider.total_reviews} review{provider.total_reviews !== 1 ? 's' : ''}
+                      </span>
+                    )}
                   </p>
                   
                   <div className="flex flex-wrap gap-1 mb-3">
@@ -298,7 +379,7 @@ const FoodProviderCarousel = () => {
                     to={`/provider/${provider.id}`}
                     className="block w-full py-2 text-sm font-medium text-emerald-600 border border-emerald-600 rounded-md hover:bg-emerald-600 hover:text-white transition-colors duration-200 text-center"
                   >
-                    View Options
+                    View Provider
                   </Link>
                 </div>
               </div>
@@ -313,7 +394,7 @@ const FoodProviderCarousel = () => {
             transform: translateX(0);
           }
           100% {
-            transform: translateX(-${foodProviders.length * 280}px);
+            transform: translateX(-${displayProviders.length * 280}px);
           }
         }
         

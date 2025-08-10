@@ -1,6 +1,5 @@
-
 import React, { useState, useEffect } from 'react';
-import { useNavigate,Link } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import SearchBar from '../../components/auth/SearchBar';
 import FilterSidebar from '../../components/auth/FilterSidebar';
 import FoodListingsGrid from '../../components/auth/FoodListingsGrid';
@@ -14,7 +13,7 @@ const FoodListings = () => {
   const [showFilters, setShowFilters] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [filters, setFilters] = useState({
-    priceRange: [0, 20],
+    priceRange: [0, 1000],
     expiration: 'all',
     type: 'all',
     provider: 'all'
@@ -22,111 +21,224 @@ const FoodListings = () => {
   const [selectedSort, setSelectedSort] = useState('');
   
   // State for API data
-  const [allFoodListings, setAllFoodListings] = useState([]); // Store all listings
-  const [filteredListings, setFilteredListings] = useState([]); // Store filtered listings
+  const [allFoodListings, setAllFoodListings] = useState([]);
+  const [filteredListings, setFilteredListings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [uniqueProviders, setUniqueProviders] = useState([]);
   const [totalCount, setTotalCount] = useState(0);
-  const [userType, setUserType] = useState('customer'); // Track user type locally
+  const [userType, setUserType] = useState('customer');
 
-  // Helper functions to check user type
-  const isCustomer = () => userType === 'customer';
-  const isNGO = () => userType === 'ngo';
-
-const filterListingsByUserType = (listings) => {
-  if (!Array.isArray(listings)) return [];
-  
-  const currentUserType = foodListingsAPI.getUserType();
-  
-  switch(currentUserType) {
-    case 'customer':
-      return listings.filter(listing => 
-        listing?.type?.toLowerCase() === 'discount' // Case-insensitive check
-      );
-    case 'ngo':
-      return listings.filter(listing => {
-        const type = listing?.type?.toLowerCase();
-        return type === 'discount' || type === 'donation';
-      });
-    default:
-      return listings;
-  }
-};
-
-  // Fetch food listings
- const fetchFoodListings = async () => {
-  setLoading(true);
-  try {
-    const response = await foodListingsAPI.getFoodListings(filters, searchQuery, selectedSort);
+  // Helper function to determine what listings a user can see
+  const filterListingsByUserType = (listings) => {
+    if (!Array.isArray(listings)) return [];
     
-    if (response.success) {
-      console.log('Raw API data:', response.data); // Debug log
-      
-      const allListings = response.data.listings || [];
-      setAllFoodListings(allListings);
-      
-      // Immediately filter after setting all listings
-      const currentUserType = foodListingsAPI.getUserType();
-      setUserType(currentUserType);
-      const filtered = filterListingsByUserType(allListings);
-      
-      setFilteredListings(filtered);
-      setTotalCount(filtered.length);
-    }
-  } catch (error) {
-    console.error('Fetch error details:', error);
-    setError(error.message);
-  } finally {
-    setLoading(false);
-  }
-};
-
-  const fetchUniqueProviders = async () => {
-    try {
-      const response = await foodListingsAPI.getUniqueProviders();
-      if (response.success) {
-        setUniqueProviders(response.data);
-      }
-    } catch (err) {
-      console.error('Error fetching providers:', err);
+    const currentUserType = foodListingsAPI.getUserType();
+    
+    switch(currentUserType) {
+      case 'customer':
+        // Customers only see discounted items (items with a price > 0)
+        return listings.filter(listing => {
+          const price = listing.discountedPrice || listing.discountPrice || 0;
+          return price > 0 && listing.type?.toLowerCase() === 'discount';
+        });
+      case 'ngo':
+        // NGOs see both discounted items and donations
+        return listings.filter(listing => {
+          const type = listing.type?.toLowerCase();
+          return type === 'discount' || type === 'donation';
+        });
+      default:
+        // Default to showing all listings
+        return listings;
     }
   };
 
+  // Apply filters to the listings
+  const applyFilters = (listings) => {
+    let filtered = [...listings];
+    
+    // Apply search filter
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase();
+      filtered = filtered.filter(item =>
+        (item.title && item.title.toLowerCase().includes(query)) ||
+        (item.name && item.name.toLowerCase().includes(query)) ||
+        (item.description && item.description.toLowerCase().includes(query)) ||
+        (item.provider_name && item.provider_name.toLowerCase().includes(query))
+      );
+    }
+    
+    // Apply type filter
+    if (filters.type !== 'all') {
+      filtered = filtered.filter(item => {
+        const itemType = item.type?.toLowerCase();
+        const filterType = filters.type.toLowerCase();
+        return itemType === filterType;
+      });
+    }
+    
+    // Apply price range filter
+    filtered = filtered.filter(item => {
+      const itemPrice = item.discountedPrice || item.discountPrice || 0;
+      return itemPrice >= filters.priceRange[0] && itemPrice <= filters.priceRange[1];
+    });
+    
+    // Apply provider filter
+    if (filters.provider !== 'all') {
+      filtered = filtered.filter(item => 
+        item.provider_name === filters.provider ||
+        item.provider?.business_name === filters.provider
+      );
+    }
+    
+    // Apply expiration filter
+    if (filters.expiration !== 'all') {
+      const now = new Date();
+      const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      const tomorrow = new Date(today.getTime() + 24 * 60 * 60 * 1000);
+      const nextWeek = new Date(today.getTime() + 7 * 24 * 60 * 60 * 1000);
+      
+      filtered = filtered.filter(item => {
+        if (!item.expiryDate) return filters.expiration === 'later';
+        
+        const expiryDate = new Date(item.expiryDate);
+        
+        switch(filters.expiration) {
+          case 'today':
+            return expiryDate >= today && expiryDate < tomorrow;
+          case 'tomorrow':
+            return expiryDate >= tomorrow && expiryDate < new Date(tomorrow.getTime() + 24 * 60 * 60 * 1000);
+          case 'this_week':
+            return expiryDate >= today && expiryDate <= nextWeek;
+          case 'later':
+            return expiryDate > nextWeek;
+          default:
+            return true;
+        }
+      });
+    }
+    
+    // Apply sorting
+    if (selectedSort) {
+      filtered.sort((a, b) => {
+        switch(selectedSort) {
+          case 'price-low':
+            return (a.discountedPrice || a.discountPrice || 0) - (b.discountedPrice || b.discountPrice || 0);
+          case 'price-high':
+            return (b.discountedPrice || b.discountPrice || 0) - (a.discountedPrice || a.discountPrice || 0);
+          case 'name':
+            return (a.title || a.name || '').localeCompare(b.title || b.name || '');
+          case 'expiry':
+            return new Date(a.expiryDate || 0) - new Date(b.expiryDate || 0);
+          case 'newest':
+            return new Date(b.createdAt || 0) - new Date(a.createdAt || 0);
+          default:
+            return 0;
+        }
+      });
+    }
+    
+    return filtered;
+  };
+
+  // Get available type filter options based on user type
+  const getAvailableTypeFilters = () => {
+    const currentUserType = foodListingsAPI.getUserType();
+    
+    const options = [
+      { value: 'all', label: 'All Items' }
+    ];
+    
+    // Add discount option for all users
+    if (allFoodListings.some(item => item.type?.toLowerCase() === 'discount')) {
+      options.push({ value: 'discount', label: 'Discounted Items' });
+    }
+    
+    // Add donation option only for NGOs
+    if (currentUserType === 'ngo' && allFoodListings.some(item => item.type?.toLowerCase() === 'donation')) {
+      options.push({ value: 'donation', label: 'Donations' });
+    }
+    
+    return options;
+  };
+
+  // Get unique providers for filter dropdown
+  const getUniqueProviders = (listings) => {
+    const providerSet = new Set();
+    listings.forEach(listing => {
+      const providerName = listing.provider_name || listing.provider?.business_name;
+      if (providerName && providerName !== 'Unknown Provider') {
+        providerSet.add(providerName);
+      }
+    });
+    
+    return Array.from(providerSet).map(name => ({
+      value: name,
+      label: name
+    }));
+  };
+
+  // Fetch food listings from API
+  const fetchFoodListings = async () => {
+    setLoading(true);
+    try {
+      const response = await foodListingsAPI.getFoodListings();
+      
+      if (response.success) {
+        console.log('Raw API data:', response.data);
+        
+        const allListings = response.data.listings || [];
+        setAllFoodListings(allListings);
+        
+        // Filter by user type first
+        const currentUserType = foodListingsAPI.getUserType();
+        setUserType(currentUserType);
+        const userTypeFiltered = filterListingsByUserType(allListings);
+        
+        // Then apply other filters
+        const finalFiltered = applyFilters(userTypeFiltered);
+        
+        setFilteredListings(finalFiltered);
+        setTotalCount(finalFiltered.length);
+        
+        // Update unique providers
+        setUniqueProviders(getUniqueProviders(allListings));
+        
+        setError(null);
+      } else {
+        setError(response.error || 'Failed to fetch listings');
+      }
+    } catch (error) {
+      console.error('Fetch error details:', error);
+      setError(error.message || 'An unexpected error occurred');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Handle filter changes
+  useEffect(() => {
+    if (allFoodListings.length > 0) {
+      const currentUserType = foodListingsAPI.getUserType();
+      setUserType(currentUserType);
+      
+      const userTypeFiltered = filterListingsByUserType(allFoodListings);
+      const finalFiltered = applyFilters(userTypeFiltered);
+      
+      setFilteredListings(finalFiltered);
+      setTotalCount(finalFiltered.length);
+    }
+  }, [filters, searchQuery, selectedSort, allFoodListings]);
+
+  // Initial load
   useEffect(() => {
     fetchFoodListings();
-    fetchUniqueProviders();
-  }, []); 
-
-  useEffect(() => {
-    const debounceTimer = setTimeout(() => {
-      fetchFoodListings();
-    }, 300); 
-
-    return () => clearTimeout(debounceTimer);
-  }, [filters, searchQuery, selectedSort]);
-
-  useEffect(() => {
-  console.log('All listings:', allFoodListings);
-  console.log('Filtered listings:', filteredListings);
-  console.log('User type:', userType);
-}, [allFoodListings, filteredListings, userType]);
-
- useEffect(() => {
-  if (allFoodListings.length > 0) {
-    // Always get fresh user type in case it changed
-    const currentUserType = foodListingsAPI.getUserType();
-    setUserType(currentUserType);
-    
-    const userFilteredListings = filterListingsByUserType(allFoodListings);
-    setFilteredListings(userFilteredListings);
-    setTotalCount(userFilteredListings.length);
-  }
-}, [allFoodListings]); // Removed userType dependency - we get it fresh each time
+  }, []);
 
   const handleResetFilters = () => {
     setFilters({
-      priceRange: [0, 20],
+      priceRange: [0, 1000],
       expiration: 'all',
       type: 'all',
       provider: 'all'
@@ -135,22 +247,7 @@ const filterListingsByUserType = (listings) => {
     setSelectedSort('');
   };
 
-const getAvailableTypeFilters = () => {
-  const currentUserType = foodListingsAPI.getUserType();
-  
-  const options = [
-    { value: 'all', label: 'All Items' },
-    { value: 'Discount', label: 'Discounted' } 
-  ];
-  
-  if (currentUserType === 'ngo') {
-    options.push({ value: 'Donation', label: 'Donations' });
-  }
-  
-  return options;
-};
-
-
+  // Loading state
   if (loading && filteredListings.length === 0) {
     return (
       <div className="bg-gray-50 min-h-screen w-full">
@@ -208,6 +305,12 @@ const getAvailableTypeFilters = () => {
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-4 mb-4">
               <div className="text-xs sm:text-sm text-gray-600">
                 {loading ? 'Loading...' : `${totalCount} listings found`}
+                {userType === 'customer' && (
+                  <span className="text-gray-500 ml-2">(Discounted items only)</span>
+                )}
+                {userType === 'ngo' && (
+                  <span className="text-gray-500 ml-2">(Discounted items & donations)</span>
+                )}
               </div>
               <Sort 
                 selectedSort={selectedSort} 
@@ -225,6 +328,27 @@ const getAvailableTypeFilters = () => {
             )}
             
             <FoodListingsGrid listings={filteredListings} />
+            
+            {/* Empty state */}
+            {!loading && filteredListings.length === 0 && (
+              <div className="text-center py-12 bg-white rounded-lg shadow-sm">
+                <p className="text-xl text-gray-600 mb-4">No listings found</p>
+                <p className="text-gray-500 mb-4">
+                  {allFoodListings.length === 0 
+                    ? 'No food listings available at the moment.'
+                    : 'Try adjusting your search or filters to see more results.'
+                  }
+                </p>
+                {filteredListings.length === 0 && allFoodListings.length > 0 && (
+                  <button 
+                    onClick={handleResetFilters}
+                    className="px-4 py-2 bg-emerald-600 text-white rounded-md hover:bg-emerald-700 transition-colors"
+                  >
+                    Clear All Filters
+                  </button>
+                )}
+              </div>
+            )}
           </div>
         </div>
         
@@ -235,14 +359,14 @@ const getAvailableTypeFilters = () => {
           </div>
         )}
 
-          <div className="text-center mt-6">
-                    <Link
-                      to="/providers"
-                      className="inline-flex items-center px-5 py-2.5 bg-emerald-600 text-white font-medium rounded-md hover:bg-emerald-700 transition-colors"
-                    >
-                      View All Food Providers
-                    </Link>
-            </div>
+        <div className="text-center mt-6">
+          <Link
+            to="/providers"
+            className="inline-flex items-center px-5 py-2.5 bg-emerald-600 text-white font-medium rounded-md hover:bg-emerald-700 transition-colors"
+          >
+            View All Food Providers
+          </Link>
+        </div>
       </div>
     </div>
   );
