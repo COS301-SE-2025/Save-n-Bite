@@ -414,3 +414,83 @@ Error codes:
 5. **Data Retention**: Reviews store a snapshot of interaction data for historical accuracy even if the original interaction is modified.
 
 6. **Validation**: At least one review field (rating, general comment, food review, or business review) must be provided for a review to be valid.
+
+I added this: http://127.0.0.1:8000/api/reviews/provider/f58861f3-3688-40cf-9612-6b91c7df4e32/ where that is the business id and it returns:
+{
+    "count": 3,
+    "next": null,
+    "previous": null,
+    "results": {
+        "provider_info": {
+            "profile_id": 4,
+            "user_id": "f58861f3-3688-40cf-9612-6b91c7df4e32",
+            "business_name": "Chisom's Sweets",
+            "business_email": "chisom@gmail.com"
+        },
+        "reviews_summary": {
+            "total_reviews": 3,
+            "average_rating": 4.67,
+            "rating_distribution": {
+                "1_star": 0,
+                "2_star": 0,
+                "3_star": 0,
+                "4_star": 1,
+                "5_star": 2
+            }
+        },
+        "reviews": [
+            {
+                "id": "4ada2754-c679-4937-a236-7ff2754f9d67",
+                "general_rating": 5,
+                "general_comment": "Good borgir",
+                "food_review": "Good borgir",
+                "business_review": "",
+                "created_at": "2025-07-22T15:25:05.027942Z",
+                "time_ago": "17 days ago",
+                "reviewer_info": "Gabe R.",
+                "interaction_summary": {
+                    "type": "Purchase",
+                    "total_amount": 120.0,
+                    "items_count": 1
+                }
+            },
+            {
+                "id": "556624ea-5e59-49c8-9f41-0de4676fdf14",
+                "general_rating": 4,
+                "general_comment": "i mean its alright",
+                "food_review": "i mean its alright",
+                "business_review": "",
+                "created_at": "2025-07-21T16:59:40.797084Z",
+                "time_ago": "18 days ago",
+                "reviewer_info": "Joshua K.",
+                "interaction_summary": {
+                    "type": "Purchase",
+                    "total_amount": 75.0,
+                    "items_count": 1
+                }
+            },
+            {
+                "id": "7be68b7e-85ca-4ce9-be29-a78981333bda",
+                "general_rating": 5,
+                "general_comment": "YUMMMMMMJM",
+                "food_review": "YUMMMMMMJM",
+                "business_review": "",
+                "created_at": "2025-07-21T16:11:55.974060Z",
+                "time_ago": "18 days ago",
+                "reviewer_info": "Marco G.",
+                "interaction_summary": {
+                    "type": "Purchase",
+                    "total_amount": 30.0,
+                    "items_count": 1
+                }
+            }
+        ],
+        "pagination_info": {
+            "total_count": 3,
+            "current_page": 1,
+            "page_size": 10
+        }
+    }
+}
+
+🫡
