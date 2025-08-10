@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { SearchIcon, StarIcon, MapPinIcon } from 'lucide-react'
 import CustomerNavBar from '../../components/auth/CustomerNavBar'
 import FoodProvidersAPI, { getApiBaseUrl } from '../../services/FoodProvidersAPI'
+import reviewsAPI from '../../services/reviewsAPI'
 
 const FoodProvidersPage = () => {
   const [providers, setProviders] = useState([])
@@ -10,6 +11,7 @@ const FoodProvidersPage = () => {
   const [error, setError] = useState(null)
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedCategory, setSelectedCategory] = useState('All')
+  const [providersWithReviews, setProvidersWithReviews] = useState([])
 
   // Load providers from API
   useEffect(() => {
@@ -21,6 +23,9 @@ const FoodProvidersPage = () => {
         if (result.success && result.data?.providers) {
           setProviders(result.data.providers)
           setError(null)
+          
+          // Load review data for each provider
+          await loadProvidersReviewData(result.data.providers)
         } else {
           setError(result.error || 'Failed to load providers')
         }
@@ -34,6 +39,63 @@ const FoodProvidersPage = () => {
 
     loadProviders()
   }, [])
+
+  // Load review data for all providers
+  const loadProvidersReviewData = async (providersList) => {
+    try {
+      // Create an array to store providers with their review data
+      const providersWithReviewData = await Promise.all(
+        providersList.map(async (provider) => {
+          try {
+            // Fetch review data for this provider
+            const reviewResult = await reviewsAPI.getProviderReviews(provider.id, {
+              page: 1,
+              page_size: 1 // We only need summary data, not individual reviews
+            })
+            
+            if (reviewResult.success && reviewResult.data?.results) {
+              const { reviews_summary } = reviewResult.data.results
+              
+              return {
+                ...provider,
+                rating: reviews_summary?.average_rating || provider.rating || 0,
+                total_reviews: reviews_summary?.total_reviews || 0,
+                rating_distribution: reviews_summary?.rating_distribution || null
+              }
+            } else {
+              // If API fails, keep original provider data with fallback rating
+              return {
+                ...provider,
+                rating: provider.rating || 0,
+                total_reviews: 0,
+                rating_distribution: null
+              }
+            }
+          } catch (error) {
+            console.error(`Error loading reviews for provider ${provider.business_name}:`, error)
+            // Return provider with fallback data on error
+            return {
+              ...provider,
+              rating: provider.rating || 0,
+              total_reviews: 0,
+              rating_distribution: null
+            }
+          }
+        })
+      )
+      
+      setProvidersWithReviews(providersWithReviewData)
+    } catch (error) {
+      console.error('Error loading providers review data:', error)
+      // Fallback to original providers if review loading fails
+      setProvidersWithReviews(providersList.map(provider => ({
+        ...provider,
+        rating: provider.rating || 0,
+        total_reviews: 0,
+        rating_distribution: null
+      })))
+    }
+  }
 
   // Helper function to get provider image with full URL
   const getProviderImage = (provider) => {
@@ -57,18 +119,21 @@ const FoodProvidersPage = () => {
     return 'https://images.unsplash.com/photo-1555507036-ab794f575c5f?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80'
   }
 
+  // Use providers with review data for filtering if available, otherwise use original providers
+  const dataToFilter = providersWithReviews.length > 0 ? providersWithReviews : providers
+
   // Extract all unique categories from business_tags
   const allCategories = [
     'All',
     ...new Set(
-      providers
+      dataToFilter
         .filter(provider => provider.business_tags && provider.business_tags.length > 0)
         .flatMap(provider => provider.business_tags)
     )
   ]
 
   // Filter providers based on search and category
-  const filteredProviders = providers.filter((provider) => {
+  const filteredProviders = dataToFilter.filter((provider) => {
     const matchesSearch =
       provider.business_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       (provider.business_description && provider.business_description.toLowerCase().includes(searchQuery.toLowerCase())) ||
@@ -82,6 +147,25 @@ const FoodProvidersPage = () => {
     
     return matchesSearch && matchesCategory
   })
+
+  // Helper function to format rating display
+  const formatRating = (rating) => {
+    if (typeof rating === 'number') {
+      return rating.toFixed(1)
+    }
+    return '0' // Fallback
+  }
+
+  // Helper function to get review count text
+  const getReviewCountText = (totalReviews) => {
+    if (totalReviews === 0) {
+      return 'No reviews yet'
+    } else if (totalReviews === 1) {
+      return '1 review'
+    } else {
+      return `${totalReviews} reviews`
+    }
+  }
 
   // Loading state
   if (loading) {
@@ -220,11 +304,11 @@ const FoodProvidersPage = () => {
                 <div className="flex items-center mt-2">
                   <div className="flex items-center text-amber-500">
                     <StarIcon size={16} className="fill-current" />
-                    <span className="ml-1 text-sm">{provider.rating || 4.5}</span>
+                    <span className="ml-1 text-sm">{formatRating(provider.rating)}</span>
                   </div>
                   <span className="mx-2 text-gray-300">•</span>
                   <span className="text-sm text-gray-600">
-                    {provider.follower_count || 0} followers
+                    {getReviewCountText(provider.total_reviews)}
                   </span>
                 </div>
                 
