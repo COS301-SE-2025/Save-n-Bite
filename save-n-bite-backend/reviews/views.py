@@ -18,7 +18,8 @@ from .serializers import (
     ReviewCreateSerializer, ReviewUpdateSerializer, ReviewDisplaySerializer,
     BusinessReviewListSerializer, BusinessReviewStatsSerializer,
     ReviewModerationSerializer, ReviewModerationActionSerializer,
-    InteractionReviewStatusSerializer, ReviewSummarySerializer
+    InteractionReviewStatusSerializer, ReviewSummarySerializer,
+    PublicReviewDisplaySerializer
 )
 from interactions.models import Interaction
 from authentication.models import FoodProviderProfile
@@ -620,3 +621,140 @@ def get_review_analytics_admin(request):
             'top_businesses_by_reviews': list(top_businesses)
         }
     }, status=status.HTTP_200_OK)
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_reviews_by_provider(request, food_provider_id):
+    """
+    Get all public reviews for a specific food provider
+    Accessible by all authenticated user types
+    
+    Supports both provider profile ID (integer) and user UUID
+    """
+    try:
+        # Try to determine if the ID is a UUID (UserID) or integer (profile ID)
+        try:
+            # Try to parse as UUID first (UserID)
+            import uuid
+            uuid.UUID(str(food_provider_id))
+            # If successful, it's a UserID - get provider by user relationship
+            provider_profile = FoodProviderProfile.objects.select_related('user').get(
+                user__UserID=food_provider_id
+            )
+        except (ValueError, TypeError):
+            # If UUID parsing fails, treat as integer profile ID
+            try:
+                provider_id = int(food_provider_id)
+                provider_profile = FoodProviderProfile.objects.select_related('user').get(
+                    id=provider_id
+                )
+            except (ValueError, TypeError):
+                raise FoodProviderProfile.DoesNotExist()
+                
+    except FoodProviderProfile.DoesNotExist:
+        # Debug logging
+        logger.error(f"Provider not found with ID: {food_provider_id}")
+        
+        # Show available providers for debugging
+        available_profiles = list(FoodProviderProfile.objects.values('id', 'business_name', 'user__UserID'))
+        logger.error(f"Available providers: {available_profiles}")
+        
+        return Response({
+            'error': {
+                'code': 'PROVIDER_NOT_FOUND',
+                'message': f'Food provider with ID {food_provider_id} not found',
+                'debug_info': {
+                    'searched_id': str(food_provider_id),
+                    'available_providers': available_profiles[:5],  # Show first 5 for debugging
+                    'note': 'ID can be either provider profile ID (integer) or user UUID'
+                }
+            }
+        }, status=status.HTTP_404_NOT_FOUND)
+    except Exception as e:
+        logger.error(f"Unexpected error when fetching provider: {str(e)}")
+        return Response({
+            'error': {
+                'code': 'UNEXPECTED_ERROR',
+                'message': f'Error retrieving provider: {str(e)}'
+            }
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    
+    # Get all active and flagged reviews for this provider (public visibility)
+    reviews = Review.objects.filter(
+        business=provider_profile,
+        status__in=['active', 'flagged']  # Only publicly visible reviews
+    ).select_related('reviewer', 'interaction').order_by('-created_at')
+    
+    # Apply optional filters
+    rating_filter = request.GET.get('rating')
+    if rating_filter:
+        try:
+            rating = int(rating_filter)
+            if 1 <= rating <= 5:
+                reviews = reviews.filter(general_rating=rating)
+        except (ValueError, TypeError):
+            pass
+    
+    date_filter = request.GET.get('date_range')
+    if date_filter:
+        if date_filter == 'week':
+            week_ago = timezone.now() - timedelta(days=7)
+            reviews = reviews.filter(created_at__gte=week_ago)
+        elif date_filter == 'month':
+            month_ago = timezone.now() - timedelta(days=30)
+            reviews = reviews.filter(created_at__gte=month_ago)
+        elif date_filter == '3months':
+            three_months_ago = timezone.now() - timedelta(days=90)
+            reviews = reviews.filter(created_at__gte=three_months_ago)
+    
+    # Sort by rating if requested
+    sort_by = request.GET.get('sort_by')
+    if sort_by == 'rating_high':
+        reviews = reviews.order_by('-general_rating', '-created_at')
+    elif sort_by == 'rating_low':
+        reviews = reviews.order_by('general_rating', '-created_at')
+    elif sort_by == 'newest':
+        reviews = reviews.order_by('-created_at')
+    elif sort_by == 'oldest':
+        reviews = reviews.order_by('created_at')
+    
+    # Paginate results
+    paginator = ReviewPagination()
+    paginated_reviews = paginator.paginate_queryset(reviews, request)
+    
+    # Use public serializer that doesn't expose sensitive information
+    serializer = PublicReviewDisplaySerializer(paginated_reviews, many=True, context={'request': request})
+    
+    # Get basic business stats (without sensitive business info)
+    total_reviews_count = reviews.count()
+    average_rating = reviews.filter(
+        general_rating__isnull=False
+    ).aggregate(Avg('general_rating'))['general_rating__avg'] or 0
+    
+    # Rating distribution
+    rating_distribution = {}
+    for i in range(1, 6):
+        rating_distribution[f'{i}_star'] = reviews.filter(general_rating=i).count()
+    
+    # Response data
+    response_data = {
+        'provider_info': {
+            'profile_id': provider_profile.id,  # The actual FoodProviderProfile ID (integer)
+            'user_id': str(provider_profile.user.UserID),  # The User UUID
+            'business_name': provider_profile.business_name,
+            'business_email': provider_profile.business_email,
+        },
+        'reviews_summary': {
+            'total_reviews': total_reviews_count,
+            'average_rating': round(average_rating, 2) if average_rating else 0,
+            'rating_distribution': rating_distribution
+        },
+        'reviews': serializer.data,
+        'pagination_info': {
+            'total_count': total_reviews_count,
+            'current_page': request.GET.get('page', 1),
+            'page_size': paginator.page_size
+        }
+    }
+    
+    return paginator.get_paginated_response(response_data)
