@@ -1,4 +1,4 @@
-from rest_framework import status
+from rest_framework import status, generics,permissions
 from rest_framework.decorators import api_view, permission_classes
 from django.shortcuts import render
 from rest_framework.views import APIView
@@ -20,7 +20,8 @@ from .serializers import (
     CheckoutSerializer,
     OrderSerializer,
     CheckoutResponseSerializer,
-    UpdateInteractionStatusSerializer  # Already imported here
+    UpdateInteractionStatusSerializer,
+    InteractionSerializer
 )
 from django.db import transaction as db_transaction
 import uuid
@@ -258,7 +259,7 @@ class UpdateInteractionStatusView(APIView):
                 
                 # Create status history record
                 InteractionStatusHistory.objects.create(
-                    Interaction=interaction,
+                    interaction=interaction,
                     old_status=old_status,
                     new_status=new_status,
                     changed_by=request.user,
@@ -902,7 +903,8 @@ class CompleteCheckoutView(APIView):
         serializer = CheckoutSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         
-        session_id = request.data.get('session_id')
+        session_id = serializer.validated_data['session_id']  
+        
         checkout_session = get_object_or_404(
             CheckoutSession,
             id=session_id,
@@ -943,7 +945,7 @@ class CompleteCheckoutView(APIView):
         # 2. Create Interaction Items (quantity already reserved)
         for cart_item in cart.items.all():
             InteractionItem.objects.create(
-                interaction=interaction,
+                Interaction=interaction,
                 food_listing=cart_item.food_listing,
                 name=cart_item.food_listing.name,
                 quantity=cart_item.quantity,
@@ -999,3 +1001,17 @@ class CompleteCheckoutView(APIView):
                 {'error': 'Payment processing failed'},
                 status=status.HTTP_400_BAD_REQUEST
             )
+        
+
+class NGODonationRequestsView(generics.ListAPIView):
+    serializer_class = InteractionSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        user = self.request.user
+        if not hasattr(user, 'ngo_profile'):
+            return Interaction.objects.none()  # No access if not an NGO
+
+        return Interaction.objects.filter(
+            user=user
+        ).order_by('-created_at')
