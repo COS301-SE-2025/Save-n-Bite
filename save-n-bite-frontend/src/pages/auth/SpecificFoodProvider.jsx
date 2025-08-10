@@ -21,68 +21,6 @@ import FoodProvidersAPI, { getApiBaseUrl } from '../../services/FoodProvidersAPI
 import BusinessAPI from '../../services/BusinessAPI'
 import reviewsAPI from '../../services/reviewsAPI'
 
-const providerReviews = [
-  {
-    id: 1,
-    userName: 'Emily Johnson',
-    userImage:
-      'https://images.unsplash.com/photo-1494790108377-be9c29b29330?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=150&q=80',
-    rating: 5,
-    date: 'June 12, 2023',
-    comment:
-      'The pastries from Sweet Bakery are absolutely delicious! I picked up their discounted assortment box and everything was still incredibly fresh. Great way to enjoy quality baked goods while reducing food waste.',
-    helpful: 24,
-    isHelpful: true,
-  },
-  {
-    id: 2,
-    userName: 'Michael Chen',
-    userImage:
-      'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=150&q=80',
-    rating: 4,
-    date: 'May 30, 2023',
-    comment:
-      "I'm a regular customer at Sweet Bakery. Their sourdough bread is exceptional, and being able to get it at a discount at the end of the day is a bonus. The staff is always friendly and helpful.",
-    helpful: 15,
-    isHelpful: false,
-  },
-  {
-    id: 3,
-    userName: 'Sophia Rodriguez',
-    userImage:
-      'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=150&q=80',
-    rating: 5,
-    date: 'June 5, 2023',
-    comment:
-      "The chocolate croissants are to die for! I appreciate that Sweet Bakery is committed to reducing food waste. The app makes it easy to see what's available and when to pick it up.",
-    helpful: 18,
-    isHelpful: false,
-  },
-  {
-    id: 4,
-    userName: 'David Kim',
-    userImage:
-      'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=150&q=80',
-    rating: 3,
-    date: 'May 22, 2023',
-    comment:
-      "Good selection of baked goods. Sometimes items sell out quickly, so you have to be fast. The quality is generally good, though I've had a few items that weren't as fresh as expected.",
-    helpful: 7,
-    isHelpful: false,
-  },
-  {
-    id: 5,
-    userName: 'Olivia Martinez',
-    userImage:
-      'https://images.unsplash.com/photo-1614644147798-f8c0fc9da7f6?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=150&q=80',
-    rating: 5,
-    date: 'June 8, 2023',
-    comment:
-      'I love that I can support a local business while also helping reduce food waste. The artisan bagels are amazing and such a great deal through this app. Highly recommend!',
-    helpful: 22,
-    isHelpful: true,
-  },
-]
 
 const SpecificFoodProvider = () => {
   const { id } = useParams()
@@ -92,8 +30,9 @@ const SpecificFoodProvider = () => {
   const [isFollowing, setIsFollowing] = useState(false)
   const [followLoading, setFollowLoading] = useState(false)
   const [isReviewsModalOpen, setIsReviewsModalOpen] = useState(false)
-  const [reviews, setReviews] = useState(providerReviews) // Start with mock data
+  const [reviews, setReviews] = useState([])
   const [reviewsLoading, setReviewsLoading] = useState(false)
+  const [reviewsData, setReviewsData] = useState(null) // Store full reviews response
   
   // Reused state from FoodListings
   const [showFilters, setShowFilters] = useState(false)
@@ -126,7 +65,7 @@ const SpecificFoodProvider = () => {
           setIsFollowing(result.data.provider.is_following || false)
           setProviderError(null)
           
-          // Load reviews for this provider
+          // Load reviews for this provider using the provider ID
           loadProviderReviews(result.data.provider.id)
         } else {
           setProviderError(result.error || 'Provider not found')
@@ -142,29 +81,76 @@ const SpecificFoodProvider = () => {
     loadProvider()
   }, [id])
 
-  // Load reviews for the provider
+  // Transform API review data to match the expected format for the modal
+  const transformReviewData = (apiReview) => {
+    // Generate a placeholder image based on reviewer name
+    const getPlaceholderImage = (name) => {
+      const avatarUrls = [
+        'https://images.unsplash.com/photo-1494790108377-be9c29b29330?ixlib=rb-4.0.3&auto=format&fit=crop&w=150&q=80',
+        'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-4.0.3&auto=format&fit=crop&w=150&q=80',
+        'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixlib=rb-4.0.3&auto=format&fit=crop&w=150&q=80',
+        'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?ixlib=rb-4.0.3&auto=format&fit=crop&w=150&q=80',
+        'https://images.unsplash.com/photo-1614644147798-f8c0fc9da7f6?ixlib=rb-4.0.3&auto=format&fit=crop&w=150&q=80'
+      ]
+      // Use the first letter of name to determine which avatar to use
+      const index = name ? name.charCodeAt(0) % avatarUrls.length : 0
+      return avatarUrls[index]
+    }
+
+    return {
+      id: apiReview.id,
+      userName: apiReview.reviewer_info,
+      userImage: getPlaceholderImage(apiReview.reviewer_info),
+      rating: apiReview.general_rating,
+      date: apiReview.time_ago,
+      comment: apiReview.general_comment || apiReview.food_review || 'No comment provided',
+      helpful: Math.floor(Math.random() * 30), // Random helpful count since API doesn't provide this
+      isHelpful: Math.random() > 0.5 // Random helpful status
+    }
+  }
+
+  // Load reviews for the provider using the new API
   const loadProviderReviews = async (providerId) => {
     try {
       setReviewsLoading(true)
-      const result = await reviewsAPI.getPublicBusinessReviews(providerId, {
+      const result = await reviewsAPI.getProviderReviews(providerId, {
         page: 1,
-        page_size: 10,
+        page_size: 20, // Get more reviews
         sort: 'newest'
       })
       
-      if (result.success && result.data?.reviews) {
-        setReviews(result.data.reviews)
+      if (result.success && result.data?.results) {
+        const { results } = result.data
+        setReviewsData(results) // Store full response data
+        
+        if (results.reviews && results.reviews.length > 0) {
+          // Transform API reviews to match expected format
+          const transformedReviews = results.reviews.map(transformReviewData)
+          setReviews(transformedReviews)
+          
+          // Update provider rating with real data
+          if (results.reviews_summary?.average_rating) {
+            setProvider(prev => ({
+              ...prev,
+              rating: results.reviews_summary.average_rating
+            }))
+          }
+        } else {
+          console.log('No reviews found, using fallback data')
+          setReviews(fallbackReviews)
+        }
       } else {
-        console.log('No reviews found or API not ready, using mock data')
-        // Keep using mock data if API is not ready
+        console.log('Failed to fetch reviews or API not ready, using fallback data')
+        setReviews(fallbackReviews)
       }
     } catch (error) {
       console.error('Error loading reviews:', error)
-      // Keep using mock data on error
+      setReviews(fallbackReviews) // Use fallback on error
     } finally {
       setReviewsLoading(false)
     }
   }
+
   const getProviderImage = (provider, type = 'banner') => {
     if (!provider) return 'https://images.unsplash.com/photo-1555507036-ab794f575c5f?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80'
     
@@ -401,6 +387,21 @@ const SpecificFoodProvider = () => {
     setIsReviewsModalOpen(false)
   }
 
+  // Get rating and review count from API data or fallback
+  const getProviderRating = () => {
+    if (reviewsData?.reviews_summary?.average_rating) {
+      return reviewsData.reviews_summary.average_rating
+    }
+    return provider?.rating || 0
+  }
+
+  const getTotalReviews = () => {
+    if (reviewsData?.reviews_summary?.total_reviews) {
+      return reviewsData.reviews_summary.total_reviews
+    }
+    return reviews.length
+  }
+
   // Initialize data on component mount
   useEffect(() => {
     if (provider) {
@@ -521,13 +522,13 @@ const SpecificFoodProvider = () => {
                     <div className="flex items-center mt-1 text-sm">
                       <div className="flex items-center text-amber-500">
                         <StarIcon size={16} className="fill-current" />
-                        <span className="ml-1">{provider.rating || 4.5}</span>
+                        <span className="ml-1">{getProviderRating().toFixed(1)}</span>
                       </div>
                       <button 
                         className="ml-2 text-emerald-600 hover:text-emerald-700 text-sm font-medium"
                         onClick={openReviewsModal}
                       >
-                        Read Reviews
+                        Read Reviews ({getTotalReviews()})
                       </button>
                     </div>
                   </div>
@@ -677,10 +678,11 @@ const SpecificFoodProvider = () => {
         isOpen={isReviewsModalOpen}
         onClose={closeReviewsModal}
         providerName={provider.business_name}
-        providerRating={provider.rating || 4.5}
-        totalReviews={reviews.length}
+        providerRating={getProviderRating()}
+        totalReviews={getTotalReviews()}
         reviews={reviews}
         loading={reviewsLoading}
+        reviewsData={reviewsData} // Pass additional review data if the modal can use it
       />
     </div>
   )

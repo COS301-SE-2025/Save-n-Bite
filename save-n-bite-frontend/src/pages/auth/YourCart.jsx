@@ -330,9 +330,9 @@ const handleCheckout = async (paymentDetails) => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 w-full py-8">
+      <div className="min-h-screen bg-gray-50 w-full">
         <CustomerNavBar />
-        <div className="max-w-4xl mx-auto px-4">
+        <div className="max-w-4xl mx-auto px-4 pt-4">
           <div className="flex items-center justify-center min-h-[60vh]">
             <div className="text-center">
               <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-600 mx-auto mb-4"></div>
@@ -346,9 +346,9 @@ const handleCheckout = async (paymentDetails) => {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-gray-50 w-full py-8">
+      <div className="min-h-screen bg-gray-50 w-full">
         <CustomerNavBar />
-        <div className="max-w-4xl mx-auto px-4">
+        <div className="max-w-4xl mx-auto px-4 pt-4">
           <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-md">
             <p className="font-medium">Error loading cart</p>
             <p className="text-sm">{error}</p>
@@ -368,9 +368,9 @@ const handleCheckout = async (paymentDetails) => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 w-full py-4 sm:py-8">
+    <div className="min-h-screen bg-gray-50 w-full">
       <CustomerNavBar />
-      <div className="container-responsive max-w-4xl mx-auto">
+      <div className="container-responsive max-w-4xl mx-auto px-4 pt-4 sm:pt-6">
         <h1 className="text-xl sm:text-2xl font-bold mb-6 sm:mb-8 text-gray-800">Your Cart</h1>
         
         {cartItems.length === 0 ? (
