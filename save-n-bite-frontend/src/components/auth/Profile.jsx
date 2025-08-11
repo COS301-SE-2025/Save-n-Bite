@@ -109,9 +109,10 @@ const ProfilePage = () => {
   const followedBusinesses = profileData.followed_businesses;
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 w-full transition-colors duration-200">
-      <CustomerNavBar />
-      <div className="max-w-4xl mx-auto px-4 py-8">
+<div className="min-h-screen bg-gray-50 dark:bg-gray-900 w-full transition-colors duration-200">
+  <CustomerNavBar />
+  <div className="max-w-4xl mx-auto px-4 py-8">
+
         <h1 className="text-2xl font-bold text-gray-800 dark:text-white mb-6">
           My Profile
         </h1>

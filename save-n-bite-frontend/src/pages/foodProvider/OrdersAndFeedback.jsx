@@ -282,7 +282,7 @@ function OrdersAndFeedback() {
   if (loading) {
     return (
       <div className="w-full flex min-h-screen">
-        {/* Desktop Sidebar */}
+  {/* Desktop Sidebar */}
         <div className="hidden md:flex">
           <SideBar onNavigate={() => {}} currentPage="orders-and-feedback" />
         </div>
@@ -299,7 +299,7 @@ function OrdersAndFeedback() {
   }
 
   return (
-    <div className="w-full flex min-h-screen">
+ <div className="w-full flex min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
       {/* Desktop Sidebar - Hidden on mobile */}
       <div className="hidden md:flex">
         <SideBar onNavigate={() => {}} currentPage="orders-and-feedback" />
@@ -346,88 +346,88 @@ function OrdersAndFeedback() {
           </button>
         </div>
 
-        <div className="p-4 sm:p-6">
-          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 sm:gap-0 mb-6">
-            <div>
-              <h1 className="hidden md:block text-xl sm:text-2xl font-bold">Orders & Feedback</h1>
-              <h2 className="md:hidden text-xl font-bold">Orders & Reviews</h2>
-              <p className="text-gray-600 mt-1 text-sm sm:text-base">
-                Manage your orders and customer reviews
-                {currentProvider && (
-                  <span className="block sm:inline sm:ml-2 text-blue-600 font-medium">
-                    • {currentProvider}
-                  </span>
-                )}
-              </p>
-            </div>
-            <Button
-              variant="primary"
-              onClick={() => {
-                loadOrdersData();
-                loadReviewsData();
-              }}
-              className="hidden md:flex items-center gap-2"
-            >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-              </svg>
-              Refresh
-            </Button>
-          </div>
+<div className="p-4 sm:p-6">
+  <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 sm:gap-0 mb-6">
+    <div>
+      <h1 className="hidden md:block text-xl sm:text-2xl font-bold">Orders & Feedback</h1>
+      <h2 className="md:hidden text-xl font-bold">Orders & Reviews</h2>
+      <p className="text-gray-600 dark:text-gray-300 mt-1 text-sm sm:text-base">
+        Manage your orders and customer reviews
+        {currentProvider && (
+          <span className="block sm:inline sm:ml-2 text-blue-600 dark:text-blue-400 font-medium">
+            • {currentProvider}
+          </span>
+        )}
+      </p>
+    </div>
+    <Button
+      variant="primary"
+      onClick={() => {
+        loadOrdersData();
+        loadReviewsData();
+      }}
+      className="hidden md:flex items-center gap-2"
+    >
+      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+      </svg>
+      Refresh
+    </Button>
+  </div>
 
-          {/* Enhanced Business Feedback Summary Bar - Mobile Responsive */}
-          <div className="bg-white rounded-lg shadow-md p-4 sm:p-6 mb-4 sm:mb-6 border-l-4 border-blue-500">
-            {/* Mobile: 2x3 grid, Desktop: 1x5 grid */}
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 sm:gap-6">
-              <div className="text-center">
-                <div className="flex items-center justify-center space-x-1 mb-2">
-                  <span className="text-xl sm:text-3xl font-bold text-gray-900">
-                    {realFeedbackData.averageRating}
-                  </span>
-                  <Star className="h-4 w-4 sm:h-6 sm:w-6 text-yellow-400 fill-current" />
-                </div>
-                <p className="text-xs sm:text-sm text-gray-500 font-medium">Average Rating</p>
-                <p className="text-xs text-gray-400">
-                  {realFeedbackData.totalReviews} reviews
-                </p>
-              </div>
-              
-              <div className="text-center">
-                <div className="flex items-center justify-center space-x-1 mb-2">
-                  <MessageCircle className="h-4 w-4 sm:h-6 sm:w-6 text-blue-500" />
-                  <span className="text-xl sm:text-3xl font-bold text-gray-900">
-                    {realFeedbackData.totalReviews}
-                  </span>
-                </div>
-                <p className="text-xs sm:text-sm text-gray-500 font-medium">Total Reviews</p>
-                <p className="text-xs text-gray-400">
-                  {realFeedbackData.reviewsThisMonth} this month
-                </p>
-              </div>
-              
-              <div className="text-center sm:col-span-1 col-span-2 sm:col-span-1">
-                <div className="flex items-center justify-center space-x-1 mb-2">
-                  <svg
-                    className="h-4 w-4 sm:h-6 sm:w-6 text-purple-500"
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
-                    />
-                  </svg>
-                  <span className="text-xl sm:text-3xl font-bold text-gray-900">
-                    {realFeedbackData.followers}
-                  </span>
-                </div>
-                <p className="text-xs sm:text-sm text-gray-500 font-medium">Satisfied Customers</p>
-                <p className="text-xs text-gray-400">
-                  {ordersWithReviews.length} left reviews
+  {/* Enhanced Business Feedback Summary Bar - Mobile Responsive */}
+  <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-4 sm:p-6 mb-4 sm:mb-6 border-l-4 border-blue-500 transition-colors duration-300">
+    {/* Mobile: 2x3 grid, Desktop: 1x5 grid */}
+    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 sm:gap-6">
+      <div className="text-center">
+        <div className="flex items-center justify-center space-x-1 mb-2">
+          <span className="text-xl sm:text-3xl font-bold text-gray-900 dark:text-gray-100">
+            {realFeedbackData.averageRating}
+          </span>
+          <Star className="h-4 w-4 sm:h-6 sm:w-6 text-yellow-400 fill-current" />
+        </div>
+        <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-300 font-medium">Average Rating</p>
+        <p className="text-xs text-gray-400 dark:text-gray-400">
+          {realFeedbackData.totalReviews} reviews
+        </p>
+      </div>
+      
+      <div className="text-center">
+        <div className="flex items-center justify-center space-x-1 mb-2">
+          <MessageCircle className="h-4 w-4 sm:h-6 sm:w-6 text-blue-500" />
+          <span className="text-xl sm:text-3xl font-bold text-gray-900 dark:text-gray-100">
+            {realFeedbackData.totalReviews}
+          </span>
+        </div>
+        <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-300 font-medium">Total Reviews</p>
+        <p className="text-xs text-gray-400 dark:text-gray-400">
+          {realFeedbackData.reviewsThisMonth} this month
+        </p>
+      </div>
+      
+      <div className="text-center sm:col-span-1 col-span-2 sm:col-span-1">
+        <div className="flex items-center justify-center space-x-1 mb-2">
+          <svg
+            className="h-4 w-4 sm:h-6 sm:w-6 text-purple-500"
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
+            />
+          </svg>
+          <span className="text-xl sm:text-3xl font-bold text-gray-900 dark:text-gray-100">
+            {realFeedbackData.followers}
+          </span>
+        </div>
+        <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-300 font-medium">Satisfied Customers</p>
+        <p className="text-xs text-gray-400 dark:text-gray-400">
+          {ordersWithReviews.length} left reviews
                 </p>
               </div>
               
@@ -473,39 +473,39 @@ function OrdersAndFeedback() {
             </div>
           </div>
 
-          {/* Search and Filters - Mobile Responsive */}
-          <div className="mb-4 sm:mb-6">
-            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4 mb-4">
-              <div className="relative flex-1">
-                <SearchIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4 sm:h-5 sm:w-5" />
-                <input
-                  type="text"
-                  placeholder="Search orders, customers..."
-                  className="pl-9 sm:pl-10 pr-4 py-2 border border-gray-300 rounded-md w-full focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm sm:text-base"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                />
-              </div>
-              <div className="flex gap-2 sm:gap-4">
-                <select
-                  className="flex-1 sm:flex-none px-3 py-2 border border-gray-300 rounded-md bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm sm:text-base"
-                  value={filterType}
-                  onChange={(e) => setFilterType(e.target.value)}
-                >
-                  <option value="all">All Types</option>
-                  <option value="sale">Sales</option>
-                  <option value="donation">Donations</option>
-                </select>
-                <select
-                  className="flex-1 sm:flex-none px-3 py-2 border border-gray-300 rounded-md bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm sm:text-base"
-                  value={filterStatus}
-                  onChange={(e) => setFilterStatus(e.target.value)}
-                >
-                  <option value="all">All Status</option>
-                  <option value="confirmed">Confirmed</option>
-                  <option value="completed">Completed</option>
-                  <option value="never collected">Never Collected</option>
-                </select>
+{/* Search and Filters - Mobile Responsive */}
+<div className="mb-4 sm:mb-6">
+  <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4 mb-4">
+    <div className="relative flex-1">
+      <SearchIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-gray-400 h-4 w-4 sm:h-5 sm:w-5" />
+      <input
+        type="text"
+        placeholder="Search orders, customers..."
+        className="pl-9 sm:pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md w-full focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm sm:text-base bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500"
+        value={searchQuery}
+        onChange={(e) => setSearchQuery(e.target.value)}
+      />
+    </div>
+    <div className="flex gap-2 sm:gap-4">
+      <select
+        className="flex-1 sm:flex-none px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm sm:text-base"
+        value={filterType}
+        onChange={(e) => setFilterType(e.target.value)}
+      >
+        <option value="all">All Types</option>
+        <option value="sale">Sales</option>
+        <option value="donation">Donations</option>
+      </select>
+      <select
+        className="flex-1 sm:flex-none px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm sm:text-base"
+        value={filterStatus}
+        onChange={(e) => setFilterStatus(e.target.value)}
+      >
+        <option value="all">All Status</option>
+        <option value="confirmed">Confirmed</option>
+        <option value="completed">Completed</option>
+        <option value="never collected">Never Collected</option>
+      </select>
                 <Button
                   variant="secondary"
                   icon={<CalendarIcon className="h-4 w-4" />}
@@ -515,165 +515,169 @@ function OrdersAndFeedback() {
                 </Button>
               </div>
             </div>
-          </div>
+</div>
 
-          <div className="bg-white rounded-lg shadow-md overflow-hidden">
-            {filteredOrders.length === 0 ? (
-              <div className="p-6 sm:p-8 text-center">
-                <div className="text-gray-400 mb-4">
-                  <svg className="w-12 h-12 sm:w-16 sm:h-16 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                  </svg>
-                </div>
-                <h3 className="text-base sm:text-lg font-medium text-gray-900 mb-2">No orders found</h3>
-                <p className="text-sm sm:text-base text-gray-600 mb-4">
-                  {searchQuery || filterType !== 'all' || filterStatus !== 'all' 
-                    ? 'Try adjusting your search or filters'
-                    : 'You haven\'t received any orders yet. Orders will appear here once customers place them.'
-                  }
-                </p>
-                {(searchQuery || filterType !== 'all' || filterStatus !== 'all') && (
-                  <Button
-                    variant="secondary"
-                    onClick={() => {
-                      setSearchQuery('');
-                      setFilterType('all');
-                      setFilterStatus('all');
-                    }}
+<div className="bg-white dark:bg-gray-900 rounded-lg shadow-md overflow-hidden">
+  {filteredOrders.length === 0 ? (
+    <div className="p-6 sm:p-8 text-center">
+      <div className="text-gray-400 mb-4">
+        <svg className="w-12 h-12 sm:w-16 sm:h-16 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+        </svg>
+      </div>
+      <h3 className="text-base sm:text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">No orders found</h3>
+      <p className="text-sm sm:text-base text-gray-600 dark:text-gray-300 mb-4">
+        {searchQuery || filterType !== 'all' || filterStatus !== 'all' 
+          ? 'Try adjusting your search or filters'
+          : 'You haven\'t received any orders yet. Orders will appear here once customers place them.'
+        }
+      </p>
+      {(searchQuery || filterType !== 'all' || filterStatus !== 'all') && (
+        <Button
+          variant="secondary"
+          onClick={() => {
+            setSearchQuery('');
+            setFilterType('all');
+            setFilterStatus('all');
+          }}
+        >
+          Clear Filters
+        </Button>
+      )}
+    </div>
+  ) : (
+    <>
+      {/* Desktop Table View - Hidden on mobile */}
+      <div className="hidden md:block overflow-x-auto">
+        <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+          <thead className="bg-gray-50 dark:bg-gray-800">
+            <tr>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                Order
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                Customer
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                Type
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                Amount
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                Status
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                Review
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                Actions
+              </th>
+            </tr>
+          </thead>
+          <tbody className="bg-white dark:bg-gray-900 divide-y divide-gray-200 dark:divide-gray-700">
+            {filteredOrders.map((order) => (
+              <tr key={order.id} className="hover:bg-gray-50 dark:hover:bg-gray-800">
+                <td className="px-6 py-4 whitespace-nowrap">
+                  <div className="flex items-center">
+                    <img className="h-10 w-10 rounded-full object-cover" src={order.imageUrl} alt="" />
+                    <div className="ml-4">
+                      <div className="text-sm font-medium text-gray-900 dark:text-gray-100">{order.orderId}</div>
+                      <div className="text-sm text-gray-500 dark:text-gray-300">{order.itemName}</div>
+                    </div>
+                  </div>
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap">
+                  <div className="text-sm font-medium text-gray-900 dark:text-gray-100">{order.customerName}</div>
+                  <div className="text-sm text-gray-500 dark:text-gray-300">{order.timeAgo}</div>
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap">
+                  <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                    order.type === 'Sale' 
+                      ? 'bg-green-100 text-green-800' 
+                      : 'bg-blue-100 text-blue-800'
+                  }`}>
+                    {order.type}
+                  </span>
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
+                  {order.amount}
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap">
+                  <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">
+                    {order.status}
+                  </span>
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap">
+                  <div className="flex items-center space-x-2">
+                    {order.hasReview && (
+                      <>
+                        <button
+                          onClick={() => handleQuickReviewView(order)}
+                          className="inline-flex items-center px-2 py-1 bg-blue-100 text-blue-800 rounded-full hover:bg-blue-200 transition-colors cursor-pointer"
+                          title="Click to view review quickly"
+                        >
+                          <MessageCircle size={14} className="mr-1" />
+                          <span className="text-xs">{order.reviewIcon}</span>
+                        </button>
+                        <div className="flex items-center">
+                          {[...Array(order.rating)].map((_, i) => (
+                            <Star key={i} size={12} className="text-yellow-400 fill-current" />
+                          ))}
+                          {[...Array(5 - order.rating)].map((_, i) => (
+                            <Star key={i} size={12} className="text-gray-300 dark:text-gray-500" />
+                          ))}
+                        </div>
+                      </>
+                    )}
+                  </div>
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                  <button
+                    onClick={() => handleViewReviews(order)}
+                    className="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-200 mr-2"
                   >
-                    Clear Filters
-                  </Button>
-                )}
-              </div>
-            ) : (
-              <>
-                {/* Desktop Table View - Hidden on mobile */}
-                <div className="hidden md:block overflow-x-auto">
-                  <table className="min-w-full divide-y divide-gray-200">
-                    <thead className="bg-gray-50">
-                      <tr>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Order
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Customer
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Type
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Amount
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Status
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Review
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Actions
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody className="bg-white divide-y divide-gray-200">
-                      {filteredOrders.map((order) => (
-                        <tr key={order.id} className="hover:bg-gray-50">
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            <div className="flex items-center">
-                              <img className="h-10 w-10 rounded-full object-cover" src={order.imageUrl} alt="" />
-                              <div className="ml-4">
-                                <div className="text-sm font-medium text-gray-900">{order.orderId}</div>
-                                <div className="text-sm text-gray-500">{order.itemName}</div>
-                              </div>
-                            </div>
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            <div className="text-sm font-medium text-gray-900">{order.customerName}</div>
-                            <div className="text-sm text-gray-500">{order.timeAgo}</div>
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                              order.type === 'Sale' 
-                                ? 'bg-green-100 text-green-800' 
-                                : 'bg-blue-100 text-blue-800'
-                            }`}>
-                              {order.type}
-                            </span>
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                            {order.amount}
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">
-                              {order.status}
-                            </span>
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            <div className="flex items-center space-x-2">
-                              {order.hasReview && (
-                                <>
-                                  <button
-                                    onClick={() => handleQuickReviewView(order)}
-                                    className="inline-flex items-center px-2 py-1 bg-blue-100 text-blue-800 rounded-full hover:bg-blue-200 transition-colors cursor-pointer"
-                                    title="Click to view review quickly"
-                                  >
-                                    <MessageCircle size={14} className="mr-1" />
-                                    <span className="text-xs">{order.reviewIcon}</span>
-                                  </button>
-                                  <div className="flex items-center">
-                                    {[...Array(order.rating)].map((_, i) => (
-                                      <Star key={i} size={12} className="text-yellow-400 fill-current" />
-                                    ))}
-                                    {[...Array(5 - order.rating)].map((_, i) => (
-                                      <Star key={i} size={12} className="text-gray-300" />
-                                    ))}
-                                  </div>
-                                </>
-                              )}
-                            </div>
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                            <button
-                              onClick={() => handleViewReviews(order)}
-                              className="text-blue-600 hover:text-blue-900 mr-2"
-                            >
-                              View Details
-                            </button>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
+                    View Details
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
 
-                {/* Mobile Card View - Visible only on mobile */}
-                <div className="md:hidden divide-y divide-gray-200">
-                  {filteredOrders.map((order) => (
-                    <div key={order.id} className="p-4">
-                      {/* Header with image and order info */}
-                      <div className="flex items-start mb-3">
-                        <img className="h-12 w-12 rounded-lg object-cover mr-3 flex-shrink-0" src={order.imageUrl} alt="" />
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center justify-between mb-1">
-                            <h3 className="text-sm font-medium text-gray-900 truncate">{order.orderId}</h3>
-                            <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                              order.type === 'Sale' 
-                                ? 'bg-green-100 text-green-800' 
-                                : 'bg-blue-100 text-blue-800'
-                            }`}>
-                              {order.type}
-                            </span>
+      {/* Mobile Card View - Visible only on mobile */}
+      <div className="md:hidden divide-y divide-gray-200 dark:divide-gray-700">
+        {filteredOrders.map((order) => (
+          <div key={order.id} className="p-4">
+            {/* Header with image and order info */}
+            <div className="flex items-start mb-3">
+              <img className="h-12 w-12 rounded-lg object-cover mr-3 flex-shrink-0" src={order.imageUrl} alt="" />
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center justify-between mb-1">
+                  <h3 className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">{order.orderId}</h3>
+                  <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                    order.type === 'Sale' 
+                      ? 'bg-green-100 text-green-800' 
+                      : 'bg-blue-100 text-blue-800'
+                  }`}>
+                    {order.type}
+                  </span>
+
                           </div>
                           <p className="text-xs text-gray-500 truncate">{order.itemName}</p>
                         </div>
-                      </div>
+</div>
 
-                      {/* Customer and details */}
-                      <div className="grid grid-cols-2 gap-3 mb-3">
-                        <div>
-                          <span className="text-xs text-gray-500 block">Customer</span>
-                          <span className="text-sm font-medium text-gray-900 block truncate">{order.customerName}</span>
-                          <span className="text-xs text-gray-500">{order.timeAgo}</span>
+{/* Customer and details */}
+<div className="grid grid-cols-2 gap-3 mb-3">
+  <div>
+    <span className="text-xs text-gray-500 dark:text-gray-300 block">Customer</span>
+    <span className="text-sm font-medium text-gray-900 dark:text-gray-100 block truncate">{order.customerName}</span>
+    <span className="text-xs text-gray-500 dark:text-gray-300">{order.timeAgo}</span>
+  </div>
+</div>
+
                         </div>
                         <div>
                           <span className="text-xs text-gray-500 block">Amount</span>
@@ -717,7 +721,8 @@ function OrdersAndFeedback() {
                         )}
                         <button
                           onClick={() => handleViewReviews(order)}
-                          className="flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-gray-100 text-gray-700 text-sm rounded-md hover:bg-gray-200"
+className="flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 text-sm rounded-md hover:bg-gray-200 dark:hover:bg-gray-700"
+
                         >
                           <Eye size={16} />
                           Details
@@ -725,70 +730,73 @@ function OrdersAndFeedback() {
                       </div>
                     </div>
                   ))}
+
                 </div>
               </>
             )}
           </div>
 
-          {/* Quick Review Modal */}
-          {showQuickReview && quickReviewData && (
-            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-              <div className="bg-white rounded-lg shadow-xl max-w-md w-full">
-                <div className="p-4 sm:p-6">
-                  <div className="flex justify-between items-start mb-4">
-                    <h3 className="text-base sm:text-lg font-semibold text-gray-900">Quick Review</h3>
-                    <button
-                      onClick={() => setShowQuickReview(false)}
-                      className="text-gray-400 hover:text-gray-600"
-                    >
-                      <svg className="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                      </svg>
-                    </button>
-                  </div>
-                  
-                  <div className="space-y-4">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="font-medium text-gray-900 text-sm sm:text-base">{quickReviewData.customerName}</p>
-                        <p className="text-xs sm:text-sm text-gray-500">{quickReviewData.timeAgo}</p>
-                      </div>
-                      <div className="flex items-center">
-                        {[...Array(quickReviewData.rating)].map((_, i) => (
-                          <Star key={i} size={14} className="text-yellow-400 fill-current" />
-                        ))}
-                      </div>
-                    </div>
-                    
-                    <div className="bg-gray-50 rounded-lg p-3 sm:p-4">
-                      <div className="flex items-center mb-2">
-                        <span className="text-base sm:text-lg mr-2">{quickReviewData.reviewIcon}</span>
-                        <span className="text-xs sm:text-sm font-medium text-gray-700">{quickReviewData.reviewType}</span>
-                      </div>
-                      <p className="text-sm sm:text-base text-gray-800 italic">"{quickReviewData.reviewComment}"</p>
-                    </div>
-                    
-                    <div className="flex justify-between text-xs sm:text-sm text-gray-600">
-                      <span>Order Type: <span className="font-medium">{quickReviewData.orderType}</span></span>
-                      <span>Amount: <span className="font-medium">{quickReviewData.orderAmount}</span></span>
-                    </div>
+{/* Quick Review Modal */}
+{showQuickReview && quickReviewData && (
+  <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+    <div className="bg-white dark:bg-gray-900 rounded-lg shadow-xl max-w-md w-full">
+      <div className="p-4 sm:p-6">
+        <div className="flex justify-between items-start mb-4">
+          <h3 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-gray-100">Quick Review</h3>
+          <button
+            onClick={() => setShowQuickReview(false)}
+            className="text-gray-400 dark:text-gray-300 hover:text-gray-600 dark:hover:text-gray-100"
+          >
+            <svg className="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+        
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="font-medium text-gray-900 dark:text-gray-100 text-sm sm:text-base">{quickReviewData.customerName}</p>
+              <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-300">{quickReviewData.timeAgo}</p>
+            </div>
+            <div className="flex items-center">
+              {[...Array(quickReviewData.rating)].map((_, i) => (
+                <Star key={i} size={14} className="text-yellow-400 fill-current" />
+              ))}
+            </div>
+          </div>
+          
+          <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-3 sm:p-4">
+            <div className="flex items-center mb-2">
+              <span className="text-base sm:text-lg mr-2">{quickReviewData.reviewIcon}</span>
+              <span className="text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-200">{quickReviewData.reviewType}</span>
+            </div>
+            <p className="text-sm sm:text-base text-gray-800 dark:text-gray-100 italic">
+              "{quickReviewData.reviewComment}"
+            </p>
+          </div>
+          
+          <div className="flex justify-between text-xs sm:text-sm text-gray-600 dark:text-gray-300">
+            <span>Order Type: <span className="font-medium">{quickReviewData.orderType}</span></span>
+            <span>Amount: <span className="font-medium">{quickReviewData.orderAmount}</span></span>
+          </di
                   </div>
                 </div>
               </div>
             </div>
           )}
 
-          {showReviews && selectedOrder && (
-            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-              <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-                <ReviewPanel
-                  order={selectedOrder}
-                  onClose={() => setShowReviews(false)}
-                  onResolve={() => setShowReviews(false)}
-                  onReply={() => {}}
-                  onReport={() => {}}
-                />
-              </div>
+{showReviews && selectedOrder && (
+  <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+    <div className="bg-white dark:bg-gray-900 rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+      <ReviewPanel
+        order={selectedOrder}
+        onClose={() => setShowReviews(false)}
+        onResolve={() => setShowReviews(false)}
+        onReply={() => {}}
+        onReport={() => {}}
+      />
+    </div>
             </div>
           )}
         </div>

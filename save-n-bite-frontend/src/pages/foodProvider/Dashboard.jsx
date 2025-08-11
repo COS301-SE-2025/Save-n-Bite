@@ -76,14 +76,14 @@ function Dashboard() {
         <span className={`${change.color} font-medium`}>
           {change.sign}{change.value}%
         </span>
-        <span className="text-gray-500 ml-1">from last month</span>
+        <span className="text-gray-500 dark:text-gray-400 ml-1">from last month</span>
       </div>
     )
   }
 
   if (loading) {
     return (
-      <div className="w-full flex min-h-screen">
+      <div className="w-full flex min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
         {/* Desktop Sidebar */}
         <div className="hidden md:flex">
           <SideBar onNavigate={() => {}} currentPage="dashboard" />
@@ -91,7 +91,7 @@ function Dashboard() {
         <div className="flex-1 flex items-center justify-center">
           <div className="text-center">
             <LoaderIcon className="h-8 w-8 animate-spin mx-auto mb-4 text-blue-600" />
-            <p className="text-gray-600">Loading analytics data...</p>
+            <p className="text-gray-600 dark:text-gray-400">Loading analytics data...</p>
           </div>
         </div>
       </div>
@@ -100,14 +100,14 @@ function Dashboard() {
 
   if (error) {
     return (
-      <div className="w-full flex min-h-screen">
+      <div className="w-full flex min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
         {/* Desktop Sidebar */}
         <div className="hidden md:flex">
           <SideBar onNavigate={() => {}} currentPage="dashboard" />
         </div>
         <div className="flex-1 flex items-center justify-center">
           <div className="text-center">
-            <p className="text-red-600 mb-4">{error}</p>
+            <p className="text-red-600 dark:text-red-400 mb-4">{error}</p>
             <Button onClick={fetchAnalyticsData}>Retry</Button>
           </div>
         </div>
@@ -139,7 +139,7 @@ function Dashboard() {
   const aiSuggestion = getAISuggestion(analyticsData)
 
   return (
-    <div className="w-full flex min-h-screen">
+    <div className="w-full flex min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
       {/* Desktop Sidebar - Hidden on mobile */}
       <div className="hidden md:flex">
         <SideBar onNavigate={() => {}} currentPage="dashboard" />
@@ -166,29 +166,29 @@ function Dashboard() {
 
       <div className="flex-1 overflow-auto">
         {/* Mobile Header */}
-        <div className="md:hidden bg-white border-b border-gray-200 px-4 py-3 flex items-center justify-between">
+        <div className="md:hidden bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-4 py-3 flex items-center justify-between transition-colors duration-300">
           <button
             onClick={toggleMobileSidebar}
-            className="p-2 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-lg"
+            className="p-2 text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg"
             aria-label="Open menu"
           >
             <Menu size={24} />
           </button>
-          <h1 className="text-lg font-semibold text-gray-900">Dashboard</h1>
+          <h1 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Dashboard</h1>
           <div className="w-10" />
         </div>
 
         <div className="p-4 sm:p-6">
           <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 sm:gap-0 mb-6">
             <div>
-              <h1 className="hidden md:block text-xl sm:text-2xl font-bold">Business Dashboard</h1>
-              <h2 className="md:hidden text-xl font-bold">Dashboard</h2>
-              <p className="text-sm sm:text-base text-gray-600 mt-1">
+              <h1 className="hidden md:block text-xl sm:text-2xl font-bold text-gray-900 dark:text-gray-100">Business Dashboard</h1>
+              <h2 className="md:hidden text-xl font-bold text-gray-900 dark:text-gray-100">Dashboard</h2>
+              <p className="text-sm sm:text-base text-gray-600 dark:text-gray-300 mt-1">
                 Track your performance and impact
               </p>
               {analyticsData?.total_orders_fulfilled > 0 && (
-                <div className="mt-2 p-2 sm:p-3 bg-blue-50 border border-blue-200 rounded-lg">
-                  <p className="text-xs sm:text-sm text-blue-800">
+                <div className="mt-2 p-2 sm:p-3 bg-blue-50 dark:bg-blue-900 border border-blue-200 dark:border-blue-800 rounded-lg">
+                  <p className="text-xs sm:text-sm text-blue-800 dark:text-blue-200">
                     <strong>Your Analytics:</strong> {(analyticsData.total_orders_fulfilled || 0)} orders fulfilled with {analyticsData.sustainability_impact?.meals_saved || 0} meals saved
                   </p>
                 </div>
@@ -203,67 +203,67 @@ function Dashboard() {
           {/* KPI Cards */}
           <div className="grid grid-cols-1 gap-4 sm:gap-5 mb-6 sm:mb-8 sm:grid-cols-2 lg:grid-cols-4">
             {/* Total Orders */}
-            <div className="bg-white rounded-lg shadow-md p-4 sm:p-5 card-responsive">
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-4 sm:p-5 card-responsive transition-colors duration-300">
               <div className="flex justify-between items-start">
                 <div>
-                  <p className="text-gray-500 text-xs sm:text-sm">Total Orders Fulfilled</p>
-                  <h3 className="text-xl sm:text-2xl font-bold mt-1">
+                  <p className="text-gray-500 dark:text-gray-400 text-xs sm:text-sm">Total Orders Fulfilled</p>
+                  <h3 className="text-xl sm:text-2xl font-bold mt-1 text-gray-900 dark:text-gray-100">
                     {(analyticsData.total_orders_fulfilled || 0)}
                   </h3>
                 </div>
-                <div className="p-2 bg-blue-100 rounded-md">
-                  <ShoppingBagIcon className="h-5 w-5 sm:h-6 sm:w-6 text-blue-600" />
+                <div className="p-2 bg-blue-100 dark:bg-blue-900 rounded-md">
+                  <ShoppingBagIcon className="h-5 w-5 sm:h-6 sm:w-6 text-blue-600 dark:text-blue-400" />
                 </div>
               </div>
               {renderKPIChange(analyticsData?.order_change_percent)}
             </div>
 
             {/* Number of Donations */}
-            <div className="bg-white rounded-lg shadow-md p-4 sm:p-5 card-responsive">
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-4 sm:p-5 card-responsive transition-colors duration-300">
               <div className="flex justify-between items-start">
                 <div>
-                  <p className="text-gray-500 text-xs sm:text-sm">Number of Donations</p>
-                  <h3 className="text-xl sm:text-2xl font-bold mt-1">
+                  <p className="text-gray-500 dark:text-gray-400 text-xs sm:text-sm">Number of Donations</p>
+                  <h3 className="text-xl sm:text-2xl font-bold mt-1 text-gray-900 dark:text-gray-100">
                     {analyticsData?.donations || 0}
                   </h3>
                 </div>
-                <div className="p-2 bg-purple-100 rounded-md">
-                  <LeafIcon className="h-5 w-5 sm:h-6 sm:w-6 text-purple-600" />
+                <div className="p-2 bg-purple-100 dark:bg-purple-900 rounded-md">
+                  <LeafIcon className="h-5 w-5 sm:h-6 sm:w-6 text-purple-600 dark:text-purple-400" />
                 </div>
               </div>
               {renderKPIChange(analyticsData?.donation_change_percent)}
             </div>
 
             {/* Profile Followers */}
-            <div className="bg-white rounded-lg shadow-md p-4 sm:p-5 card-responsive">
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-4 sm:p-5 card-responsive transition-colors duration-300">
               <div className="flex justify-between items-start">
                 <div>
-                  <p className="text-gray-500 text-xs sm:text-sm">Profile Followers</p>
-                  <h3 className="text-xl sm:text-2xl font-bold mt-1">
+                  <p className="text-gray-500 dark:text-gray-400 text-xs sm:text-sm">Profile Followers</p>
+                  <h3 className="text-xl sm:text-2xl font-bold mt-1 text-gray-900 dark:text-gray-100">
                     {analyticsData?.total_followers || 0}
                   </h3>
                 </div>
-                <div className="p-2 bg-amber-100 rounded-md">
-                  <UsersIcon className="h-5 w-5 sm:h-6 sm:w-6 text-amber-600" />
+                <div className="p-2 bg-amber-100 dark:bg-amber-900 rounded-md">
+                  <UsersIcon className="h-5 w-5 sm:h-6 sm:w-6 text-amber-600 dark:text-amber-400" />
                 </div>
               </div>
               {renderKPIChange(analyticsData?.follower_change_percent)}
             </div>
 
             {/* Meals Saved */}
-            <div className="bg-white rounded-lg shadow-md p-4 sm:p-5">
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-4 sm:p-5 transition-colors duration-300">
               <div className="flex justify-between items-start">
                 <div>
-                  <p className="text-gray-500 text-xs sm:text-sm">Meals Saved</p>
-                  <h3 className="text-xl sm:text-2xl font-bold mt-1">
+                  <p className="text-gray-500 dark:text-gray-400 text-xs sm:text-sm">Meals Saved</p>
+                  <h3 className="text-xl sm:text-2xl font-bold mt-1 text-gray-900 dark:text-gray-100">
                     {sustainabilityData.mealsSaved}
                   </h3>
                 </div>
-                <div className="p-2 bg-green-100 rounded-md">
-                  <LeafIcon className="h-5 w-5 sm:h-6 sm:w-6 text-green-600" />
+                <div className="p-2 bg-green-100 dark:bg-green-900 rounded-md">
+                  <LeafIcon className="h-5 w-5 sm:h-6 sm:w-6 text-green-600 dark:text-green-400" />
                 </div>
               </div>
-              <div className="mt-3 text-xs sm:text-sm text-gray-500">
+              <div className="mt-3 text-xs sm:text-sm text-gray-500 dark:text-gray-400">
                 {sustainabilityData.waterSavedLitres ? 
                   `${sustainabilityData.waterSavedLitres}L water saved` : 
                   'Environmental impact'
@@ -275,12 +275,12 @@ function Dashboard() {
           {/* Charts Section - Responsive grid */}
           <div className="grid grid-cols-1 gap-6 mb-8 xl:grid-cols-2">
             {/* Orders Chart */}
-            <div className="bg-white rounded-lg shadow-md p-4 sm:p-5">
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-4 sm:p-5 transition-colors duration-300">
               <div className="flex justify-between items-center mb-4">
-                <h3 className="text-base sm:text-lg font-medium">Orders per Month</h3>
+                <h3 className="text-base sm:text-lg font-medium text-gray-900 dark:text-gray-100">Orders per Month</h3>
                 <div className="relative group">
-                  <HelpCircleIcon className="h-4 w-4 text-gray-400 cursor-help" />
-                  <div className="absolute right-0 w-64 p-2 bg-gray-800 text-white text-xs rounded shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-opacity z-10">
+                  <HelpCircleIcon className="h-4 w-4 text-gray-400 dark:text-gray-500 cursor-help" />
+                  <div className="absolute right-0 w-64 p-2 bg-gray-800 dark:bg-gray-700 text-white dark:text-gray-200 text-xs rounded shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-opacity z-10">
                     This chart shows the total number of orders received each month.
                   </div>
                 </div>
@@ -312,7 +312,7 @@ function Dashboard() {
                     </LineChart>
                   </ResponsiveContainer>
                 ) : (
-                  <div className="flex items-center justify-center h-full text-gray-500">
+                  <div className="flex items-center justify-center h-full text-gray-500 dark:text-gray-400">
                     No order data available
                   </div>
                 )}
@@ -320,12 +320,12 @@ function Dashboard() {
             </div>
 
             {/* Sales vs Donations Chart */}
-            <div className="bg-white rounded-lg shadow-md p-4 sm:p-5">
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-4 sm:p-5 transition-colors duration-300">
               <div className="flex justify-between items-center mb-4">
-                <h3 className="text-base sm:text-lg font-medium">Sales vs Donations Split</h3>
+                <h3 className="text-base sm:text-lg font-medium text-gray-900 dark:text-gray-100">Sales vs Donations Split</h3>
                 <div className="relative group">
-                  <HelpCircleIcon className="h-4 w-4 text-gray-400 cursor-help" />
-                  <div className="absolute right-0 w-64 p-2 bg-gray-800 text-white text-xs rounded shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-opacity z-10">
+                  <HelpCircleIcon className="h-4 w-4 text-gray-400 dark:text-gray-500 cursor-help" />
+                  <div className="absolute right-0 w-64 p-2 bg-gray-800 dark:bg-gray-700 text-white dark:text-gray-200 text-xs rounded shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-opacity z-10">
                     This chart shows the split between items sold and items donated.
                   </div>
                 </div>
@@ -367,13 +367,13 @@ function Dashboard() {
                               backgroundColor: COLORS[index % COLORS.length],
                             }}
                           ></div>
-                          <span className="text-xs sm:text-sm text-gray-600">{entry.name} ({entry.value})</span>
+                          <span className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">{entry.name} ({entry.value})</span>
                         </div>
                       ))}
                     </div>
                   </div>
                 ) : (
-                  <div className="text-gray-500 text-center">
+                  <div className="text-gray-500 dark:text-gray-400 text-center">
                     <p>No sales or donation data available</p>
                     <p className="text-sm mt-1">Start fulfilling orders to see your impact!</p>
                   </div>
@@ -382,12 +382,12 @@ function Dashboard() {
             </div>
 
             {/* Followers Chart */}
-            <div className="bg-white rounded-lg shadow-md p-4 sm:p-5">
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-4 sm:p-5 transition-colors duration-300">
               <div className="flex justify-between items-center mb-4">
-                <h3 className="text-base sm:text-lg font-medium">Followers Growth</h3>
+                <h3 className="text-base sm:text-lg font-medium text-gray-900 dark:text-gray-100">Followers Growth</h3>
                 <div className="relative group">
-                  <HelpCircleIcon className="h-4 w-4 text-gray-400 cursor-help" />
-                  <div className="absolute right-0 w-64 p-2 bg-gray-800 text-white text-xs rounded shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-opacity z-10">
+                  <HelpCircleIcon className="h-4 w-4 text-gray-400 dark:text-gray-500 cursor-help" />
+                  <div className="absolute right-0 w-64 p-2 bg-gray-800 dark:bg-gray-700 text-white dark:text-gray-200 text-xs rounded shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-opacity z-10">
                     This chart shows your follower growth over time.
                   </div>
                 </div>
@@ -412,7 +412,7 @@ function Dashboard() {
                     </BarChart>
                   </ResponsiveContainer>
                 ) : (
-                  <div className="flex items-center justify-center h-full text-gray-500 text-center">
+                  <div className="flex items-center justify-center h-full text-gray-500 dark:text-gray-400 text-center">
                     <div>
                       <p>No follower data available</p>
                       <p className="text-sm mt-1">Build your community by engaging with customers!</p>
@@ -423,39 +423,39 @@ function Dashboard() {
             </div>
 
             {/* Sustainability Metrics */}
-            <div className="bg-white rounded-lg shadow-md p-4 sm:p-5">
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-4 sm:p-5 transition-colors duration-300">
               <div className="flex justify-between items-center mb-4">
-                <h3 className="text-base sm:text-lg font-medium">Sustainability Impact</h3>
+                <h3 className="text-base sm:text-lg font-medium text-gray-900 dark:text-gray-100">Sustainability Impact</h3>
                 <div className="relative group">
-                  <HelpCircleIcon className="h-4 w-4 text-gray-400 cursor-help" />
-                  <div className="absolute right-0 w-64 p-2 bg-gray-800 text-white text-xs rounded shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-opacity z-10">
+                  <HelpCircleIcon className="h-4 w-4 text-gray-400 dark:text-gray-500 cursor-help" />
+                  <div className="absolute right-0 w-64 p-2 bg-gray-800 dark:bg-gray-700 text-white dark:text-gray-200 text-xs rounded shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-opacity z-10">
                     These metrics show your environmental impact through food waste reduction.
                   </div>
                 </div>
               </div>
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                <div className="bg-green-50 rounded-lg p-4 sm:p-5 text-center">
-                  <div className="inline-flex items-center justify-center w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-green-100 mb-2 sm:mb-4">
-                    <LeafIcon className="h-5 w-5 sm:h-6 sm:w-6 text-green-600" />
+                <div className="bg-green-50 dark:bg-green-900 rounded-lg p-4 sm:p-5 text-center">
+                  <div className="inline-flex items-center justify-center w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-green-100 dark:bg-green-800 mb-2 sm:mb-4">
+                    <LeafIcon className="h-5 w-5 sm:h-6 sm:w-6 text-green-600 dark:text-green-400" />
                   </div>
-                  <h4 className="text-2xl sm:text-3xl font-bold text-green-600">
+                  <h4 className="text-2xl sm:text-3xl font-bold text-green-600 dark:text-green-400">
                     {sustainabilityData.mealsSaved}
                   </h4>
-                  <p className="text-green-700 mt-1 text-sm sm:text-base">Meals Saved</p>
+                  <p className="text-green-700 dark:text-green-300 mt-1 text-sm sm:text-base">Meals Saved</p>
                 </div>
-                <div className="bg-blue-50 rounded-lg p-4 sm:p-5 text-center">
-                  <div className="inline-flex items-center justify-center w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-blue-100 mb-2 sm:mb-4">
-                    <LeafIcon className="h-5 w-5 sm:h-6 sm:w-6 text-blue-600" />
+                <div className="bg-blue-50 dark:bg-blue-900 rounded-lg p-4 sm:p-5 text-center">
+                  <div className="inline-flex items-center justify-center w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-blue-100 dark:bg-blue-800 mb-2 sm:mb-4">
+                    <LeafIcon className="h-5 w-5 sm:h-6 sm:w-6 text-blue-600 dark:text-blue-400" />
                   </div>
-                  <h4 className="text-2xl sm:text-3xl font-bold text-blue-600">
+                  <h4 className="text-2xl sm:text-3xl font-bold text-blue-600 dark:text-blue-400">
                     {sustainabilityData.waterSavedLitres}L
                   </h4>
-                  <p className="text-blue-700 mt-1 text-sm sm:text-base">Water Saved</p>
+                  <p className="text-blue-700 dark:text-blue-300 mt-1 text-sm sm:text-base">Water Saved</p>
                 </div>
               </div>
               {sustainabilityData.mealsSaved > 0 && (
                 <div className="mt-4 text-center">
-                  <p className="text-xs sm:text-sm text-gray-600">
+                  <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">
                     Equivalent to preventing {Math.round(sustainabilityData.mealsSaved * 2.5)}kg of CO₂ emissions
                   </p>
                 </div>

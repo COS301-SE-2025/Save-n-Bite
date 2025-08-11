@@ -132,7 +132,20 @@ const LoginForm = ({ onSuccess, onError, onEmailChange }) => {
                 navigate('/food-listing');
             }
         } catch (error) {
-            onError(error?.message || 'Login failed. Please check your credentials.');
+            // Improved error handling
+            let errorMsg = 'Login failed. Please check your credentials.';
+            if (error?.response?.data?.detail) {
+                errorMsg = error.response.data.detail;
+            } else if (error?.message) {
+                errorMsg = error.message;
+            } else if (typeof error === 'string') {
+                errorMsg = error;
+            }
+            // Specific field errors (example: backend returns {field: "email", message: "Email not found"})
+            if (error?.response?.data?.field && error?.response?.data?.message) {
+                errorMsg = `${error.response.data.message}`;
+            }
+            onError(errorMsg);
         } finally {
             setIsLoading(false);
         }
@@ -141,7 +154,7 @@ const LoginForm = ({ onSuccess, onError, onEmailChange }) => {
     return (
         <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-                <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
+                <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                     Email
                 </label>
                 <input
@@ -157,7 +170,7 @@ const LoginForm = ({ onSuccess, onError, onEmailChange }) => {
             </div>
 
             <div>
-                <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
+                <label htmlFor="password" className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                     Password
                 </label>
                 <input

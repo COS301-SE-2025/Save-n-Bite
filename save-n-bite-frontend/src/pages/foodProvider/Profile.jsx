@@ -62,7 +62,7 @@ function ProfilePage() {
   }
 
   return (
-    <div className="w-full flex min-h-screen">
+    <div className="w-full flex min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
       {/* Desktop Sidebar - Hidden on mobile */}
       <div className="hidden md:flex">
         <SideBar onNavigate={() => {}} currentPage="foodprovider-profile" />
@@ -89,21 +89,21 @@ function ProfilePage() {
 
       <div className="flex-1 overflow-auto">
         {/* Mobile Header */}
-        <div className="md:hidden bg-white border-b border-gray-200 px-4 py-3 flex items-center justify-between">
+        <div className="md:hidden bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-4 py-3 flex items-center justify-between transition-colors duration-300">
           <button
             onClick={toggleMobileSidebar}
-            className="p-2 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-lg"
+            className="p-2 text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors duration-300"
             aria-label="Open menu"
           >
             <Menu size={24} />
           </button>
-          <h1 className="text-lg font-semibold text-gray-900">Business Profile</h1>
+          <h1 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Business Profile</h1>
           <div className="w-10" />
         </div>
 
         <div className="max-w-5xl mx-auto p-4 sm:p-6">
           {/* Banner Section */}
-          <div className="relative h-48 sm:h-64 rounded-lg overflow-hidden mb-6 sm:mb-8 bg-blue-100">
+          <div className="relative h-48 sm:h-64 rounded-lg overflow-hidden mb-6 sm:mb-8 bg-blue-100 dark:bg-blue-900 transition-colors duration-300">
             <img
               src={formData.bannerUrl}
               alt="Business Banner"
@@ -130,10 +130,10 @@ function ProfilePage() {
           </div>
 
           {/* Business Info Section */}
-          <div className="bg-white rounded-lg shadow-md overflow-hidden mb-6 sm:mb-8">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden mb-6 sm:mb-8 transition-colors duration-300">
             <div className="p-4 sm:p-6">
               <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-4">
-                <h3 className="text-lg sm:text-xl font-semibold">Business Information</h3>
+                <h3 className="text-lg sm:text-xl font-semibold text-gray-900 dark:text-gray-100">Business Information</h3>
                 {!isEditing ? (
                   <button
                     onClick={() => setIsEditing(true)}
@@ -166,7 +166,7 @@ function ProfilePage() {
               </div>
 
               <div className="flex flex-col sm:flex-row sm:items-center mb-6 relative">
-                <div className="h-20 w-20 sm:h-24 sm:w-24 bg-gray-200 rounded-full overflow-hidden mb-4 sm:mb-0 sm:mr-6 mx-auto sm:mx-0">
+                <div className="h-20 w-20 sm:h-24 sm:w-24 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden mb-4 sm:mb-0 sm:mr-6 mx-auto sm:mx-0 transition-colors duration-300">
                   <img
                     src={formData.logoUrl}
                     alt="Business Logo"
@@ -187,16 +187,16 @@ function ProfilePage() {
                   onChange={(e) => handleImageChange(e, 'logoUrl')}
                 />
                 <div className="text-center sm:text-left">
-                  <span className="inline-block px-3 py-1 bg-blue-100 text-blue-800 rounded-full font-medium text-xs sm:text-sm">
+                  <span className="inline-block px-3 py-1 bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-300 rounded-full font-medium text-xs sm:text-sm transition-colors duration-300">
                     {formData.verificationStatus === 'Verified' ? (
                       <span className="flex items-center">
-                        <CheckIcon className="h-3 w-3 sm:h-4 sm:w-4 mr-1 text-green-600" />
+                        <CheckIcon className="h-3 w-3 sm:h-4 sm:w-4 mr-1 text-green-600 dark:text-green-400" />
                         Verified Business
                       </span>
                     ) : formData.verificationStatus === 'Pending' ? (
-                      <span className="text-yellow-600">Verification Pending</span>
+                      <span className="text-yellow-600 dark:text-yellow-400">Verification Pending</span>
                     ) : (
-                      <span className="text-red-600">Verification Required</span>
+                      <span className="text-red-600 dark:text-red-400">Verification Required</span>
                     )}
                   </span>
                 </div>
@@ -205,7 +205,7 @@ function ProfilePage() {
               {isEditing ? (
                 <form className="space-y-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                       Business Name
                     </label>
                     <input
@@ -213,11 +213,11 @@ function ProfilePage() {
                       name="businessName"
                       value={formData.businessName}
                       onChange={handleChange}
-                      className="w-full p-2 border border-gray-300 rounded-md text-sm sm:text-base"
+                      className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm sm:text-base bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-300 transition-colors duration-300"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                       Contact Email
                     </label>
                     <input
@@ -225,11 +225,11 @@ function ProfilePage() {
                       name="email"
                       value={formData.email}
                       onChange={handleChange}
-                      className="w-full p-2 border border-gray-300 rounded-md text-sm sm:text-base"
+                      className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm sm:text-base bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-300 transition-colors duration-300"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                       Phone Number
                     </label>
                     <input
@@ -237,11 +237,11 @@ function ProfilePage() {
                       name="phone"
                       value={formData.phone}
                       onChange={handleChange}
-                      className="w-full p-2 border border-gray-300 rounded-md text-sm sm:text-base"
+                      className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm sm:text-base bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-300 transition-colors duration-300"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                       Business Address
                     </label>
                     <input
@@ -249,11 +249,11 @@ function ProfilePage() {
                       name="address"
                       value={formData.address}
                       onChange={handleChange}
-                      className="w-full p-2 border border-gray-300 rounded-md text-sm sm:text-base"
+                      className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm sm:text-base bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-300 transition-colors duration-300"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                       Business Description
                     </label>
                     <textarea
@@ -261,24 +261,24 @@ function ProfilePage() {
                       value={formData.description}
                       onChange={handleChange}
                       rows="4"
-                      className="w-full p-2 border border-gray-300 rounded-md text-sm sm:text-base"
+                      className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm sm:text-base bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-300 transition-colors duration-300"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                       Business Tags
                     </label>
                     <div className="flex flex-wrap gap-2 mb-2">
                       {tags.map((tag) => (
                         <span
                           key={tag}
-                          className="inline-flex items-center px-2 sm:px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-xs sm:text-sm"
+                          className="inline-flex items-center px-2 sm:px-3 py-1 bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-300 rounded-full text-xs sm:text-sm transition-colors duration-300"
                         >
                           {tag}
                           <button
                             type="button"
                             onClick={() => handleRemoveTag(tag)}
-                            className="ml-1 sm:ml-2 text-blue-600 hover:text-blue-800"
+                            className="ml-1 sm:ml-2 text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-200 transition-colors duration-300"
                           >
                             <XIcon className="h-3 w-3" />
                           </button>
@@ -292,7 +292,7 @@ function ProfilePage() {
                         onChange={(e) => setNewTag(e.target.value)}
                         onKeyDown={handleKeyDown}
                         placeholder="Add a tag"
-                        className="flex-1 p-2 border border-gray-300 rounded-l-md text-sm sm:text-base"
+                        className="flex-1 p-2 border border-gray-300 dark:border-gray-600 rounded-l-md text-sm sm:text-base bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-300 transition-colors duration-300"
                       />
                       <button
                         type="button"
@@ -308,45 +308,45 @@ function ProfilePage() {
                 <div className="space-y-4">
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
-                      <h4 className="text-sm font-medium text-gray-500">
+                      <h4 className="text-sm font-medium text-gray-500 dark:text-gray-300">
                         Business Name
                       </h4>
-                      <p className="text-sm sm:text-base">{formData.businessName}</p>
+                      <p className="text-sm sm:text-base text-gray-900 dark:text-gray-100">{formData.businessName}</p>
                     </div>
                     <div>
-                      <h4 className="text-sm font-medium text-gray-500">
+                      <h4 className="text-sm font-medium text-gray-500 dark:text-gray-300">
                         Contact Email
                       </h4>
-                      <p className="text-sm sm:text-base break-words">{formData.email}</p>
+                      <p className="text-sm sm:text-base break-words text-gray-900 dark:text-gray-100">{formData.email}</p>
                     </div>
                     <div>
-                      <h4 className="text-sm font-medium text-gray-500">
+                      <h4 className="text-sm font-medium text-gray-500 dark:text-gray-300">
                         Phone Number
                       </h4>
-                      <p className="text-sm sm:text-base">{formData.phone}</p>
+                      <p className="text-sm sm:text-base text-gray-900 dark:text-gray-100">{formData.phone}</p>
                     </div>
                     <div>
-                      <h4 className="text-sm font-medium text-gray-500">
+                      <h4 className="text-sm font-medium text-gray-500 dark:text-gray-300">
                         Business Address
                       </h4>
-                      <p className="text-sm sm:text-base">{formData.address}</p>
+                      <p className="text-sm sm:text-base text-gray-900 dark:text-gray-100">{formData.address}</p>
                     </div>
                   </div>
                   <div>
-                    <h4 className="text-sm font-medium text-gray-500">
+                    <h4 className="text-sm font-medium text-gray-500 dark:text-gray-300">
                       Business Description
                     </h4>
-                    <p className="mt-1 text-sm sm:text-base">{formData.description}</p>
+                    <p className="mt-1 text-sm sm:text-base text-gray-900 dark:text-gray-100">{formData.description}</p>
                   </div>
                   <div>
-                    <h4 className="text-sm font-medium text-gray-500">
+                    <h4 className="text-sm font-medium text-gray-500 dark:text-gray-300">
                       Business Tags
                     </h4>
                     <div className="flex flex-wrap gap-2 mt-1">
                       {tags.map((tag) => (
                         <span
                           key={tag}
-                          className="inline-block px-2 sm:px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-xs sm:text-sm"
+                          className="inline-block px-2 sm:px-3 py-1 bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-300 rounded-full text-xs sm:text-sm transition-colors duration-300"
                         >
                           {tag}
                         </span>
@@ -359,31 +359,31 @@ function ProfilePage() {
           </div>
 
           {/* Impact Snapshot Section */}
-          <div className="bg-white rounded-lg shadow-md overflow-hidden mb-6 sm:mb-8">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden mb-6 sm:mb-8 transition-colors duration-300">
             <div className="p-4 sm:p-6">
-              <h3 className="text-lg sm:text-xl font-semibold mb-4">Your Impact</h3>
+              <h3 className="text-lg sm:text-xl font-semibold mb-4 text-gray-900 dark:text-gray-100">Your Impact</h3>
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <div className="bg-green-50 p-3 sm:p-4 rounded-lg">
-                  <h4 className="text-xs sm:text-sm font-medium text-gray-500">
+                <div className="bg-green-50 dark:bg-green-900 p-3 sm:p-4 rounded-lg transition-colors duration-300">
+                  <h4 className="text-xs sm:text-sm font-medium text-gray-500 dark:text-gray-300">
                     Meals Donated
                   </h4>
-                  <p className="text-2xl sm:text-3xl font-bold text-green-600">
+                  <p className="text-2xl sm:text-3xl font-bold text-green-600 dark:text-green-400">
                     {sustainabilityData.mealsSaved}
                   </p>
                 </div>
-                <div className="bg-blue-50 p-3 sm:p-4 rounded-lg">
-                  <h4 className="text-xs sm:text-sm font-medium text-gray-500">
+                <div className="bg-blue-50 dark:bg-blue-900 p-3 sm:p-4 rounded-lg transition-colors duration-300">
+                  <h4 className="text-xs sm:text-sm font-medium text-gray-500 dark:text-gray-300">
                     Food Weight Saved (kg)
                   </h4>
-                  <p className="text-2xl sm:text-3xl font-bold text-blue-600">
+                  <p className="text-2xl sm:text-3xl font-bold text-blue-600 dark:text-blue-400">
                     {sustainabilityData.mealsSaved * 0.5}
                   </p>
                 </div>
-                <div className="bg-yellow-50 p-3 sm:p-4 rounded-lg">
-                  <h4 className="text-xs sm:text-sm font-medium text-gray-500">
+                <div className="bg-yellow-50 dark:bg-yellow-900 p-3 sm:p-4 rounded-lg transition-colors duration-300">
+                  <h4 className="text-xs sm:text-sm font-medium text-gray-500 dark:text-gray-300">
                     CO₂ Reduced (kg)
                   </h4>
-                  <p className="text-2xl sm:text-3xl font-bold text-yellow-600">
+                  <p className="text-2xl sm:text-3xl font-bold text-yellow-600 dark:text-yellow-400">
                     {sustainabilityData.co2Reduced}
                   </p>
                 </div>
@@ -393,7 +393,7 @@ function ProfilePage() {
 
           {/* Quick Access Buttons */}
           <div className="flex flex-col sm:flex-row gap-4 mb-6 sm:mb-8">
-            <button className="w-full sm:w-auto px-4 sm:px-6 py-3 bg-white border border-blue-600 text-blue-600 rounded-md hover:bg-blue-50 transition-colors text-sm sm:text-base">
+            <button className="w-full sm:w-auto px-4 sm:px-6 py-3 bg-white dark:bg-gray-800 border border-blue-600 dark:border-blue-500 text-blue-600 dark:text-blue-400 rounded-md hover:bg-blue-50 dark:hover:bg-blue-900 transition-colors duration-300 text-sm sm:text-base">
               Download Impact Report
             </button>
           </div>

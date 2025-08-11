@@ -7,7 +7,6 @@ import logo from '../../assets/images/SnB_leaf_icon.png';
 import { UploadIcon, CheckCircleIcon, HelpCircleIcon } from 'lucide-react'
 import RegistrationHelp from '../../components/auth/Help/RegistrationHelpMenu'
 
-
 const Register = () => {
   const [selectedUserType, setSelectedUserType] = useState(USER_TYPES.CUSTOMER);
   const [message, setMessage] = useState('');
@@ -49,8 +48,9 @@ const Register = () => {
   };
 
   return (
-    <div className="min-h-[80vh] flex items-center justify-center px-4 py-12 ">
-      <div className="max-w-6xl w-full bg-white rounded-lg shadow-sm overflow-hidden">
+<div className="min-h-[80vh] flex items-center justify-center px-4 py-12 bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
+  <div className="max-w-6xl w-full bg-white dark:bg-gray-800 rounded-lg shadow-sm overflow-hidden transition-colors duration-300">
+
         <div className="md:flex">
           {/* Left Side - Branding */}
           <div 
@@ -96,10 +96,10 @@ const Register = () => {
           </div>
 
           {/* Right Side - Registration Form */}
-          <div className="md:w-1/2 p-8 md:p-12">
+          <div className="md:w-1/2 p-8 md:p-12 bg-white dark:bg-gray-800 transition-colors duration-300">
             {/* User Type Selection */}
             <div className="mb-8">
-              <h3 className="text-lg font-medium text-gray-700 mb-3">I want to sign up as a:</h3>
+              <h3 className="text-lg font-medium text-gray-700 dark:text-gray-200 mb-3">I want to sign up as a:</h3>
               <div className="flex flex-wrap gap-2">
                 {Object.values(USER_TYPES).map((type) => (
                   <button
@@ -108,7 +108,7 @@ const Register = () => {
                     className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
                       selectedUserType === type 
                         ? 'text-white' 
-                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600'
                     }`}
                     style={selectedUserType === type ? {
                       background: 'linear-gradient(135deg, #62BD38 0%, #1E64D5 100%)'
@@ -123,13 +123,11 @@ const Register = () => {
 
             {/* Message Display */}
             {message && (
-              <div className={`mb-6 p-3 rounded-md
-                   ${
+              <div className={`mb-6 p-3 rounded-md border transition-colors duration-300 ${
                 messageType === 'success' 
-                  ? 'bg-emerald-100 text-emerald-700' 
-                  : 'bg-red-100 text-red-700'
-              }
-              `}>
+                  ? 'bg-emerald-100 text-emerald-700 border-emerald-200 dark:bg-emerald-900 dark:text-emerald-200 dark:border-emerald-800' 
+                  : 'bg-red-100 text-red-700 border-red-200 dark:bg-red-900 dark:text-red-200 dark:border-red-800'
+              }`}>
                 {message}
               </div>
             )}
@@ -141,19 +139,21 @@ const Register = () => {
               onError={handleRegistrationError}
             />
 
-            {/* Login Link */}
-            <div className="mt-6 text-center text-gray-600">
-              Already have an account?{' '}
-             <Link to="/login" className="text-emerald-600 hover:text-emerald-700">
-                Log in
-              </Link>
+            {/* Login Link & Help */}
+            <div className="mt-6 text-center text-gray-600 dark:text-gray-300 flex flex-col items-center gap-2">
+              <span>
+                Already have an account?{' '}
+                <Link to="/login" className="text-emerald-600 hover:text-emerald-700 dark:text-emerald-400 dark:hover:text-emerald-300">
+                  Log in
+                </Link>
+              </span>
               <button
-            onClick={() => setIsHelpOpen(true)}
-            className="flex items-center text-emerald-600 hover:text-emerald-700"
-          >
-            <HelpCircleIcon size={18} className="mr-1" />
-            <span>Need help?</span>
-          </button>
+                onClick={() => setIsHelpOpen(true)}
+                className="flex items-center text-emerald-600 hover:text-emerald-700 dark:text-emerald-400 dark:hover:text-emerald-300"
+              >
+                <HelpCircleIcon size={18} className="mr-1" />
+                <span>Need help?</span>
+              </button>
             </div>
           </div>
         </div>

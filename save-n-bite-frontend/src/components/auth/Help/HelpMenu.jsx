@@ -3,20 +3,20 @@ import { XIcon, ChevronDownIcon, ChevronUpIcon } from 'lucide-react'
 
 const AccordionItem = ({ title, children, isOpen, toggleOpen }) => {
   return (
-    <div className="border-b border-gray-200 last:border-b-0">
+    <div className="border-b border-gray-200 dark:border-gray-700 last:border-b-0">
       <button
         onClick={toggleOpen}
-        className="w-full py-4 px-5 flex justify-between items-center hover:bg-gray-50 transition-colors"
+        className="w-full py-4 px-5 flex justify-between items-center hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
         aria-expanded={isOpen}
       >
-        <span className="font-medium text-gray-800">{title}</span>
+        <span className="font-medium text-gray-800 dark:text-gray-100">{title}</span>
         {isOpen ? (
-          <ChevronUpIcon size={20} className="text-emerald-600" />
+          <ChevronUpIcon size={20} className="text-emerald-600 dark:text-emerald-400" />
         ) : (
-          <ChevronDownIcon size={20} className="text-emerald-600" />
+          <ChevronDownIcon size={20} className="text-emerald-600 dark:text-emerald-400" />
         )}
       </button>
-      {isOpen && <div className="px-5 pb-4 text-gray-700">{children}</div>}
+      {isOpen && <div className="px-5 pb-4 text-gray-700 dark:text-gray-300">{children}</div>}
     </div>
   )
 }
@@ -25,21 +25,21 @@ const HelpItem = ({ title, children }) => {
   const [isOpen, setIsOpen] = useState(false)
 
   return (
-    <div className="border-b border-gray-100 last:border-b-0 py-2">
+    <div className="border-b border-gray-100 dark:border-gray-700 last:border-b-0 py-2">
       <button
         onClick={() => setIsOpen(!isOpen)}
         className="w-full py-2 text-left flex justify-between items-center"
         aria-expanded={isOpen}
       >
-        <span className="text-gray-700 hover:text-emerald-600">{title}</span>
+        <span className="text-gray-700 dark:text-gray-300 hover:text-emerald-600 dark:hover:text-emerald-400">{title}</span>
         {isOpen ? (
-          <ChevronUpIcon size={16} className="text-emerald-600" />
+          <ChevronUpIcon size={16} className="text-emerald-600 dark:text-emerald-400" />
         ) : (
-          <ChevronDownIcon size={16} className="text-emerald-600" />
+          <ChevronDownIcon size={16} className="text-emerald-600 dark:text-emerald-400" />
         )}
       </button>
       {isOpen && (
-        <div className="py-2 pl-4 pr-2 text-sm text-gray-600">{children}</div>
+        <div className="py-2 pl-4 pr-2 text-sm text-gray-600 dark:text-gray-300">{children}</div>
       )}
     </div>
   )
@@ -52,12 +52,12 @@ const HelpMenu = ({ isOpen, onClose }) => {
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex justify-end">
-      <div className="bg-white w-full max-w-md h-full overflow-y-auto animate-slide-in">
-        <div className="sticky top-0 bg-emerald-600 text-white px-5 py-4 flex justify-between items-center">
+      <div className="bg-white dark:bg-gray-900 w-full max-w-md h-full overflow-y-auto animate-slide-in transition-colors duration-300">
+        <div className="sticky top-0 bg-emerald-600 dark:bg-emerald-700 text-white px-5 py-4 flex justify-between items-center">
           <h2 className="text-xl font-semibold">Help Center</h2>
           <button
             onClick={onClose}
-            className="p-1 rounded-full hover:bg-emerald-700 transition-colors"
+            className="p-1 rounded-full hover:bg-emerald-700 dark:hover:bg-emerald-800 transition-colors"
             aria-label="Close help menu"
           >
             <XIcon size={24} />
@@ -81,14 +81,6 @@ const HelpMenu = ({ isOpen, onClose }) => {
                   at discounted prices.
                 </p>
               </HelpItem>
-              {/* <HelpItem title="How to update your profile">
-                <p>
-                  To update your profile, go to the Profile page by clicking on
-                  your avatar in the top-right corner. From there, you can edit
-                  your personal information, change your password, and manage
-                  notification preferences.
-                </p>
-              </HelpItem> */}
               <HelpItem title="Understanding user roles">
                 <p>Save n Bite has three main user roles:</p>
                 <ul className="list-disc list-inside mt-2 ml-2">
@@ -175,7 +167,6 @@ const HelpMenu = ({ isOpen, onClose }) => {
             }
           >
             <div className="space-y-1">
-            
               <HelpItem title="Requesting donation items">
                 <p>
                   As an organization, you can browse available donation items and discounted items. Navigate to the "Browse" tab to

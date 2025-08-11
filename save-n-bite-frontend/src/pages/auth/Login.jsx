@@ -138,15 +138,17 @@ const Login = () => {
   };
 
   return (
-    <div className="min-h-[80vh] flex items-center justify-center px-2 sm:px-4 py-8 sm:py-12">
+<div className="min-h-[80vh] flex items-center justify-center px-2 sm:px-4 py-8 sm:py-12 bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
+
       {/* Notification Popup (top right) */}
       {showPopup && unreadCountSnapshot > 0 && (
         <div className="fixed top-4 sm:top-5 right-4 sm:right-5 bg-emerald-500 text-white px-3 sm:px-4 py-2 rounded shadow-lg z-50 animate-fade-in-out text-sm">
           You have {unreadCountSnapshot} unread notification{unreadCountSnapshot > 1 ? 's' : ''}!
         </div>
       )}
-      <div className="max-w-6xl w-full bg-white rounded-lg shadow-sm overflow-hidden">
-        <div className="flex flex-col lg:flex-row">
+<div className="max-w-6xl w-full bg-white dark:bg-gray-800 rounded-lg shadow-sm overflow-hidden transition-colors duration-300">
+  <div className="flex flex-col lg:flex-row">
+
           {/* Left Side - Branding */}
           <div 
             className="lg:w-1/2 text-white p-6 sm:p-8 lg:p-12 flex flex-col justify-between relative"
@@ -160,7 +162,9 @@ const Login = () => {
                 <img 
                   src={logo} 
                   alt="Save n Bite Logo" 
-                  className="w-16 h-16 sm:w-20 sm:h-20 lg:w-24 lg:h-24 object-contain"
+className="w-16 h-16 sm:w-20 sm:h-20 lg:w-24 lg:h-24 object-contain"
+style={{ filter: 'drop-shadow(0 0 2px #0003)' }}
+
                 />
               </div>
               
@@ -190,26 +194,27 @@ const Login = () => {
           </div>
 
           {/* Right Side - Login Form */}
-          <div className="lg:w-1/2 p-4 sm:p-6 lg:p-8 xl:p-12">
-            <div className="max-w-md mx-auto">
-              {/* Page Title */}
-              <div className="mb-6 sm:mb-8 text-center">
-                <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-2">
-                  Sign In
-                </h2>
-                <p className="text-sm sm:text-base text-gray-600">
+<div className="lg:w-1/2 p-4 sm:p-6 lg:p-8 xl:p-12 bg-white dark:bg-gray-800 transition-colors duration-300">
+  <div className="max-w-md mx-auto">
+    {/* Page Title */}
+    <div className="mb-6 sm:mb-8 text-center">
+      <h2 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-gray-100 mb-2">
+        Sign In
+      </h2>
+      <p className="text-sm sm:text-base text-gray-600 dark:text-gray-300">
+
                   Enter your credentials to access your account
                 </p>
               </div>
 
               {/* Message Display */}
               {message && (
-                <div className={`mb-6 p-3 rounded-md ${
+                <div className={`mb-6 p-3 rounded-md border transition-colors duration-300 ${
                   messageType === 'success' 
-                    ? 'bg-emerald-100 text-emerald-700 border border-emerald-200' 
+                    ? 'bg-emerald-100 text-emerald-700 border-emerald-200 dark:bg-emerald-900 dark:text-emerald-200 dark:border-emerald-800' 
                     : messageType === 'info'
-                    ? 'bg-blue-100 text-blue-700 border border-blue-200'
-                    : 'bg-red-100 text-red-700 border border-red-200'
+                    ? 'bg-blue-100 text-blue-700 border-blue-200 dark:bg-blue-900 dark:text-blue-200 dark:border-blue-800'
+                    : 'bg-red-100 text-red-700 border-red-200 dark:bg-red-900 dark:text-red-200 dark:border-red-800'
                 }`}>
                   {message}
                 </div>
@@ -227,16 +232,16 @@ const Login = () => {
                 <button
                   type="button"
                   onClick={handleForgotPasswordClick}
-                  className="text-sm text-emerald-600 hover:text-emerald-700 underline"
+                  className="text-sm text-emerald-600 hover:text-emerald-700 dark:text-emerald-400 dark:hover:text-emerald-300 underline transition-colors duration-200"
                 >
                   Forgot your password?
                 </button>
               </div>
 
               {/* Register Link */}
-              <div className="mt-6 text-center text-gray-600">
+              <div className="mt-6 text-center text-gray-600 dark:text-gray-300">
                 Don't have an account?{' '}
-                <Link to="/register" className="text-emerald-600 hover:text-emerald-700">
+                <Link to="/register" className="text-emerald-600 hover:text-emerald-700 dark:text-emerald-400 dark:hover:text-emerald-300">
                   Sign up
                 </Link>
               </div>

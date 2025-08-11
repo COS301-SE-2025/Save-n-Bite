@@ -1,10 +1,19 @@
+
 import React, { useEffect, useState, useRef } from 'react';
+
 import { ChevronLeft, ChevronRight, Star } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import FoodProvidersAPI from '../../services/FoodProvidersAPI';
 import reviewsAPI from '../../services/reviewsAPI';
 
 const FoodProviderCarousel = () => {
+
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [isHovered, setIsHovered] = useState(false);
+  const intervalRef = useRef();
+  const itemsToShow = 5;
+  const maxIndex = Math.max(0, foodProviders.length - itemsToShow);
+
   const [foodProviders, setFoodProviders] = useState([]);
   const [providersWithReviews, setProvidersWithReviews] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -100,6 +109,7 @@ const FoodProviderCarousel = () => {
     }
   };
 
+
   // Use providers with review data if available, otherwise use original providers
   const displayProviders = providersWithReviews.length > 0 ? providersWithReviews : foodProviders;
 
@@ -127,6 +137,7 @@ const FoodProviderCarousel = () => {
     if (provider.business_tags && provider.business_tags.length > 0) {
       return provider.business_tags;
     }
+
     // Fallback based on business name or type
     return ['Food Provider'];
   };
@@ -282,17 +293,19 @@ const FoodProviderCarousel = () => {
     );
   }
 
+
   return (
-    <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-6">
+    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-100 dark:border-gray-700 p-6 transition-colors">
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h2 className="text-2xl font-bold text-gray-800 mb-2">
+          <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-100 mb-2">
             Shop by Food Provider
           </h2>
-          <p className="text-gray-600">
+          <p className="text-gray-600 dark:text-gray-300">
             Discover your favorite local businesses and their available food
           </p>
         </div>
+
       </div>
 
       <div className="relative overflow-hidden">
@@ -314,10 +327,12 @@ const FoodProviderCarousel = () => {
         >
           {duplicatedProviders.map((provider, index) => (
             <div
+
               key={`${provider.id}-${index}`}
               className="flex-shrink-0 w-64 px-3"
+
             >
-              <div className="bg-gray-50 rounded-lg overflow-hidden hover:shadow-md transition-all duration-300 transform hover:-translate-y-1 cursor-pointer group">
+              <div className="bg-gray-50 dark:bg-gray-900 rounded-lg overflow-hidden hover:shadow-md transition-all duration-300 transform hover:-translate-y-1 cursor-pointer group border border-gray-100 dark:border-gray-700">
                 <div className="relative">
                   <img
                     src={getProviderImage(provider)}
@@ -328,29 +343,31 @@ const FoodProviderCarousel = () => {
                       e.target.src = 'https://images.unsplash.com/photo-1555507036-ab794f575c5f?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80';
                     }}
                   />
-                  <div className={`absolute top-2 right-2 bg-white/90 backdrop-blur-sm rounded-full px-2 py-1 flex items-center ${
+
+                  <div className={`absolute top-2 right-2 bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded-full px-2 py-1 flex items-center ${
                     provider.total_reviews === 0 ? 'opacity-50' : ''
                   }`}>
                     <Star 
                       size={12} 
                       className={`mr-1 ${
                         provider.total_reviews === 0 
-                          ? 'text-gray-400' 
+                             ? 'text-gray-400 dark:text-gray-500' 
                           : 'text-yellow-400 fill-current'
                       }`} 
                     />
-                    <span className="text-xs font-semibold text-gray-700">
+                    <span className="text-xs font-semibold text-gray-700 dark:text-gray-200">
                       {getProviderRating(provider)}
+\
                     </span>
                   </div>
                 </div>
                 
                 <div className="p-4">
-                  <h3 className="font-semibold text-gray-800 mb-2 group-hover:text-emerald-600 transition-colors">
+ <h3 className="font-semibold text-gray-800 dark:text-gray-100 mb-2 group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors">
                     {provider.business_name}
                   </h3>
                   
-                  <p className="text-xs text-gray-600 mb-2">
+                  <p className="text-xs text-gray-600 dark:text-gray-300 mb-2">
                     {provider.active_listings_count || 0} listings available
                     {provider.total_reviews > 0 && (
                       <span className="ml-2">
@@ -362,22 +379,22 @@ const FoodProviderCarousel = () => {
                   <div className="flex flex-wrap gap-1 mb-3">
                     {getProviderSpecialties(provider).slice(0, 2).map((specialty, specIndex) => (
                       <span
-                        key={specIndex}
-                        className="text-xs px-2 py-1 bg-emerald-100 text-emerald-700 rounded-full"
+key={specIndex}
+                        className="text-xs px-2 py-1 bg-emerald-100 dark:bg-emerald-900 text-emerald-700 dark:text-emerald-200 rounded-full"
                       >
                         {specialty}
                       </span>
                     ))}
-                    {getProviderSpecialties(provider).length > 2 && (
-                      <span className="text-xs px-2 py-1 bg-gray-100 text-gray-600 rounded-full">
+ {getProviderSpecialties(provider).length > 2 && (
+                      <span className="text-xs px-2 py-1 bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 rounded-full">
                         +{getProviderSpecialties(provider).length - 2}
                       </span>
                     )}
                   </div>
                   
-                  <Link
+<Link
                     to={`/provider/${provider.id}`}
-                    className="block w-full py-2 text-sm font-medium text-emerald-600 border border-emerald-600 rounded-md hover:bg-emerald-600 hover:text-white transition-colors duration-200 text-center"
+                    className="block w-full py-2 text-sm font-medium text-emerald-600 dark:text-emerald-300 border border-emerald-600 dark:border-emerald-300 rounded-md hover:bg-emerald-600 dark:hover:bg-emerald-800 hover:text-white dark:hover:text-white transition-colors duration-200 text-center"
                   >
                     View Provider
                   </Link>
@@ -387,6 +404,7 @@ const FoodProviderCarousel = () => {
           ))}
         </div>
       </div>
+
 
       <style jsx>{`
         @keyframes scroll-left {
@@ -402,6 +420,7 @@ const FoodProviderCarousel = () => {
           animation: scroll-left 60s linear infinite;
         }
       `}</style>
+
     </div>
   );
 };

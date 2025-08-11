@@ -95,21 +95,23 @@ const SideBar = ({ currentPage, pendingCount, onNavigate, onClose }) => {
 
   return (
     <OnboardingProvider>
-      <div className="w-64 bg-blue-900 text-white flex flex-col min-h-screen relative">
-        {/* Mobile Close Button - Only visible on small screens */}
-        <button
-          onClick={onClose}
-          className="md:hidden absolute top-4 right-4 p-2 text-white hover:bg-blue-800 rounded-lg z-10"
-          aria-label="Close menu"
-        >
-          <X size={20} />
-        </button>
+{/* Sidebar: use a slightly lighter/different dark shade than the page */}
+<div className="w-64 bg-blue-900 dark:bg-gray-800/90 text-white flex flex-col min-h-screen relative transition-colors duration-300 border-r border-blue-800 dark:border-gray-700">
+  {/* Mobile Close Button - Only visible on small screens */}
+  <button
+    onClick={onClose}
+    className="md:hidden absolute top-4 right-4 p-2 text-white hover:bg-blue-800 rounded-lg z-10"
+    aria-label="Close menu"
+  >
+    <X size={20} />
+  </button>
 
-        <div className="p-6 border-b border-blue-800 flex items-center gap-3">
+  <div className="p-6 border-b border-blue-800 dark:border-gray-700 flex items-center gap-3">
+
           <img src={logo} alt="Logo" className="w-12 h-8" />
           <div className="flex flex-col">
-            <span className="text-2xl font-bold text-white">Save n Bite</span>
-            <span className="text-blue-200 text-sm">Provider Portal</span>
+            <span className="text-2xl font-bold text-white dark:text-gray-100">Save n Bite</span>
+            <span className="text-blue-200 dark:text-gray-400 text-sm">Provider Portal</span>
           </div>
         </div>
 
@@ -123,8 +125,8 @@ const SideBar = ({ currentPage, pendingCount, onNavigate, onClose }) => {
                     onClick={() => handleNavigation(item.path)}
                     className={`w-full flex items-center px-4 py-3 rounded-lg transition-colors ${
                       currentPage === item.route
-                        ? 'bg-blue-700 text-white'
-                        : 'text-blue-200 hover:bg-blue-800 hover:text-white'
+                        ? 'bg-blue-700 dark:bg-blue-900 text-white dark:text-gray-100'
+                        : 'text-blue-200 dark:text-gray-400 hover:bg-blue-800 dark:hover:bg-blue-900 hover:text-white dark:hover:text-gray-100'
                     }`}
                     data-onboarding={`nav-${item.route.toLowerCase()}`}
                   >
@@ -133,7 +135,8 @@ const SideBar = ({ currentPage, pendingCount, onNavigate, onClose }) => {
 
                     {/* Notification badge for donations */}
                     {item.name === 'Manage Donations' && pendingCount > 0 && (
-                      <span className="ml-auto bg-green-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center flex-shrink-0">
+                      <span className="ml-auto bg-green-500 dark:bg-green-700 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center flex-shrink-0">
+
                         {pendingCount}
                       </span>
                     )}
@@ -146,17 +149,17 @@ const SideBar = ({ currentPage, pendingCount, onNavigate, onClose }) => {
           <div className="mt-4 space-y-2">
             <button
               onClick={toggleHelp}
-              className="w-full flex items-center px-4 py-3 rounded-lg text-blue-200 hover:bg-blue-800 hover:text-white transition-colors"
+              className="w-full flex items-center px-4 py-3 rounded-lg text-blue-200 dark:text-gray-400 hover:bg-blue-800 dark:hover:bg-blue-900 hover:text-white dark:hover:text-gray-100 transition-colors"
               aria-label="Help"
               data-onboarding="help-button"
             >
               <HelpIcon className="w-5 h-5 mr-3 flex-shrink-0" />
               <span className="flex-1 text-left">Help Center</span>
             </button>
-            
             <button
               onClick={handleLogout}
-              className="w-full flex justify-center items-center px-4 py-3 rounded-lg bg-red-600 text-white hover:bg-red-700 transition-colors"
+              className="w-full flex justify-center items-center px-4 py-3 rounded-lg bg-red-600 dark:bg-red-700 text-white hover:bg-red-700 dark:hover:bg-red-800 transition-colors"
+
             >
               Logout
             </button>

@@ -20,19 +20,20 @@ const FilterSidebar = ({
   };
 
   return (
-    <div className="w-full lg:w-64 bg-white p-3 sm:p-4 rounded-lg shadow-sm border border-gray-100 card-responsive">
-      <h3 className="font-semibold text-base sm:text-lg mb-3 sm:mb-4 text-gray-800">
+<div className="w-full lg:w-64 bg-white dark:bg-gray-800 p-3 sm:p-4 rounded-lg shadow-sm border border-gray-100 dark:border-gray-700 card-responsive transition-colors duration-300">
+  <h3 className="font-semibold text-base sm:text-lg mb-3 sm:mb-4 text-gray-800 dark:text-gray-100">
+
         Filters
       </h3>
       
       {/* Price Range Filter */}
-      <div className="mb-4 sm:mb-6">
-        <h4 className="font-medium mb-2 text-sm sm:text-base text-gray-700">Price Range</h4>
-        <div className="flex items-center justify-between mb-2">
-          <span className="text-xs sm:text-sm text-gray-600">
-            R{filters.priceRange[0]}
-          </span>
-          <span className="text-xs sm:text-sm text-gray-600">
+<div className="mb-4 sm:mb-6">
+  <h4 className="font-medium mb-2 text-sm sm:text-base text-gray-700 dark:text-gray-200">Price Range</h4>
+  <div className="flex items-center justify-between mb-2">
+    <span className="text-xs sm:text-sm text-gray-600 dark:text-gray-300">
+      R{filters.priceRange[0]}
+    </span>
+    <span className="text-xs sm:text-sm text-gray-600 dark:text-gray-300">
             R{filters.priceRange[1]}
           </span>
         </div>
@@ -43,9 +44,10 @@ const FilterSidebar = ({
           step="10"
           value={filters.priceRange[1]} 
           onChange={handlePriceRangeChange}
-          className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-emerald-600 touch-target" 
+className="w-full h-2 bg-gray-200 dark:bg-gray-700 rounded-lg appearance-none cursor-pointer accent-emerald-600 touch-target"
+
         />
-        <div className="flex justify-between text-xs text-gray-500 mt-1">
+        <div className="flex justify-between text-xs text-gray-500 dark:text-gray-400 mt-1">
           <span>R0</span>
           <span>R1,000</span>
         </div>
@@ -108,12 +110,14 @@ const FilterSidebar = ({
 
       {/* Expiration Filter */}
       <div className="mb-6">
-        <h4 className="font-medium mb-2 text-gray-700">
-          Pickup Deadline
-        </h4>
-        <div className="relative">
-          <select 
-            className="w-full p-2 border border-gray-300 rounded-md appearance-none focus:ring-emerald-500 focus:border-emerald-500 transition-colors text-sm" 
+<h4 className="font-medium mb-2 text-gray-700 dark:text-gray-200">
+  Pickup Deadline
+</h4>
+<div className="relative">
+  <select 
+    className="w-full p-2 border border-gray-300 dark:border-gray-700 rounded-md appearance-none focus:ring-emerald-500 focus:border-emerald-500 dark:bg-gray-900 dark:text-gray-100 transition-colors text-sm" 
+  >
+
             value={filters.expiration} 
             onChange={(e) => setFilters({
               ...filters,
@@ -128,15 +132,17 @@ const FilterSidebar = ({
           </select>
           <ChevronDownIcon 
             size={16} 
-            className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400" 
+            className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-gray-500" 
           />
         </div>
       </div>
       
+
       {/* Reset Filters Button */}
       <button 
-        className="w-full py-2 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors duration-200 font-medium text-gray-700 text-sm" 
+  className="w-full py-2 border border-gray-300 dark:border-gray-700 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-200 font-medium text-gray-700 dark:text-gray-200 text-sm" 
         onClick={onResetFilters}
+
       >
         Reset Filters
       </button>

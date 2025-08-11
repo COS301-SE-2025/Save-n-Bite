@@ -211,127 +211,146 @@ function ManageDonations() {
   const pendingCount = donations.filter(d => d.status.toLowerCase() === 'pending').length
 
   return (
-    <div className="flex w-full min-h-screen">
-      {/* Desktop Sidebar - Hidden on mobile */}
-      <div className="hidden md:flex">
-        <SideBar currentPage="donations" pendingCount={pendingCount} />
-      </div>
+  <div className="flex w-full min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
+  {/* Desktop Sidebar - Hidden on mobile */}
+  <div className="hidden md:flex">
+    <SideBar currentPage="donations" pendingCount={pendingCount} />
+  </div>
 
-      {/* Mobile Sidebar Overlay */}
-      {isMobileSidebarOpen && (
-        <div className="fixed inset-0 z-50 md:hidden">
-          {/* Backdrop */}
-          <div 
-            className="fixed inset-0 bg-black bg-opacity-50"
-            onClick={toggleMobileSidebar}
-          />
-          {/* Sidebar */}
-          <div className="fixed left-0 top-0 h-full w-64 z-50">
-            <SideBar 
-              currentPage="donations" 
-              pendingCount={pendingCount}
-              onNavigate={() => setIsMobileSidebarOpen(false)}
-              onClose={() => setIsMobileSidebarOpen(false)}
-            />
+  {/* Mobile Sidebar Overlay */}
+  {isMobileSidebarOpen && (
+    <div className="fixed inset-0 z-50 md:hidden">
+      {/* Backdrop */}
+      <div 
+        className="fixed inset-0 bg-black bg-opacity-50"
+        onClick={toggleMobileSidebar}
+      />
+      {/* Sidebar */}
+      <div className="fixed left-0 top-0 h-full w-64 z-50">
+        <SideBar 
+          currentPage="donations" 
+          pendingCount={pendingCount}
+          onNavigate={() => setIsMobileSidebarOpen(false)}
+          onClose={() => setIsMobileSidebarOpen(false)}
+        />
+
           </div>
         </div>
       )}
 
-      <div className="flex-1 overflow-auto">
-        {/* Mobile Header */}
-        <div className="md:hidden bg-white border-b border-gray-200 px-4 py-3 flex items-center justify-between">
-          <button
-            onClick={toggleMobileSidebar}
-            className="p-2 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-lg"
-            aria-label="Open menu"
-          >
-            <Menu size={24} />
-          </button>
-          <h1 className="text-lg font-semibold text-gray-900">
-            Donations {pendingCount > 0 && <span className="text-sm bg-red-500 text-white px-2 py-1 rounded-full ml-2">{pendingCount}</span>}
-          </h1>
-          <button
-            onClick={fetchDonations}
-            className="text-sm text-emerald-600 hover:text-emerald-700 px-2 py-1"
-          >
-            Refresh
-          </button>
+<div className="flex-1 overflow-auto">
+  {/* Mobile Header */}
+  <div className="md:hidden bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-4 py-3 flex items-center justify-between">
+    <button
+      onClick={toggleMobileSidebar}
+      className="p-2 text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg"
+      aria-label="Open menu"
+    >
+      <Menu size={24} />
+    </button>
+    <h1 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+      Donations {pendingCount > 0 && <span className="text-sm bg-red-500 text-white px-2 py-1 rounded-full ml-2">{pendingCount}</span>}
+    </h1>
+    <button
+      onClick={fetchDonations}
+      className="text-sm text-emerald-600 hover:text-emerald-700 px-2 py-1"
+    >
+      Refresh
+    </button>
+  </div>
+
+  <div className="p-4 sm:p-6">
+    <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 sm:gap-0 mb-6">
+      <div>
+        <h1 className="hidden md:block text-xl sm:text-2xl font-bold text-gray-900 dark:text-gray-100">Manage Donations</h1>
+        <h2 className="md:hidden text-xl font-bold text-gray-900 dark:text-gray-100">Donations</h2>
+        <p className="text-gray-600 dark:text-gray-300 mt-1 text-sm sm:text-base">
+          Review, approve and track donations to nonprofit organizations
+        </p>
+      </div>
+      <button
+        onClick={fetchDonations}
+        className="hidden md:block px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-md text-sm sm:text-base"
+      >
+        Refresh
+      </button>
+    </div>
+
+    {/* Stats Bar */}
+    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-3 sm:p-4 mb-4 sm:mb-6 transition-colors duration-300">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-6">
+        <div className="text-center">
+          <div className="text-lg sm:text-2xl font-bold text-gray-900 dark:text-gray-100">
+            {donations.filter(d => d.status.toLowerCase() === 'pending').length}
+          </div>
+          <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-300">Pending Requests</p>
         </div>
-
-        <div className="p-4 sm:p-6">
-          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 sm:gap-0 mb-6">
-            <div>
-              <h1 className="hidden md:block text-xl sm:text-2xl font-bold">Manage Donations</h1>
-              <h2 className="md:hidden text-xl font-bold">Donations</h2>
-              <p className="text-gray-600 mt-1 text-sm sm:text-base">
-                Review, approve and track donations to nonprofit organizations
-              </p>
+        <div className="text-center">
+          <div className="text-lg sm:text-2xl font-bold text-gray-900 dark:text-gray-100">
+            {donations.filter(d => d.status.toLowerCase() === 'ready_for_pickup').length}
+          </div>
+          <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-300">Ready for Pickup</p>
+        </div>
+        <div className="text-center">
+          <div className="text-lg sm:text-2xl font-bold text-gray-900 dark:text-gray-100">
+            {donations.filter(d => d.status.toLowerCase() === 'completed').length}
+          </div>
+          <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-300">Completed</p>
+        </div>
+        <div className="text-center">
+          <div className="text-lg sm:text-2xl font-bold text-green-600 dark:text-green-400">
+            {donations.reduce((total, donation) => 
+              total + donation.items.reduce((itemTotal, item) => itemTotal + item.quantity, 0), 0
+            )}
+          </div>
+          <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-300">Items Donated</p>
+        </div>
             </div>
-            <button
-              onClick={fetchDonations}
-              className="hidden md:block px-4 py-2 bg-emerald-600 text-white rounded-md hover:bg-emerald-700 text-sm sm:text-base"
+          </div>
+
+  {/* Search and Filters */}
+<div className="mb-4 sm:mb-6">
+  <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4 mb-4">
+    <div className="relative flex-1">
+      <SearchIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-gray-500 h-4 w-4 sm:h-5 sm:w-5" />
+      <input
+        type="text"
+        placeholder="Search by request ID, item or NGO..."
+        className="pl-9 sm:pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md w-full text-sm sm:text-base bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500"
+        value={searchQuery}
+        onChange={(e) => setSearchQuery(e.target.value)}
+      />
+    </div>
+    <select
+      value={filterStatus}
+      onChange={(e) => setFilterStatus(e.target.value)}
+      className="px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md text-sm sm:text-base sm:min-w-[140px] bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-100"
+    >
+      <option value="all">All Status</option>
+      <option value="pending">Pending</option>
+      <option value="ready_for_pickup">Ready for Pickup</option>
+      <option value="completed">Completed</option>
+      <option value="rejected">Rejected</option>
+    </select>
+            </div>
+            <select
+              className="px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-100"
+              value={filterNGO}
+              onChange={(e) => setFilterNGO(e.target.value)}
             >
-              Refresh
-            </button>
-          </div>
-
-          {/* Stats Bar */}
-          <div className="bg-white rounded-lg shadow-md p-3 sm:p-4 mb-4 sm:mb-6">
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-6">
-              <div className="text-center">
-                <div className="text-lg sm:text-2xl font-bold text-gray-900">
-                  {donations.filter(d => d.status.toLowerCase() === 'pending').length}
-                </div>
-                <p className="text-xs sm:text-sm text-gray-500">Pending Requests</p>
-              </div>
-              <div className="text-center">
-                <div className="text-lg sm:text-2xl font-bold text-gray-900">
-                  {donations.filter(d => d.status.toLowerCase() === 'ready_for_pickup').length}
-                </div>
-                <p className="text-xs sm:text-sm text-gray-500">Ready for Pickup</p>
-              </div>
-              <div className="text-center">
-                <div className="text-lg sm:text-2xl font-bold text-gray-900">
-                  {donations.filter(d => d.status.toLowerCase() === 'completed').length}
-                </div>
-                <p className="text-xs sm:text-sm text-gray-500">Completed</p>
-              </div>
-              <div className="text-center">
-                <div className="text-lg sm:text-2xl font-bold text-green-600">
-                  {donations.reduce((total, donation) => 
-                    total + donation.items.reduce((itemTotal, item) => itemTotal + item.quantity, 0), 0
-                  )}
-                </div>
-                <p className="text-xs sm:text-sm text-gray-500">Items Donated</p>
-              </div>
-            </div>
-          </div>
-
-          {/* Search and Filters */}
-          <div className="mb-4 sm:mb-6">
-            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4 mb-4">
-              <div className="relative flex-1">
-                <SearchIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4 sm:h-5 sm:w-5" />
-                <input
-                  type="text"
-                  placeholder="Search by ID, item, NGO name..."
-                  className="pl-9 sm:pl-10 pr-4 py-2 border border-gray-300 rounded-md w-full text-sm sm:text-base"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                />
-              </div>
-              <select
-                value={filterStatus}
-                onChange={(e) => setFilterStatus(e.target.value)}
-                className="px-3 py-2 border border-gray-300 rounded-md text-sm sm:text-base sm:min-w-[140px]"
-              >
-                <option value="all">All Status</option>
-                <option value="pending">Pending</option>
-                <option value="ready_for_pickup">Ready for Pickup</option>
-                <option value="completed">Completed</option>
-                <option value="rejected">Rejected</option>
-              </select>
-            </div>
+              <option value="all">All NGOs</option>
+              {/* Add more NGO options here if needed */}
+            </select>
+            <select
+              className="px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-100"
+              value={filterStatus}
+              onChange={(e) => setFilterStatus(e.target.value)}
+            >
+              <option value="all">All Statuses</option>
+              <option value="pending">Pending</option>
+              <option value="ready for pickup">Ready for Pickup</option>
+              <option value="completed">Completed</option>
+            </select>
           </div>
 
           {/* Donations List */}

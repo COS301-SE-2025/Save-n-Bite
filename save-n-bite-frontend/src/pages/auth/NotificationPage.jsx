@@ -237,19 +237,19 @@ const NotificationPage = () => {
   const filteredNotifications = getFilteredNotifications();
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="bg-white border-b border-gray-200">
+ <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
+      <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
         <div className="max-w-5xl mx-auto px-3 sm:px-4 py-3 sm:py-4 flex items-center">
           <button
             onClick={() => navigate('/food-listing', { replace: true })}
-            className="flex items-center text-gray-600 hover:text-gray-800 mr-3 sm:mr-4 touch-target"
+            className="flex items-center text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-gray-100 mr-3 sm:mr-4 touch-target"
           >
             <ArrowLeft size={18} className="sm:w-5 sm:h-5" />
           </button>
-          <h1 className="text-lg sm:text-xl font-semibold text-gray-800">Notifications</h1>
+ <h1 className="text-lg sm:text-xl font-semibold text-gray-800 dark:text-gray-100">Notifications</h1>
           <button
             onClick={handleRefresh}
-            className="ml-auto text-xs sm:text-sm text-emerald-600 hover:text-emerald-700 disabled:opacity-50 touch-target"
+            className="ml-auto text-xs sm:text-sm text-emerald-600 dark:text-emerald-400 hover:text-emerald-700 dark:hover:text-emerald-300 disabled:opacity-50 touch-target"
             disabled={loading}
           >
             {loading ? 'Loading...' : 'Refresh'}
@@ -259,15 +259,16 @@ const NotificationPage = () => {
 
       <div className="container-responsive max-w-5xl mx-auto py-4 sm:py-6">
         {/* Filter and Actions Bar */}
-        <div className="bg-white rounded-lg shadow-sm mb-4 sm:mb-6">
-          <div className="p-3 sm:p-4 flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-gray-100">
+{/* Filter and Actions Bar */}
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm mb-4 sm:mb-6 transition-colors duration-300">
+          <div className="p-3 sm:p-4 flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-gray-100 dark:border-gray-700">
             <div className="flex items-center mb-3 sm:mb-0">
-              <Bell size={18} className="sm:w-5 sm:h-5 text-emerald-600 mr-2" />
-              <h2 className="text-sm sm:text-base font-medium text-gray-800">
+              <Bell size={18} className="sm:w-5 sm:h-5 text-emerald-600 dark:text-emerald-400 mr-2" />
+              <h2 className="text-sm sm:text-base font-medium text-gray-800 dark:text-gray-100">
                 {unreadCount > 0 ? (
                   <>
                     You have{' '}
-                    <span className="text-emerald-600">{unreadCount} unread</span>{' '}
+                    <span className="text-emerald-600 dark:text-emerald-400">{unreadCount} unread</span>{' '}
                     notifications
                   </>
                 ) : (
@@ -279,7 +280,7 @@ const NotificationPage = () => {
               {unreadCount > 0 && (
                 <button
                   onClick={handleMarkAllAsRead}
-                  className="text-xs bg-emerald-50 text-emerald-600 px-2 sm:px-3 py-1 rounded-full hover:bg-emerald-100 transition-colors flex items-center disabled:opacity-50 touch-target"
+className="text-xs bg-emerald-50 dark:bg-emerald-900 text-emerald-600 dark:text-emerald-200 px-2 sm:px-3 py-1 rounded-full hover:bg-emerald-100 dark:hover:bg-emerald-800 transition-colors flex items-center disabled:opacity-50 touch-target"
                   disabled={loading || isDeleting}
                 >
                   <Check size={10} className="sm:w-3 sm:h-3 mr-1" />
@@ -290,7 +291,7 @@ const NotificationPage = () => {
               {notifications.length > 0 && (
                 <button
                   onClick={handleClearAll}
-                  className="text-xs bg-gray-100 text-gray-600 px-2 sm:px-3 py-1 rounded-full hover:bg-gray-200 transition-colors flex items-center disabled:opacity-50 touch-target"
+ className="text-xs bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 px-2 sm:px-3 py-1 rounded-full hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors flex items-center disabled:opacity-50 touch-target"
                   disabled={loading || isDeleting}
                 >
                   <Trash2 size={10} className="sm:w-3 sm:h-3 mr-1" />
@@ -302,13 +303,13 @@ const NotificationPage = () => {
           </div>
 
           {/* Filter Tabs */}
-          <div className="flex overflow-x-auto">
+          <div className="flex overflow-x-auto bg-white dark:bg-gray-800">
             <button
               onClick={() => setFilter('all')}
               className={`px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm font-medium whitespace-nowrap touch-target ${
                 filter === 'all'
-                  ? 'text-emerald-600 border-b-2 border-emerald-600'
-                  : 'text-gray-600 hover:text-gray-800'
+                  ? 'text-emerald-600 dark:text-emerald-400 border-b-2 border-emerald-600 dark:border-emerald-400'
+                  : 'text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-gray-100'
               }`}
             >
               All ({notifications.length})
@@ -317,8 +318,8 @@ const NotificationPage = () => {
               onClick={() => setFilter('unread')}
               className={`px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm font-medium whitespace-nowrap touch-target ${
                 filter === 'unread'
-                  ? 'text-emerald-600 border-b-2 border-emerald-600'
-                  : 'text-gray-600 hover:text-gray-800'
+                  ? 'text-emerald-600 dark:text-emerald-400 border-b-2 border-emerald-600 dark:border-emerald-400'
+                  : 'text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-gray-100'
               }`}
             >
               Unread ({unreadCount})
@@ -327,8 +328,8 @@ const NotificationPage = () => {
               onClick={() => setFilter('new_listing')}
               className={`px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm font-medium whitespace-nowrap touch-target ${
                 filter === 'new_listing'
-                  ? 'text-emerald-600 border-b-2 border-emerald-600'
-                  : 'text-gray-600 hover:text-gray-800'
+                  ? 'text-emerald-600 dark:text-emerald-400 border-b-2 border-emerald-600 dark:border-emerald-400'
+                  : 'text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-gray-100'
               }`}
             >
               <span className="hidden sm:inline">New Listings</span>
@@ -338,8 +339,8 @@ const NotificationPage = () => {
               onClick={() => setFilter('system')}
               className={`px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm font-medium whitespace-nowrap touch-target ${
                 filter === 'system'
-                  ? 'text-emerald-600 border-b-2 border-emerald-600'
-                  : 'text-gray-600 hover:text-gray-800'
+                  ? 'text-emerald-600 dark:text-emerald-400 border-b-2 border-emerald-600 dark:border-emerald-400'
+                  : 'text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-gray-100'
               }`}
             >
               <span className="hidden sm:inline">Save 'n Bite Notifications</span>
@@ -349,14 +350,14 @@ const NotificationPage = () => {
         </div>
 
         {/* Notifications List */}
-        <div className="bg-white rounded-lg shadow-sm overflow-hidden">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm overflow-hidden transition-colors duration-300">
           {loading ? (
-            <div className="p-4 sm:p-6 text-center">
+ <div className="p-4 sm:p-6 text-center">
               <div className="animate-spin rounded-full h-6 w-6 sm:h-8 sm:w-8 border-b-2 border-emerald-600 mx-auto mb-3 sm:mb-4"></div>
-              <p className="text-sm sm:text-base text-gray-600">Loading notifications...</p>
+              <p className="text-sm sm:text-base text-gray-600 dark:text-gray-300">Loading notifications...</p>
             </div>
           ) : error ? (
-            <div className="p-4 sm:p-6 text-center text-red-600">
+            <div className="p-4 sm:p-6 text-center text-red-600 dark:text-red-400">
               <p className="text-sm sm:text-base">{error}</p>
               <button
                 onClick={handleRefresh}
@@ -379,8 +380,8 @@ const NotificationPage = () => {
               ))}
             </div>
           ) : (
-            <div className="p-4 sm:p-6 text-center text-gray-500">
-              <Bell size={24} className="sm:w-8 sm:h-8 mx-auto mb-2 text-gray-400" />
+  <div className="p-4 sm:p-6 text-center text-gray-500 dark:text-gray-400">
+              <Bell size={24} className="sm:w-8 sm:h-8 mx-auto mb-2 text-gray-400 dark:text-gray-600" />
               <p className="text-sm sm:text-base font-medium">No notifications found</p>
               <p className="text-xs sm:text-sm mt-1">
                 {filter !== 'all'
