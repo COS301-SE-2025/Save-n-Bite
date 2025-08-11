@@ -4,7 +4,7 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny
 from django.core.paginator import Paginator
-from django.db.models import Q
+from django.db.models import Count, Avg, Q, F
 from django.contrib.auth import get_user_model
 from django.http import HttpResponse
 from django.utils import timezone

@@ -3,6 +3,7 @@ import AuditLogFilters from '../../components/SystemAdmin/Audit/AuditLogFilters'
 import AuditLogTable from '../../components/SystemAdmin/Audit/AuditLogTable'
 import AuditLogDetails from '../../components/SystemAdmin/Audit/AuditLogDetails'
 import AdminAPI from '../../services/AdminAPI'
+import { apiClient } from '../../services/FoodAPI.js'
 import { toast } from 'sonner'
 import { RefreshCwIcon, DownloadIcon, AlertCircleIcon } from 'lucide-react'
 
@@ -23,32 +24,90 @@ const AuditLogs = () => {
   const [dateFilter, setDateFilter] = useState('All')
   const [selectedLog, setSelectedLog] = useState(null)
   const [showDetailsModal, setShowDetailsModal] = useState(false)
-  
-  
+
+  // Authentication setup
+  useEffect(() => {
+    setupAuthAndFetchLogs()
+  }, [])
+
+  const setupAuthAndFetchLogs = async () => {
+    try {
+      const token = localStorage.getItem('adminToken')
+      if (!token) {
+        throw new Error('No admin token found. Please log in again.')
+      }
+      apiClient.defaults.headers.common['Authorization'] = `Bearer ${token}`
+      
+      await fetchAuditLogs()
+      
+    } catch (error) {
+      console.error('Authentication setup error:', error)
+      setError('Authentication failed. Please log in again.')
+      setLoading(false)
+    }
+  }
+
   /**
-   * Fetch audit logs from backend or use mock data
+   * Fetch audit logs from backend using correct AdminAPI method and signature
    */
   const fetchAuditLogs = async () => {
     try {
       setLoading(true)
       setError(null)
 
-      // Real API call - this endpoint would need to be implemented
-      const params = {
-        page: currentPage,
-        page_size: 20
+      // Convert date filter to actual dates
+      let startDate = ''
+      let endDate = ''
+      
+      if (dateFilter === 'Today') {
+        startDate = new Date().toISOString().split('T')[0]
+        endDate = startDate
+      } else if (dateFilter === 'This Week') {
+        const weekAgo = new Date()
+        weekAgo.setDate(weekAgo.getDate() - 7)
+        startDate = weekAgo.toISOString().split('T')[0]
+        endDate = new Date().toISOString().split('T')[0]
+      } else if (dateFilter === 'This Month') {
+        const monthAgo = new Date()
+        monthAgo.setMonth(monthAgo.getMonth() - 1)
+        startDate = monthAgo.toISOString().split('T')[0]
+        endDate = new Date().toISOString().split('T')[0]
       }
 
-      if (search) params.search = search
-      if (actionFilter !== 'All') params.action_type = actionFilter
-      if (dateFilter !== 'All') params.date_filter = dateFilter
+      // Convert action filter
+      const actionType = actionFilter === 'All' ? '' : actionFilter.toLowerCase().replace(' ', '_')
 
-      // Note: This endpoint doesn't exist yet in your backend
-      // You would need to implement it in your Django admin panel
-      const response = await AdminAPI.getAdminActionLogs(params)
+      // Use correct AdminAPI method signature
+      const response = await AdminAPI.getAdminActionLogs(
+        currentPage,      // page
+        search,           // search
+        actionType,       // actionType
+        startDate,        // startDate
+        endDate,          // endDate
+        20                // perPage
+      )
 
       if (response.success) {
-        setLogs(response.data.logs || [])
+        // Transform the log data to match your UI expectations
+        const transformedLogs = response.data.logs.map(log => ({
+          id: log.id,
+          action: formatActionType(log.action_type),
+          user: {
+            name: log.admin_name,
+            id: log.admin_email, // Using email as ID since it's available
+          },
+          target: {
+            name: getTargetName(log),
+            id: log.target_id,
+            type: formatTargetType(log.target_type),
+          },
+          timestamp: log.timestamp,
+          details: log.action_description,
+          ip: log.ip_address,
+          metadata: log.metadata
+        }))
+
+        setLogs(transformedLogs)
         setTotalCount(response.data.pagination?.total_count || 0)
         setTotalPages(response.data.pagination?.total_pages || 1)
         setCurrentPage(response.data.pagination?.current_page || 1)
@@ -59,10 +118,50 @@ const AuditLogs = () => {
     } catch (err) {
       console.error('Audit logs fetch error:', err)
       setError(err.message)
-      toast.error('Failed to load audit logs')
     } finally {
       setLoading(false)
     }
+  }
+
+  /**
+   * Transform backend action types to display format
+   */
+  const formatActionType = (actionType) => {
+    const actionMap = {
+      'user_management': 'User Management',
+      'user_verification': 'User Verification',
+      'data_export': 'Data Export',
+      'custom_notification': 'System Announcement',
+      'password_reset': 'Password Reset',
+      'listing_moderation': 'Listing Moderation'
+    }
+    return actionMap[actionType] || actionType.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())
+  }
+
+  /**
+   * Transform backend target types to display format
+   */
+  const formatTargetType = (targetType) => {
+    const typeMap = {
+      'user': 'User',
+      'listing': 'Listing',
+      'notification': 'Announcement',
+      'export': 'Export'
+    }
+    return typeMap[targetType] || targetType.charAt(0).toUpperCase() + targetType.slice(1)
+  }
+
+  /**
+   * Get target name from log metadata or use target_id
+   */
+  const getTargetName = (log) => {
+    if (log.metadata) {
+      // Try to extract name from metadata
+      if (log.metadata.user_email) return log.metadata.user_email
+      if (log.metadata.subject) return log.metadata.subject
+      if (log.metadata.export_type) return `${log.metadata.export_type} Export`
+    }
+    return log.target_id || 'Unknown'
   }
 
   /**
@@ -70,11 +169,26 @@ const AuditLogs = () => {
    */
   const handleExport = async () => {
     try {
-      const response = await AdminAPI.exportData('audit_logs', {
-        search,
-        action_filter: actionFilter,
-        date_filter: dateFilter
-      })
+      // Convert filters for export
+      let startDate = ''
+      let endDate = ''
+      
+      if (dateFilter === 'Today') {
+        startDate = new Date().toISOString().split('T')[0]
+        endDate = startDate
+      } else if (dateFilter === 'This Week') {
+        const weekAgo = new Date()
+        weekAgo.setDate(weekAgo.getDate() - 7)
+        startDate = weekAgo.toISOString().split('T')[0]
+        endDate = new Date().toISOString().split('T')[0]
+      } else if (dateFilter === 'This Month') {
+        const monthAgo = new Date()
+        monthAgo.setMonth(monthAgo.getMonth() - 1)
+        startDate = monthAgo.toISOString().split('T')[0]
+        endDate = new Date().toISOString().split('T')[0]
+      }
+
+      const response = await AdminAPI.exportData('audit_logs', startDate, endDate)
 
       if (response.success) {
         // Create download link for the exported file
@@ -103,10 +217,21 @@ const AuditLogs = () => {
   }
 
   /**
-   * Load data on component mount and when filters change
+   * Handle retry when there's an error
+   */
+  const handleRetry = async () => {
+    setLoading(true)
+    setError(null)
+    await fetchAuditLogs()
+  }
+
+  /**
+   * Load data when filters change
    */
   useEffect(() => {
-    fetchAuditLogs()
+    if (!loading) { // Only refetch if not in initial load
+      fetchAuditLogs()
+    }
   }, [search, actionFilter, dateFilter, currentPage])
 
   const handleViewDetails = (log) => {
@@ -114,7 +239,7 @@ const AuditLogs = () => {
     setShowDetailsModal(true)
   }
 
-  // Get unique action types for filter
+  // Get unique action types for filter from current logs
   const actionTypes = [
     'All',
     ...Array.from(new Set(logs.map((log) => log.action))),
@@ -156,7 +281,7 @@ const AuditLogs = () => {
             <h3 className="text-lg font-medium text-gray-900 mb-2">Error Loading Audit Logs</h3>
             <p className="text-gray-500 mb-4">{error}</p>
             <button
-              onClick={handleRefresh}
+              onClick={handleRetry}
               className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
             >
               Try Again
@@ -194,26 +319,6 @@ const AuditLogs = () => {
           </button>
         </div>
       </div>
-      
-      {/* Demo Notice */}
-      {useMockData && (
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-          <div className="flex items-start">
-            <div className="flex-shrink-0">
-              <svg className="w-5 h-5 text-blue-600 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
-                <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
-              </svg>
-            </div>
-            <div className="ml-3">
-              <h3 className="text-sm font-medium text-blue-800">Demo Mode</h3>
-              <p className="text-sm text-blue-700 mt-1">
-                Currently showing mock audit logs. Real audit log API needs to be implemented in the backend.
-              </p>
-
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* Filters */}
       <AuditLogFilters
@@ -291,7 +396,8 @@ const AuditLogs = () => {
       {/* Backend Connection Status */}
       <div className="bg-gray-50 rounded-lg border p-4">
         <div className="flex items-center text-sm text-gray-600">
-
+          <div className={`w-2 h-2 rounded-full mr-2 ${logs.length > 0 ? 'bg-green-500' : 'bg-red-500'}`}></div>
+          {logs.length > 0 ? 'Connected to audit log API' : 'No audit logs available'}
         </div>
       </div>
     </div>

@@ -4,6 +4,7 @@ import KpiCard from '../../components/SystemAdmin/AdminDashboard/KpiCard'
 import AnalyticsChart from '../../components/SystemAdmin/Analytics/AnalyticsChart'
 import ImpactSummary from '../../components/SystemAdmin/Analytics/ImpactSummary'
 import AdminAPI from '../../services/AdminAPI'
+import { apiClient } from '../../services/FoodAPI.js'
 import { toast } from 'sonner'
 import {
   UsersIcon,
@@ -20,30 +21,44 @@ import {
 const Analytics = () => {
   const [timeframe, setTimeframe] = useState('Last 6 Months')
   const [analyticsData, setAnalyticsData] = useState(null)
-  const [impactData, setImpactData] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const [refreshing, setRefreshing] = useState(false)
 
+  // Authentication setup
+  useEffect(() => {
+    setupAuthAndFetchAnalytics()
+  }, [])
+
+  const setupAuthAndFetchAnalytics = async () => {
+    try {
+      const token = localStorage.getItem('adminToken')
+      if (!token) {
+        throw new Error('No admin token found. Please log in again.')
+      }
+      apiClient.defaults.headers.common['Authorization'] = `Bearer ${token}`
+      
+      await fetchAnalyticsData()
+      
+    } catch (error) {
+      console.error('Authentication setup error:', error)
+      setError('Authentication failed. Please log in again.')
+      setLoading(false)
+    }
+  }
+
   /**
-   * Fetch analytics data from backend using AdminAPI
+   * Fetch analytics data from backend using correct AdminAPI method
    */
   const fetchAnalyticsData = async () => {
     try {
       setError(null)
       
-      // Use AdminAPI to fetch system analytics
-      const analyticsResponse = await AdminAPI.getAnalytics({
-        timeframe: timeframe.toLowerCase().replace(' ', '_')
-      })
+      // Use correct AdminAPI method
+      const analyticsResponse = await AdminAPI.getAnalytics()
       
       if (analyticsResponse.success && analyticsResponse.data) {
-        setAnalyticsData(analyticsResponse.data.analytics)
-        
-        // If impact data is available in the response
-        if (analyticsResponse.data.impact_summary) {
-          setImpactData(analyticsResponse.data.impact_summary)
-        }
+        setAnalyticsData(analyticsResponse.data)
       } else {
         throw new Error(analyticsResponse.error || 'Failed to fetch analytics data')
       }
@@ -51,22 +66,10 @@ const Analytics = () => {
     } catch (err) {
       console.error('Analytics fetch error:', err)
       setError(err.message)
-      toast.error('Failed to load analytics data')
-    }
-  }
-
-  /**
-   * Load analytics data on component mount and timeframe change
-   */
-  useEffect(() => {
-    const loadData = async () => {
-      setLoading(true)
-      await fetchAnalyticsData()
+    } finally {
       setLoading(false)
     }
-    
-    loadData()
-  }, [timeframe])
+  }
 
   /**
    * Handle manual refresh
@@ -76,6 +79,15 @@ const Analytics = () => {
     await fetchAnalyticsData()
     setRefreshing(false)
     toast.success('Analytics data refreshed')
+  }
+
+  /**
+   * Handle retry when there's an error
+   */
+  const handleRetry = async () => {
+    setLoading(true)
+    setError(null)
+    await fetchAnalyticsData()
   }
 
   /**
@@ -167,14 +179,6 @@ const Analytics = () => {
     return data
   }
 
-  /**
-   * Calculate safe percentages to avoid division by zero
-   */
-  const safePercentage = (value, total) => {
-    if (!total || total === 0) return 0
-    return Math.round((value / total) * 100)
-  }
-
   if (loading) {
     return (
       <div className="space-y-6">
@@ -197,7 +201,7 @@ const Analytics = () => {
           <div className="text-center">
             <div className="text-red-500 text-lg mb-4">Error: {error}</div>
             <button
-              onClick={handleRefresh}
+              onClick={handleRetry}
               className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
             >
               Retry
@@ -229,7 +233,7 @@ const Analytics = () => {
           title="Total Users"
           value={analyticsData?.total_users?.toLocaleString() || '0'}
           change={`+${analyticsData?.new_users_month || 0} this month`}
-          icon={UsersIcon}
+          icon={<UsersIcon className="w-6 h-6" />}
           trend={analyticsData?.user_growth_percentage >= 0 ? 'up' : 'down'}
           percentage={Math.abs(analyticsData?.user_growth_percentage || 0)}
         />
@@ -238,7 +242,7 @@ const Analytics = () => {
           title="Active Listings"
           value={analyticsData?.active_listings?.toLocaleString() || '0'}
           change={`+${analyticsData?.new_listings_week || 0} this week`}
-          icon={ShoppingBagIcon}
+          icon={<ShoppingBagIcon className="w-6 h-6" />}
           trend={analyticsData?.listing_growth_percentage >= 0 ? 'up' : 'down'}
           percentage={Math.abs(analyticsData?.listing_growth_percentage || 0)}
         />
@@ -247,7 +251,7 @@ const Analytics = () => {
           title="Completed Transactions"
           value={analyticsData?.completed_transactions?.toLocaleString() || '0'}
           change={`${analyticsData?.transaction_success_rate?.toFixed(1) || 0}% success rate`}
-          icon={CheckCircleIcon}
+          icon={<CheckCircleIcon className="w-6 h-6" />}
           trend="up"
           percentage={analyticsData?.transaction_success_rate || 0}
         />
@@ -256,37 +260,10 @@ const Analytics = () => {
           title="Total Transactions"
           value={analyticsData?.total_transactions?.toLocaleString() || '0'}
           change="All time"
-          icon={BarChart3Icon}
+          icon={<BarChart3Icon className="w-6 h-6" />}
           trend="neutral"
         />
       </div>
-
-      {/* Impact Summary */}
-      {impactData && (
-        <div className="bg-white rounded-lg shadow-sm border p-6">
-          <h2 className="text-lg font-semibold text-gray-900 mb-4">Impact Summary</h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="text-center">
-              <div className="text-3xl font-bold text-green-600">
-                {impactData.total_meals_saved?.toLocaleString() || '0'}
-              </div>
-              <div className="text-sm text-gray-600">Meals Saved</div>
-            </div>
-            <div className="text-center">
-              <div className="text-3xl font-bold text-blue-600">
-                {impactData.active_partnerships || '0'}
-              </div>
-              <div className="text-sm text-gray-600">Active Partnerships</div>
-            </div>
-            <div className="text-center">
-              <div className="text-3xl font-bold text-purple-600">
-                {impactData.organizations_served || '0'}
-              </div>
-              <div className="text-sm text-gray-600">Organizations Served</div>
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* Charts Section */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -413,7 +390,7 @@ const Analytics = () => {
       <div className="bg-gray-50 rounded-lg border p-4">
         <div className="flex items-center text-sm text-gray-600">
           <div className={`w-2 h-2 rounded-full mr-2 ${analyticsData ? 'bg-green-500' : 'bg-red-500'}`}></div>
-          {analyticsData ? 'Connected to analytics API' : 'Using fallback data'}
+          {analyticsData ? 'Connected to analytics API' : 'API connection failed'}
         </div>
       </div>
     </div>
