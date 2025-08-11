@@ -47,7 +47,7 @@ const FilterSidebar = ({
 className="w-full h-2 bg-gray-200 dark:bg-gray-700 rounded-lg appearance-none cursor-pointer accent-emerald-600 touch-target"
 
         />
-        <div className="flex justify-between text-xs text-gray-500 dark:text-gray-400 mt-1">
+        <div className="flex justify-between text-xs text-gray-500 dark:text-white mt-1">
           <span>R0</span>
           <span>R1,000</span>
         </div>
@@ -56,7 +56,7 @@ className="w-full h-2 bg-gray-200 dark:bg-gray-700 rounded-lg appearance-none cu
       {/* Type Filter - Dynamic based on user permissions */}
       {typeOptions.length > 0 && (
         <div className="mb-6">
-          <h4 className="font-medium mb-2 text-gray-700">Item Type</h4>
+          <h4 className="font-medium mb-2 dark:text-white">Item Type</h4>
           <div className="space-y-2">
             {typeOptions.map((option) => (
               <label key={option.value} className="flex items-center cursor-pointer group">
@@ -71,7 +71,7 @@ className="w-full h-2 bg-gray-200 dark:bg-gray-700 rounded-lg appearance-none cu
                   })} 
                   className="mr-2 accent-emerald-600" 
                 />
-                <span className="text-gray-700 group-hover:text-gray-900 transition-colors text-sm">
+                <span className="text-white group-hover:text-gray-900 transition-colors text-sm">
                   {option.label}
                 </span>
               </label>
@@ -83,17 +83,17 @@ className="w-full h-2 bg-gray-200 dark:bg-gray-700 rounded-lg appearance-none cu
       {/* Provider Filter */}
       {providerOptions.length > 0 && (
         <div className="mb-6">
-          <h4 className="font-medium mb-2 text-gray-700">Provider</h4>
+          <h4 className="font-medium mb-2 text-gray-700 dark:text-white">Provider</h4>
           <div className="relative">
             <select 
-              className="w-full p-2 border border-gray-300 rounded-md appearance-none focus:ring-emerald-500 focus:border-emerald-500 transition-colors text-sm" 
+              className="w-full p-2 border border-gray-300 dark:border-gray-700 rounded-md appearance-none focus:ring-emerald-500 focus:border-emerald-500 dark:bg-gray-900 dark:text-gray-100 transition-colors text-sm"
               value={filters.provider}
               onChange={(e) => setFilters({
                 ...filters,
                 provider: e.target.value
               })}
             >
-              <option value="all">All Providers</option>
+              <option className="font-medium mb-2 text-gray-700  dark:text-white"value="all">All Providers</option>
               {providerOptions.map((provider) => (
                 <option key={provider.value || provider} value={provider.value || provider}>
                   {provider.label || provider}
@@ -116,7 +116,7 @@ className="w-full h-2 bg-gray-200 dark:bg-gray-700 rounded-lg appearance-none cu
 <div className="relative">
   <select 
     className="w-full p-2 border border-gray-300 dark:border-gray-700 rounded-md appearance-none focus:ring-emerald-500 focus:border-emerald-500 dark:bg-gray-900 dark:text-gray-100 transition-colors text-sm" 
-  >
+  
 
             value={filters.expiration} 
             onChange={(e) => setFilters({

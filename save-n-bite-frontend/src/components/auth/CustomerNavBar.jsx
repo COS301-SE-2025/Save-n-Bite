@@ -35,12 +35,12 @@ const CustomerNavBar = () => {
 
 {/* Mobile Menu Button */}
 <div className="md:hidden">
-  <button
+  {/* <button
     onClick={() => setIsMenuOpen(!isMenuOpen)}
     className="text-gray-500 dark:text-gray-400 hover:text-emerald-600 dark:hover:text-emerald-500 focus:outline-none"
   >
     {isMenuOpen ? <XIcon size={24} /> : <MenuIcon size={24} />}
-  </button>
+  </button> */}
 </div>
 
 {/* Desktop Navigation */}
@@ -99,7 +99,7 @@ const CustomerNavBar = () => {
 className="px-3 py-2 sm:px-4 sm:py-2 bg-red-600 text-white rounded-md hover:bg-red-700 text-sm lg:text-base touch-target dark:hover:bg-red-700"
 
           >
-            <LogOutIcon size={20} className="mr-2" />
+          
             Logout
           </button>
         </div>

@@ -358,7 +358,7 @@ const FoodProviderCarousel = () => {
                     />
                     <span className="text-xs font-semibold text-gray-700 dark:text-gray-200">
                       {getProviderRating(provider)}
-\
+
                     </span>
                   </div>
                 </div>
