@@ -138,7 +138,9 @@ const Login = () => {
   };
 
   return (
-<div className="min-h-[80vh] flex items-center justify-center px-2 sm:px-4 py-8 sm:py-12 bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
+
+<div className="min-h-screen flex items-center justify-center px-2 sm:px-4 py-8 sm:py-12 bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
+
 
       {/* Notification Popup (top right) */}
       {showPopup && unreadCountSnapshot > 0 && (
