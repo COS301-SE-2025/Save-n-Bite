@@ -7,7 +7,8 @@ import SideBar from '../../components/foodProvider/SideBar';
 import { ThemeContext } from '../../context/ThemeContext' // <-- Import ThemeContext
 
 function SettingsPage() {
-  const { theme, setTheme } = useContext(ThemeContext) // <-- Use ThemeContext
+const { theme, toggleTheme } = useContext(ThemeContext)
+const darkMode = theme === 'dark'
   const navigate = useNavigate()
   const [passwordData, setPasswordData] = useState({
     currentPassword: '',
@@ -34,8 +35,7 @@ function SettingsPage() {
     donationRequests: true,
     allInApp: true,
   })
-  // const [darkMode, setDarkMode] = useState(false)
-  const darkMode = theme === 'dark'
+
 
   const [communicationPrefs, setCommunicationPrefs] = useState({
     platformAnnouncements: true,
@@ -141,9 +141,7 @@ function SettingsPage() {
     }, 3000)
   }
 
-  const handleToggleDarkMode = () => {
-    setTheme(darkMode ? 'light' : 'dark')
-  }
+  
 
   return (
     <div className={`w-full flex min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-300`}>
@@ -391,7 +389,7 @@ function SettingsPage() {
                   <input
                     type="checkbox"
                     checked={darkMode}
-                    onChange={handleToggleDarkMode}
+                    onChange={toggleTheme}
                     className="sr-only peer"
                   />
                   <div className="w-11 h-6 bg-gray-200 dark:bg-gray-700 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white dark:after:bg-gray-900 after:border-gray-300 dark:after:border-gray-700 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600 dark:peer-checked:bg-blue-700"></div>

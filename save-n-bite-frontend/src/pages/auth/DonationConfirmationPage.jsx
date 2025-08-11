@@ -40,9 +40,10 @@ const DonationConfirmationPage = () => {
   Your donation request has been sent to {listing.provider?.business_name || 'the provider'}
 </p>
 
-              </p>
+            
             </div>
           </div>
+        
           
           <div className="p-6">
             <div className="mb-6">
@@ -230,6 +231,7 @@ className="flex items-center justify-center text-emerald-600 hover:text-emerald-
         </div>
       </div>
     </div>
+    
   )
 }
 
