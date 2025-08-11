@@ -150,6 +150,16 @@ const FoodCard = ({ item }) => {
             <MapPin size={14} className="mr-1" />
             {item.provider.business_name}
           </p>
+
+          {/* <button
+            onClick={handleFollowClick}
+            className="text-2xl ml-2 transition-transform duration-200 hover:scale-110 disabled:opacity-50"
+            title={isFollowing ? 'Unlike item' : 'Like item'}
+            disabled={followStatusLoading}
+          >
+            {followStatusLoading ? '⏳' : (isFollowing ? '❤️' : '🤍')}
+          </button> */}
+
         </div>
         
         <div className="flex justify-between items-center mb-3">

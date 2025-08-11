@@ -48,8 +48,9 @@ const Register = () => {
   };
 
   return (
-    <div className="min-h-[80vh] flex items-center justify-center px-4 py-12 bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
-      <div className="max-w-6xl w-full bg-white dark:bg-gray-800 rounded-lg shadow-sm overflow-hidden transition-colors duration-300">
+<div className="min-h-[80vh] flex items-center justify-center px-4 py-12 bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
+  <div className="max-w-6xl w-full bg-white dark:bg-gray-800 rounded-lg shadow-sm overflow-hidden transition-colors duration-300">
+
         <div className="md:flex">
           {/* Left Side - Branding */}
           <div 

@@ -278,3 +278,74 @@ class ReviewSummarySerializer(serializers.Serializer):
     reviews_this_month = serializers.IntegerField()
     most_reviewed_business = serializers.CharField()
     recent_reviews = ReviewDisplaySerializer(many=True)
+
+class PublicReviewDisplaySerializer(serializers.ModelSerializer):
+    """
+    Public serializer for displaying reviews - hides sensitive reviewer information
+    """
+    reviewer_info = serializers.SerializerMethodField()
+    time_ago = serializers.SerializerMethodField()
+    interaction_summary = serializers.SerializerMethodField()
+    
+    class Meta:
+        model = Review
+        fields = [
+            'id', 'general_rating', 'general_comment', 'food_review', 'business_review',
+            'created_at', 'time_ago', 'reviewer_info', 'interaction_summary'
+        ]
+    
+    def get_reviewer_info(self, obj):
+        """Return anonymized reviewer information"""
+        reviewer = obj.reviewer
+        
+        # Anonymous display based on user type
+        if reviewer.user_type == 'customer':
+            if hasattr(reviewer, 'customer_profile') and reviewer.customer_profile.full_name:
+                # Show first name and last initial only
+                full_name = reviewer.customer_profile.full_name
+                names = full_name.split()
+                if len(names) >= 2:
+                    return f"{names[0]} {names[-1][0]}."
+                else:
+                    return names[0] if names else "Anonymous Customer"
+            else:
+                return "Anonymous Customer"
+        elif reviewer.user_type == 'ngo':
+            if hasattr(reviewer, 'ngo_profile') and reviewer.ngo_profile.organisation_name:
+                return reviewer.ngo_profile.organisation_name
+            else:
+                return "Anonymous Organization"
+        else:
+            return "Anonymous User"
+    
+    def get_time_ago(self, obj):
+        """Return human-readable time since review was created"""
+        from django.utils import timezone
+        
+        now = timezone.now()
+        diff = now - obj.created_at
+        
+        if diff.days > 365:
+            years = diff.days // 365
+            return f"{years} year{'s' if years > 1 else ''} ago"
+        elif diff.days > 30:
+            months = diff.days // 30
+            return f"{months} month{'s' if months > 1 else ''} ago"
+        elif diff.days > 0:
+            return f"{diff.days} day{'s' if diff.days > 1 else ''} ago"
+        elif diff.seconds > 3600:
+            hours = diff.seconds // 3600
+            return f"{hours} hour{'s' if hours > 1 else ''} ago"
+        elif diff.seconds > 60:
+            minutes = diff.seconds // 60
+            return f"{minutes} minute{'s' if minutes > 1 else ''} ago"
+        else:
+            return "Just now"
+    
+    def get_interaction_summary(self, obj):
+        """Return basic interaction information (non-sensitive)"""
+        return {
+            'type': obj.interaction_type,
+            'total_amount': float(obj.interaction_total_amount),
+            'items_count': len(obj.food_items_snapshot) if obj.food_items_snapshot else 0
+        }

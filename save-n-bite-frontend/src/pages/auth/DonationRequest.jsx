@@ -4,6 +4,7 @@ import { ArrowLeft, Clock, MapPin, Truck, Store } from 'lucide-react';
 import foodListingsAPI from '../../services/foodListingsAPI';
 import CustomerNavBar from '../../components/auth/CustomerNavBar';
 import { useAuth } from '../../context/AuthContext';
+import donationsAPI from '../../services/DonationsAPI';
 
 const DonationRequestPage = () => {
   const { id } = useParams();
@@ -13,9 +14,9 @@ const DonationRequestPage = () => {
   const [error, setError] = useState(null);
   const [quantity, setQuantity] = useState(1);
   const [pickupMethod, setPickupMethod] = useState('pickup');
-  const [message, setMessage] = useState('');
+  const [specialInstructions, setSpecialInstructions] = useState('');
+  const [motivationMessage, setMotivationMessage] = useState('');
   const [submitting, setSubmitting] = useState(false);
-  const [debugInfo, setDebugInfo] = useState(null); 
 
   useEffect(() => {
     const fetchListing = async () => {
@@ -27,41 +28,12 @@ const DonationRequestPage = () => {
         console.log("Full API Response:", response);
         console.log("Response Data:", response.data);
         
-        // Store debug info
-        setDebugInfo(response);
-
-        if (response.success && response.data) {
-          // Check what fields are actually available
-          console.log("Available fields:", Object.keys(response.data));
-          console.log("Field values:", response.data);
+        if (response.success && response.data && response.data.listing) {
+          // Use the listing data directly from the response
+          const listingData = response.data.listing;
+          console.log("Direct listing data:", listingData);
           
-          // More defensive data transformation
-          const transformedListing = {
-            _id: response.data.id || id,
-            title: response.data.name || response.data.title || 'Unknown Item',
-            description: response.data.description || 'No description available',
-            image: response.data.images?.[0] || response.data.image || response.data.imageUrl || '/placeholder-food.jpg',
-           provider: {
-  id: response.data.provider?.id || null,
-  business_name: response.data.provider?.business_name || 
-                 response.data.provider_name || 
-                 'Unknown Provider'
-},
-            expirationTime: response.data.expiry_date || 
-                           response.data.expiryDate || 
-                           response.data.expirationTime || 
-                           'No expiry date',
-            type: response.data.type || response.data.foodType || 'Food Item',
-            price: response.data.discountedPrice || response.data.discountPrice || 0,
-            originalPrice: response.data.originalPrice || 0,
-            quantityAvailable: response.data.quantity || response.data.quantityAvailable || 1,
-            dietaryInfo: response.data.dietary_info || response.data.dietaryInfo || [],
-            allergens: response.data.allergens || [],
-            pickupWindow: response.data.pickupWindow || 'Contact provider for pickup details'
-          };
-          
-          console.log("Transformed listing:", transformedListing);
-          setListing(transformedListing);
+          setListing(listingData);
         } else {
           setError(response.error || 'Failed to load listing - no data received');
         }
@@ -89,21 +61,32 @@ const DonationRequestPage = () => {
       const donationRequest = {
         listingId: id,
         quantity,
-        pickupMethod,
-        message,
-        status: 'pending',
-        requestedAt: new Date().toISOString(),
+        specialInstructions,
+        motivationMessage,
+        // verificationDocuments: [] // Add if needed
       };
 
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      console.log('Submitting donation request:', donationRequest);
+      const response = await donationsAPI.requestDonation(donationRequest);
       
-      navigate(`/donation-confirmation/${id}`, {
-        state: {
-          listing,
-          donationRequest,
-        },
-      });
+      if (response.success) {
+        navigate(`/donation-confirmation/${id}`, {
+          state: {
+            listing,
+            donationRequest: {
+              ...donationRequest,
+              interaction_id: response.data.interaction_id,
+              requested_quantity: response.data.requested_quantity,
+              available_quantity: response.data.available_quantity
+            },
+          },
+        });
+      } else {
+        setError(response.error || 'Failed to submit donation request');
+        setSubmitting(false);
+      }
     } catch (err) {
+      console.error('Donation request error:', err);
       setError('Failed to submit donation request. Please try again.');
       setSubmitting(false);
     }
@@ -128,6 +111,7 @@ const DonationRequestPage = () => {
             <p className="font-medium">Error</p>
             <p>{error}</p>
           </div>
+
           <button
             onClick={() => navigate('/food-listing')}
             className="flex items-center text-emerald-600 hover:text-emerald-800 dark:text-emerald-400 dark:hover:text-emerald-300 mt-4"
@@ -173,40 +157,111 @@ const DonationRequestPage = () => {
         </button>
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden transition-colors duration-300">
           <div className="relative h-64">
-            <img
-              src={listing.image}
-              alt={listing.title}
-              className="w-full h-full object-cover"
-              onError={(e) => {
-                e.target.src = '/placeholder-food.jpg';
-              }}
-            />
+            {(listing.imageUrl || (listing.images && listing.images[0])) ? (
+              <img
+                src={listing.imageUrl || listing.images[0]}
+                alt={listing.name}
+                className="w-full h-full object-cover"
+              />
+            ) : (
+              <div className="w-full h-full bg-gray-200 flex items-center justify-center">
+                <div className="text-center text-gray-500">
+                  <Store size={48} className="mx-auto mb-2 opacity-50" />
+                  <p className="text-sm">No image available</p>
+                </div>
+              </div>
+            )}
             <div className="absolute top-0 right-0 m-3">
-              <span className="bg-emerald-100 dark:bg-emerald-900 text-emerald-800 dark:text-emerald-200 text-xs font-medium px-2.5 py-1 rounded-full border border-emerald-200 dark:border-emerald-800">
-                {listing.type}
+<span className="bg-emerald-100 dark:bg-emerald-900 text-emerald-800 dark:text-emerald-200 text-xs font-medium px-2.5 py-1 rounded-full border border-emerald-200 dark:border-emerald-800">
+  {listing.food_type || 'Food Item'}
+</span>
+
               </span>
             </div>
           </div>
           <div className="p-6">
-            <h1 className="text-2xl font-bold text-gray-800 dark:text-gray-100 mb-2">
-              {listing.title}
+<h1 className="text-2xl font-bold text-gray-800 dark:text-gray-100 mb-2">
+  {listing.name}
+</h1>
+
             </h1>
             <div className="flex items-center text-gray-600 dark:text-gray-300 mb-4">
               <MapPin size={16} className="mr-1" />
-              <span>{listing.provider?.business_name}</span>
+              <span>{listing.provider?.business_name || 'Unknown Provider'}</span>
             </div>
             <div className="flex items-center text-gray-600 dark:text-gray-300 mb-4">
               <Clock size={16} className="mr-1" />
-              <span>Available until: {listing.expirationTime}</span>
+              <span>Available until: {listing.expiry_date}</span>
             </div>
-            {listing.description && listing.description !== 'No description available' && (
+
+            
+            {listing.pickup_window && (
+              <div className="flex items-center text-gray-600 mb-4">
+                <Clock size={16} className="mr-1" />
+                <span>Pickup window: {listing.pickup_window}</span>
+              </div>
+            )}
+            
+            {listing.description && (
+
               <div className="mb-6">
                 <p className="text-gray-700 dark:text-gray-300">{listing.description}</p>
               </div>
             )}
-            {listing.quantityAvailable > 0 && (
-              <div className="text-sm text-gray-600 dark:text-gray-300 mb-4">
-                Available quantity: {listing.quantityAvailable}
+{/* Show pricing info if available */}
+{(listing.original_price > 0 || listing.discounted_price > 0) && (
+  <div className="flex items-center gap-4 mb-4">
+    {listing.original_price > 0 && (
+      <span className="text-lg text-gray-500 dark:text-gray-400 line-through">
+        R{listing.original_price}
+      </span>
+    )}
+    {listing.discounted_price > 0 && (
+      <span className="text-xl font-semibold text-emerald-600 dark:text-emerald-400">
+        R{listing.discounted_price}
+      </span>
+    )}
+    {listing.discount_percentage > 0 && (
+      <span className="bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-200 text-sm px-2 py-1 rounded">
+        {listing.discount_percentage}% off
+      </span>
+    )}
+  </div>
+)}
+
+{/* Show available quantity */}
+{listing.quantity_available > 0 && (
+  <div className="text-sm text-gray-600 dark:text-gray-300 mb-4">
+    Available quantity: {listing.quantity_available}
+  </div>
+)}
+            
+            {/* Show dietary info if available */}
+            {listing.dietary_info && listing.dietary_info.length > 0 && (
+              <div className="mb-4">
+                <p className="text-sm font-medium text-gray-700 mb-2">Dietary Information:</p>
+                <div className="flex flex-wrap gap-2">
+                  {listing.dietary_info.map((info, index) => (
+                    <span key={index} className="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded">
+                      {info}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+            
+            {/* Show allergens if available */}
+            {listing.allergens && listing.allergens.length > 0 && (
+              <div className="mb-4">
+                <p className="text-sm font-medium text-gray-700 mb-2">Allergens:</p>
+                <div className="flex flex-wrap gap-2">
+                  {listing.allergens.map((allergen, index) => (
+                    <span key={index} className="bg-red-100 text-red-800 text-xs px-2 py-1 rounded">
+                      {allergen}
+                    </span>
+                  ))}
+                </div>
+
               </div>
             )}
             <div className="border-t border-gray-100 dark:border-gray-700 pt-6">
@@ -227,7 +282,7 @@ const DonationRequestPage = () => {
                     <input
                       type="number"
                       min="1"
-                      max={listing.quantityAvailable || 999}
+                      max={listing.quantity_available || 999}
                       value={quantity}
                       onChange={(e) =>
                         setQuantity(Math.max(1, parseInt(e.target.value) || 1))
@@ -236,8 +291,9 @@ const DonationRequestPage = () => {
                     />
                     <button
                       type="button"
-                      onClick={() => setQuantity(Math.min(listing.quantityAvailable || 999, quantity + 1))}
-                      className="px-3 py-2 bg-gray-100 dark:bg-gray-700 rounded-r-md border border-gray-300 dark:border-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600"
+onClick={() => setQuantity(Math.min(listing.quantity_available || 999, quantity + 1))}
+className="px-3 py-2 bg-gray-100 dark:bg-gray-700 rounded-r-md border border-gray-300 dark:border-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600"
+
                     >
                       +
                     </button>
@@ -263,14 +319,26 @@ const DonationRequestPage = () => {
                   </div>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
-                    Message (Optional)
-                  </label>
-                  <textarea
-                    value={message}
-                    onChange={(e) => setMessage(e.target.value)}
-                    placeholder="E.g., We serve 200 kids on Thursdays"
-                    className="w-full p-3 border border-gray-300 dark:border-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-100"
+<label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
+  Special Instructions (Optional)
+</label>
+<textarea
+  value={specialInstructions}
+  onChange={(e) => setSpecialInstructions(e.target.value)}
+  placeholder="e.g., Please provide packaging, call when arriving"
+  className="w-full p-3 border border-gray-300 dark:border-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-100"
+  rows={2}
+/>
+
+<div>
+  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
+    Motivation Message (Optional)
+  </label>
+  <textarea
+    value={motivationMessage}
+    onChange={(e) => setMotivationMessage(e.target.value)}
+    placeholder="e.g., We serve 200 kids on Thursdays, helping homeless families"
+    className="w-full p-3 border border-gray-300 dark:border-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-100"
                     rows={3}
                   />
                 </div>
