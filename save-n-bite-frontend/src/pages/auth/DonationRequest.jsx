@@ -176,7 +176,7 @@ const DonationRequestPage = () => {
   {listing.food_type || 'Food Item'}
 </span>
 
-              </span>
+  
             </div>
           </div>
           <div className="p-6">
@@ -184,7 +184,7 @@ const DonationRequestPage = () => {
   {listing.name}
 </h1>
 
-            </h1>
+        
             <div className="flex items-center text-gray-600 dark:text-gray-300 mb-4">
               <MapPin size={16} className="mr-1" />
               <span>{listing.provider?.business_name || 'Unknown Provider'}</span>
@@ -318,7 +318,7 @@ className="px-3 py-2 bg-gray-100 dark:bg-gray-700 rounded-r-md border border-gra
                     </button>
                   </div>
                 </div>
-                <div>
+                
 <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
   Special Instructions (Optional)
 </label>
