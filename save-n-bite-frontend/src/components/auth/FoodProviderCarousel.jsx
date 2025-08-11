@@ -12,9 +12,10 @@ const FoodProviderCarousel = () => {
   const [isHovered, setIsHovered] = useState(false);
   const intervalRef = useRef();
   const itemsToShow = 5;
-  const maxIndex = Math.max(0, foodProviders.length - itemsToShow);
+
 
   const [foodProviders, setFoodProviders] = useState([]);
+  const maxIndex = Math.max(0, foodProviders.length - itemsToShow);
   const [providersWithReviews, setProvidersWithReviews] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
