@@ -3,6 +3,8 @@ import SystemLogFilters from '../../components/SystemAdmin/System/SystemLogFilte
 import SystemLogTable from '../../components/SystemAdmin/System/SystemLogTable'
 import SystemLogDetails from '../../components/SystemAdmin/System/SystemLogDetails'
 import ResolveLogModal from '../../components/SystemAdmin/System/ResolveLogModal'
+import AdminAPI from '../../services/AdminAPI'
+import { toast } from 'sonner'
 import {
   AlertCircleIcon,
   CheckCircleIcon,
@@ -36,7 +38,7 @@ const SystemLogs = () => {
   // Use mock data for demo
   const [useMockData, setUseMockData] = useState(true)
 
-  // Mock data matching backend structure
+  // Mock data matching backend structure (keeping your original data)
   const mockSystemLogs = {
     logs: [
       {
@@ -163,72 +165,76 @@ const SystemLogs = () => {
     }
   }
 
-  // Fetch system logs from API
+  /**
+   * Fetch system logs from API or use mock data
+   */
   const fetchSystemLogs = async () => {
-    if (useMockData) {
-      setLoading(true)
-      await new Promise(resolve => setTimeout(resolve, 800))
-      
-      // Apply filters to mock data
-      let filteredLogs = mockSystemLogs.logs.filter(log => {
-        const matchesSearch = search === '' || 
-          log.title.toLowerCase().includes(search.toLowerCase()) ||
-          log.description.toLowerCase().includes(search.toLowerCase()) ||
-          log.error_details.toLowerCase().includes(search.toLowerCase())
-        
-        const matchesLevel = levelFilter === 'All' || log.severity === levelFilter.toLowerCase()
-        const matchesService = serviceFilter === 'All' || log.category === serviceFilter.toLowerCase()
-        const matchesStatus = statusFilter === 'All' || log.status === statusFilter.toLowerCase()
-        
-        return matchesSearch && matchesLevel && matchesService && matchesStatus
-      })
-      
-      setLogs(filteredLogs)
-      setTotalCount(filteredLogs.length)
-      setTotalPages(1)
-      setSummary(mockSystemLogs.summary)
-      setLoading(false)
-      return
-    }
-
     try {
       setLoading(true)
-      const params = new URLSearchParams({
-        page: currentPage.toString(),
-        per_page: '20'
-      })
-      
-      if (levelFilter !== 'All') params.append('severity', levelFilter.toLowerCase())
-      if (statusFilter !== 'All') params.append('status', statusFilter.toLowerCase())
-      if (serviceFilter !== 'All') params.append('category', serviceFilter.toLowerCase())
-      
-      const response = await fetch(`/api/admin_panel/logs/system/?${params}`, {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`,
-          'Content-Type': 'application/json'
-        }
-      })
-      
-      if (!response.ok) {
-        throw new Error('Failed to fetch system logs')
+      setError(null)
+
+      if (useMockData) {
+        // Simulate API delay
+        await new Promise(resolve => setTimeout(resolve, 800))
+        
+        // Apply filters to mock data
+        let filteredLogs = mockSystemLogs.logs.filter(log => {
+          const matchesSearch = search === '' || 
+            log.title.toLowerCase().includes(search.toLowerCase()) ||
+            log.description.toLowerCase().includes(search.toLowerCase()) ||
+            log.error_details.toLowerCase().includes(search.toLowerCase())
+          
+          const matchesLevel = levelFilter === 'All' || log.severity === levelFilter.toLowerCase()
+          const matchesService = serviceFilter === 'All' || log.category === serviceFilter.toLowerCase()
+          const matchesStatus = statusFilter === 'All' || log.status === statusFilter.toLowerCase()
+          
+          return matchesSearch && matchesLevel && matchesService && matchesStatus
+        })
+        
+        setLogs(filteredLogs)
+        setTotalCount(filteredLogs.length)
+        setTotalPages(1)
+        setSummary(mockSystemLogs.summary)
+        setLoading(false)
+        return
+      }
+
+      // Real API call using AdminAPI
+      const params = {
+        page: currentPage,
+        per_page: 20
       }
       
-      const data = await response.json()
-      setLogs(data.logs)
-      setCurrentPage(data.pagination.current_page)
-      setTotalPages(data.pagination.total_pages)
-      setTotalCount(data.pagination.total_count)
-      setSummary(data.summary)
+      if (levelFilter !== 'All') params.severity = levelFilter.toLowerCase()
+      if (statusFilter !== 'All') params.status = statusFilter.toLowerCase()
+      if (serviceFilter !== 'All') params.category = serviceFilter.toLowerCase()
+      if (search) params.search = search
+      
+      // This would use a new method in AdminAPI for system logs
+      const response = await AdminAPI.getSystemLogs(params)
+      
+      if (response.success) {
+        setLogs(response.data.logs)
+        setCurrentPage(response.data.pagination.current_page)
+        setTotalPages(response.data.pagination.total_pages)
+        setTotalCount(response.data.pagination.total_count)
+        setSummary(response.data.summary)
+      } else {
+        throw new Error(response.error || 'Failed to fetch system logs')
+      }
       
     } catch (err) {
       console.error('System logs fetch error:', err)
       setError(err.message)
+      toast.error('Failed to load system logs')
     } finally {
       setLoading(false)
     }
   }
 
-  // Resolve system log
+  /**
+   * Resolve system log
+   */
   const handleResolveLog = async (logId, resolutionNotes) => {
     try {
       setResolving(true)
@@ -260,38 +266,72 @@ const SystemLogs = () => {
         
         setShowResolveModal(false)
         setSelectedLog(null)
+        toast.success('System log resolved successfully')
         return
       }
 
-      const response = await fetch('/api/admin_panel/logs/system/resolve/', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          log_id: logId,
-          resolution_notes: resolutionNotes
-        })
-      })
+      // Real API call
+      const response = await AdminAPI.resolveSystemLog(logId, resolutionNotes)
       
-      if (!response.ok) {
-        throw new Error('Failed to resolve system log')
+      if (response.success) {
+        // Refresh logs after successful resolution
+        await fetchSystemLogs()
+        setShowResolveModal(false)
+        setSelectedLog(null)
+        toast.success('System log resolved successfully')
+      } else {
+        throw new Error(response.error || 'Failed to resolve system log')
       }
-      
-      // Refresh logs after successful resolution
-      await fetchSystemLogs()
-      setShowResolveModal(false)
-      setSelectedLog(null)
       
     } catch (err) {
       console.error('Resolve log error:', err)
-      setError('Failed to resolve system log: ' + err.message)
+      toast.error('Failed to resolve system log: ' + err.message)
     } finally {
       setResolving(false)
     }
   }
 
+  /**
+   * Handle export functionality
+   */
+  const handleExport = async () => {
+    try {
+      const response = await AdminAPI.exportData('system_logs', {
+        search,
+        severity: levelFilter !== 'All' ? levelFilter.toLowerCase() : undefined,
+        category: serviceFilter !== 'All' ? serviceFilter.toLowerCase() : undefined,
+        status: statusFilter !== 'All' ? statusFilter.toLowerCase() : undefined
+      })
+
+      if (response.success) {
+        // Create download link for the exported file
+        const url = window.URL.createObjectURL(new Blob([response.data]))
+        const link = document.createElement('a')
+        link.href = url
+        link.download = `system_logs_${new Date().toISOString().split('T')[0]}.csv`
+        link.click()
+        window.URL.revokeObjectURL(url)
+        toast.success('System logs exported successfully')
+      } else {
+        toast.error('Failed to export system logs')
+      }
+    } catch (err) {
+      console.error('Export error:', err)
+      toast.error('Failed to export system logs')
+    }
+  }
+
+  /**
+   * Handle refresh
+   */
+  const handleRefresh = () => {
+    fetchSystemLogs()
+    toast.success('System logs refreshed')
+  }
+
+  /**
+   * Load data when component mounts or filters change
+   */
   useEffect(() => {
     fetchSystemLogs()
   }, [search, levelFilter, serviceFilter, statusFilter, currentPage, useMockData])
@@ -304,10 +344,6 @@ const SystemLogs = () => {
   const handleResolveClick = (log) => {
     setSelectedLog(log)
     setShowResolveModal(true)
-  }
-
-  const handleRefresh = () => {
-    fetchSystemLogs()
   }
 
   // Get unique services for filter
@@ -381,10 +417,9 @@ const SystemLogs = () => {
       <div className="flex flex-col md:flex-row md:items-center md:justify-between">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">System Logs</h1>
-          <p className="text-gray-500">Monitor system errors, warnings, and issues</p>
+          <p className="text-gray-500">Monitor system errors, warnings, and issues ({totalCount} total logs)</p>
         </div>
         <div className="mt-4 md:mt-0 flex space-x-2">
-
           <button
             onClick={handleRefresh}
             className="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
@@ -392,7 +427,10 @@ const SystemLogs = () => {
             <RefreshCwIcon className="w-4 h-4 mr-2 inline" />
             Refresh
           </button>
-          <button className="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">
+          <button 
+            onClick={handleExport}
+            className="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
+          >
             <DownloadIcon className="w-4 h-4 mr-2 inline" />
             Export
           </button>
@@ -407,8 +445,14 @@ const SystemLogs = () => {
             <div>
               <h3 className="text-sm font-medium text-blue-800">Demo Mode - Mock Data</h3>
               <p className="text-sm text-blue-700 mt-1">
-                Currently showing mock system logs with resolve functionality. Switch to "Live API" to use real backend data.
+                Currently showing mock system logs with resolve functionality. Backend system log API needs to be implemented.
               </p>
+              <button
+                onClick={() => setUseMockData(false)}
+                className="mt-2 text-sm font-medium text-blue-800 hover:text-blue-900"
+              >
+                Switch to Live API (will show error until implemented)
+              </button>
             </div>
           </div>
         </div>
@@ -564,6 +608,14 @@ const SystemLogs = () => {
           resolving={resolving}
         />
       )}
+
+      {/* Backend Connection Status */}
+      <div className="bg-gray-50 rounded-lg border p-4">
+        <div className="flex items-center text-sm text-gray-600">
+          <div className={`w-2 h-2 rounded-full mr-2 ${useMockData ? 'bg-yellow-500' : 'bg-green-500'}`}></div>
+          {useMockData ? 'Using demo data - system log API needs implementation' : 'Connected to system log API'}
+        </div>
+      </div>
     </div>
   )
 }

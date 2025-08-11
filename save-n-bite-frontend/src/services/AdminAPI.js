@@ -412,15 +412,21 @@ const AdminAPI = {
     }
   },
 
-  // ==================== NOTIFICATIONS (using existing endpoints) ====================
-  sendCustomNotification: async (subject, body, targetAudience) => {
+  // ==================== NOTIFICATION METHODS ====================
+  
+  /**
+   * Send custom notification to specified user groups
+   * @param {Object} notificationData - { subject, body, target_audience }
+   * @returns {Promise<Object>} API response with stats
+   */
+  sendCustomNotification: async (notificationData) => {
     try {
       const response = await apiClient.post('/api/admin/notifications/send/', {
-        subject: subject,
-        body: body,
-        target_audience: targetAudience
+        subject: notificationData.title,
+        body: notificationData.message,
+        target_audience: notificationData.audience.toLowerCase()
       });
-      
+
       return {
         data: response.data,
         success: true,
@@ -430,38 +436,21 @@ const AdminAPI = {
       return {
         data: null,
         success: false,
-        error: error.response?.data?.error?.message || "Failed to send notification"
+        error: error.response?.data?.error?.message || error.message || "Failed to send notification"
       };
     }
   },
 
-  getNotificationAnalytics: async (targetAudience = '') => {
+  /**
+   * Get notification analytics data
+   * @param {string} targetAudience - Optional audience filter
+   * @returns {Promise<Object>} Analytics data
+   */
+  getNotificationAnalytics: async (targetAudience = null) => {
     try {
-      const params = new URLSearchParams();
-      if (targetAudience) params.append('target_audience', targetAudience);
+      const params = targetAudience ? { target_audience: targetAudience } : {};
+      const response = await apiClient.get('/api/admin/notifications/analytics/', { params });
 
-      const response = await apiClient.get(`/api/admin/notifications/analytics/?${params.toString()}`);
-      
-      return {
-        data: response.data.analytics,
-        success: true,
-        error: null
-      };
-    } catch (error) {
-      return {
-        data: null,
-        success: false,
-        error: error.response?.data?.error?.message || "Failed to fetch notification analytics"
-      };
-    }
-  },
-
-  getAudienceCounts: async (targetAudience) => {
-    try {
-      const response = await apiClient.post('/api/admin/notifications/audience-counts/', {
-        target_audience: targetAudience
-      });
-      
       return {
         data: response.data,
         success: true,
@@ -471,7 +460,53 @@ const AdminAPI = {
       return {
         data: null,
         success: false,
-        error: error.response?.data?.error?.message || "Failed to fetch audience counts"
+        error: error.response?.data?.error?.message || error.message || "Failed to fetch analytics"
+      };
+    }
+  },
+
+  /**
+   * Get audience counts for targeting
+   * @returns {Promise<Object>} Audience count data
+   */
+  getAudienceCounts: async () => {
+    try {
+      const response = await apiClient.get('/api/admin/notifications/audience-counts/');
+
+      return {
+        data: response.data,
+        success: true,
+        error: null
+      };
+    } catch (error) {
+      return {
+        data: null,
+        success: false,
+        error: error.response?.data?.error?.message || error.message || "Failed to fetch audience counts"
+      };
+    }
+  },
+
+  /**
+   * Get sent notifications history (for admin tracking)
+   * This would need to be implemented on the backend if required
+   * @param {Object} filters - { page, page_size, audience, date_from, date_to }
+   * @returns {Promise<Object>} Notification history
+   */
+  getNotificationHistory: async (filters = {}) => {
+    try {
+      const response = await apiClient.get('/api/admin/notifications/history/', { params: filters });
+
+      return {
+        data: response.data,
+        success: true,
+        error: null
+      };
+    } catch (error) {
+      return {
+        data: null,
+        success: false,
+        error: error.response?.data?.error?.message || error.message || "Failed to fetch notification history"
       };
     }
   },
