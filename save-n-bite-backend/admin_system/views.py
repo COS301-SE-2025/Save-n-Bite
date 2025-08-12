@@ -806,6 +806,48 @@ def export_data(request):
             writer.writerow(['Active Listings', stats['listings']['active']])
             writer.writerow(['Total Transactions', stats['transactions']['total']])
             writer.writerow(['Completed Transactions', stats['transactions']['completed']])
+
+        elif export_type == 'audit_logs':
+            # Export audit logs
+            writer.writerow(['ID', 'Admin', 'Action', 'Target', 'Description', 'Timestamp', 'IP Address'])
+    
+            queryset = AdminActionLog.objects.all()
+            if date_from:
+                queryset = queryset.filter(timestamp__gte=date_from)
+            if date_to:
+                queryset = queryset.filter(timestamp__lte=date_to)
+    
+            for log in queryset:
+                writer.writerow([
+                    str(log.id),
+                    log.admin_user.username,
+                    log.action_type,
+                    log.target_type,
+                    log.action_description,
+                    log.timestamp.strftime('%Y-%m-%d %H:%M:%S'),
+                    log.ip_address or 'Unknown'
+                ])
+
+        elif export_type == 'system_logs':
+        # Export system logs
+            writer.writerow(['ID', 'Severity', 'Category', 'Title', 'Description', 'Status', 'Timestamp'])
+    
+            queryset = SystemLogEntry.objects.all()
+            if date_from:
+                queryset = queryset.filter(timestamp__gte=date_from)
+            if date_to:
+                queryset = queryset.filter(timestamp__lte=date_to)
+    
+            for log in queryset:
+                writer.writerow([
+                str(log.id),
+                log.severity,
+                log.category,
+                log.title,
+                log.description,
+                log.status,
+                log.timestamp.strftime('%Y-%m-%d %H:%M:%S')
+            ])
         
         # Log the export action
         AdminService.log_admin_action(

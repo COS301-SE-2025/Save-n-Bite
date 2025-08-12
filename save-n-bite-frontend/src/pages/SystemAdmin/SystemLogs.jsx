@@ -128,6 +128,10 @@ const SystemLogs = () => {
       
       if (response.success) {
         // Refresh logs after successful resolution
+          console.log('System logs response:', response.data.logs)
+          console.log('Raw API response:', response.data)
+          console.log('System logs array:', response.data.logs)
+          console.log('First log data:', response.data.logs[0])
         await fetchSystemLogs()
         setShowResolveModal(false)
         setSelectedLog(null)

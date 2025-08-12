@@ -547,32 +547,41 @@ const AdminAPI = {
   },
 
   // ==================== DATA EXPORT ====================
+/**
+   * Export data
+   * @param {string} exportType - Type of data to export (users, analytics, etc.)
+   * @param {string} dateFrom - Start date (YYYY-MM-DD)
+   * @param {string} dateTo - End date (YYYY-MM-DD)
+   * @returns {Promise<Object>} Export response
+   */
   exportData: async (exportType, dateFrom = '', dateTo = '') => {
     try {
-      const params = new URLSearchParams({
-        export_type: exportType
-      });
+      const requestBody = {
+        export_type: exportType,
+        format: 'csv'
+      };
       
-      if (dateFrom) params.append('date_from', dateFrom);
-      if (dateTo) params.append('date_to', dateTo);
+      if (dateFrom) requestBody.date_from = dateFrom;
+      if (dateTo) requestBody.date_to = dateTo;
 
-      const response = await apiClient.get(`/api/admin/export/?${params.toString()}`, {
-        responseType: 'blob'
+      const response = await apiClient.post('/api/admin/export/', requestBody, {
+        responseType: 'blob' // For file downloads
       });
-      
+
       return {
         data: response.data,
         success: true,
-        error: null
+        error: null,
+        headers: response.headers
       };
     } catch (error) {
       return {
         data: null,
         success: false,
-        error: error.response?.data?.error?.message || "Failed to export data"
+        error: error.response?.data?.error?.message || error.message || "Failed to export data"
       };
     }
   }
-};
+}
 
 export default AdminAPI;

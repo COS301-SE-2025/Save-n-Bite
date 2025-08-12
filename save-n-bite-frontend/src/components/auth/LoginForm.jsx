@@ -127,7 +127,9 @@ const LoginForm = ({ onSuccess, onError, onEmailChange }) => {
             const userType = response.user.user_type;
             if (userType === 'provider') {
                 navigate('/dashboard');
-            } else {
+            } 
+            else if (userType === 'ngo'|| userType === 'customer')
+            {
                 // Both customers and NGOs go to food listings
                 navigate('/food-listing');
             }
