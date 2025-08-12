@@ -883,3 +883,200 @@ class NotificationService:
         except Exception as e:
             logger.error(f"Failed to send order completion notification for pickup {scheduled_pickup.id}: {str(e)}")
             # Don't re-raise the exception to avoid breaking the completion process
+
+    @staticmethod
+    def send_donation_request_notification(interaction):
+        """Send notification when NGO submits a donation request"""
+        try:
+            ngo_user = interaction.user
+            business_user = interaction.business.user
+            food_item = interaction.items.first().food_listing if interaction.items.exists() else None
+            
+            # Create in-app notification for NGO (confirmation)
+            ngo_notification = NotificationService.create_notification(
+                recipient=ngo_user,
+                notification_type='donation_request',
+                title='Donation Request Submitted',
+                message=f'Your donation request for "{food_item.name if food_item else "food items"}" has been submitted to {interaction.business.business_name}. They will review your request shortly.',
+                sender=None,  # System notification
+                business=interaction.business,
+                data={
+                    'interaction_id': str(interaction.id),
+                    'business_name': interaction.business.business_name,
+                    'food_item_name': food_item.name if food_item else 'Multiple items',
+                    'requested_quantity': interaction.quantity,
+                    'request_type': 'donation'
+                }
+            )
+
+            # Create in-app notification for business (new request)
+            business_notification = NotificationService.create_notification(
+                recipient=business_user,
+                notification_type='donation_request',
+                title='New Donation Request',
+                message=f'{NotificationService._get_user_display_name(ngo_user)} has requested a donation of "{food_item.name if food_item else "food items"}". Please review and respond to their request.',
+                sender=ngo_user,
+                business=interaction.business,
+                data={
+                    'interaction_id': str(interaction.id),
+                    'ngo_name': NotificationService._get_user_display_name(ngo_user),
+                    'food_item_name': food_item.name if food_item else 'Multiple items',
+                    'requested_quantity': interaction.quantity,
+                    'request_type': 'donation',
+                    'motivation_message': interaction.motivation_message if hasattr(interaction, 'motivation_message') else ''
+                }
+            )
+
+            logger.info(f"Donation request notifications sent for interaction {interaction.id}")
+            return ngo_notification, business_notification
+
+        except Exception as e:
+            logger.error(f"Failed to send donation request notifications for interaction {interaction.id}: {str(e)}")
+            return None, None
+
+    @staticmethod
+    def send_donation_response_notification(interaction, response_type, rejection_reason=None):
+        """
+        Send notifications when business accepts or rejects a donation request
+        
+        Args:
+            interaction: The donation interaction
+            response_type: 'accepted' or 'rejected'
+            rejection_reason: Reason for rejection (if applicable)
+        """
+        try:
+            ngo_user = interaction.user
+            business_user = interaction.business.user
+            business_name = interaction.business.business_name
+            food_item = interaction.items.first().food_listing if interaction.items.exists() else None
+            
+            if response_type == 'accepted':
+                # Donation accepted notifications
+                title = "Donation Request Accepted!"
+                message = f"Great news! {business_name} has accepted your donation request for \"{food_item.name if food_item else 'food items'}\". You can now schedule a pickup time."
+                
+                notification_data = {
+                    'interaction_id': str(interaction.id),
+                    'business_name': business_name,
+                    'food_item_name': food_item.name if food_item else 'Multiple items',
+                    'accepted_quantity': interaction.quantity,
+                    'response_type': 'accepted',
+                    'next_steps': 'schedule_pickup'
+                }
+                
+                # Email context for accepted donation
+                email_context = {
+                    'ngo_name': NotificationService._get_user_display_name(ngo_user),
+                    'business_name': business_name,
+                    'food_item_name': food_item.name if food_item else 'Multiple items',
+                    'food_item_description': food_item.description if food_item else '',
+                    'accepted_quantity': interaction.quantity,
+                    'pickup_window': food_item.pickup_window if food_item else 'To be arranged',
+                    'business_contact': interaction.business.business_contact,
+                    'business_address': interaction.business.business_address,
+                    'interaction_id': str(interaction.id),
+                    'motivation_message': interaction.motivation_message if hasattr(interaction, 'motivation_message') else '',
+                }
+                
+                email_template = 'donation_accepted'
+                email_subject = f"Donation Accepted - {business_name}"
+                
+            else:  # rejected
+                title = "Donation Request Update"
+                message = f"Unfortunately, {business_name} was unable to fulfill your donation request for \"{food_item.name if food_item else 'food items'}\""
+                if rejection_reason:
+                    message += f". Reason: {rejection_reason}"
+                message += ". Don't worry - there are other opportunities available!"
+                
+                notification_data = {
+                    'interaction_id': str(interaction.id),
+                    'business_name': business_name,
+                    'food_item_name': food_item.name if food_item else 'Multiple items',
+                    'response_type': 'rejected',
+                    'rejection_reason': rejection_reason or 'No reason provided',
+                    'next_steps': 'browse_other_donations'
+                }
+                
+                # Email context for rejected donation
+                email_context = {
+                    'ngo_name': NotificationService._get_user_display_name(ngo_user),
+                    'business_name': business_name,
+                    'food_item_name': food_item.name if food_item else 'Multiple items',
+                    'rejection_reason': rejection_reason or 'No specific reason was provided',
+                    'interaction_id': str(interaction.id),
+                    'browse_url': f"{getattr(settings, 'FRONTEND_URL', 'http://localhost:3000')}/browse-donations",
+                }
+                
+                email_template = 'donation_rejected'
+                email_subject = f"Donation Request Update - {business_name}"
+
+            # Create in-app notification
+            notification = NotificationService.create_notification(
+                recipient=ngo_user,
+                notification_type='donation_response',
+                title=title,
+                message=message,
+                sender=business_user,
+                business=interaction.business,
+                data=notification_data
+            )
+
+            # Check if NGO wants email notifications
+            preferences, _ = NotificationPreferences.objects.get_or_create(user=ngo_user)
+            if preferences.email_notifications:
+                # Send email notification
+                email_sent = NotificationService.send_email_notification(
+                    user=ngo_user,
+                    subject=email_subject,
+                    template_name=email_template,
+                    context=email_context,
+                    notification=notification
+                )
+                
+                if email_sent:
+                    logger.info(f"Donation {response_type} email sent to {ngo_user.email}")
+                else:
+                    logger.warning(f"Failed to send donation {response_type} email to {ngo_user.email}")
+
+            logger.info(f"Donation {response_type} notification sent for interaction {interaction.id}")
+            return notification
+
+        except Exception as e:
+            logger.error(f"Failed to send donation {response_type} notification for interaction {interaction.id}: {str(e)}")
+            return None
+
+    @staticmethod
+    def send_donation_pickup_reminder(interaction, pickup_date=None):
+        """Send reminder notification for donation pickup"""
+        try:
+            ngo_user = interaction.user
+            business_name = interaction.business.business_name
+            food_item = interaction.items.first().food_listing if interaction.items.exists() else None
+            
+            title = "Donation Pickup Reminder"
+            message = f"Don't forget to pick up your donation from {business_name}"
+            if pickup_date:
+                message += f" scheduled for {pickup_date}"
+            message += "!"
+            
+            notification = NotificationService.create_notification(
+                recipient=ngo_user,
+                notification_type='pickup_reminder',
+                title=title,
+                message=message,
+                business=interaction.business,
+                data={
+                    'interaction_id': str(interaction.id),
+                    'business_name': business_name,
+                    'food_item_name': food_item.name if food_item else 'Multiple items',
+                    'pickup_date': pickup_date.isoformat() if pickup_date else None,
+                    'reminder_type': 'donation_pickup'
+                }
+            )
+
+            logger.info(f"Donation pickup reminder sent for interaction {interaction.id}")
+            return notification
+
+        except Exception as e:
+            logger.error(f"Failed to send donation pickup reminder for interaction {interaction.id}: {str(e)}")
+            return None
