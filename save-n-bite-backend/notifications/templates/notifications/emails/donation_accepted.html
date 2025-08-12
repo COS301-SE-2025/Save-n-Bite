@@ -1,0 +1,51 @@
+<!-- notifications/templates/notifications/emails/donation_accepted.html -->
+{% extends "notifications/emails/base.html" %}
+
+{% block content %}
+<h2>🎉 Donation Request Accepted!</h2>
+
+<p>Hi {{ ngo_name }},</p>
+
+<p>Excellent news! <strong>{{ business_name }}</strong> has accepted your donation request.</p>
+
+<div class="business-info">
+    <h3>Donation Details:</h3>
+    <p><strong>Item:</strong> {{ food_item_name }}</p>
+    {% if food_item_description %}
+    <p><strong>Description:</strong> {{ food_item_description }}</p>
+    {% endif %}
+    <p><strong>Quantity:</strong> {{ accepted_quantity }}</p>
+    <p><strong>Pickup Window:</strong> {{ pickup_window }}</p>
+</div>
+
+<div class="business-info">
+    <h3>Next Steps:</h3>
+    <ul>
+        <li>Contact the business to confirm pickup arrangements</li>
+        <li>Arrive during the specified pickup window</li>
+        <li>Bring your pickup confirmation code: <strong>{{ interaction_id }}</strong></li>
+        <li>Ensure you have appropriate transportation for the donation</li>
+    </ul>
+</div>
+
+<div class="business-info">
+    <h3>Business Contact Information:</h3>
+    <p><strong>{{ business_name }}</strong></p>
+    <p><strong>Address:</strong> {{ business_address }}</p>
+    <p><strong>Contact:</strong> {{ business_contact }}</p>
+</div>
+
+{% if motivation_message %}
+<div style="background-color: #e8f5e8; padding: 15px; border-radius: 4px; margin: 15px 0; font-style: italic;">
+    <p><strong>Your original message:</strong></p>
+    <p>"{{ motivation_message }}"</p>
+</div>
+{% endif %}
+
+<p>Thank you for helping us reduce food waste and support those in need! Together, we're making a positive impact on our community.</p>
+
+<p>If you have any questions or need to reschedule, please contact the business directly using the information provided above.</p>
+
+<p>Best regards,</p>
+<p>The Save n Bite Team</p>
+{% endblock %}

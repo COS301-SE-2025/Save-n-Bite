@@ -11,6 +11,7 @@ from rest_framework import status
 from datetime import datetime, timedelta, date, time
 import json
 from unittest.mock import patch, Mock
+import uuid
 
 from .models import (
     Notification, NotificationPreferences, BusinessFollower, 
@@ -1811,3 +1812,418 @@ class TestPickupNotifications:
                 
                 # The mock should have been called
                 mock_prep.assert_called_once_with(scheduled_pickup)
+
+@pytest.mark.django_db
+class TestDonationNotifications:
+    
+    def test_send_donation_request_notification(self, ngo_user, provider_user, food_listing):
+        """Test sending notification when NGO submits donation request"""
+        # Create interaction
+        interaction = Interaction.objects.create(
+            user=ngo_user,
+            business=provider_user.provider_profile,
+            interaction_type='Donation',
+            quantity=2,
+            total_amount=Decimal('0.00'),
+            motivation_message='We help feed homeless people in our community'
+        )
+        
+        # Create interaction item
+        InteractionItem.objects.create(
+            interaction=interaction,
+            food_listing=food_listing,
+            name=food_listing.name,
+            quantity=1,
+            price_per_item=Decimal('0.00'),
+            total_price=Decimal('0.00'),
+            expiry_date=food_listing.expiry_date
+        )
+        
+        # Disable email notifications for NGO
+        NotificationPreferences.objects.update_or_create(
+            user=ngo_user,
+            defaults={'email_notifications': False}
+        )
+        
+        # Send acceptance notification
+        notification = NotificationService.send_donation_response_notification(
+            interaction=interaction,
+            response_type='accepted'
+        )
+        
+        # Verify in-app notification was still created
+        assert notification is not None
+        assert notification.recipient == ngo_user
+        assert notification.notification_type == 'donation_response'
+        assert 'Donation Request Accepted' in notification.title
+        
+        # Verify no email log was created (since email notifications are disabled)
+        email_logs = EmailNotificationLog.objects.filter(
+            recipient_user=ngo_user,
+            template_name='donation_accepted'
+        )
+        assert email_logs.count() == 0
+
+    def test_donation_request_error_handling(self, ngo_user, provider_user):
+        """Test error handling when notification fails"""
+        # Create interaction without food listing (should cause error)
+        interaction = Interaction.objects.create(
+            user=ngo_user,
+            business=provider_user.provider_profile,
+            interaction_type='Donation',
+            quantity=1,
+            total_amount=Decimal('0.00')
+        )
+        
+        # This should handle the error gracefully
+        ngo_notification, business_notification = NotificationService.send_donation_request_notification(interaction)
+        
+        # Should still create notifications even if some data is missing
+        assert ngo_notification is not None or business_notification is not None
+
+
+@pytest.mark.django_db
+class TestDonationViewsWithNotifications:
+    
+    def test_donation_request_view_sends_notifications(
+        self, 
+        authenticated_ngo_client, 
+        ngo_user, 
+        food_listing, 
+        provider_user
+    ):
+        """Test that donation request view sends notifications"""
+        url = reverse('donation-request')
+        data = {
+            'listingId': str(food_listing.id),
+            'quantity': 2,
+            'motivationMessage': 'We help feed homeless people',
+            'specialInstructions': 'Please pack items separately'
+        }
+        
+        with patch.object(NotificationService, 'send_donation_request_notification') as mock_send:
+            # Configure mock to return mock notifications
+            mock_ngo_notif = Mock()
+            mock_business_notif = Mock()
+            mock_send.return_value = (mock_ngo_notif, mock_business_notif)
+            
+            response = authenticated_ngo_client.post(
+                url,
+                data=json.dumps(data),
+                content_type='application/json'
+            )
+            
+            assert response.status_code == status.HTTP_201_CREATED
+            assert 'interaction_id' in response.data
+            assert 'notifications' in response.data
+            assert response.data['notifications']['ngo_notification_sent'] is True
+            assert response.data['notifications']['business_notification_sent'] is True
+            
+            # Verify the service was called
+            mock_send.assert_called_once()
+    
+    def test_accept_donation_view_sends_notifications(
+        self, 
+        authenticated_provider_client, 
+        provider_user, 
+        ngo_user,
+        food_listing
+    ):
+        """Test that accept donation view sends notifications"""
+        # Create a pending donation interaction
+        interaction = Interaction.objects.create(
+            user=ngo_user,
+            business=provider_user.provider_profile,
+            interaction_type='Donation',
+            quantity=1,
+            total_amount=Decimal('0.00'),
+            status='pending'
+        )
+        
+        InteractionItem.objects.create(
+            interaction=interaction,
+            food_listing=food_listing,
+            name=food_listing.name,
+            quantity=1,
+            price_per_item=Decimal('0.00'),
+            total_price=Decimal('0.00'),
+            expiry_date=food_listing.expiry_date
+        )
+        
+        Order.objects.create(
+            interaction=interaction,
+            pickup_window=food_listing.pickup_window,
+            pickup_code='TEST123',
+            status='pending'
+        )
+        
+        url = reverse('donation-accept', args=[interaction.id])
+        
+        with patch.object(NotificationService, 'send_donation_response_notification') as mock_send:
+            mock_notification = Mock()
+            mock_notification.id = uuid.uuid4()
+            mock_send.return_value = mock_notification
+            
+            response = authenticated_provider_client.post(url)
+            
+            assert response.status_code == status.HTTP_200_OK
+            assert 'notifications' in response.data
+            assert response.data['notifications']['notification_sent'] is True
+            assert 'notification_id' in response.data['notifications']
+            
+            # Verify the service was called with correct parameters
+            mock_send.assert_called_once()
+            call_args = mock_send.call_args
+            assert call_args[1]['interaction'] == interaction
+            assert call_args[1]['response_type'] == 'accepted'
+    
+    def test_reject_donation_view_sends_notifications(
+        self, 
+        authenticated_provider_client, 
+        provider_user, 
+        ngo_user,
+        food_listing
+    ):
+        """Test that reject donation view sends notifications"""
+        # Create a pending donation interaction
+        interaction = Interaction.objects.create(
+            user=ngo_user,
+            business=provider_user.provider_profile,
+            interaction_type='Donation',
+            quantity=1,
+            total_amount=Decimal('0.00'),
+            status='pending'
+        )
+        
+        InteractionItem.objects.create(
+            interaction=interaction,
+            food_listing=food_listing,
+            name=food_listing.name,
+            quantity=1,
+            price_per_item=Decimal('0.00'),
+            total_price=Decimal('0.00'),
+            expiry_date=food_listing.expiry_date
+        )
+        
+        Order.objects.create(
+            interaction=interaction,
+            pickup_window=food_listing.pickup_window,
+            pickup_code='TEST123',
+            status='pending'
+        )
+        
+        url = reverse('donation-reject', args=[interaction.id])
+        data = {
+            'rejectionReason': 'Item already claimed by another organization'
+        }
+        
+        with patch.object(NotificationService, 'send_donation_response_notification') as mock_send:
+            mock_notification = Mock()
+            mock_notification.id = uuid.uuid4()
+            mock_send.return_value = mock_notification
+            
+            response = authenticated_provider_client.post(
+                url,
+                data=json.dumps(data),
+                content_type='application/json'
+            )
+            
+            assert response.status_code == status.HTTP_200_OK
+            assert 'notifications' in response.data
+            assert response.data['notifications']['notification_sent'] is True
+            assert response.data['rejection_reason'] == data['rejectionReason']
+            
+            # Verify the service was called with correct parameters
+            mock_send.assert_called_once()
+            call_args = mock_send.call_args
+            assert call_args[1]['interaction'] == interaction
+            assert call_args[1]['response_type'] == 'rejected'
+            assert call_args[1]['rejection_reason'] == data['rejectionReason']
+    
+    def test_donation_notification_error_handling_in_views(
+        self, 
+        authenticated_provider_client, 
+        provider_user, 
+        ngo_user,
+        food_listing
+    ):
+        """Test that views handle notification errors gracefully"""
+        # Create a pending donation interaction
+        interaction = Interaction.objects.create(
+            user=ngo_user,
+            business=provider_user.provider_profile,
+            interaction_type='Donation',
+            quantity=1,
+            total_amount=Decimal('0.00'),
+            status='pending'
+        )
+        
+        InteractionItem.objects.create(
+            interaction=interaction,
+            food_listing=food_listing,
+            name=food_listing.name,
+            quantity=1,
+            price_per_item=Decimal('0.00'),
+            total_price=Decimal('0.00'),
+            expiry_date=food_listing.expiry_date
+        )
+        
+        Order.objects.create(
+            interaction=interaction,
+            pickup_window=food_listing.pickup_window,
+            pickup_code='TEST123',
+            status='pending'
+        )
+        
+        url = reverse('donation-accept', args=[interaction.id])
+        
+        # Mock the notification service to raise an exception
+        with patch.object(NotificationService, 'send_donation_response_notification') as mock_send:
+            mock_send.side_effect = Exception("Database connection error")
+            
+            response = authenticated_provider_client.post(url)
+            
+            # The donation acceptance should still succeed
+            assert response.status_code == status.HTTP_200_OK
+            assert 'notifications' in response.data
+            assert response.data['notifications']['notification_sent'] is False
+            assert 'notification_error' in response.data['notifications']
+            
+            # Verify the interaction status was still updated
+            interaction.refresh_from_db()
+            assert interaction.status == 'ready_for_pickup'
+
+
+# Django TestCase versions for manage.py test compatibility
+class DonationNotificationTestCase(TestCase):
+    """Django TestCase for donation notifications"""
+    
+    def setUp(self):
+        """Set up test data"""
+        self.ngo_user = User.objects.create_user(
+            username='ngo_donation',
+            email='ngo_donation@test.com',
+            password='testpass123',
+            user_type='ngo'
+        )
+        
+        NGOProfile.objects.create(
+            user=self.ngo_user,
+            organisation_name='Test NGO',
+            organisation_contact='+1234567890',
+            organisation_email='contact@testngo.com',
+            representative_name='NGO Rep',
+            representative_email='rep@testngo.com',
+            address_line1='123 NGO St',
+            city='Test City',
+            province_or_state='Test State',
+            postal_code='12345',
+            country='Test Country',
+            status='verified'
+        )
+        
+        self.provider_user = User.objects.create_user(
+            username='provider_donation',
+            email='provider_donation@test.com',
+            password='testpass123',
+            user_type='provider'
+        )
+        
+        self.provider_profile = FoodProviderProfile.objects.create(
+            user=self.provider_user,
+            business_name='Donation Restaurant',
+            business_address='123 Donation St',
+            business_contact='+1234567890',
+            business_email='donation@business.com',
+            status='verified'
+        )
+        
+        self.food_listing = FoodListing.objects.create(
+            name='Test Donation Food',
+            description='Food available for donation',
+            food_type='ready_to_eat',
+            original_price=Decimal('25.00'),
+            discounted_price=Decimal('0.00'),  # Free for donation
+            quantity=10,
+            quantity_available=10,
+            expiry_date=date.today() + timedelta(days=2),
+            pickup_window='14:00-16:00',
+            provider=self.provider_user,
+            status='active'
+        )
+    
+    def test_donation_request_notification_creation(self):
+        """Test creating donation request notifications"""
+        interaction = Interaction.objects.create(
+            user=self.ngo_user,
+            business=self.provider_profile,
+            interaction_type='Donation',
+            quantity=2,
+            total_amount=Decimal('0.00'),
+            motivation_message='We serve the homeless community'
+        )
+        
+        InteractionItem.objects.create(
+            interaction=interaction,
+            food_listing=self.food_listing,
+            name=self.food_listing.name,
+            quantity=2,
+            price_per_item=Decimal('0.00'),
+            total_price=Decimal('0.00'),
+            expiry_date=self.food_listing.expiry_date
+        )
+        
+        # Send notifications
+        ngo_notification, business_notification = NotificationService.send_donation_request_notification(interaction)
+        
+        # Test NGO notification
+        self.assertIsNotNone(ngo_notification)
+        self.assertEqual(ngo_notification.recipient, self.ngo_user)
+        self.assertEqual(ngo_notification.notification_type, 'donation_request')
+        self.assertIn('Donation Request Submitted', ngo_notification.title)
+        
+        # Test business notification
+        self.assertIsNotNone(business_notification)
+        self.assertEqual(business_notification.recipient, self.provider_user)
+        self.assertEqual(business_notification.notification_type, 'donation_request')
+        self.assertIn('New Donation Request', business_notification.title)
+    
+    def test_donation_acceptance_notification_creation(self):
+        """Test creating donation acceptance notifications"""
+        interaction = Interaction.objects.create(
+            user=self.ngo_user,
+            business=self.provider_profile,
+            interaction_type='Donation',
+            quantity=1,
+            total_amount=Decimal('0.00'),
+            status='pending'
+        )
+        
+        InteractionItem.objects.create(
+            interaction=interaction,
+            food_listing=self.food_listing,
+            name=self.food_listing.name,
+            quantity=1,
+            price_per_item=Decimal('0.00'),
+            total_price=Decimal('0.00'),
+            expiry_date=self.food_listing.expiry_date
+        )
+        
+        # Create notification preferences
+        NotificationPreferences.objects.create(
+            user=self.ngo_user,
+            email_notifications=True
+        )
+        
+        # Send acceptance notification
+        notification = NotificationService.send_donation_response_notification(
+            interaction=interaction,
+            response_type='accepted'
+        )
+        
+        self.assertIsNotNone(notification)
+        self.assertEqual(notification.recipient, self.ngo_user)
+        self.assertEqual(notification.notification_type, 'donation_response')
+        self.assertIn('Donation Request Accepted', notification.title)
+        self.assertEqual(notification.data['response_type'], 'accepted')
+    
