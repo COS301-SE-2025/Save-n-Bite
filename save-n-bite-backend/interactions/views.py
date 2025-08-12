@@ -1,4 +1,4 @@
-from rest_framework import status
+from rest_framework import status, generics,permissions
 from rest_framework.decorators import api_view, permission_classes
 from django.shortcuts import render
 from rest_framework.views import APIView
@@ -20,7 +20,9 @@ from .serializers import (
     CheckoutSerializer,
     OrderSerializer,
     CheckoutResponseSerializer,
-    UpdateInteractionStatusSerializer  # Already imported here
+    UpdateInteractionStatusSerializer,
+    InteractionSerializer,
+    CancelDonationSerializer
 )
 from django.db import transaction as db_transaction
 import uuid
@@ -258,7 +260,7 @@ class UpdateInteractionStatusView(APIView):
                 
                 # Create status history record
                 InteractionStatusHistory.objects.create(
-                    Interaction=interaction,
+                    interaction=interaction,
                     old_status=old_status,
                     new_status=new_status,
                     changed_by=request.user,
@@ -788,6 +790,57 @@ class RejectDonationView(APIView):
         # Optionally: trigger notification to NGO
 
         return Response({'message': 'Donation request rejected'}, status=200)
+    
+class CancelDonationView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, interaction_id):
+        serializer = CancelDonationSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        reason = serializer.validated_data.get('reason', '')
+
+        interaction = get_object_or_404(
+            Interaction,
+            id=interaction_id,
+            user=request.user,
+            interaction_type=Interaction.InteractionType.DONATION
+        )
+
+        if interaction.status != Interaction.Status.PENDING:
+            return Response(
+                {'error': 'You can only cancel a pending donation request.'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        with db_transaction.atomic():
+            # Restore stock
+            for item in interaction.items.all():
+                food_listing = item.food_listing
+                food_listing.quantity_available += item.quantity
+                food_listing.save()
+
+            # Cancel interaction
+            interaction.status = Interaction.Status.CANCELLED
+            interaction.save()
+
+            # Cancel linked order if it exists
+            if hasattr(interaction, 'order'):
+                interaction.order.status = Order.Status.CANCELLED
+                interaction.order.save()
+
+            # Record status change
+            InteractionStatusHistory.objects.create(
+                interaction=interaction,
+                old_status=Interaction.Status.PENDING,
+                new_status=Interaction.Status.CANCELLED,
+                changed_by=request.user,
+                notes=reason
+            )
+
+        return Response(
+            {'message': 'Donation request cancelled successfully and stock restored'},
+            status=status.HTTP_200_OK
+        )
 
 class BusinessHistoryView(APIView):
     permission_classes = [IsAuthenticated]
@@ -902,7 +955,8 @@ class CompleteCheckoutView(APIView):
         serializer = CheckoutSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         
-        session_id = request.data.get('session_id')
+        session_id = serializer.validated_data['session_id']  
+        
         checkout_session = get_object_or_404(
             CheckoutSession,
             id=session_id,
@@ -943,7 +997,7 @@ class CompleteCheckoutView(APIView):
         # 2. Create Interaction Items (quantity already reserved)
         for cart_item in cart.items.all():
             InteractionItem.objects.create(
-                interaction=interaction,
+                Interaction=interaction,
                 food_listing=cart_item.food_listing,
                 name=cart_item.food_listing.name,
                 quantity=cart_item.quantity,
@@ -999,3 +1053,17 @@ class CompleteCheckoutView(APIView):
                 {'error': 'Payment processing failed'},
                 status=status.HTTP_400_BAD_REQUEST
             )
+        
+
+class NGODonationRequestsView(generics.ListAPIView):
+    serializer_class = InteractionSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        user = self.request.user
+        if not hasattr(user, 'ngo_profile'):
+            return Interaction.objects.none()  # No access if not an NGO
+
+        return Interaction.objects.filter(
+            user=user
+        ).order_by('-created_at')
