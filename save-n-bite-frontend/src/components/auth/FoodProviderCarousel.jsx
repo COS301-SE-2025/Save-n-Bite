@@ -122,7 +122,7 @@ const FoodProviderCarousel = () => {
     if (provider.banner) return provider.banner;
     if (provider.logo) return provider.logo;
     // Fallback to a generic food provider image
-    return 'https://images.unsplash.com/photo-1555507036-ab794f575c5f?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80';
+    return 'src/assets/images/SnB_leaf_icon.png';
   };
 
   // Helper function to get rating (show 0 if no reviews, format to 1 decimal if there are reviews)
@@ -341,7 +341,7 @@ const FoodProviderCarousel = () => {
                     className="w-full h-32 object-cover group-hover:scale-105 transition-transform duration-300"
                     onError={(e) => {
                       // Fallback to default image if provider image fails to load
-                      e.target.src = 'https://images.unsplash.com/photo-1555507036-ab794f575c5f?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80';
+                      e.target.src = 'src/assets/images/SnB_leaf_icon.png';
                     }}
                   />
 

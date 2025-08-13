@@ -116,7 +116,7 @@ const FoodProvidersPage = () => {
     }
     
     // Fallback to a generic food provider image
-    return 'https://images.unsplash.com/photo-1555507036-ab794f575c5f?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80'
+    return 'src/assets/images/SnB_leaf_icon.png'
   }
 
   // Use providers with review data for filtering if available, otherwise use original providers
@@ -291,7 +291,7 @@ const FoodProvidersPage = () => {
                   alt={provider.business_name}
                   className="w-full h-full object-cover"
                   onError={(e) => {
-                    e.target.src = 'https://images.unsplash.com/photo-1555507036-ab794f575c5f?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80'
+                    e.target.src = 'src/assets/images/SnB_leaf_icon.png'
                   }}
                 />
               </div>
