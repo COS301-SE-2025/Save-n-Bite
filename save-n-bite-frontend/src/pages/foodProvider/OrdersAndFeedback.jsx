@@ -85,13 +85,13 @@ function OrdersAndFeedback() {
             return {
               type: 'Food Review',
               comment: review.food_review,
-              icon: '🍽️'
+              icon: ''
             };
           } else if (review.business_review && review.business_review.trim() !== '') {
             return {
               type: 'Business Review',
               comment: review.business_review,
-              icon: '🏪'
+              icon: ''
             };
           } else {
             return {
@@ -121,7 +121,7 @@ function OrdersAndFeedback() {
             status: 'Completed',
             hasReview: true,
             amount: interaction.type === 'Purchase' ? `R${interaction.total_amount}` : 'N/A',
-            imageUrl: "https://images.unsplash.com/photo-1608198093002-ad4e005484ec?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80",
+            imageUrl: "src/assets/images/SnB_leaf_icon.png", // Use a default image
             confirmationCode: `CONF${index + 1}`,
             completedAt: interaction.completed_at,
             reviewData: review, // Store the full review data

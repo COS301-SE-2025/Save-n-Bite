@@ -39,17 +39,24 @@ export default function ListingsOverview() {
   const toggleMobileSidebar = () => {
     setIsMobileSidebarOpen(!isMobileSidebarOpen);
   };
-
-  const handleDelete = async (id) => {
-    if (window.confirm('Are you sure you want to delete this listing?')) {
+const handleDelete = async (id) => {
+    if (window.confirm('Are you sure you want to delete this listing? This action cannot be undone.')) {
       try {
+        setError(null); // Clear any previous errors
         const response = await foodListingsAPI.deleteListing(id);
+        
         if (response.success) {
+          // Remove the listing from the state
           setListings(listings.filter(listing => listing.id !== id));
+          
+          // Show success message
+          alert(response.message || 'Listing deleted successfully!');
         } else {
-          setError(response.error);
+          console.error('Delete failed:', response.error);
+          setError(response.error || 'Failed to delete listing');
         }
       } catch (error) {
+        console.error('Delete error:', error);
         setError('Failed to delete listing. Please try again.');
       }
     }
