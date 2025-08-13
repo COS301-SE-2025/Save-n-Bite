@@ -424,23 +424,71 @@ const foodListingsAPI = {
             };
         }
     },
-
-    // Delete listing (alternative method name)
-    async deleteListing(id) {
+async getListingForEdit(listingId) {
         try {
-            const response = await apiClient.delete(`/food-listings/${id}/`);
+            const response = await apiClient.get(`/api/food-listings/${listingId}/`);
+            
+            return {
+                success: true,
+                data: response.data.listing || response.data
+            };
+        } catch (error) {
+            console.error('Error fetching listing for edit:', error);
+            return {
+                success: false,
+                error: error.response?.data?.message || 'Failed to fetch listing details'
+            };
+        }
+    },
+
+    // Update existing listing
+    async updateListing(listingId, listingData) {
+        try {
+            // If listingData is FormData, don't set Content-Type header
+            const config = listingData instanceof FormData ? {
+                headers: {
+                    'Content-Type': 'multipart/form-data'
+                }
+            } : {};
+
+            const response = await apiClient.put(`/api/provider/listings/${listingId}/`, listingData, config);
+            
             return {
                 success: true,
                 data: response.data
             };
         } catch (error) {
+            console.error('Error updating listing:', error);
             return {
                 success: false,
-                error: error.response?.data?.message || 'Failed to delete listing'
+                error: error.response?.data?.message || error.response?.data?.error || 'Failed to update listing'
             };
         }
     },
 
+    // Delete listing - updated to match your endpoint structure
+    async deleteListing(listingId) {
+        try {
+            const response = await apiClient.delete(`/api/provider/listings/${listingId}/delete/`);
+            
+            return {
+                success: true,
+                data: response.data,
+                message: response.data?.message || 'Listing deleted successfully'
+            };
+        } catch (error) {
+            console.error('Error deleting listing:', error);
+            return {
+                success: false,
+                error: error.response?.data?.message || error.response?.data?.error || 'Failed to delete listing'
+            };
+        }
+    },
+
+    // Alternative delete method (keeping both for compatibility)
+    async deleteFoodListing(listingId) {
+        return this.deleteListing(listingId);
+    },
     // Get user type with debug logging
     getUserType: () => {
         console.log("=== getUserType Debug ===");
