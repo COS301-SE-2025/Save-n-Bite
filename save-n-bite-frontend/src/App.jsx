@@ -9,6 +9,7 @@ import { ThemeProvider } from "./context/ThemeContext";
 import { USER_TYPES } from './config/routes';
 
 // Import your components
+import EditListing from './pages/foodProvider/EditListing';
 import Register from './pages/auth/Register';
 import Login from './pages/auth/Login';
 import Home from './pages/auth/Home';
@@ -145,7 +146,7 @@ function App() {
 
 
        
-         
+         <Route path="/edit-listing/:listingId" element={<EditListing />} />
           <Route path="/providers" element={<FoodProvidersPage />} />
            <Route path="/provider/:id" element={<SpecificFoodProvider />} />
             <Route path="/profile" element={<ProfilePage />} />
