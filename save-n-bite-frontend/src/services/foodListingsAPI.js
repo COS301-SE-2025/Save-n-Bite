@@ -84,7 +84,9 @@ const transformListingData = (backendListing) => {
         name: listing.name,
         title: listing.name, // Map name to title for compatibility
         description: listing.description,
-        image: listing.imageUrl || 'https://images.unsplash.com/photo-1546833999-b9f581a1996d?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80', // fallback image
+        image: listing.imageUrl && listing.imageUrl.trim() !== '' 
+            ? listing.imageUrl 
+            : 'https://images.unsplash.com/photo-1546833999-b9f581a1996d?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80',
         imageUrl: listing.imageUrl,
         provider: {
             id: listing.provider?.id,

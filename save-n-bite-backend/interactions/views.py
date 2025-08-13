@@ -23,7 +23,6 @@ from .serializers import (
     CheckoutResponseSerializer,
     UpdateInteractionStatusSerializer,
     InteractionSerializer,
-    CancelDonationSerializer
 )
 from django.db import transaction as db_transaction
 import uuid

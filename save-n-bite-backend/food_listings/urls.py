@@ -10,6 +10,9 @@ urlpatterns = [
     path('provider/listings/', views.get_provider_listings, name='provider_listings'),
     path('provider/listings/create/', views.create_food_listing, name='create_listing'),
     path('provider/listings/<uuid:listing_id>/', views.update_food_listing, name='update_listing'),
+    path('provider/listings/<uuid:listing_id>/delete/', views.delete_food_listing, name='delete_listing'),
+    path('provider/listings/<uuid:listing_id>/restore/', views.restore_food_listing, name='restore_listing'),
+    path('provider/listings/deleted/', views.get_deleted_listings, name='deleted_listings'),
     
     # Customer browsing endpoints
     path('food-listings/', views.browse_food_listings, name='browse_listings'),
