@@ -14,16 +14,16 @@ import uuid
 from decimal import Decimal
 from unittest.mock import Mock, patch
 
-from .models import (
+from interactions.models import (
     Interaction, Cart, CartItem, Order, Payment, 
-    InteractionItem, PickupDetails, InteractionStatusHistory
+    InteractionItem, InteractionStatusHistory
 )
-from .admin import (
+from interactions.admin import (
     InteractionAdmin, CartAdmin, CartItemAdmin, OrderAdmin,
-    PaymentAdmin, InteractionItemAdmin, PickupDetailsAdmin,
+    PaymentAdmin, InteractionItemAdmin,
     InteractionStatusHistoryAdmin
 )
-from .serializers import (
+from interactions.serializers import (
     CartResponseSerializer, AddToCartSerializer, RemoveCartItemSerializer,
     CheckoutSerializer, OrderSerializer, PaymentSerializer,
     InteractionSerializer, CartItemSerializer
