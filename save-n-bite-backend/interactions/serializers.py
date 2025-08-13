@@ -99,7 +99,7 @@ class RemoveCartItemSerializer(serializers.Serializer):
     cartItemId = serializers.UUIDField()
 
 class CheckoutSerializer(serializers.Serializer):
-    session_id = serializers.UUIDField()  
+     
     paymentMethod = serializers.ChoiceField(choices=Payment.PaymentMethod.choices)
     paymentDetails = serializers.JSONField()
     specialInstructions = serializers.CharField(required=False, allow_blank=True)

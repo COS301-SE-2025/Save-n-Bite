@@ -23,7 +23,8 @@ from .serializers import (
     CheckoutResponseSerializer,
     UpdateInteractionStatusSerializer,
     InteractionSerializer,
-    CancelDonationSerializer
+    CancelDonationSerializer,
+    
 )
 from django.db import transaction as db_transaction
 import uuid
@@ -83,6 +84,22 @@ class CartView(APIView):
         }
     
         return Response(response_data)
+    
+
+class NGODonationRequestsView(generics.ListAPIView):
+    serializer_class = InteractionSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        user = self.request.user
+        if not hasattr(user, 'ngo_profile'):
+            return Interaction.objects.none()  # No access if not an NGO
+
+        return Interaction.objects.filter(
+            user=user
+        ).order_by('-created_at')
+
+
     
 class AddToCartView(APIView):
     permission_classes = [IsAuthenticated]

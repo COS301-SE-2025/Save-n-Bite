@@ -83,16 +83,9 @@ const donationsAPI = {
   // Get all donation requests for current user (NGO)
   getMyDonationRequests: async (queryParams = {}) => {
     try {
-      // Build query string from parameters
-      const searchParams = new URLSearchParams();
-      
-      if (queryParams.status) searchParams.append('status', queryParams.status);
-      if (queryParams.date_from) searchParams.append('date_from', queryParams.date_from);
-      if (queryParams.date_to) searchParams.append('date_to', queryParams.date_to);
-      if (queryParams.page) searchParams.append('page', queryParams.page);
-
-      const queryString = searchParams.toString();
-      const url = `/cart/donation/my-requests/${queryString ? `?${queryString}` : ''}`;
+   
+   
+      const url = `/cart/ngo/history/`;
 
       const response = await apiClient.get(url);
       

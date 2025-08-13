@@ -582,7 +582,7 @@ def available_pickup_slots(request):
 @permission_classes([IsAuthenticated])
 def schedule_pickup(request):
     """Schedule a pickup for a customer"""
-    if request.user.user_type != 'customer':
+    if request.user.user_type != 'customer' and request.user.user_type != 'ngo':
         return Response({
             'error': {
                 'code': 'FORBIDDEN',

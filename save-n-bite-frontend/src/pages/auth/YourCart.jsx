@@ -1,12 +1,14 @@
-import React, { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import React, { useState, useEffect  } from 'react';
+import { Link, useNavigate ,useSearchParams} from 'react-router-dom';
 import { ShoppingCartIcon, TrashIcon, CreditCardIcon, ClockIcon } from 'lucide-react';
 import CustomerNavBar from '../../components/auth/CustomerNavBar';
 import foodAPI from '../../services/FoodAPI';
 import schedulingAPI from '../../services/schedulingAPI';
 
 const YourCart = () => {
-  const navigate = useNavigate();
+   const [searchParams] = useSearchParams();
+  const focusedItemId = searchParams.get('item'); 
+ const navigate = useNavigate();
   const [cartItems, setCartItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -198,6 +200,7 @@ const handleCheckout = async (paymentDetails) => {
       
       // Step 1: Process checkout and create order
       const checkoutData = {
+       
         paymentMethod: "card",
         paymentDetails: {
           cardNumber: paymentDetails.card_number,
