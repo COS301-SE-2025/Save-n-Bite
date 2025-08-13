@@ -322,7 +322,7 @@ class InteractionItem(models.Model):
 
 class InteractionStatusHistory(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    Interaction = models.ForeignKey(Interaction, on_delete=models.CASCADE, related_name='status_history', default=1)
+    interaction = models.ForeignKey(Interaction, on_delete=models.CASCADE, related_name='status_history', default=1)
     old_status = models.CharField(max_length=20)
     new_status = models.CharField(max_length=20)
     changed_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True)  # Fixed
@@ -351,6 +351,12 @@ class InteractionStatusHistory(models.Model):
         }
 
 class CheckoutSession(models.Model):
+    session_id = models.UUIDField(
+        default=uuid.uuid4, 
+        editable=False, 
+        unique=True,
+        help_text="Unique session identifier"
+    )
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     cart = models.ForeignKey(Cart, on_delete=models.CASCADE)
     expires_at = models.DateTimeField()
