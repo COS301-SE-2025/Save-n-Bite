@@ -36,7 +36,7 @@ class InteractionItemAdmin(admin.ModelAdmin):
 
 @admin.register(InteractionStatusHistory)
 class InteractionStatusHistoryAdmin(admin.ModelAdmin):
-    list_display = ('Interaction', 'old_status', 'new_status', 'changed_by', 'changed_at')
+    list_display = ('interaction', 'old_status', 'new_status', 'changed_by', 'changed_at')
 
 @admin.register(CheckoutSession)
 class CheckoutSessionAdmin(admin.ModelAdmin):
