@@ -422,7 +422,7 @@ function ManageDonations() {
                         {donation.status.toLowerCase() === 'ready_for_pickup' && (
                           <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-700 rounded-md p-3">
                             <p className="text-green-800 dark:text-green-300 text-xs sm:text-sm font-medium">
-                              ✅ Approved - Ready for NGO pickup
+                               Approved - Ready for NGO pickup
                             </p>
                           </div>
                         )}
@@ -430,7 +430,7 @@ function ManageDonations() {
                         {donation.status.toLowerCase() === 'completed' && (
                           <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700 rounded-md p-3">
                             <p className="text-blue-800 dark:text-blue-300 text-xs sm:text-sm font-medium">
-                              ✅ Completed - Donation picked up{donation.completed_at ? ` on ${new Date(donation.completed_at).toLocaleDateString()}` : ''}
+                               Completed - Donation picked up{donation.completed_at ? ` on ${new Date(donation.completed_at).toLocaleDateString()}` : ''}
                             </p>
                           </div>
                         )}
@@ -438,7 +438,7 @@ function ManageDonations() {
                         {donation.status.toLowerCase() === 'rejected' && (
                           <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-700 rounded-md p-3">
                             <p className="text-red-800 dark:text-red-300 text-xs sm:text-sm font-medium">
-                              ❌ Request rejected
+                               Request rejected
                             </p>
                           </div>
                         )}
