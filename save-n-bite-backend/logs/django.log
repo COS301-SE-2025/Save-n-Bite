@@ -632,3 +632,679 @@ ERROR 2025-08-13 16:09:34,325 log 14740 21316 Internal Server Error: /api/schedu
 ERROR 2025-08-13 16:09:34,326 basehttp 14740 21316 "GET /api/scheduling/schedule-overview/?date=2025-08-13 HTTP/1.1" 500 80
 INFO 2025-08-13 16:09:56,219 basehttp 14740 21316 "GET /api/notifications/unread-count/ HTTP/1.1" 200 19
 INFO 2025-08-13 16:10:26,267 basehttp 14740 21316 "GET /api/notifications/unread-count/ HTTP/1.1" 200 19
+INFO 2025-08-13 16:10:59,968 basehttp 14740 21316 "GET /api/notifications/unread-count/ HTTP/1.1" 200 19
+INFO 2025-08-13 16:11:03,741 basehttp 14740 21316 "GET /api/notifications/unread-count/ HTTP/1.1" 200 19
+INFO 2025-08-13 16:11:03,759 basehttp 14740 19308 "GET /api/notifications/preferences/ HTTP/1.1" 200 132
+ERROR 2025-08-13 16:11:03,830 log 14740 16852 Internal Server Error: /api/scheduling/schedule-overview/
+ERROR 2025-08-13 16:11:03,831 basehttp 14740 16852 "GET /api/scheduling/schedule-overview/?date=2025-08-13 HTTP/1.1" 500 80
+INFO 2025-08-13 16:11:03,852 basehttp 14740 21316 "GET /api/notifications/unread-count/ HTTP/1.1" 200 19
+INFO 2025-08-13 16:11:03,864 basehttp 14740 19308 "GET /api/notifications/preferences/ HTTP/1.1" 200 132
+ERROR 2025-08-13 16:11:03,948 log 14740 16852 Internal Server Error: /api/scheduling/schedule-overview/
+ERROR 2025-08-13 16:11:03,949 basehttp 14740 16852 "GET /api/scheduling/schedule-overview/?date=2025-08-13 HTTP/1.1" 500 80
+INFO 2025-08-13 16:11:33,688 basehttp 14740 16852 "GET /api/notifications/unread-count/ HTTP/1.1" 200 19
+INFO 2025-08-13 16:12:03,768 basehttp 14740 16852 "GET /api/notifications/unread-count/ HTTP/1.1" 200 19
+INFO 2025-08-13 16:12:33,664 basehttp 14740 16852 "GET /api/notifications/unread-count/ HTTP/1.1" 200 19
+INFO 2025-08-13 16:13:03,661 basehttp 14740 16852 "GET /api/notifications/unread-count/ HTTP/1.1" 200 19
+INFO 2025-08-13 16:13:34,233 basehttp 14740 16852 "GET /api/notifications/unread-count/ HTTP/1.1" 200 19
+INFO 2025-08-13 16:14:04,217 basehttp 14740 16852 "GET /api/notifications/unread-count/ HTTP/1.1" 200 19
+INFO 2025-08-13 16:14:34,338 basehttp 14740 16852 "GET /api/notifications/unread-count/ HTTP/1.1" 200 19
+INFO 2025-08-13 16:15:35,372 basehttp 14740 16852 "GET /api/notifications/unread-count/ HTTP/1.1" 200 19
+INFO 2025-08-13 16:16:36,236 basehttp 14740 16852 "GET /api/notifications/unread-count/ HTTP/1.1" 200 19
+INFO 2025-08-13 16:17:33,237 autoreload 14740 25636 C:\Users\Capleton\Desktop\COS214\practical\Save-n-Bite\save-n-bite-backend\scheduling\services.py changed, reloading.
+INFO 2025-08-13 16:17:36,614 blob_storage 9800 22076 Updated existing container to public access: customer-profiles
+INFO 2025-08-13 16:17:36,644 blob_storage 9800 22076 Updated existing container to public access: ngo-documents
+INFO 2025-08-13 16:17:36,672 blob_storage 9800 22076 Updated existing container to public access: ngo-logos
+INFO 2025-08-13 16:17:36,702 blob_storage 9800 22076 Updated existing container to public access: provider-documents
+INFO 2025-08-13 16:17:36,714 blob_storage 9800 22076 Updated existing container to public access: provider-logos
+INFO 2025-08-13 16:17:36,735 blob_storage 9800 22076 Updated existing container to public access: provider-banners
+INFO 2025-08-13 16:17:36,848 autoreload 9800 22076 Watching for file changes with StatReloader
+INFO 2025-08-13 16:17:37,511 blob_storage 9800 24840 Updated existing container to public access: customer-profiles
+INFO 2025-08-13 16:17:37,524 blob_storage 9800 24840 Updated existing container to public access: provider-banners
+INFO 2025-08-13 16:17:37,536 blob_storage 9800 24840 Updated existing container to public access: provider-documents
+INFO 2025-08-13 16:17:37,568 blob_storage 9800 24840 Updated existing container to public access: provider-logos
+INFO 2025-08-13 16:17:37,596 blob_storage 9800 24840 Updated existing container to public access: ngo-documents
+INFO 2025-08-13 16:17:37,619 blob_storage 9800 24840 Updated existing container to public access: ngo-logos
+INFO 2025-08-13 16:17:38,094 basehttp 9800 15608 "GET /api/notifications/unread-count/ HTTP/1.1" 200 19
+INFO 2025-08-13 16:18:24,530 autoreload 9800 22076 C:\Users\Capleton\Desktop\COS214\practical\Save-n-Bite\save-n-bite-backend\scheduling\services.py changed, reloading.
+INFO 2025-08-13 16:18:26,551 blob_storage 12584 3688 Updated existing container to public access: customer-profiles
+INFO 2025-08-13 16:18:26,588 blob_storage 12584 3688 Updated existing container to public access: ngo-documents
+INFO 2025-08-13 16:18:26,614 blob_storage 12584 3688 Updated existing container to public access: ngo-logos
+INFO 2025-08-13 16:18:26,640 blob_storage 12584 3688 Updated existing container to public access: provider-documents
+INFO 2025-08-13 16:18:26,652 blob_storage 12584 3688 Updated existing container to public access: provider-logos
+INFO 2025-08-13 16:18:26,672 blob_storage 12584 3688 Updated existing container to public access: provider-banners
+INFO 2025-08-13 16:18:26,772 autoreload 12584 3688 Watching for file changes with StatReloader
+INFO 2025-08-13 16:18:27,098 blob_storage 12584 14776 Updated existing container to public access: customer-profiles
+INFO 2025-08-13 16:18:27,131 blob_storage 12584 14776 Updated existing container to public access: provider-banners
+INFO 2025-08-13 16:18:27,152 blob_storage 12584 14776 Updated existing container to public access: provider-documents
+INFO 2025-08-13 16:18:27,168 blob_storage 12584 14776 Updated existing container to public access: provider-logos
+INFO 2025-08-13 16:18:27,180 blob_storage 12584 14776 Updated existing container to public access: ngo-documents
+INFO 2025-08-13 16:18:27,193 blob_storage 12584 14776 Updated existing container to public access: ngo-logos
+INFO 2025-08-13 16:18:38,455 autoreload 12584 3688 C:\Users\Capleton\Desktop\COS214\practical\Save-n-Bite\save-n-bite-backend\scheduling\services.py changed, reloading.
+INFO 2025-08-13 16:18:41,330 blob_storage 22928 7048 Updated existing container to public access: customer-profiles
+INFO 2025-08-13 16:18:41,355 blob_storage 22928 7048 Updated existing container to public access: ngo-documents
+INFO 2025-08-13 16:18:41,365 blob_storage 22928 7048 Updated existing container to public access: ngo-logos
+INFO 2025-08-13 16:18:41,399 blob_storage 22928 7048 Updated existing container to public access: provider-documents
+INFO 2025-08-13 16:18:41,449 blob_storage 22928 7048 Updated existing container to public access: provider-logos
+INFO 2025-08-13 16:18:41,474 blob_storage 22928 7048 Updated existing container to public access: provider-banners
+INFO 2025-08-13 16:18:41,625 autoreload 22928 7048 Watching for file changes with StatReloader
+INFO 2025-08-13 16:18:50,657 blob_storage 22928 19368 Updated existing container to public access: customer-profiles
+INFO 2025-08-13 16:18:50,692 blob_storage 22928 19368 Updated existing container to public access: provider-banners
+INFO 2025-08-13 16:18:50,709 blob_storage 22928 19368 Updated existing container to public access: provider-documents
+INFO 2025-08-13 16:18:50,740 blob_storage 22928 19368 Updated existing container to public access: provider-logos
+INFO 2025-08-13 16:18:50,774 blob_storage 22928 19368 Updated existing container to public access: ngo-documents
+INFO 2025-08-13 16:18:50,807 blob_storage 22928 19368 Updated existing container to public access: ngo-logos
+INFO 2025-08-13 16:18:56,887 basehttp 22928 20988 "GET /api/notifications/preferences/ HTTP/1.1" 200 132
+ERROR 2025-08-13 16:18:56,908 log 22928 3868 Internal Server Error: /api/scheduling/schedule-overview/
+ERROR 2025-08-13 16:18:56,909 basehttp 22928 3868 "GET /api/scheduling/schedule-overview/?date=2025-08-13 HTTP/1.1" 500 182
+INFO 2025-08-13 16:18:56,982 basehttp 22928 4684 "GET /api/notifications/unread-count/ HTTP/1.1" 200 19
+INFO 2025-08-13 16:18:57,046 basehttp 22928 4684 "GET /api/notifications/unread-count/ HTTP/1.1" 200 19
+INFO 2025-08-13 16:18:57,060 basehttp 22928 20988 "GET /api/notifications/preferences/ HTTP/1.1" 200 132
+ERROR 2025-08-13 16:18:57,074 log 22928 3868 Internal Server Error: /api/scheduling/schedule-overview/
+ERROR 2025-08-13 16:18:57,074 basehttp 22928 3868 "GET /api/scheduling/schedule-overview/?date=2025-08-13 HTTP/1.1" 500 182
+INFO 2025-08-13 16:19:23,097 autoreload 22928 7048 C:\Users\Capleton\Desktop\COS214\practical\Save-n-Bite\save-n-bite-backend\scheduling\services.py changed, reloading.
+INFO 2025-08-13 16:19:24,725 blob_storage 10380 15900 Updated existing container to public access: customer-profiles
+INFO 2025-08-13 16:19:24,751 blob_storage 10380 15900 Updated existing container to public access: ngo-documents
+INFO 2025-08-13 16:19:24,778 blob_storage 10380 15900 Updated existing container to public access: ngo-logos
+INFO 2025-08-13 16:19:24,800 blob_storage 10380 15900 Updated existing container to public access: provider-documents
+INFO 2025-08-13 16:19:24,831 blob_storage 10380 15900 Updated existing container to public access: provider-logos
+INFO 2025-08-13 16:19:24,859 blob_storage 10380 15900 Updated existing container to public access: provider-banners
+INFO 2025-08-13 16:19:24,975 autoreload 10380 15900 Watching for file changes with StatReloader
+INFO 2025-08-13 16:19:25,297 blob_storage 10380 22364 Updated existing container to public access: customer-profiles
+INFO 2025-08-13 16:19:25,307 blob_storage 10380 22364 Updated existing container to public access: provider-banners
+INFO 2025-08-13 16:19:25,317 blob_storage 10380 22364 Updated existing container to public access: provider-documents
+INFO 2025-08-13 16:19:25,327 blob_storage 10380 22364 Updated existing container to public access: provider-logos
+INFO 2025-08-13 16:19:25,359 blob_storage 10380 22364 Updated existing container to public access: ngo-documents
+INFO 2025-08-13 16:19:25,372 blob_storage 10380 22364 Updated existing container to public access: ngo-logos
+INFO 2025-08-13 16:19:26,919 autoreload 10380 15900 C:\Users\Capleton\Desktop\COS214\practical\Save-n-Bite\save-n-bite-backend\scheduling\services.py changed, reloading.
+INFO 2025-08-13 16:19:28,680 blob_storage 1932 2536 Updated existing container to public access: customer-profiles
+INFO 2025-08-13 16:19:28,708 blob_storage 1932 2536 Updated existing container to public access: ngo-documents
+INFO 2025-08-13 16:19:28,732 blob_storage 1932 2536 Updated existing container to public access: ngo-logos
+INFO 2025-08-13 16:19:28,755 blob_storage 1932 2536 Updated existing container to public access: provider-documents
+INFO 2025-08-13 16:19:28,789 blob_storage 1932 2536 Updated existing container to public access: provider-logos
+INFO 2025-08-13 16:19:28,822 blob_storage 1932 2536 Updated existing container to public access: provider-banners
+INFO 2025-08-13 16:19:28,914 autoreload 1932 2536 Watching for file changes with StatReloader
+INFO 2025-08-13 16:19:29,172 blob_storage 1932 9088 Updated existing container to public access: customer-profiles
+INFO 2025-08-13 16:19:29,183 blob_storage 1932 9088 Updated existing container to public access: provider-banners
+INFO 2025-08-13 16:19:29,211 blob_storage 1932 9088 Updated existing container to public access: provider-documents
+INFO 2025-08-13 16:19:29,223 blob_storage 1932 9088 Updated existing container to public access: provider-logos
+INFO 2025-08-13 16:19:29,246 blob_storage 1932 9088 Updated existing container to public access: ngo-documents
+INFO 2025-08-13 16:19:29,279 blob_storage 1932 9088 Updated existing container to public access: ngo-logos
+INFO 2025-08-13 16:19:29,708 basehttp 1932 13536 "GET /api/notifications/unread-count/ HTTP/1.1" 200 19
+INFO 2025-08-13 16:19:57,309 basehttp 1932 13536 "GET /api/notifications/unread-count/ HTTP/1.1" 200 19
+INFO 2025-08-13 16:20:27,212 basehttp 1932 13536 "GET /api/notifications/unread-count/ HTTP/1.1" 200 19
+INFO 2025-08-13 16:20:54,979 autoreload 1932 2536 C:\Users\Capleton\Desktop\COS214\practical\Save-n-Bite\save-n-bite-backend\scheduling\services.py changed, reloading.
+INFO 2025-08-13 16:20:56,973 blob_storage 14152 14480 Updated existing container to public access: customer-profiles
+INFO 2025-08-13 16:20:57,007 blob_storage 14152 14480 Updated existing container to public access: ngo-documents
+INFO 2025-08-13 16:20:57,040 blob_storage 14152 14480 Updated existing container to public access: ngo-logos
+INFO 2025-08-13 16:20:57,074 blob_storage 14152 14480 Updated existing container to public access: provider-documents
+INFO 2025-08-13 16:20:57,092 blob_storage 14152 14480 Updated existing container to public access: provider-logos
+INFO 2025-08-13 16:20:57,122 blob_storage 14152 14480 Updated existing container to public access: provider-banners
+INFO 2025-08-13 16:20:57,214 autoreload 14152 14480 Watching for file changes with StatReloader
+INFO 2025-08-13 16:20:57,488 blob_storage 14152 22388 Updated existing container to public access: customer-profiles
+INFO 2025-08-13 16:20:57,507 blob_storage 14152 22388 Updated existing container to public access: provider-banners
+INFO 2025-08-13 16:20:57,518 blob_storage 14152 22388 Updated existing container to public access: provider-documents
+INFO 2025-08-13 16:20:57,538 blob_storage 14152 22388 Updated existing container to public access: provider-logos
+INFO 2025-08-13 16:20:57,571 blob_storage 14152 22388 Updated existing container to public access: ngo-documents
+INFO 2025-08-13 16:20:57,589 blob_storage 14152 22388 Updated existing container to public access: ngo-logos
+INFO 2025-08-13 16:20:57,791 basehttp 14152 24556 "GET /api/notifications/unread-count/ HTTP/1.1" 200 19
+INFO 2025-08-13 16:21:03,847 basehttp 14152 24556 "GET /api/notifications/unread-count/ HTTP/1.1" 200 19
+INFO 2025-08-13 16:21:03,861 basehttp 14152 14960 "GET /api/notifications/preferences/ HTTP/1.1" 200 132
+ERROR 2025-08-13 16:21:03,939 log 14152 24556 Internal Server Error: /api/scheduling/schedule-overview/
+ERROR 2025-08-13 16:21:03,940 basehttp 14152 24556 "GET /api/scheduling/schedule-overview/?date=2025-08-13 HTTP/1.1" 500 182
+INFO 2025-08-13 16:21:03,942 basehttp 14152 14960 "GET /api/notifications/unread-count/ HTTP/1.1" 200 19
+INFO 2025-08-13 16:21:04,022 basehttp 14152 24556 "GET /api/notifications/preferences/ HTTP/1.1" 200 132
+ERROR 2025-08-13 16:21:04,026 log 14152 14960 Internal Server Error: /api/scheduling/schedule-overview/
+ERROR 2025-08-13 16:21:04,027 basehttp 14152 14960 "GET /api/scheduling/schedule-overview/?date=2025-08-13 HTTP/1.1" 500 182
+INFO 2025-08-13 16:21:11,355 autoreload 14152 14480 C:\Users\Capleton\Desktop\COS214\practical\Save-n-Bite\save-n-bite-backend\scheduling\services.py changed, reloading.
+INFO 2025-08-13 16:21:13,183 blob_storage 22012 25140 Updated existing container to public access: customer-profiles
+INFO 2025-08-13 16:21:13,212 blob_storage 22012 25140 Updated existing container to public access: ngo-documents
+INFO 2025-08-13 16:21:13,224 blob_storage 22012 25140 Updated existing container to public access: ngo-logos
+INFO 2025-08-13 16:21:13,236 blob_storage 22012 25140 Updated existing container to public access: provider-documents
+INFO 2025-08-13 16:21:13,245 blob_storage 22012 25140 Updated existing container to public access: provider-logos
+INFO 2025-08-13 16:21:13,258 blob_storage 22012 25140 Updated existing container to public access: provider-banners
+INFO 2025-08-13 16:21:13,348 autoreload 22012 25140 Watching for file changes with StatReloader
+INFO 2025-08-13 16:21:13,688 blob_storage 22012 4700 Updated existing container to public access: customer-profiles
+INFO 2025-08-13 16:21:13,708 blob_storage 22012 4700 Updated existing container to public access: provider-banners
+INFO 2025-08-13 16:21:13,740 blob_storage 22012 4700 Updated existing container to public access: provider-documents
+INFO 2025-08-13 16:21:13,772 blob_storage 22012 4700 Updated existing container to public access: provider-logos
+INFO 2025-08-13 16:21:13,782 blob_storage 22012 4700 Updated existing container to public access: ngo-documents
+INFO 2025-08-13 16:21:13,793 blob_storage 22012 4700 Updated existing container to public access: ngo-logos
+INFO 2025-08-13 16:21:34,601 basehttp 22012 13976 "GET /api/notifications/unread-count/ HTTP/1.1" 200 19
+INFO 2025-08-13 16:22:04,237 basehttp 22012 13976 "GET /api/notifications/unread-count/ HTTP/1.1" 200 19
+INFO 2025-08-13 16:22:30,728 blob_storage 4944 13540 Updated existing container to public access: customer-profiles
+INFO 2025-08-13 16:22:30,741 blob_storage 4944 13540 Updated existing container to public access: ngo-documents
+INFO 2025-08-13 16:22:30,754 blob_storage 4944 13540 Updated existing container to public access: ngo-logos
+INFO 2025-08-13 16:22:30,769 blob_storage 4944 13540 Updated existing container to public access: provider-documents
+INFO 2025-08-13 16:22:30,783 blob_storage 4944 13540 Updated existing container to public access: provider-logos
+INFO 2025-08-13 16:22:30,795 blob_storage 4944 13540 Updated existing container to public access: provider-banners
+INFO 2025-08-13 16:29:42,126 autoreload 2168 12412 Watching for file changes with StatReloader
+INFO 2025-08-13 16:29:59,590 blob_storage 7296 18352 Updated existing container to public access: customer-profiles
+INFO 2025-08-13 16:29:59,615 blob_storage 7296 18352 Updated existing container to public access: ngo-documents
+INFO 2025-08-13 16:29:59,633 blob_storage 7296 18352 Updated existing container to public access: ngo-logos
+INFO 2025-08-13 16:29:59,669 blob_storage 7296 18352 Updated existing container to public access: provider-documents
+INFO 2025-08-13 16:29:59,698 blob_storage 7296 18352 Updated existing container to public access: provider-logos
+INFO 2025-08-13 16:29:59,718 blob_storage 7296 18352 Updated existing container to public access: provider-banners
+INFO 2025-08-13 16:30:01,048 blob_storage 4756 18044 Updated existing container to public access: customer-profiles
+INFO 2025-08-13 16:30:01,069 blob_storage 4756 18044 Updated existing container to public access: ngo-documents
+INFO 2025-08-13 16:30:01,097 blob_storage 4756 18044 Updated existing container to public access: ngo-logos
+INFO 2025-08-13 16:30:01,132 blob_storage 4756 18044 Updated existing container to public access: provider-documents
+INFO 2025-08-13 16:30:01,149 blob_storage 4756 18044 Updated existing container to public access: provider-logos
+INFO 2025-08-13 16:30:01,181 blob_storage 4756 18044 Updated existing container to public access: provider-banners
+INFO 2025-08-13 16:30:01,271 autoreload 4756 18044 Watching for file changes with StatReloader
+INFO 2025-08-13 16:30:01,511 blob_storage 4756 1804 Updated existing container to public access: customer-profiles
+INFO 2025-08-13 16:30:01,543 blob_storage 4756 1804 Updated existing container to public access: provider-banners
+INFO 2025-08-13 16:30:01,553 blob_storage 4756 1804 Updated existing container to public access: provider-documents
+INFO 2025-08-13 16:30:01,564 blob_storage 4756 1804 Updated existing container to public access: provider-logos
+INFO 2025-08-13 16:30:01,597 blob_storage 4756 1804 Updated existing container to public access: ngo-documents
+INFO 2025-08-13 16:30:01,629 blob_storage 4756 1804 Updated existing container to public access: ngo-logos
+WARNING 2025-08-13 16:30:04,067 log 4756 3936 Unauthorized: /api/notifications/unread-count/
+WARNING 2025-08-13 16:30:04,068 basehttp 4756 3936 "GET /api/notifications/unread-count/ HTTP/1.1" 401 58
+INFO 2025-08-13 16:30:08,132 basehttp 4756 3936 "POST /auth/login/ HTTP/1.1" 200 1582
+INFO 2025-08-13 16:30:08,221 basehttp 4756 3936 "GET /api/notifications/unread-count/ HTTP/1.1" 200 18
+INFO 2025-08-13 16:30:08,267 basehttp 4756 19540 "GET /api/business/ HTTP/1.1" 200 860
+INFO 2025-08-13 16:30:08,365 basehttp 4756 19540 "GET /api/business/ HTTP/1.1" 200 860
+INFO 2025-08-13 16:30:12,335 basehttp 4756 19540 "GET /api/scheduling/schedule-overview/?date=2025-08-13 HTTP/1.1" 200 175
+INFO 2025-08-13 16:30:12,417 basehttp 4756 19540 "GET /api/scheduling/schedule-overview/?date=2025-08-13 HTTP/1.1" 200 175
+WARNING 2025-08-13 16:30:33,765 log 4756 19540 Unauthorized: /api/notifications/unread-count/
+WARNING 2025-08-13 16:30:33,768 basehttp 4756 19540 "GET /api/notifications/unread-count/ HTTP/1.1" 401 58
+INFO 2025-08-13 16:30:39,041 basehttp 4756 19540 "POST /auth/login/ HTTP/1.1" 200 1359
+INFO 2025-08-13 16:30:39,161 basehttp 4756 3936 "GET /api/business/ HTTP/1.1" 200 867
+INFO 2025-08-13 16:30:39,250 basehttp 4756 19540 "GET /api/notifications/unread-count/ HTTP/1.1" 200 19
+INFO 2025-08-13 16:30:39,293 basehttp 4756 3936 "GET /api/business/ HTTP/1.1" 200 867
+ERROR 2025-08-13 16:30:42,943 log 4756 3936 Internal Server Error: /api/scheduling/schedule-overview/
+ERROR 2025-08-13 16:30:42,943 basehttp 4756 3936 "GET /api/scheduling/schedule-overview/?date=2025-08-13 HTTP/1.1" 500 80
+ERROR 2025-08-13 16:30:43,042 log 4756 3936 Internal Server Error: /api/scheduling/schedule-overview/
+ERROR 2025-08-13 16:30:43,042 basehttp 4756 3936 "GET /api/scheduling/schedule-overview/?date=2025-08-13 HTTP/1.1" 500 80
+ERROR 2025-08-13 16:30:45,545 log 4756 3936 Internal Server Error: /api/scheduling/schedule-overview/
+ERROR 2025-08-13 16:30:45,546 basehttp 4756 3936 "GET /api/scheduling/schedule-overview/?date=2025-08-13 HTTP/1.1" 500 80
+INFO 2025-08-13 16:30:47,992 basehttp 4756 3936 "GET /api/business/ HTTP/1.1" 200 867
+INFO 2025-08-13 16:30:48,103 basehttp 4756 3936 "GET /api/business/ HTTP/1.1" 200 867
+INFO 2025-08-13 16:31:04,244 basehttp 4756 3936 "GET /api/notifications/unread-count/ HTTP/1.1" 200 19
+INFO 2025-08-13 16:31:34,261 basehttp 4756 3936 "GET /api/notifications/unread-count/ HTTP/1.1" 200 19
+INFO 2025-08-13 16:32:35,531 basehttp 4756 18300 "GET /api/notifications/unread-count/ HTTP/1.1" 200 19
+INFO 2025-08-13 16:33:36,228 basehttp 4756 18300 "GET /api/notifications/unread-count/ HTTP/1.1" 200 19
+INFO 2025-08-13 16:34:37,208 basehttp 4756 18300 "GET /api/notifications/unread-count/ HTTP/1.1" 200 19
+INFO 2025-08-13 16:35:38,300 basehttp 4756 18300 "GET /api/notifications/unread-count/ HTTP/1.1" 200 19
+INFO 2025-08-13 16:35:54,647 autoreload 4756 18044 C:\Users\Capleton\Desktop\COS214\practical\Save-n-Bite\save-n-bite-backend\scheduling\services.py changed, reloading.
+INFO 2025-08-13 16:35:59,161 blob_storage 820 9380 Updated existing container to public access: customer-profiles
+INFO 2025-08-13 16:35:59,194 blob_storage 820 9380 Updated existing container to public access: ngo-documents
+INFO 2025-08-13 16:35:59,229 blob_storage 820 9380 Updated existing container to public access: ngo-logos
+INFO 2025-08-13 16:35:59,262 blob_storage 820 9380 Updated existing container to public access: provider-documents
+INFO 2025-08-13 16:35:59,294 blob_storage 820 9380 Updated existing container to public access: provider-logos
+INFO 2025-08-13 16:35:59,332 blob_storage 820 9380 Updated existing container to public access: provider-banners
+INFO 2025-08-13 16:35:59,437 autoreload 820 9380 Watching for file changes with StatReloader
+INFO 2025-08-13 16:36:21,359 autoreload 820 9380 C:\Users\Capleton\Desktop\COS214\practical\Save-n-Bite\save-n-bite-backend\scheduling\services.py changed, reloading.
+INFO 2025-08-13 16:36:22,959 blob_storage 16400 23460 Updated existing container to public access: customer-profiles
+INFO 2025-08-13 16:36:22,970 blob_storage 16400 23460 Updated existing container to public access: ngo-documents
+INFO 2025-08-13 16:36:22,991 blob_storage 16400 23460 Updated existing container to public access: ngo-logos
+INFO 2025-08-13 16:36:23,019 blob_storage 16400 23460 Updated existing container to public access: provider-documents
+INFO 2025-08-13 16:36:23,052 blob_storage 16400 23460 Updated existing container to public access: provider-logos
+INFO 2025-08-13 16:36:23,086 blob_storage 16400 23460 Updated existing container to public access: provider-banners
+INFO 2025-08-13 16:36:23,174 autoreload 16400 23460 Watching for file changes with StatReloader
+INFO 2025-08-13 16:36:23,528 blob_storage 16400 21828 Updated existing container to public access: customer-profiles
+INFO 2025-08-13 16:36:23,550 blob_storage 16400 21828 Updated existing container to public access: provider-banners
+INFO 2025-08-13 16:36:23,583 blob_storage 16400 21828 Updated existing container to public access: provider-documents
+INFO 2025-08-13 16:36:23,610 blob_storage 16400 21828 Updated existing container to public access: provider-logos
+INFO 2025-08-13 16:36:23,634 blob_storage 16400 21828 Updated existing container to public access: ngo-documents
+INFO 2025-08-13 16:36:23,666 blob_storage 16400 21828 Updated existing container to public access: ngo-logos
+INFO 2025-08-13 16:36:47,052 basehttp 16400 18460 "GET /api/notifications/unread-count/ HTTP/1.1" 200 19
+INFO 2025-08-13 16:37:19,867 autoreload 16400 23460 C:\Users\Capleton\Desktop\COS214\practical\Save-n-Bite\save-n-bite-backend\scheduling\services.py changed, reloading.
+INFO 2025-08-13 16:37:21,863 blob_storage 14536 21260 Updated existing container to public access: customer-profiles
+INFO 2025-08-13 16:37:21,895 blob_storage 14536 21260 Updated existing container to public access: ngo-documents
+INFO 2025-08-13 16:37:21,929 blob_storage 14536 21260 Updated existing container to public access: ngo-logos
+INFO 2025-08-13 16:37:21,963 blob_storage 14536 21260 Updated existing container to public access: provider-documents
+INFO 2025-08-13 16:37:21,990 blob_storage 14536 21260 Updated existing container to public access: provider-logos
+INFO 2025-08-13 16:37:22,000 blob_storage 14536 21260 Updated existing container to public access: provider-banners
+INFO 2025-08-13 16:37:22,148 autoreload 14536 21260 Watching for file changes with StatReloader
+INFO 2025-08-13 16:37:23,905 autoreload 14536 21260 C:\Users\Capleton\Desktop\COS214\practical\Save-n-Bite\save-n-bite-backend\scheduling\services.py changed, reloading.
+INFO 2025-08-13 16:37:26,086 blob_storage 10716 17564 Updated existing container to public access: customer-profiles
+INFO 2025-08-13 16:37:26,110 blob_storage 10716 17564 Updated existing container to public access: ngo-documents
+INFO 2025-08-13 16:37:26,124 blob_storage 10716 17564 Updated existing container to public access: ngo-logos
+INFO 2025-08-13 16:37:26,136 blob_storage 10716 17564 Updated existing container to public access: provider-documents
+INFO 2025-08-13 16:37:26,155 blob_storage 10716 17564 Updated existing container to public access: provider-logos
+INFO 2025-08-13 16:37:26,172 blob_storage 10716 17564 Updated existing container to public access: provider-banners
+INFO 2025-08-13 16:37:26,295 autoreload 10716 17564 Watching for file changes with StatReloader
+INFO 2025-08-13 16:37:26,612 blob_storage 10716 5904 Updated existing container to public access: customer-profiles
+INFO 2025-08-13 16:37:26,642 blob_storage 10716 5904 Updated existing container to public access: provider-banners
+INFO 2025-08-13 16:37:26,653 blob_storage 10716 5904 Updated existing container to public access: provider-documents
+INFO 2025-08-13 16:37:26,674 blob_storage 10716 5904 Updated existing container to public access: provider-logos
+INFO 2025-08-13 16:37:26,689 blob_storage 10716 5904 Updated existing container to public access: ngo-documents
+INFO 2025-08-13 16:37:26,698 blob_storage 10716 5904 Updated existing container to public access: ngo-logos
+INFO 2025-08-13 16:37:40,550 basehttp 10716 13820 "GET /api/notifications/unread-count/ HTTP/1.1" 200 19
+INFO 2025-08-13 16:38:41,200 basehttp 10716 13820 "GET /api/notifications/unread-count/ HTTP/1.1" 200 19
+INFO 2025-08-13 16:38:51,069 autoreload 10716 17564 C:\Users\Capleton\Desktop\COS214\practical\Save-n-Bite\save-n-bite-backend\scheduling\services.py changed, reloading.
+INFO 2025-08-13 16:38:53,008 blob_storage 16272 16292 Updated existing container to public access: customer-profiles
+INFO 2025-08-13 16:38:53,037 blob_storage 16272 16292 Updated existing container to public access: ngo-documents
+INFO 2025-08-13 16:38:53,069 blob_storage 16272 16292 Updated existing container to public access: ngo-logos
+INFO 2025-08-13 16:38:53,099 blob_storage 16272 16292 Updated existing container to public access: provider-documents
+INFO 2025-08-13 16:38:53,136 blob_storage 16272 16292 Updated existing container to public access: provider-logos
+INFO 2025-08-13 16:38:53,167 blob_storage 16272 16292 Updated existing container to public access: provider-banners
+INFO 2025-08-13 16:38:53,264 autoreload 16272 16292 Watching for file changes with StatReloader
+INFO 2025-08-13 16:38:53,579 blob_storage 16272 2956 Updated existing container to public access: customer-profiles
+INFO 2025-08-13 16:38:53,611 blob_storage 16272 2956 Updated existing container to public access: provider-banners
+INFO 2025-08-13 16:38:53,642 blob_storage 16272 2956 Updated existing container to public access: provider-documents
+INFO 2025-08-13 16:38:53,661 blob_storage 16272 2956 Updated existing container to public access: provider-logos
+INFO 2025-08-13 16:38:53,693 blob_storage 16272 2956 Updated existing container to public access: ngo-documents
+INFO 2025-08-13 16:38:53,702 blob_storage 16272 2956 Updated existing container to public access: ngo-logos
+INFO 2025-08-13 16:38:58,657 basehttp 16272 3184 "GET /api/scheduling/schedule-overview/?date=2025-08-13 HTTP/1.1" 200 646
+INFO 2025-08-13 16:38:58,747 basehttp 16272 3184 "GET /api/scheduling/schedule-overview/?date=2025-08-13 HTTP/1.1" 200 646
+INFO 2025-08-13 16:39:03,904 basehttp 16272 3184 "GET /api/notifications/unread-count/ HTTP/1.1" 200 19
+INFO 2025-08-13 16:39:15,696 basehttp 16272 3184 "POST /auth/login/ HTTP/1.1" 200 1359
+INFO 2025-08-13 16:39:15,778 basehttp 16272 3184 "GET /api/notifications/unread-count/ HTTP/1.1" 200 19
+INFO 2025-08-13 16:39:15,820 basehttp 16272 10944 "GET /api/business/ HTTP/1.1" 200 867
+INFO 2025-08-13 16:39:15,945 basehttp 16272 10944 "GET /api/business/ HTTP/1.1" 200 867
+INFO 2025-08-13 16:39:19,414 basehttp 16272 10944 "GET /api/scheduling/schedule-overview/?date=2025-08-13 HTTP/1.1" 200 646
+INFO 2025-08-13 16:39:19,516 basehttp 16272 10944 "GET /api/scheduling/schedule-overview/?date=2025-08-13 HTTP/1.1" 200 646
+INFO 2025-08-13 16:39:33,794 basehttp 16272 10944 "GET /api/notifications/unread-count/ HTTP/1.1" 200 19
+INFO 2025-08-13 16:40:03,805 basehttp 16272 10944 "GET /api/notifications/unread-count/ HTTP/1.1" 200 19
+INFO 2025-08-13 16:40:33,807 basehttp 16272 10944 "GET /api/notifications/unread-count/ HTTP/1.1" 200 19
+INFO 2025-08-13 16:40:58,364 basehttp 16272 10944 "POST /auth/login/ HTTP/1.1" 200 1078
+INFO 2025-08-13 16:40:58,454 basehttp 16272 10944 "GET /api/notifications/unread-count/ HTTP/1.1" 200 18
+INFO 2025-08-13 16:40:58,524 basehttp 16272 3184 "GET /api/food-listings/ HTTP/1.1" 200 354067
+INFO 2025-08-13 16:40:58,696 basehttp 16272 10944 "GET /api/food-listings/ HTTP/1.1" 200 354067
+INFO 2025-08-13 16:40:58,787 basehttp 16272 3184 "GET /auth/providers/?complete_profiles_only=true HTTP/1.1" 200 5066
+INFO 2025-08-13 16:40:58,968 basehttp 16272 10944 "GET /auth/providers/?complete_profiles_only=true HTTP/1.1" 200 5066
+INFO 2025-08-13 16:40:58,981 basehttp 16272 3184 "GET /api/reviews/provider/813b9e73-40d9-4346-862c-2d13cfba0f5b/?page=1&page_size=1 HTTP/1.1" 200 825
+INFO 2025-08-13 16:40:59,067 basehttp 16272 10944 "GET /api/reviews/provider/ce83f6ac-2ebb-4f62-a625-ff889a702d83/?page=1&page_size=1 HTTP/1.1" 200 413
+INFO 2025-08-13 16:40:59,072 basehttp 16272 3184 "GET /api/reviews/provider/f2befc4d-4ab0-4ad0-8e56-f16918bb5d80/?page=1&page_size=1 HTTP/1.1" 200 416
+INFO 2025-08-13 16:40:59,158 basehttp 16272 10944 "GET /api/reviews/provider/18c36b03-b3f9-487b-91eb-ad1be9efaaf6/?page=1&page_size=1 HTTP/1.1" 200 410
+INFO 2025-08-13 16:40:59,248 basehttp 16272 4324 "GET /api/reviews/provider/f2befc4d-4ab0-4ad0-8e56-f16918bb5d80/?page=1&page_size=1 HTTP/1.1" 200 416
+INFO 2025-08-13 16:40:59,249 basehttp 16272 17080 "GET /api/reviews/provider/813b9e73-40d9-4346-862c-2d13cfba0f5b/?page=1&page_size=1 HTTP/1.1" 200 825
+INFO 2025-08-13 16:40:59,252 basehttp 16272 10968 "GET /api/reviews/provider/ce83f6ac-2ebb-4f62-a625-ff889a702d83/?page=1&page_size=1 HTTP/1.1" 200 413
+INFO 2025-08-13 16:40:59,269 basehttp 16272 10944 "GET /api/reviews/provider/18c36b03-b3f9-487b-91eb-ad1be9efaaf6/?page=1&page_size=1 HTTP/1.1" 200 410
+INFO 2025-08-13 16:40:59,275 basehttp 16272 3184 "GET /api/reviews/provider/0e0e5a4b-3820-41dd-a001-73755fea0d9e/?page=1&page_size=1 HTTP/1.1" 200 410
+INFO 2025-08-13 16:40:59,463 basehttp 16272 3184 "GET /api/reviews/provider/0e0e5a4b-3820-41dd-a001-73755fea0d9e/?page=1&page_size=1 HTTP/1.1" 200 410
+INFO 2025-08-13 16:41:00,486 basehttp 16272 3184 "OPTIONS /api/scheduling/my-pickups/ HTTP/1.1" 200 0
+INFO 2025-08-13 16:41:00,495 basehttp 16272 10944 "OPTIONS /cart/ngo/history/ HTTP/1.1" 200 0
+INFO 2025-08-13 16:41:00,495 basehttp 16272 10968 "OPTIONS /api/scheduling/my-pickups/ HTTP/1.1" 200 0
+INFO 2025-08-13 16:41:00,496 basehttp 16272 17080 "OPTIONS /cart/ngo/history/ HTTP/1.1" 200 0
+INFO 2025-08-13 16:41:00,615 basehttp 16272 3184 "GET /api/scheduling/my-pickups/ HTTP/1.1" 200 17516
+INFO 2025-08-13 16:41:00,672 basehttp 16272 10944 "GET /cart/ngo/history/ HTTP/1.1" 200 52
+INFO 2025-08-13 16:41:00,678 basehttp 16272 3184 "OPTIONS /cart/interactions/37e1409e-99f9-4196-ac97-7876980eb6f6/review-status/ HTTP/1.1" 200 0
+INFO 2025-08-13 16:41:00,743 basehttp 16272 10944 "GET /cart/ngo/history/ HTTP/1.1" 200 52
+INFO 2025-08-13 16:41:00,828 basehttp 16272 17080 "GET /api/scheduling/my-pickups/ HTTP/1.1" 200 17516
+INFO 2025-08-13 16:41:00,857 basehttp 16272 3184 "GET /cart/interactions/37e1409e-99f9-4196-ac97-7876980eb6f6/review-status/ HTTP/1.1" 200 227
+INFO 2025-08-13 16:41:00,862 basehttp 16272 17080 "OPTIONS /cart/interactions/aed5c281-6234-4f51-aabe-c58d509e1a2d/review-status/ HTTP/1.1" 200 0
+INFO 2025-08-13 16:41:00,943 basehttp 16272 17080 "GET /cart/interactions/aed5c281-6234-4f51-aabe-c58d509e1a2d/review-status/ HTTP/1.1" 200 227
+INFO 2025-08-13 16:41:00,947 basehttp 16272 17080 "OPTIONS /cart/interactions/05571c9c-6e26-41db-ad1b-e0d721f52517/review-status/ HTTP/1.1" 200 0
+INFO 2025-08-13 16:41:01,013 basehttp 16272 17080 "GET /cart/interactions/05571c9c-6e26-41db-ad1b-e0d721f52517/review-status/ HTTP/1.1" 200 227
+INFO 2025-08-13 16:41:01,018 basehttp 16272 17080 "OPTIONS /cart/interactions/15e58698-64fe-4eed-8426-42af0b578b8b/review-status/ HTTP/1.1" 200 0
+INFO 2025-08-13 16:41:01,051 basehttp 16272 3184 "GET /cart/interactions/37e1409e-99f9-4196-ac97-7876980eb6f6/review-status/ HTTP/1.1" 200 227
+INFO 2025-08-13 16:41:01,096 basehttp 16272 17080 "GET /cart/interactions/15e58698-64fe-4eed-8426-42af0b578b8b/review-status/ HTTP/1.1" 200 227
+INFO 2025-08-13 16:41:01,100 basehttp 16272 17080 "OPTIONS /cart/interactions/5a75b306-b058-4663-893e-47e5984036d4/review-status/ HTTP/1.1" 200 0
+INFO 2025-08-13 16:41:01,225 basehttp 16272 3184 "GET /cart/interactions/aed5c281-6234-4f51-aabe-c58d509e1a2d/review-status/ HTTP/1.1" 200 227
+INFO 2025-08-13 16:41:01,277 basehttp 16272 17080 "GET /cart/interactions/5a75b306-b058-4663-893e-47e5984036d4/review-status/ HTTP/1.1" 200 194
+INFO 2025-08-13 16:41:01,281 basehttp 16272 17080 "OPTIONS /cart/interactions/62658c11-849a-44a0-b8c2-94027265b3f9/review-status/ HTTP/1.1" 200 0
+INFO 2025-08-13 16:41:01,298 basehttp 16272 3184 "GET /cart/interactions/05571c9c-6e26-41db-ad1b-e0d721f52517/review-status/ HTTP/1.1" 200 227
+INFO 2025-08-13 16:41:01,349 basehttp 16272 17080 "GET /cart/interactions/62658c11-849a-44a0-b8c2-94027265b3f9/review-status/ HTTP/1.1" 200 227
+INFO 2025-08-13 16:41:01,355 basehttp 16272 17080 "OPTIONS /cart/interactions/2af6ac15-a792-4ef0-9778-21e5f6936ddf/review-status/ HTTP/1.1" 200 0
+INFO 2025-08-13 16:41:01,377 basehttp 16272 3184 "GET /cart/interactions/15e58698-64fe-4eed-8426-42af0b578b8b/review-status/ HTTP/1.1" 200 227
+INFO 2025-08-13 16:41:01,444 basehttp 16272 3184 "GET /cart/interactions/5a75b306-b058-4663-893e-47e5984036d4/review-status/ HTTP/1.1" 200 194
+INFO 2025-08-13 16:41:01,530 basehttp 16272 3184 "GET /cart/interactions/62658c11-849a-44a0-b8c2-94027265b3f9/review-status/ HTTP/1.1" 200 227
+INFO 2025-08-13 16:41:01,552 basehttp 16272 17080 "GET /cart/interactions/2af6ac15-a792-4ef0-9778-21e5f6936ddf/review-status/ HTTP/1.1" 200 227
+INFO 2025-08-13 16:41:01,558 basehttp 16272 3184 "OPTIONS /cart/interactions/19ccd595-b9ab-43c7-9a69-20d2fbf59009/review-status/ HTTP/1.1" 200 0
+INFO 2025-08-13 16:41:01,649 basehttp 16272 3184 "GET /cart/interactions/19ccd595-b9ab-43c7-9a69-20d2fbf59009/review-status/ HTTP/1.1" 200 227
+INFO 2025-08-13 16:41:01,649 basehttp 16272 17080 "GET /cart/interactions/2af6ac15-a792-4ef0-9778-21e5f6936ddf/review-status/ HTTP/1.1" 200 227
+INFO 2025-08-13 16:41:01,657 basehttp 16272 10944 "GET /api/food-listings/ HTTP/1.1" 200 354067
+INFO 2025-08-13 16:41:01,753 basehttp 16272 17080 "GET /cart/interactions/19ccd595-b9ab-43c7-9a69-20d2fbf59009/review-status/ HTTP/1.1" 200 227
+INFO 2025-08-13 16:41:01,802 basehttp 16272 3184 "GET /api/food-listings/ HTTP/1.1" 200 354067
+INFO 2025-08-13 16:41:01,846 basehttp 16272 10944 "GET /auth/providers/?complete_profiles_only=true HTTP/1.1" 200 5066
+INFO 2025-08-13 16:41:01,979 basehttp 16272 17080 "GET /api/reviews/provider/ce83f6ac-2ebb-4f62-a625-ff889a702d83/?page=1&page_size=1 HTTP/1.1" 200 413
+INFO 2025-08-13 16:41:01,992 basehttp 16272 3184 "GET /api/reviews/provider/813b9e73-40d9-4346-862c-2d13cfba0f5b/?page=1&page_size=1 HTTP/1.1" 200 825
+INFO 2025-08-13 16:41:01,995 basehttp 16272 10968 "GET /api/reviews/provider/f2befc4d-4ab0-4ad0-8e56-f16918bb5d80/?page=1&page_size=1 HTTP/1.1" 200 416
+INFO 2025-08-13 16:41:02,000 basehttp 16272 6772 "GET /api/reviews/provider/18c36b03-b3f9-487b-91eb-ad1be9efaaf6/?page=1&page_size=1 HTTP/1.1" 200 410
+INFO 2025-08-13 16:41:02,001 basehttp 16272 4324 "GET /api/reviews/provider/0e0e5a4b-3820-41dd-a001-73755fea0d9e/?page=1&page_size=1 HTTP/1.1" 200 410
+INFO 2025-08-13 16:41:02,084 basehttp 16272 10944 "GET /auth/providers/?complete_profiles_only=true HTTP/1.1" 200 5066
+INFO 2025-08-13 16:41:02,221 basehttp 16272 10944 "GET /api/reviews/provider/813b9e73-40d9-4346-862c-2d13cfba0f5b/?page=1&page_size=1 HTTP/1.1" 200 825
+INFO 2025-08-13 16:41:02,226 basehttp 16272 6772 "GET /api/reviews/provider/f2befc4d-4ab0-4ad0-8e56-f16918bb5d80/?page=1&page_size=1 HTTP/1.1" 200 416
+INFO 2025-08-13 16:41:02,228 basehttp 16272 3184 "GET /api/reviews/provider/18c36b03-b3f9-487b-91eb-ad1be9efaaf6/?page=1&page_size=1 HTTP/1.1" 200 410
+INFO 2025-08-13 16:41:02,229 basehttp 16272 10968 "GET /api/reviews/provider/0e0e5a4b-3820-41dd-a001-73755fea0d9e/?page=1&page_size=1 HTTP/1.1" 200 410
+INFO 2025-08-13 16:41:02,231 basehttp 16272 4324 "GET /api/reviews/provider/ce83f6ac-2ebb-4f62-a625-ff889a702d83/?page=1&page_size=1 HTTP/1.1" 200 413
+INFO 2025-08-13 16:41:03,817 basehttp 16272 4324 "GET /api/notifications/unread-count/ HTTP/1.1" 200 18
+INFO 2025-08-13 16:41:04,392 basehttp 16272 10968 "GET /cart/ngo/history/ HTTP/1.1" 200 52
+INFO 2025-08-13 16:41:04,446 basehttp 16272 4324 "GET /api/scheduling/my-pickups/ HTTP/1.1" 200 17516
+INFO 2025-08-13 16:41:04,473 basehttp 16272 10968 "GET /cart/ngo/history/ HTTP/1.1" 200 52
+INFO 2025-08-13 16:41:04,529 basehttp 16272 3184 "GET /cart/interactions/37e1409e-99f9-4196-ac97-7876980eb6f6/review-status/ HTTP/1.1" 200 227
+INFO 2025-08-13 16:41:04,577 basehttp 16272 4324 "GET /api/scheduling/my-pickups/ HTTP/1.1" 200 17516
+INFO 2025-08-13 16:41:04,621 basehttp 16272 3184 "GET /cart/interactions/aed5c281-6234-4f51-aabe-c58d509e1a2d/review-status/ HTTP/1.1" 200 227
+INFO 2025-08-13 16:41:04,694 basehttp 16272 3184 "GET /cart/interactions/05571c9c-6e26-41db-ad1b-e0d721f52517/review-status/ HTTP/1.1" 200 227
+INFO 2025-08-13 16:41:04,759 basehttp 16272 4324 "GET /cart/interactions/37e1409e-99f9-4196-ac97-7876980eb6f6/review-status/ HTTP/1.1" 200 227
+INFO 2025-08-13 16:41:04,768 basehttp 16272 3184 "GET /cart/interactions/15e58698-64fe-4eed-8426-42af0b578b8b/review-status/ HTTP/1.1" 200 227
+INFO 2025-08-13 16:41:04,837 basehttp 16272 4324 "GET /cart/interactions/aed5c281-6234-4f51-aabe-c58d509e1a2d/review-status/ HTTP/1.1" 200 227
+INFO 2025-08-13 16:41:04,843 basehttp 16272 3184 "GET /cart/interactions/5a75b306-b058-4663-893e-47e5984036d4/review-status/ HTTP/1.1" 200 194
+INFO 2025-08-13 16:41:04,943 basehttp 16272 4324 "GET /cart/interactions/05571c9c-6e26-41db-ad1b-e0d721f52517/review-status/ HTTP/1.1" 200 227
+INFO 2025-08-13 16:41:04,955 basehttp 16272 3184 "GET /cart/interactions/62658c11-849a-44a0-b8c2-94027265b3f9/review-status/ HTTP/1.1" 200 227
+INFO 2025-08-13 16:41:05,021 basehttp 16272 4324 "GET /cart/interactions/15e58698-64fe-4eed-8426-42af0b578b8b/review-status/ HTTP/1.1" 200 227
+INFO 2025-08-13 16:41:05,031 basehttp 16272 3184 "GET /cart/interactions/2af6ac15-a792-4ef0-9778-21e5f6936ddf/review-status/ HTTP/1.1" 200 227
+INFO 2025-08-13 16:41:05,092 basehttp 16272 4324 "GET /cart/interactions/5a75b306-b058-4663-893e-47e5984036d4/review-status/ HTTP/1.1" 200 194
+INFO 2025-08-13 16:41:05,112 basehttp 16272 3184 "GET /cart/interactions/19ccd595-b9ab-43c7-9a69-20d2fbf59009/review-status/ HTTP/1.1" 200 227
+INFO 2025-08-13 16:41:05,171 basehttp 16272 4324 "GET /cart/interactions/62658c11-849a-44a0-b8c2-94027265b3f9/review-status/ HTTP/1.1" 200 227
+INFO 2025-08-13 16:41:05,257 basehttp 16272 4324 "GET /cart/interactions/2af6ac15-a792-4ef0-9778-21e5f6936ddf/review-status/ HTTP/1.1" 200 227
+INFO 2025-08-13 16:41:05,325 basehttp 16272 4324 "GET /cart/interactions/19ccd595-b9ab-43c7-9a69-20d2fbf59009/review-status/ HTTP/1.1" 200 227
+WARNING 2025-08-13 16:41:33,743 log 16272 4324 Unauthorized: /api/notifications/unread-count/
+WARNING 2025-08-13 16:41:33,744 basehttp 16272 4324 "GET /api/notifications/unread-count/ HTTP/1.1" 401 58
+INFO 2025-08-13 16:41:35,580 basehttp 16272 4324 "POST /auth/login/ HTTP/1.1" 200 1185
+INFO 2025-08-13 16:41:35,669 basehttp 16272 4324 "GET /api/notifications/unread-count/ HTTP/1.1" 200 18
+INFO 2025-08-13 16:41:35,721 basehttp 16272 3184 "GET /api/food-listings/ HTTP/1.1" 200 354077
+INFO 2025-08-13 16:41:35,851 basehttp 16272 4324 "GET /api/food-listings/ HTTP/1.1" 200 354077
+INFO 2025-08-13 16:41:35,950 basehttp 16272 3184 "GET /auth/providers/?complete_profiles_only=true HTTP/1.1" 200 5068
+INFO 2025-08-13 16:41:36,137 basehttp 16272 10944 "GET /api/reviews/provider/0e0e5a4b-3820-41dd-a001-73755fea0d9e/?page=1&page_size=1 HTTP/1.1" 200 410
+INFO 2025-08-13 16:41:36,142 basehttp 16272 6772 "GET /api/reviews/provider/f2befc4d-4ab0-4ad0-8e56-f16918bb5d80/?page=1&page_size=1 HTTP/1.1" 200 416
+INFO 2025-08-13 16:41:36,146 basehttp 16272 4324 "GET /api/reviews/provider/813b9e73-40d9-4346-862c-2d13cfba0f5b/?page=1&page_size=1 HTTP/1.1" 200 825
+INFO 2025-08-13 16:41:36,147 basehttp 16272 3184 "GET /auth/providers/?complete_profiles_only=true HTTP/1.1" 200 5068
+INFO 2025-08-13 16:41:36,147 basehttp 16272 10968 "GET /api/reviews/provider/ce83f6ac-2ebb-4f62-a625-ff889a702d83/?page=1&page_size=1 HTTP/1.1" 200 413
+INFO 2025-08-13 16:41:36,148 basehttp 16272 17080 "GET /api/reviews/provider/18c36b03-b3f9-487b-91eb-ad1be9efaaf6/?page=1&page_size=1 HTTP/1.1" 200 410
+INFO 2025-08-13 16:41:36,313 basehttp 16272 10968 "GET /api/reviews/provider/ce83f6ac-2ebb-4f62-a625-ff889a702d83/?page=1&page_size=1 HTTP/1.1" 200 413
+INFO 2025-08-13 16:41:36,340 basehttp 16272 6772 "GET /api/reviews/provider/18c36b03-b3f9-487b-91eb-ad1be9efaaf6/?page=1&page_size=1 HTTP/1.1" 200 410
+INFO 2025-08-13 16:41:36,340 basehttp 16272 3184 "GET /api/reviews/provider/f2befc4d-4ab0-4ad0-8e56-f16918bb5d80/?page=1&page_size=1 HTTP/1.1" 200 416
+INFO 2025-08-13 16:41:36,341 basehttp 16272 4324 "GET /api/reviews/provider/0e0e5a4b-3820-41dd-a001-73755fea0d9e/?page=1&page_size=1 HTTP/1.1" 200 410
+INFO 2025-08-13 16:41:36,345 basehttp 16272 17080 "GET /api/reviews/provider/813b9e73-40d9-4346-862c-2d13cfba0f5b/?page=1&page_size=1 HTTP/1.1" 200 825
+INFO 2025-08-13 16:41:38,324 basehttp 16272 17080 "GET /api/scheduling/my-pickups/ HTTP/1.1" 200 906
+INFO 2025-08-13 16:41:38,389 basehttp 16272 4324 "GET /cart/ngo/history/ HTTP/1.1" 200 6484
+INFO 2025-08-13 16:41:38,418 basehttp 16272 17080 "GET /api/scheduling/my-pickups/ HTTP/1.1" 200 906
+INFO 2025-08-13 16:41:38,505 basehttp 16272 3184 "GET /cart/ngo/history/ HTTP/1.1" 200 6484
+INFO 2025-08-13 16:41:38,876 basehttp 16272 3184 "GET /api/food-listings/ HTTP/1.1" 200 354077
+INFO 2025-08-13 16:41:39,023 basehttp 16272 17080 "GET /api/food-listings/ HTTP/1.1" 200 354077
+INFO 2025-08-13 16:41:39,161 basehttp 16272 3184 "GET /auth/providers/?complete_profiles_only=true HTTP/1.1" 200 5068
+INFO 2025-08-13 16:41:39,344 basehttp 16272 4324 "GET /api/reviews/provider/ce83f6ac-2ebb-4f62-a625-ff889a702d83/?page=1&page_size=1 HTTP/1.1" 200 413
+INFO 2025-08-13 16:41:39,348 basehttp 16272 17080 "GET /api/reviews/provider/813b9e73-40d9-4346-862c-2d13cfba0f5b/?page=1&page_size=1 HTTP/1.1" 200 825
+INFO 2025-08-13 16:41:39,369 basehttp 16272 6772 "GET /api/reviews/provider/f2befc4d-4ab0-4ad0-8e56-f16918bb5d80/?page=1&page_size=1 HTTP/1.1" 200 416
+INFO 2025-08-13 16:41:39,369 basehttp 16272 10944 "GET /api/reviews/provider/18c36b03-b3f9-487b-91eb-ad1be9efaaf6/?page=1&page_size=1 HTTP/1.1" 200 410
+INFO 2025-08-13 16:41:39,377 basehttp 16272 3184 "GET /auth/providers/?complete_profiles_only=true HTTP/1.1" 200 5068
+INFO 2025-08-13 16:41:39,380 basehttp 16272 10968 "GET /api/reviews/provider/0e0e5a4b-3820-41dd-a001-73755fea0d9e/?page=1&page_size=1 HTTP/1.1" 200 410
+INFO 2025-08-13 16:41:39,549 basehttp 16272 3184 "GET /api/reviews/provider/ce83f6ac-2ebb-4f62-a625-ff889a702d83/?page=1&page_size=1 HTTP/1.1" 200 413
+INFO 2025-08-13 16:41:39,549 basehttp 16272 10944 "GET /api/reviews/provider/f2befc4d-4ab0-4ad0-8e56-f16918bb5d80/?page=1&page_size=1 HTTP/1.1" 200 416
+INFO 2025-08-13 16:41:39,557 basehttp 16272 10968 "GET /api/reviews/provider/813b9e73-40d9-4346-862c-2d13cfba0f5b/?page=1&page_size=1 HTTP/1.1" 200 825
+INFO 2025-08-13 16:41:39,558 basehttp 16272 6772 "GET /api/reviews/provider/0e0e5a4b-3820-41dd-a001-73755fea0d9e/?page=1&page_size=1 HTTP/1.1" 200 410
+INFO 2025-08-13 16:41:39,560 basehttp 16272 17080 "GET /api/reviews/provider/18c36b03-b3f9-487b-91eb-ad1be9efaaf6/?page=1&page_size=1 HTTP/1.1" 200 410
+INFO 2025-08-13 16:41:40,782 basehttp 16272 17080 "GET /api/scheduling/my-pickups/ HTTP/1.1" 200 906
+INFO 2025-08-13 16:41:40,844 basehttp 16272 6772 "GET /cart/ngo/history/ HTTP/1.1" 200 6484
+INFO 2025-08-13 16:41:40,893 basehttp 16272 17080 "GET /api/scheduling/my-pickups/ HTTP/1.1" 200 906
+INFO 2025-08-13 16:41:40,963 basehttp 16272 6772 "GET /cart/ngo/history/ HTTP/1.1" 200 6484
+INFO 2025-08-13 16:42:03,804 basehttp 16272 6772 "GET /api/notifications/unread-count/ HTTP/1.1" 200 18
+INFO 2025-08-13 16:42:13,418 basehttp 16272 6772 "POST /auth/login/ HTTP/1.1" 200 1359
+INFO 2025-08-13 16:42:13,496 basehttp 16272 6772 "GET /api/notifications/unread-count/ HTTP/1.1" 200 19
+INFO 2025-08-13 16:42:13,524 basehttp 16272 17080 "GET /api/business/ HTTP/1.1" 200 867
+INFO 2025-08-13 16:42:13,614 basehttp 16272 17080 "GET /api/business/ HTTP/1.1" 200 867
+INFO 2025-08-13 16:42:18,136 basehttp 16272 17080 "GET /api/scheduling/schedule-overview/?date=2025-08-13 HTTP/1.1" 200 646
+INFO 2025-08-13 16:42:18,331 basehttp 16272 17080 "GET /api/scheduling/schedule-overview/?date=2025-08-13 HTTP/1.1" 200 646
+INFO 2025-08-13 16:42:33,840 basehttp 16272 17080 "GET /api/notifications/unread-count/ HTTP/1.1" 200 19
+INFO 2025-08-13 16:43:03,840 basehttp 16272 17080 "GET /api/notifications/unread-count/ HTTP/1.1" 200 19
+INFO 2025-08-13 16:43:33,838 basehttp 16272 17080 "GET /api/notifications/unread-count/ HTTP/1.1" 200 19
+INFO 2025-08-13 16:44:03,828 basehttp 16272 17080 "GET /api/notifications/unread-count/ HTTP/1.1" 200 19
+INFO 2025-08-13 16:44:17,438 basehttp 16272 17080 "GET /cart/business/history/ HTTP/1.1" 200 17875
+INFO 2025-08-13 16:44:17,587 basehttp 16272 17080 "GET /cart/business/history/ HTTP/1.1" 200 17875
+INFO 2025-08-13 16:44:33,797 basehttp 16272 17080 "GET /api/notifications/unread-count/ HTTP/1.1" 200 19
+INFO 2025-08-13 16:45:04,252 basehttp 16272 17080 "GET /api/notifications/unread-count/ HTTP/1.1" 200 19
+INFO 2025-08-13 16:45:34,224 basehttp 16272 17080 "GET /api/notifications/unread-count/ HTTP/1.1" 200 19
+INFO 2025-08-13 16:46:04,245 basehttp 16272 17080 "GET /api/notifications/unread-count/ HTTP/1.1" 200 19
+INFO 2025-08-13 16:46:34,305 basehttp 16272 17080 "GET /api/notifications/unread-count/ HTTP/1.1" 200 19
+INFO 2025-08-13 16:47:05,379 basehttp 16272 24000 "POST /auth/login/ HTTP/1.1" 200 1359
+INFO 2025-08-13 16:47:35,239 basehttp 16272 17080 "GET /api/notifications/unread-count/ HTTP/1.1" 200 19
+WARNING 2025-08-13 16:48:20,981 log 16272 12312 Bad Request: /api/scheduling/verify-code/
+WARNING 2025-08-13 16:48:20,981 basehttp 16272 12312 "POST /api/scheduling/verify-code/ HTTP/1.1" 400 157
+INFO 2025-08-13 16:48:36,246 basehttp 16272 17080 "GET /api/notifications/unread-count/ HTTP/1.1" 200 19
+INFO 2025-08-13 16:49:37,246 basehttp 16272 17080 "GET /api/notifications/unread-count/ HTTP/1.1" 200 19
+INFO 2025-08-13 16:50:38,338 basehttp 16272 17080 "GET /api/notifications/unread-count/ HTTP/1.1" 200 19
+INFO 2025-08-13 16:51:03,960 basehttp 16272 17080 "GET /api/notifications/unread-count/ HTTP/1.1" 200 19
+INFO 2025-08-13 16:51:16,128 basehttp 16272 17080 "GET /api/provider/listings/ HTTP/1.1" 200 358788
+INFO 2025-08-13 16:51:16,258 basehttp 16272 17080 "GET /api/provider/listings/ HTTP/1.1" 200 358788
+INFO 2025-08-13 16:51:33,792 basehttp 16272 17080 "GET /api/notifications/unread-count/ HTTP/1.1" 200 19
+INFO 2025-08-13 16:52:03,810 basehttp 16272 17080 "GET /api/notifications/unread-count/ HTTP/1.1" 200 19
+INFO 2025-08-13 16:52:33,837 basehttp 16272 17080 "GET /api/notifications/unread-count/ HTTP/1.1" 200 19
+INFO 2025-08-13 16:53:03,797 basehttp 16272 17080 "GET /api/notifications/unread-count/ HTTP/1.1" 200 19
+INFO 2025-08-13 16:53:33,799 basehttp 16272 17080 "GET /api/notifications/unread-count/ HTTP/1.1" 200 19
+INFO 2025-08-13 16:54:03,821 basehttp 16272 17080 "GET /api/notifications/unread-count/ HTTP/1.1" 200 19
+INFO 2025-08-13 16:54:33,833 basehttp 16272 17080 "GET /api/notifications/unread-count/ HTTP/1.1" 200 19
+INFO 2025-08-13 16:55:05,554 basehttp 16272 17080 "GET /api/notifications/unread-count/ HTTP/1.1" 200 19
+INFO 2025-08-13 16:55:34,597 basehttp 16272 17080 "GET /api/notifications/unread-count/ HTTP/1.1" 200 19
+INFO 2025-08-13 16:56:04,260 basehttp 16272 17080 "GET /api/notifications/unread-count/ HTTP/1.1" 200 19
+INFO 2025-08-13 16:56:54,228 basehttp 16272 17080 "GET /api/notifications/unread-count/ HTTP/1.1" 200 19
+INFO 2025-08-13 16:57:54,241 basehttp 16272 17080 "GET /api/notifications/unread-count/ HTTP/1.1" 200 19
+INFO 2025-08-13 16:58:54,220 basehttp 16272 17080 "GET /api/notifications/unread-count/ HTTP/1.1" 200 19
+INFO 2025-08-13 16:59:54,224 basehttp 16272 17080 "GET /api/notifications/unread-count/ HTTP/1.1" 200 19
+INFO 2025-08-13 17:00:54,227 basehttp 16272 17080 "GET /api/notifications/unread-count/ HTTP/1.1" 200 19
+INFO 2025-08-13 17:01:54,224 basehttp 16272 17080 "GET /api/notifications/unread-count/ HTTP/1.1" 200 19
+INFO 2025-08-13 17:02:54,542 basehttp 16272 12796 "GET /api/notifications/unread-count/ HTTP/1.1" 200 19
+INFO 2025-08-13 17:03:54,237 basehttp 16272 12796 "GET /api/notifications/unread-count/ HTTP/1.1" 200 19
+INFO 2025-08-13 17:04:54,214 basehttp 16272 12796 "GET /api/notifications/unread-count/ HTTP/1.1" 200 19
+INFO 2025-08-13 17:05:54,233 basehttp 16272 12796 "GET /api/notifications/unread-count/ HTTP/1.1" 200 19
+INFO 2025-08-13 17:09:43,556 basehttp 16272 12796 "GET /api/notifications/unread-count/ HTTP/1.1" 200 19
+INFO 2025-08-13 17:09:43,749 basehttp 16272 12796 "GET /api/notifications/preferences/ HTTP/1.1" 200 132
+INFO 2025-08-13 17:09:43,846 basehttp 16272 12796 "GET /api/notifications/unread-count/ HTTP/1.1" 200 19
+INFO 2025-08-13 17:09:43,887 basehttp 16272 19308 "GET /api/notifications/preferences/ HTTP/1.1" 200 132
+INFO 2025-08-13 17:09:43,937 basehttp 16272 7984 "GET /api/provider/listings/ HTTP/1.1" 200 358788
+INFO 2025-08-13 17:09:44,123 basehttp 16272 19308 "GET /api/provider/listings/ HTTP/1.1" 200 358788
+INFO 2025-08-13 17:09:48,163 basehttp 16272 19308 "OPTIONS /api/provider/listings/9dffc7a8-6148-4386-950b-f91e42d42413/ HTTP/1.1" 200 0
+INFO 2025-08-13 17:09:48,168 basehttp 16272 7984 "OPTIONS /api/provider/listings/9dffc7a8-6148-4386-950b-f91e42d42413/ HTTP/1.1" 200 0
+WARNING 2025-08-13 17:09:48,225 log 16272 19308 Method Not Allowed: /api/provider/listings/9dffc7a8-6148-4386-950b-f91e42d42413/
+WARNING 2025-08-13 17:09:48,225 basehttp 16272 19308 "GET /api/provider/listings/9dffc7a8-6148-4386-950b-f91e42d42413/ HTTP/1.1" 405 40
+WARNING 2025-08-13 17:09:48,281 log 16272 19308 Method Not Allowed: /api/provider/listings/9dffc7a8-6148-4386-950b-f91e42d42413/
+WARNING 2025-08-13 17:09:48,281 basehttp 16272 19308 "GET /api/provider/listings/9dffc7a8-6148-4386-950b-f91e42d42413/ HTTP/1.1" 405 40
+INFO 2025-08-13 17:10:11,813 basehttp 16272 19308 "GET /api/provider/listings/ HTTP/1.1" 200 358788
+INFO 2025-08-13 17:10:11,946 basehttp 16272 7984 "GET /api/provider/listings/ HTTP/1.1" 200 358788
+INFO 2025-08-13 17:10:13,496 basehttp 16272 7984 "GET /api/notifications/unread-count/ HTTP/1.1" 200 19
+INFO 2025-08-13 17:10:17,735 basehttp 16272 7984 "OPTIONS /api/provider/listings/9dffc7a8-6148-4386-950b-f91e42d42413/delete/ HTTP/1.1" 200 0
+INFO 2025-08-13 17:10:17,852 blob_storage 16272 7984 Updated existing container to public access: food-listings
+ERROR 2025-08-13 17:10:17,868 blob_storage 16272 7984 Failed to delete blob 37a0a5b2-8e54-403e-a00d-b6c4b1e14469.jpeg: The specified blob does not exist.
+RequestId:49030f7e-9ac3-4946-86e0-cd19d12d5202
+Time:2025-08-13T15:10:17.863Z
+ErrorCode:BlobNotFound
+Content: <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Error>
+  <Code>BlobNotFound</Code>
+  <Message>The specified blob does not exist.
+RequestId:49030f7e-9ac3-4946-86e0-cd19d12d5202
+Time:2025-08-13T15:10:17.863Z</Message>
+</Error>
+INFO 2025-08-13 17:10:17,910 basehttp 16272 7984 "DELETE /api/provider/listings/9dffc7a8-6148-4386-950b-f91e42d42413/delete/ HTTP/1.1" 200 287
+INFO 2025-08-13 17:10:22,453 basehttp 16272 7984 "OPTIONS /api/provider/listings/c2d05a77-ef8f-4de2-bf60-31a3377d33a3/ HTTP/1.1" 200 0
+INFO 2025-08-13 17:10:22,453 basehttp 16272 19308 "OPTIONS /api/provider/listings/c2d05a77-ef8f-4de2-bf60-31a3377d33a3/ HTTP/1.1" 200 0
+WARNING 2025-08-13 17:10:22,518 log 16272 19308 Method Not Allowed: /api/provider/listings/c2d05a77-ef8f-4de2-bf60-31a3377d33a3/
+WARNING 2025-08-13 17:10:22,519 basehttp 16272 19308 "GET /api/provider/listings/c2d05a77-ef8f-4de2-bf60-31a3377d33a3/ HTTP/1.1" 405 40
+WARNING 2025-08-13 17:10:22,576 log 16272 19308 Method Not Allowed: /api/provider/listings/c2d05a77-ef8f-4de2-bf60-31a3377d33a3/
+WARNING 2025-08-13 17:10:22,577 basehttp 16272 19308 "GET /api/provider/listings/c2d05a77-ef8f-4de2-bf60-31a3377d33a3/ HTTP/1.1" 405 40
+INFO 2025-08-13 17:10:43,487 basehttp 16272 19308 "GET /api/notifications/unread-count/ HTTP/1.1" 200 19
+INFO 2025-08-13 17:11:08,645 basehttp 16272 19308 "GET /api/provider/listings/ HTTP/1.1" 200 358683
+INFO 2025-08-13 17:11:08,858 basehttp 16272 7984 "GET /api/provider/listings/ HTTP/1.1" 200 358683
+WARNING 2025-08-13 17:11:11,518 log 16272 7984 Method Not Allowed: /api/provider/listings/9dffc7a8-6148-4386-950b-f91e42d42413/
+WARNING 2025-08-13 17:11:11,518 basehttp 16272 7984 "GET /api/provider/listings/9dffc7a8-6148-4386-950b-f91e42d42413/ HTTP/1.1" 405 40
+WARNING 2025-08-13 17:11:11,572 log 16272 7984 Method Not Allowed: /api/provider/listings/9dffc7a8-6148-4386-950b-f91e42d42413/
+WARNING 2025-08-13 17:11:11,573 basehttp 16272 7984 "GET /api/provider/listings/9dffc7a8-6148-4386-950b-f91e42d42413/ HTTP/1.1" 405 40
+INFO 2025-08-13 17:11:13,457 basehttp 16272 7984 "GET /api/notifications/unread-count/ HTTP/1.1" 200 19
+INFO 2025-08-13 17:11:43,461 basehttp 16272 7984 "GET /api/notifications/unread-count/ HTTP/1.1" 200 19
+INFO 2025-08-13 17:12:13,480 basehttp 16272 7984 "GET /api/notifications/unread-count/ HTTP/1.1" 200 19
+INFO 2025-08-13 17:12:43,536 basehttp 16272 7984 "GET /api/notifications/unread-count/ HTTP/1.1" 200 19
+INFO 2025-08-13 17:13:13,475 basehttp 16272 7984 "GET /api/notifications/unread-count/ HTTP/1.1" 200 19
+INFO 2025-08-13 17:13:43,475 basehttp 16272 7984 "GET /api/notifications/unread-count/ HTTP/1.1" 200 19
+INFO 2025-08-13 17:14:14,225 basehttp 16272 7984 "GET /api/notifications/unread-count/ HTTP/1.1" 200 19
+INFO 2025-08-13 17:14:44,300 basehttp 16272 7984 "GET /api/notifications/unread-count/ HTTP/1.1" 200 19
+INFO 2025-08-13 17:15:45,230 basehttp 16272 7984 "GET /api/notifications/unread-count/ HTTP/1.1" 200 19
+WARNING 2025-08-13 17:15:46,108 log 16272 7984 Method Not Allowed: /api/provider/listings/9dffc7a8-6148-4386-950b-f91e42d42413/
+WARNING 2025-08-13 17:15:46,108 basehttp 16272 7984 "GET /api/provider/listings/9dffc7a8-6148-4386-950b-f91e42d42413/ HTTP/1.1" 405 40
+WARNING 2025-08-13 17:15:46,282 log 16272 7984 Method Not Allowed: /api/provider/listings/9dffc7a8-6148-4386-950b-f91e42d42413/
+WARNING 2025-08-13 17:15:46,282 basehttp 16272 7984 "GET /api/provider/listings/9dffc7a8-6148-4386-950b-f91e42d42413/ HTTP/1.1" 405 40
+INFO 2025-08-13 17:15:48,176 basehttp 16272 7984 "GET /api/provider/listings/ HTTP/1.1" 200 358683
+INFO 2025-08-13 17:15:48,391 basehttp 16272 19308 "GET /api/provider/listings/ HTTP/1.1" 200 358683
+WARNING 2025-08-13 17:15:50,218 log 16272 19308 Method Not Allowed: /api/provider/listings/9dffc7a8-6148-4386-950b-f91e42d42413/
+WARNING 2025-08-13 17:15:50,218 basehttp 16272 19308 "GET /api/provider/listings/9dffc7a8-6148-4386-950b-f91e42d42413/ HTTP/1.1" 405 40
+WARNING 2025-08-13 17:15:50,269 log 16272 19308 Method Not Allowed: /api/provider/listings/9dffc7a8-6148-4386-950b-f91e42d42413/
+WARNING 2025-08-13 17:15:50,269 basehttp 16272 19308 "GET /api/provider/listings/9dffc7a8-6148-4386-950b-f91e42d42413/ HTTP/1.1" 405 40
+INFO 2025-08-13 17:16:13,511 basehttp 16272 19308 "GET /api/notifications/unread-count/ HTTP/1.1" 200 19
+INFO 2025-08-13 17:16:44,248 basehttp 16272 19308 "GET /api/notifications/unread-count/ HTTP/1.1" 200 19
+INFO 2025-08-13 17:17:14,212 basehttp 16272 19308 "GET /api/notifications/unread-count/ HTTP/1.1" 200 19
+INFO 2025-08-13 17:17:54,215 basehttp 16272 19308 "GET /api/notifications/unread-count/ HTTP/1.1" 200 19
+INFO 2025-08-13 17:18:26,147 basehttp 16272 19308 "OPTIONS /api/listings/9dffc7a8-6148-4386-950b-f91e42d42413/ HTTP/1.1" 200 0
+WARNING 2025-08-13 17:18:26,159 log 16272 19308 Not Found: /api/listings/9dffc7a8-6148-4386-950b-f91e42d42413/
+WARNING 2025-08-13 17:18:26,160 basehttp 16272 19308 "GET /api/listings/9dffc7a8-6148-4386-950b-f91e42d42413/ HTTP/1.1" 404 179
+INFO 2025-08-13 17:18:37,200 basehttp 16272 19308 "OPTIONS /api/food/9dffc7a8-6148-4386-950b-f91e42d42413/ HTTP/1.1" 200 0
+WARNING 2025-08-13 17:18:37,203 log 16272 19308 Not Found: /api/food/9dffc7a8-6148-4386-950b-f91e42d42413/
+WARNING 2025-08-13 17:18:37,213 basehttp 16272 19308 "GET /api/food/9dffc7a8-6148-4386-950b-f91e42d42413/ HTTP/1.1" 404 179
+INFO 2025-08-13 17:18:40,153 basehttp 16272 19308 "OPTIONS /api/food-listing/9dffc7a8-6148-4386-950b-f91e42d42413/ HTTP/1.1" 200 0
+WARNING 2025-08-13 17:18:40,158 log 16272 19308 Not Found: /api/food-listing/9dffc7a8-6148-4386-950b-f91e42d42413/
+WARNING 2025-08-13 17:18:40,160 basehttp 16272 19308 "GET /api/food-listing/9dffc7a8-6148-4386-950b-f91e42d42413/ HTTP/1.1" 404 179
+INFO 2025-08-13 17:18:46,154 basehttp 16272 19308 "OPTIONS /api/food-listings/9dffc7a8-6148-4386-950b-f91e42d42413/ HTTP/1.1" 200 0
+WARNING 2025-08-13 17:18:46,237 log 16272 19308 Not Found: /api/food-listings/9dffc7a8-6148-4386-950b-f91e42d42413/
+WARNING 2025-08-13 17:18:46,238 basehttp 16272 19308 "GET /api/food-listings/9dffc7a8-6148-4386-950b-f91e42d42413/ HTTP/1.1" 404 60
+INFO 2025-08-13 17:18:54,246 basehttp 16272 19308 "GET /api/notifications/unread-count/ HTTP/1.1" 200 19
+INFO 2025-08-13 17:19:20,652 basehttp 16272 19308 "GET /api/notifications/unread-count/ HTTP/1.1" 200 19
+INFO 2025-08-13 17:19:22,088 basehttp 16272 19308 "GET /api/provider/listings/ HTTP/1.1" 200 358683
+INFO 2025-08-13 17:19:22,343 basehttp 16272 7984 "GET /api/provider/listings/ HTTP/1.1" 200 358683
+WARNING 2025-08-13 17:19:23,718 log 16272 7984 Not Found: /api/food-listings/9dffc7a8-6148-4386-950b-f91e42d42413/
+WARNING 2025-08-13 17:19:23,719 basehttp 16272 7984 "GET /api/food-listings/9dffc7a8-6148-4386-950b-f91e42d42413/ HTTP/1.1" 404 60
+WARNING 2025-08-13 17:19:23,929 log 16272 7984 Not Found: /api/food-listings/9dffc7a8-6148-4386-950b-f91e42d42413/
+WARNING 2025-08-13 17:19:23,929 basehttp 16272 7984 "GET /api/food-listings/9dffc7a8-6148-4386-950b-f91e42d42413/ HTTP/1.1" 404 60
+INFO 2025-08-13 17:19:43,484 basehttp 16272 7984 "GET /api/notifications/unread-count/ HTTP/1.1" 200 19
+INFO 2025-08-13 17:20:13,612 basehttp 16272 7984 "GET /api/notifications/unread-count/ HTTP/1.1" 200 19
+INFO 2025-08-13 17:20:43,491 basehttp 16272 7984 "GET /api/notifications/unread-count/ HTTP/1.1" 200 19
+INFO 2025-08-13 17:21:13,494 basehttp 16272 7984 "GET /api/notifications/unread-count/ HTTP/1.1" 200 19
+INFO 2025-08-13 17:21:44,205 basehttp 16272 7984 "GET /api/notifications/unread-count/ HTTP/1.1" 200 19
+INFO 2025-08-13 17:22:14,213 basehttp 16272 7984 "GET /api/notifications/unread-count/ HTTP/1.1" 200 19
+INFO 2025-08-13 17:22:52,182 basehttp 16272 7984 "GET /api/notifications/unread-count/ HTTP/1.1" 200 19
+INFO 2025-08-13 17:22:53,688 basehttp 16272 7984 "GET /api/provider/listings/ HTTP/1.1" 200 358683
+INFO 2025-08-13 17:22:53,827 basehttp 16272 19308 "GET /api/provider/listings/ HTTP/1.1" 200 358683
+INFO 2025-08-13 17:23:13,477 basehttp 16272 19308 "GET /api/notifications/unread-count/ HTTP/1.1" 200 19
+INFO 2025-08-13 17:23:43,493 basehttp 16272 19308 "GET /api/notifications/unread-count/ HTTP/1.1" 200 19
+INFO 2025-08-13 17:24:14,236 basehttp 16272 19308 "GET /api/notifications/unread-count/ HTTP/1.1" 200 19
+INFO 2025-08-13 17:24:43,475 basehttp 16272 19308 "GET /api/notifications/unread-count/ HTTP/1.1" 200 19
+INFO 2025-08-13 17:24:53,877 basehttp 16272 19308 "OPTIONS /api/food-listings/c2d05a77-ef8f-4de2-bf60-31a3377d33a3/ HTTP/1.1" 200 0
+INFO 2025-08-13 17:24:53,877 basehttp 16272 7984 "OPTIONS /api/food-listings/c2d05a77-ef8f-4de2-bf60-31a3377d33a3/ HTTP/1.1" 200 0
+INFO 2025-08-13 17:24:53,960 basehttp 16272 7984 "GET /api/food-listings/c2d05a77-ef8f-4de2-bf60-31a3377d33a3/ HTTP/1.1" 200 723
+INFO 2025-08-13 17:24:54,043 basehttp 16272 7984 "GET /api/food-listings/c2d05a77-ef8f-4de2-bf60-31a3377d33a3/ HTTP/1.1" 200 723
+INFO 2025-08-13 17:25:13,478 basehttp 16272 7984 "GET /api/notifications/unread-count/ HTTP/1.1" 200 19
+INFO 2025-08-13 17:25:16,624 basehttp 16272 7984 "GET /api/provider/listings/ HTTP/1.1" 200 358683
+INFO 2025-08-13 17:25:16,796 basehttp 16272 19308 "GET /api/provider/listings/ HTTP/1.1" 200 358683
+INFO 2025-08-13 17:25:23,561 basehttp 16272 19308 "OPTIONS /api/food-listings/4cfd5602-141b-436b-93a5-2d0df1fc494e/ HTTP/1.1" 200 0
+INFO 2025-08-13 17:25:23,780 basehttp 16272 19308 "GET /api/food-listings/4cfd5602-141b-436b-93a5-2d0df1fc494e/ HTTP/1.1" 200 694159
+INFO 2025-08-13 17:25:23,869 basehttp 16272 7984 "GET /api/food-listings/4cfd5602-141b-436b-93a5-2d0df1fc494e/ HTTP/1.1" 200 694159
+INFO 2025-08-13 17:25:31,174 basehttp 16272 7984 "OPTIONS /api/provider/listings/4cfd5602-141b-436b-93a5-2d0df1fc494e/ HTTP/1.1" 200 0
+INFO 2025-08-13 17:25:31,337 basehttp 16272 7984 "PUT /api/provider/listings/4cfd5602-141b-436b-93a5-2d0df1fc494e/ HTTP/1.1" 200 162
+INFO 2025-08-13 17:25:33,537 basehttp 16272 7984 "GET /api/provider/listings/ HTTP/1.1" 200 358687
+INFO 2025-08-13 17:25:33,672 basehttp 16272 19308 "GET /api/provider/listings/ HTTP/1.1" 200 358687
+INFO 2025-08-13 17:25:43,483 basehttp 16272 19308 "GET /api/notifications/unread-count/ HTTP/1.1" 200 19
+INFO 2025-08-13 17:25:57,952 basehttp 16272 19308 "POST /auth/login/ HTTP/1.1" 200 1078
+INFO 2025-08-13 17:25:58,039 basehttp 16272 19308 "GET /api/notifications/unread-count/ HTTP/1.1" 200 18
+INFO 2025-08-13 17:25:58,107 basehttp 16272 7984 "GET /api/food-listings/ HTTP/1.1" 200 353944
+INFO 2025-08-13 17:25:58,267 basehttp 16272 7984 "GET /auth/providers/?complete_profiles_only=true HTTP/1.1" 200 5066
+INFO 2025-08-13 17:25:58,334 basehttp 16272 19308 "GET /api/food-listings/ HTTP/1.1" 200 353944
+INFO 2025-08-13 17:25:58,388 basehttp 16272 7984 "GET /auth/providers/?complete_profiles_only=true HTTP/1.1" 200 5066
+INFO 2025-08-13 17:25:58,453 basehttp 16272 19308 "GET /api/reviews/provider/813b9e73-40d9-4346-862c-2d13cfba0f5b/?page=1&page_size=1 HTTP/1.1" 200 825
+INFO 2025-08-13 17:25:58,472 basehttp 16272 7984 "GET /api/reviews/provider/ce83f6ac-2ebb-4f62-a625-ff889a702d83/?page=1&page_size=1 HTTP/1.1" 200 413
+INFO 2025-08-13 17:25:58,542 basehttp 16272 19308 "GET /api/reviews/provider/f2befc4d-4ab0-4ad0-8e56-f16918bb5d80/?page=1&page_size=1 HTTP/1.1" 200 416
+INFO 2025-08-13 17:25:58,553 basehttp 16272 7984 "GET /api/reviews/provider/0e0e5a4b-3820-41dd-a001-73755fea0d9e/?page=1&page_size=1 HTTP/1.1" 200 410
+INFO 2025-08-13 17:25:58,631 basehttp 16272 19308 "GET /api/reviews/provider/18c36b03-b3f9-487b-91eb-ad1be9efaaf6/?page=1&page_size=1 HTTP/1.1" 200 410
+INFO 2025-08-13 17:25:58,657 basehttp 16272 7984 "GET /api/reviews/provider/813b9e73-40d9-4346-862c-2d13cfba0f5b/?page=1&page_size=1 HTTP/1.1" 200 825
+INFO 2025-08-13 17:25:58,687 basehttp 16272 21412 "GET /api/reviews/provider/0e0e5a4b-3820-41dd-a001-73755fea0d9e/?page=1&page_size=1 HTTP/1.1" 200 410
+INFO 2025-08-13 17:25:58,687 basehttp 16272 19664 "GET /api/reviews/provider/f2befc4d-4ab0-4ad0-8e56-f16918bb5d80/?page=1&page_size=1 HTTP/1.1" 200 416
+INFO 2025-08-13 17:25:58,732 basehttp 16272 19308 "GET /api/reviews/provider/18c36b03-b3f9-487b-91eb-ad1be9efaaf6/?page=1&page_size=1 HTTP/1.1" 200 410
+INFO 2025-08-13 17:25:58,762 basehttp 16272 2136 "GET /api/reviews/provider/ce83f6ac-2ebb-4f62-a625-ff889a702d83/?page=1&page_size=1 HTTP/1.1" 200 413
+INFO 2025-08-13 17:26:13,509 basehttp 16272 2136 "GET /api/notifications/unread-count/ HTTP/1.1" 200 18
+INFO 2025-08-13 17:26:25,710 basehttp 16272 2136 "POST /auth/login/ HTTP/1.1" 200 1359
+INFO 2025-08-13 17:26:25,795 basehttp 16272 2136 "GET /api/notifications/unread-count/ HTTP/1.1" 200 19
+INFO 2025-08-13 17:26:25,841 basehttp 16272 19308 "GET /api/business/ HTTP/1.1" 200 867
+INFO 2025-08-13 17:26:25,934 basehttp 16272 19308 "GET /api/business/ HTTP/1.1" 200 867
+INFO 2025-08-13 17:26:32,135 basehttp 16272 19308 "GET /api/provider/listings/ HTTP/1.1" 200 358687
+INFO 2025-08-13 17:26:32,392 basehttp 16272 2136 "GET /api/provider/listings/ HTTP/1.1" 200 358687
+INFO 2025-08-13 17:26:43,495 basehttp 16272 2136 "GET /api/notifications/unread-count/ HTTP/1.1" 200 19
+INFO 2025-08-13 17:27:01,043 basehttp 16272 2136 "GET /api/business/reviews/ HTTP/1.1" 200 3603
+INFO 2025-08-13 17:27:01,147 basehttp 16272 2136 "GET /api/business/reviews/ HTTP/1.1" 200 3603
+INFO 2025-08-13 17:27:01,261 basehttp 16272 2136 "GET /api/business/reviews/ HTTP/1.1" 200 3603
+INFO 2025-08-13 17:27:01,378 basehttp 16272 2136 "GET /api/business/reviews/ HTTP/1.1" 200 3603
+INFO 2025-08-13 17:27:01,472 basehttp 16272 19308 "GET /api/business/reviews/stats/ HTTP/1.1" 200 303
+INFO 2025-08-13 17:27:01,541 basehttp 16272 19308 "GET /api/business/reviews/stats/ HTTP/1.1" 200 303
+INFO 2025-08-13 17:27:02,629 basehttp 16272 19308 "GET /cart/business/history/ HTTP/1.1" 200 17875
+INFO 2025-08-13 17:27:02,798 basehttp 16272 2136 "GET /cart/business/history/ HTTP/1.1" 200 17875
+INFO 2025-08-13 17:27:06,392 basehttp 16272 2136 "GET /api/provider/listings/ HTTP/1.1" 200 358687
+INFO 2025-08-13 17:27:06,516 basehttp 16272 19308 "GET /api/provider/listings/ HTTP/1.1" 200 358687
+INFO 2025-08-13 17:27:13,504 basehttp 16272 19308 "GET /api/notifications/unread-count/ HTTP/1.1" 200 19
+INFO 2025-08-13 17:27:14,548 basehttp 16272 19308 "GET /api/business/ HTTP/1.1" 200 867
+INFO 2025-08-13 17:27:14,742 basehttp 16272 19308 "GET /api/business/ HTTP/1.1" 200 867
+INFO 2025-08-13 17:27:43,388 basehttp 16272 19308 "GET /cart/business/history/ HTTP/1.1" 200 17875
+INFO 2025-08-13 17:27:43,569 basehttp 16272 2136 "GET /cart/business/history/ HTTP/1.1" 200 17875
+INFO 2025-08-13 17:27:43,573 basehttp 16272 19308 "GET /api/notifications/unread-count/ HTTP/1.1" 200 19
+INFO 2025-08-13 17:27:55,282 basehttp 16272 19308 "GET /api/scheduling/schedule-overview/?date=2025-08-13 HTTP/1.1" 200 646
+INFO 2025-08-13 17:27:55,383 basehttp 16272 19308 "GET /api/scheduling/schedule-overview/?date=2025-08-13 HTTP/1.1" 200 646
+INFO 2025-08-13 17:28:13,337 basehttp 16272 19308 "GET /api/business/reviews/ HTTP/1.1" 200 3603
+INFO 2025-08-13 17:28:13,461 basehttp 16272 19308 "GET /api/business/reviews/ HTTP/1.1" 200 3603
+INFO 2025-08-13 17:28:13,491 basehttp 16272 2136 "GET /api/notifications/unread-count/ HTTP/1.1" 200 19
+INFO 2025-08-13 17:28:13,576 basehttp 16272 19308 "GET /api/business/reviews/ HTTP/1.1" 200 3603
+INFO 2025-08-13 17:28:13,662 basehttp 16272 2136 "GET /api/business/reviews/stats/ HTTP/1.1" 200 303
+INFO 2025-08-13 17:28:13,861 basehttp 16272 19308 "GET /api/business/reviews/ HTTP/1.1" 200 3603
+INFO 2025-08-13 17:28:13,936 basehttp 16272 19308 "GET /api/business/reviews/stats/ HTTP/1.1" 200 303
+INFO 2025-08-13 17:28:43,514 basehttp 16272 19308 "GET /api/notifications/unread-count/ HTTP/1.1" 200 19
+INFO 2025-08-13 17:29:13,471 basehttp 16272 19308 "GET /api/notifications/unread-count/ HTTP/1.1" 200 19
+INFO 2025-08-13 17:29:43,572 basehttp 16272 19308 "GET /api/notifications/unread-count/ HTTP/1.1" 200 19
+INFO 2025-08-13 17:29:57,956 basehttp 16272 19308 "GET /api/business/reviews/ HTTP/1.1" 200 3603
+INFO 2025-08-13 17:29:58,224 basehttp 16272 19308 "GET /api/business/reviews/ HTTP/1.1" 200 3603
+INFO 2025-08-13 17:29:58,326 basehttp 16272 19308 "GET /api/business/reviews/stats/ HTTP/1.1" 200 303
+INFO 2025-08-13 17:30:10,725 basehttp 16272 19308 "GET /api/business/reviews/ HTTP/1.1" 200 3603
+INFO 2025-08-13 17:30:10,855 basehttp 16272 19308 "GET /api/business/reviews/ HTTP/1.1" 200 3603
+INFO 2025-08-13 17:30:10,941 basehttp 16272 19308 "GET /api/business/reviews/stats/ HTTP/1.1" 200 303
+INFO 2025-08-13 17:30:13,464 basehttp 16272 19308 "GET /api/notifications/unread-count/ HTTP/1.1" 200 19
+INFO 2025-08-13 17:30:43,494 basehttp 16272 19308 "GET /api/notifications/unread-count/ HTTP/1.1" 200 19
+INFO 2025-08-13 17:31:13,465 basehttp 16272 19308 "GET /api/notifications/unread-count/ HTTP/1.1" 200 19
+INFO 2025-08-13 17:31:43,470 basehttp 16272 19308 "GET /api/notifications/unread-count/ HTTP/1.1" 200 19
+INFO 2025-08-13 17:32:13,910 basehttp 16272 16360 "GET /api/notifications/unread-count/ HTTP/1.1" 200 19
+INFO 2025-08-13 17:32:18,857 basehttp 16272 16360 "GET /api/business/reviews/ HTTP/1.1" 200 3603
+INFO 2025-08-13 17:32:18,979 basehttp 16272 16360 "GET /api/business/reviews/ HTTP/1.1" 200 3603
+INFO 2025-08-13 17:32:19,067 basehttp 16272 16360 "GET /api/business/reviews/stats/ HTTP/1.1" 200 303
+INFO 2025-08-13 17:32:39,645 basehttp 16272 16360 "GET /api/business/reviews/ HTTP/1.1" 200 3603
+INFO 2025-08-13 17:32:39,758 basehttp 16272 16360 "GET /api/business/reviews/ HTTP/1.1" 200 3603
+INFO 2025-08-13 17:32:39,850 basehttp 16272 16360 "GET /api/business/reviews/stats/ HTTP/1.1" 200 303
+INFO 2025-08-13 17:32:43,477 basehttp 16272 16360 "GET /api/notifications/unread-count/ HTTP/1.1" 200 19
+INFO 2025-08-13 17:32:44,733 basehttp 16272 16360 "GET /api/business/reviews/ HTTP/1.1" 200 3603
+INFO 2025-08-13 17:32:44,857 basehttp 16272 16360 "GET /api/business/reviews/ HTTP/1.1" 200 3603
+INFO 2025-08-13 17:32:44,931 basehttp 16272 16360 "GET /api/business/reviews/stats/ HTTP/1.1" 200 303
+INFO 2025-08-13 17:33:10,405 basehttp 16272 16360 "GET /api/business/reviews/ HTTP/1.1" 200 3603
+INFO 2025-08-13 17:33:10,544 basehttp 16272 16360 "GET /api/business/reviews/ HTTP/1.1" 200 3603
+INFO 2025-08-13 17:33:10,640 basehttp 16272 16360 "GET /api/business/reviews/stats/ HTTP/1.1" 200 303
+INFO 2025-08-13 17:33:13,563 basehttp 16272 16360 "GET /api/notifications/unread-count/ HTTP/1.1" 200 19
+INFO 2025-08-13 17:33:23,768 basehttp 16272 16360 "GET /api/business/reviews/ HTTP/1.1" 200 3603
+INFO 2025-08-13 17:33:23,938 basehttp 16272 16360 "GET /api/business/reviews/ HTTP/1.1" 200 3603
+INFO 2025-08-13 17:33:24,031 basehttp 16272 16360 "GET /api/business/reviews/stats/ HTTP/1.1" 200 303
+INFO 2025-08-13 17:33:25,338 basehttp 16272 16360 "GET /api/business/reviews/ HTTP/1.1" 200 3603
+INFO 2025-08-13 17:33:25,465 basehttp 16272 16360 "GET /api/business/reviews/ HTTP/1.1" 200 3603
+INFO 2025-08-13 17:33:25,547 basehttp 16272 16360 "GET /api/business/reviews/stats/ HTTP/1.1" 200 303
+INFO 2025-08-13 17:33:43,474 basehttp 16272 16360 "GET /api/notifications/unread-count/ HTTP/1.1" 200 19
+INFO 2025-08-13 17:34:13,469 basehttp 16272 16360 "GET /api/notifications/unread-count/ HTTP/1.1" 200 19
+INFO 2025-08-13 17:34:43,470 basehttp 16272 16360 "GET /api/notifications/unread-count/ HTTP/1.1" 200 19
+INFO 2025-08-13 17:35:13,460 basehttp 16272 16360 "GET /api/notifications/unread-count/ HTTP/1.1" 200 19
+INFO 2025-08-13 17:35:43,496 basehttp 16272 16360 "GET /api/notifications/unread-count/ HTTP/1.1" 200 19
+INFO 2025-08-13 17:36:13,483 basehttp 16272 16360 "GET /api/notifications/unread-count/ HTTP/1.1" 200 19
+INFO 2025-08-13 17:36:43,610 basehttp 16272 16360 "GET /api/notifications/unread-count/ HTTP/1.1" 200 19
+INFO 2025-08-13 17:37:13,489 basehttp 16272 16360 "GET /api/notifications/unread-count/ HTTP/1.1" 200 19
+INFO 2025-08-13 17:37:43,469 basehttp 16272 16360 "GET /api/notifications/unread-count/ HTTP/1.1" 200 19
+INFO 2025-08-13 17:38:13,462 basehttp 16272 16360 "GET /api/notifications/unread-count/ HTTP/1.1" 200 19
+INFO 2025-08-13 17:38:43,481 basehttp 16272 16360 "GET /api/notifications/unread-count/ HTTP/1.1" 200 19
+INFO 2025-08-13 17:39:13,586 basehttp 16272 16360 "GET /api/notifications/unread-count/ HTTP/1.1" 200 19
+INFO 2025-08-13 17:39:43,470 basehttp 16272 16360 "GET /api/notifications/unread-count/ HTTP/1.1" 200 19
+INFO 2025-08-13 17:40:13,486 basehttp 16272 16360 "GET /api/notifications/unread-count/ HTTP/1.1" 200 19
+INFO 2025-08-13 17:40:43,458 basehttp 16272 16360 "GET /api/notifications/unread-count/ HTTP/1.1" 200 19
+INFO 2025-08-13 17:41:13,485 basehttp 16272 16360 "GET /api/notifications/unread-count/ HTTP/1.1" 200 19
+INFO 2025-08-13 17:41:43,484 basehttp 16272 16360 "GET /api/notifications/unread-count/ HTTP/1.1" 200 19
+INFO 2025-08-13 17:42:14,311 basehttp 16272 16360 "GET /api/notifications/unread-count/ HTTP/1.1" 200 19
+INFO 2025-08-13 17:42:44,505 basehttp 16272 16360 "GET /api/notifications/unread-count/ HTTP/1.1" 200 19
+INFO 2025-08-13 17:43:32,901 basehttp 16272 16360 "GET /api/notifications/unread-count/ HTTP/1.1" 200 19
+INFO 2025-08-13 17:43:42,026 basehttp 16272 16360 "GET /api/business/reviews/ HTTP/1.1" 200 3603
+INFO 2025-08-13 17:43:42,245 basehttp 16272 16360 "GET /api/business/reviews/ HTTP/1.1" 200 3603
+INFO 2025-08-13 17:43:42,364 basehttp 16272 16360 "GET /api/business/reviews/stats/ HTTP/1.1" 200 303
+INFO 2025-08-13 17:43:43,481 basehttp 16272 16360 "GET /api/notifications/unread-count/ HTTP/1.1" 200 19
+INFO 2025-08-13 17:43:50,977 basehttp 16272 16360 "GET /api/business/reviews/ HTTP/1.1" 200 3603
+INFO 2025-08-13 17:43:51,199 basehttp 16272 16360 "GET /api/business/reviews/ HTTP/1.1" 200 3603
+INFO 2025-08-13 17:43:51,300 basehttp 16272 16360 "GET /api/business/reviews/stats/ HTTP/1.1" 200 303
+INFO 2025-08-13 17:44:14,253 basehttp 16272 16360 "GET /api/notifications/unread-count/ HTTP/1.1" 200 19
+INFO 2025-08-13 17:44:44,234 basehttp 16272 16360 "GET /api/notifications/unread-count/ HTTP/1.1" 200 19
+INFO 2025-08-13 17:45:45,225 basehttp 16272 16360 "GET /api/notifications/unread-count/ HTTP/1.1" 200 19
+INFO 2025-08-13 17:46:18,413 basehttp 16272 16360 "GET /api/business/reviews/ HTTP/1.1" 200 3603
+INFO 2025-08-13 17:46:18,624 basehttp 16272 16360 "GET /api/business/reviews/ HTTP/1.1" 200 3603
+INFO 2025-08-13 17:46:18,802 basehttp 16272 16360 "GET /api/business/reviews/stats/ HTTP/1.1" 200 303
+INFO 2025-08-13 17:46:21,186 basehttp 16272 16360 "GET /api/notifications/unread-count/ HTTP/1.1" 200 19
+INFO 2025-08-13 17:46:33,901 basehttp 16272 16360 "GET /api/business/reviews/ HTTP/1.1" 200 3603
+INFO 2025-08-13 17:46:34,027 basehttp 16272 16360 "GET /api/business/reviews/ HTTP/1.1" 200 3603
+INFO 2025-08-13 17:46:34,114 basehttp 16272 16360 "GET /api/business/reviews/stats/ HTTP/1.1" 200 303
+INFO 2025-08-13 17:46:43,485 basehttp 16272 16360 "GET /api/notifications/unread-count/ HTTP/1.1" 200 19
+INFO 2025-08-13 17:46:44,237 basehttp 16272 16360 "GET /api/business/reviews/ HTTP/1.1" 200 3603
+INFO 2025-08-13 17:46:44,457 basehttp 16272 16360 "GET /api/business/reviews/ HTTP/1.1" 200 3603
+INFO 2025-08-13 17:46:44,540 basehttp 16272 16360 "GET /api/business/reviews/stats/ HTTP/1.1" 200 303
+INFO 2025-08-13 17:47:14,266 basehttp 16272 16360 "GET /api/notifications/unread-count/ HTTP/1.1" 200 19
+INFO 2025-08-13 17:47:44,325 basehttp 16272 16360 "GET /api/notifications/unread-count/ HTTP/1.1" 200 19

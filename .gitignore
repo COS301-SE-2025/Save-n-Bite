@@ -12,3 +12,4 @@ venv/
 __pycache__/
 *.swp
 *.swo
+save-n-bite-backend/logs/django.log
