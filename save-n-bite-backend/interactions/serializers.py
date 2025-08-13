@@ -92,6 +92,15 @@ class AddToCartSerializer(serializers.Serializer):
             
         return data
 
+
+class CancelDonationSerializer(serializers.Serializer):
+    reason = serializers.CharField(max_length=500, required=False)
+    
+    def validate_reason(self, value):
+        if not value or len(value.strip()) < 5:
+            raise serializers.ValidationError("Cancellation reason must be at least 5 characters long")
+        return value.strip()
+
 class RemoveCartItemSerializer(serializers.Serializer):
     cartItemId = serializers.UUIDField()
 
