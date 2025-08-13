@@ -17,8 +17,8 @@ from .views import (
     BusinessHistoryView, 
     InitiateCheckoutView,
     CompleteCheckoutView,
-    CancelDonationView,
-    NGODonationRequestsView
+    NGODonationRequestsView,
+    CancelDonationView
     #admin_views
 )
 
