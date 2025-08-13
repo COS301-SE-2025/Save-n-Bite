@@ -26,7 +26,7 @@ const CalendarView = ({
 
   // Add empty cells for days before the first day of the month
   for (let i = 0; i < firstDay; i++) {
-    days.push(<div key={`empty-${i}`} className="h-32 border border-gray-200"></div>);
+    days.push(<div key={`empty-${i}`} className="h-32 border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900"></div>);
   }
 
   // Add cells for each day of the month
@@ -38,9 +38,9 @@ const CalendarView = ({
     days.push(
       <div 
         key={day} 
-        className={`h-32 border border-gray-200 p-2 ${isToday ? 'bg-blue-50' : 'bg-white'}`}
+        className={`h-32 border border-gray-200 dark:border-gray-700 p-2 ${isToday ? 'bg-blue-50 dark:bg-blue-900' : 'bg-white dark:bg-gray-900'}`}
       >
-        <div className={`font-medium text-sm mb-1 ${isToday ? 'text-blue-600' : 'text-gray-900'}`}>
+        <div className={`font-medium text-sm mb-1 ${isToday ? 'text-blue-600 dark:text-blue-400' : 'text-gray-900 dark:text-gray-100'}`}>
           {day}
         </div>
         <div className="space-y-1">
@@ -48,16 +48,16 @@ const CalendarView = ({
             <div
               key={pickup.id}
               className={`text-xs p-1 rounded truncate ${
-                pickup.status === 'Active' ? 'bg-blue-100 text-blue-800' :
-                pickup.status === 'Upcoming' ? 'bg-purple-100 text-purple-800' :
-                'bg-green-100 text-green-800'
+                pickup.status === 'Active' ? 'bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-300' :
+                pickup.status === 'Upcoming' ? 'bg-purple-100 dark:bg-purple-900 text-purple-800 dark:text-purple-300' :
+                'bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-300'
               }`}
             >
               {pickup.orderNumber}
             </div>
           ))}
           {dayPickups.length > 3 && (
-            <div className="text-xs text-gray-500">+{dayPickups.length - 3} more</div>
+            <div className="text-xs text-gray-500 dark:text-gray-400">+{dayPickups.length - 3} more</div>
           )}
         </div>
       </div>
@@ -65,7 +65,7 @@ const CalendarView = ({
   }
 
   return (
-    <div className="bg-white rounded-lg shadow-md p-4">
+    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-4 transition-colors duration-300">
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-lg font-semibold">
           {currentDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}

@@ -40,7 +40,7 @@ class NotificationService:
 
     @staticmethod
     def send_email_notification(user, subject, template_name, context, notification=None):
-        """Send email notification to user"""
+        """Send email notification to user - ORIGINAL METHOD RESTORED"""
         try:
             # Check if user wants email notifications
             preferences, _ = NotificationPreferences.objects.get_or_create(user=user)
@@ -91,6 +91,151 @@ class NotificationService:
                 email_log.error_message = str(e)
                 email_log.save()
             return False
+        
+    @staticmethod
+    def send_critical_email_notification(user, subject, template_name, context, notification=None):
+        """
+        Send critical email that bypasses user preferences
+        This is a NEW method that doesn't interfere with the original
+        """
+        try:
+            # Create email log entry
+            email_log = EmailNotificationLog.objects.create(
+                recipient_email=user.email,
+                recipient_user=user,
+                notification=notification,
+                subject=subject,
+                template_name=template_name,
+                status='pending'
+            )
+
+            # Render email content
+            html_message = render_to_string(f'notifications/emails/{template_name}.html', context)
+            plain_message = strip_tags(html_message)
+
+            # Send email (bypasses preferences)
+            success = send_mail(
+                subject=subject,
+                message=plain_message,
+                from_email=settings.DEFAULT_FROM_EMAIL,
+                recipient_list=[user.email],
+                html_message=html_message,
+                fail_silently=False
+            )
+
+            if success:
+                email_log.status = 'sent'
+                email_log.sent_at = timezone.now()
+                logger.info(f"Critical email sent successfully to {user.email} (bypassed preferences)")
+            else:
+                email_log.status = 'failed'
+                email_log.error_message = "Unknown error occurred"
+                logger.error(f"Failed to send critical email to {user.email}")
+
+            email_log.save()
+            return success
+
+        except Exception as e:
+            logger.error(f"Error sending critical email to {user.email}: {str(e)}")
+            if 'email_log' in locals():
+                email_log.status = 'failed'
+                email_log.error_message = str(e)
+                email_log.save()
+            return False
+    
+    @staticmethod
+    def send_password_reset_email(user, temp_password, admin_name=None, expires_at=None):
+        """
+        Send password reset email - this is always critical and bypasses preferences
+        """
+        try:
+            # Create in-app notification
+            notification = NotificationService.create_notification(
+                recipient=user,
+                notification_type='password_reset',
+                title='Password Reset',
+                message='Your password has been reset. Please check your email for the temporary password.',
+                data={
+                    'expires_at': expires_at.isoformat() if expires_at else None,
+                    'reset_type': 'admin' if admin_name else 'self_service'
+                }
+            )
+
+            # Prepare email context
+            context = {
+                'user_name': NotificationService._get_user_display_name(user),
+                'temp_password': temp_password,
+                'login_url': f"{getattr(settings, 'FRONTEND_URL', 'http://localhost:3000')}/login",
+                'expires_at': expires_at,
+                'admin_name': admin_name or 'System',
+                'is_self_service': admin_name is None,
+                'support_email': 'savenbite@gmail.com',
+                'company_name': 'Save n Bite'
+            }
+
+            # Send critical email (bypasses user preferences)
+            email_sent = NotificationService.send_critical_email_notification(
+                user=user,
+                subject='Password Reset - Save n Bite [IMPORTANT]',
+                template_name='password_reset',
+                context=context,
+                notification=notification
+            )
+
+            if email_sent:
+                logger.info(f"Password reset email sent successfully to {user.email} (bypassed preferences)")
+            else:
+                logger.error(f"Failed to send password reset email to {user.email}")
+
+            return email_sent, notification
+
+        except Exception as e:
+            logger.error(f"Error in send_password_reset_email for {user.email}: {str(e)}")
+            return False, None
+        
+    @staticmethod
+    def send_account_security_email(user, event_type, context_data=None):
+        """
+        Send account security related emails (always critical)
+        
+        Args:
+            user: User to notify
+            event_type: Type of security event
+            context_data: Additional context for the email
+        """
+        try:
+            context = {
+                'user_name': NotificationService._get_user_display_name(user),
+                'event_type': event_type,
+                'timestamp': timezone.now(),
+                'support_email': 'savenbite@gmail.com',
+                'company_name': 'Save n Bite',
+                **(context_data or {})
+            }
+
+            # Create notification
+            notification = NotificationService.create_notification(
+                recipient=user,
+                notification_type='account_security',
+                title=f'Security Alert: {event_type}',
+                message=f'A security event has occurred on your account: {event_type}',
+                data=context
+            )
+
+            # Send critical email
+            email_sent = NotificationService.send_critical_email_notification(
+                user=user,
+                subject=f'Security Alert - Save n Bite [IMPORTANT]',
+                template_name='account_security',
+                context=context,
+                notification=notification
+            )
+
+            return email_sent, notification
+
+        except Exception as e:
+            logger.error(f"Error sending security email to {user.email}: {str(e)}")
+            return False, None
 
     @staticmethod
     def notify_followers_new_listing(business_profile, listing_data):
@@ -232,7 +377,7 @@ class NotificationService:
             # Send email notification
             NotificationService.send_email_notification(
                 user=user,
-                subject=f"Save n Bite Account {status.title()}",
+                subject=f"Save n Bite Account {status.title()} [IMPORTANT]",
                 template_name=template_name,
                 context=email_context,
                 notification=notification
@@ -603,3 +748,335 @@ class NotificationService:
         except Exception as e:
             logger.error(f"Error getting follow recommendations: {str(e)}")
             raise ValueError(f"Failed to get recommendations: {str(e)}")
+
+    @staticmethod
+    def send_order_preparation_notification(scheduled_pickup):
+        """Send notification when order is scheduled and being prepared"""
+        try:
+            customer = scheduled_pickup.order.interaction.user
+            business = scheduled_pickup.location.business
+            
+            # Create in-app notification
+            title = "Order Received - We're Preparing Your Order!"
+            message = f"Great news! We've received your order for '{scheduled_pickup.food_listing.name}' from {business.business_name}. We're now preparing your order and will have it ready for pickup on {scheduled_pickup.scheduled_date} at {scheduled_pickup.scheduled_start_time.strftime('%H:%M')}."
+            
+            notification = NotificationService.create_notification(
+                recipient=customer,
+                notification_type='order_preparation',
+                title=title,
+                message=message,
+                sender=business.user,
+                business=business,
+                data={
+                    'pickup_id': str(scheduled_pickup.id),
+                    'confirmation_code': scheduled_pickup.confirmation_code,
+                    'food_listing_id': str(scheduled_pickup.food_listing.id),
+                    'food_listing_name': scheduled_pickup.food_listing.name,
+                    'business_name': business.business_name,
+                    'pickup_date': scheduled_pickup.scheduled_date.isoformat(),
+                    'pickup_time': scheduled_pickup.scheduled_start_time.strftime('%H:%M'),
+                    'location_name': scheduled_pickup.location.name,
+                    'location_address': scheduled_pickup.location.address
+                }
+            )
+
+            # Check if user wants email notifications
+            preferences, _ = NotificationPreferences.objects.get_or_create(user=customer)
+            if preferences.email_notifications:
+                # Send email notification
+                email_context = {
+                    'customer_name': NotificationService._get_user_display_name(customer),
+                    'business_name': business.business_name,
+                    'food_listing_name': scheduled_pickup.food_listing.name,
+                    'confirmation_code': scheduled_pickup.confirmation_code,
+                    'pickup_date': scheduled_pickup.scheduled_date.strftime('%B %d, %Y'),
+                    'pickup_time': f"{scheduled_pickup.scheduled_start_time.strftime('%H:%M')} - {scheduled_pickup.scheduled_end_time.strftime('%H:%M')}",
+                    'location_name': scheduled_pickup.location.name,
+                    'location_address': scheduled_pickup.location.address,
+                    'location_instructions': scheduled_pickup.location.instructions,
+                    'contact_person': scheduled_pickup.location.contact_person,
+                    'contact_phone': scheduled_pickup.location.contact_phone,
+                    'customer_notes': scheduled_pickup.customer_notes,
+                    'business_logo': business.logo.url if business.logo else None,
+                }
+                
+                NotificationService.send_email_notification(
+                    user=customer,
+                    subject=f"Order Received - {business.business_name} is Preparing Your Order",
+                    template_name='order_preparation',
+                    context=email_context,
+                    notification=notification
+                )
+
+            logger.info(f"Sent order preparation notification to {customer.email} for pickup {scheduled_pickup.confirmation_code}")
+
+        except Exception as e:
+            logger.error(f"Failed to send order preparation notification for pickup {scheduled_pickup.id}: {str(e)}")
+            # Don't re-raise the exception to avoid breaking the scheduling process
+
+    @staticmethod
+    def send_order_completion_notification(scheduled_pickup):
+        """Send thank you notification when pickup is completed"""
+        try:
+            customer = scheduled_pickup.order.interaction.user
+            business = scheduled_pickup.location.business
+            
+            # Calculate total quantity from interaction items
+            total_quantity = sum(item.quantity for item in scheduled_pickup.order.interaction.items.all())
+            
+            # Create in-app notification
+            title = "Thank You for Shopping with Us!"
+            message = f"Thank you for choosing {business.business_name}! Your pickup of '{scheduled_pickup.food_listing.name}' has been completed successfully. Together, we're helping reduce food waste and making a positive impact on our environment. We hope to see you again soon!"
+            
+            notification = NotificationService.create_notification(
+                recipient=customer,
+                notification_type='order_completion',
+                title=title,
+                message=message,
+                sender=business.user,
+                business=business,
+                data={
+                    'pickup_id': str(scheduled_pickup.id),
+                    'confirmation_code': scheduled_pickup.confirmation_code,
+                    'food_listing_id': str(scheduled_pickup.food_listing.id),
+                    'food_listing_name': scheduled_pickup.food_listing.name,
+                    'business_name': business.business_name,
+                    'completed_at': scheduled_pickup.actual_pickup_time.isoformat() if scheduled_pickup.actual_pickup_time else None,
+                    'total_quantity': total_quantity,
+                    'sustainability_impact': 'food_waste_reduced'
+                }
+            )
+
+            # Check if user wants email notifications
+            preferences, _ = NotificationPreferences.objects.get_or_create(user=customer)
+            if preferences.email_notifications:
+                # Send email notification
+                email_context = {
+                    'customer_name': NotificationService._get_user_display_name(customer),
+                    'business_name': business.business_name,
+                    'business_address': business.business_address,
+                    'business_contact': business.business_contact,
+                    'food_listing_name': scheduled_pickup.food_listing.name,
+                    'food_listing_description': scheduled_pickup.food_listing.description,
+                    'confirmation_code': scheduled_pickup.confirmation_code,
+                    'pickup_date': scheduled_pickup.scheduled_date.strftime('%B %d, %Y'),
+                    'pickup_time': scheduled_pickup.actual_pickup_time.strftime('%H:%M on %B %d, %Y') if scheduled_pickup.actual_pickup_time else 'Recently',
+                    'total_quantity': total_quantity,
+                    'customer_notes': scheduled_pickup.customer_notes,
+                    'business_notes': scheduled_pickup.business_notes,
+                    'business_logo': business.logo.url if business.logo else None,
+                    # Add some sustainability messaging
+                    'sustainability_message': f"By purchasing surplus food, you've helped reduce food waste and supported sustainable practices in your community!",
+                    'invite_back_message': f"Don't forget to follow {business.business_name} to get notified about future surplus food opportunities!"
+                }
+                
+                NotificationService.send_email_notification(
+                    user=customer,
+                    subject=f"Thank You from {business.business_name} - Pickup Completed Successfully",
+                    template_name='order_completion',
+                    context=email_context,
+                    notification=notification
+                )
+
+            logger.info(f"Sent order completion notification to {customer.email} for pickup {scheduled_pickup.confirmation_code}")
+
+        except Exception as e:
+            logger.error(f"Failed to send order completion notification for pickup {scheduled_pickup.id}: {str(e)}")
+            # Don't re-raise the exception to avoid breaking the completion process
+
+    @staticmethod
+    def send_donation_request_notification(interaction):
+        """Send notification when NGO submits a donation request"""
+        try:
+            ngo_user = interaction.user
+            business_user = interaction.business.user
+            food_item = interaction.items.first().food_listing if interaction.items.exists() else None
+            
+            # Create in-app notification for NGO (confirmation)
+            ngo_notification = NotificationService.create_notification(
+                recipient=ngo_user,
+                notification_type='donation_request',
+                title='Donation Request Submitted',
+                message=f'Your donation request for "{food_item.name if food_item else "food items"}" has been submitted to {interaction.business.business_name}. They will review your request shortly.',
+                sender=None,  # System notification
+                business=interaction.business,
+                data={
+                    'interaction_id': str(interaction.id),
+                    'business_name': interaction.business.business_name,
+                    'food_item_name': food_item.name if food_item else 'Multiple items',
+                    'requested_quantity': interaction.quantity,
+                    'request_type': 'donation'
+                }
+            )
+
+            # Create in-app notification for business (new request)
+            business_notification = NotificationService.create_notification(
+                recipient=business_user,
+                notification_type='donation_request',
+                title='New Donation Request',
+                message=f'{NotificationService._get_user_display_name(ngo_user)} has requested a donation of "{food_item.name if food_item else "food items"}". Please review and respond to their request.',
+                sender=ngo_user,
+                business=interaction.business,
+                data={
+                    'interaction_id': str(interaction.id),
+                    'ngo_name': NotificationService._get_user_display_name(ngo_user),
+                    'food_item_name': food_item.name if food_item else 'Multiple items',
+                    'requested_quantity': interaction.quantity,
+                    'request_type': 'donation',
+                    'motivation_message': interaction.motivation_message if hasattr(interaction, 'motivation_message') else ''
+                }
+            )
+
+            logger.info(f"Donation request notifications sent for interaction {interaction.id}")
+            return ngo_notification, business_notification
+
+        except Exception as e:
+            logger.error(f"Failed to send donation request notifications for interaction {interaction.id}: {str(e)}")
+            return None, None
+
+    @staticmethod
+    def send_donation_response_notification(interaction, response_type, rejection_reason=None):
+        """
+        Send notifications when business accepts or rejects a donation request
+        
+        Args:
+            interaction: The donation interaction
+            response_type: 'accepted' or 'rejected'
+            rejection_reason: Reason for rejection (if applicable)
+        """
+        try:
+            ngo_user = interaction.user
+            business_user = interaction.business.user
+            business_name = interaction.business.business_name
+            food_item = interaction.items.first().food_listing if interaction.items.exists() else None
+            
+            if response_type == 'accepted':
+                # Donation accepted notifications
+                title = "Donation Request Accepted!"
+                message = f"Great news! {business_name} has accepted your donation request for \"{food_item.name if food_item else 'food items'}\". You can now schedule a pickup time."
+                
+                notification_data = {
+                    'interaction_id': str(interaction.id),
+                    'business_name': business_name,
+                    'food_item_name': food_item.name if food_item else 'Multiple items',
+                    'accepted_quantity': interaction.quantity,
+                    'response_type': 'accepted',
+                    'next_steps': 'schedule_pickup'
+                }
+                
+                # Email context for accepted donation
+                email_context = {
+                    'ngo_name': NotificationService._get_user_display_name(ngo_user),
+                    'business_name': business_name,
+                    'food_item_name': food_item.name if food_item else 'Multiple items',
+                    'food_item_description': food_item.description if food_item else '',
+                    'accepted_quantity': interaction.quantity,
+                    'pickup_window': food_item.pickup_window if food_item else 'To be arranged',
+                    'business_contact': interaction.business.business_contact,
+                    'business_address': interaction.business.business_address,
+                    'interaction_id': str(interaction.id),
+                    'motivation_message': interaction.motivation_message if hasattr(interaction, 'motivation_message') else '',
+                }
+                
+                email_template = 'donation_accepted'
+                email_subject = f"Donation Accepted - {business_name}"
+                
+            else:  # rejected
+                title = "Donation Request Update"
+                message = f"Unfortunately, {business_name} was unable to fulfill your donation request for \"{food_item.name if food_item else 'food items'}\""
+                if rejection_reason:
+                    message += f". Reason: {rejection_reason}"
+                message += ". Don't worry - there are other opportunities available!"
+                
+                notification_data = {
+                    'interaction_id': str(interaction.id),
+                    'business_name': business_name,
+                    'food_item_name': food_item.name if food_item else 'Multiple items',
+                    'response_type': 'rejected',
+                    'rejection_reason': rejection_reason or 'No reason provided',
+                    'next_steps': 'browse_other_donations'
+                }
+                
+                # Email context for rejected donation
+                email_context = {
+                    'ngo_name': NotificationService._get_user_display_name(ngo_user),
+                    'business_name': business_name,
+                    'food_item_name': food_item.name if food_item else 'Multiple items',
+                    'rejection_reason': rejection_reason or 'No specific reason was provided',
+                    'interaction_id': str(interaction.id),
+                    'browse_url': f"{getattr(settings, 'FRONTEND_URL', 'http://localhost:3000')}/browse-donations",
+                }
+                
+                email_template = 'donation_rejected'
+                email_subject = f"Donation Request Update - {business_name}"
+
+            # Create in-app notification
+            notification = NotificationService.create_notification(
+                recipient=ngo_user,
+                notification_type='donation_response',
+                title=title,
+                message=message,
+                sender=business_user,
+                business=interaction.business,
+                data=notification_data
+            )
+
+            # Check if NGO wants email notifications
+            preferences, _ = NotificationPreferences.objects.get_or_create(user=ngo_user)
+            if preferences.email_notifications:
+                # Send email notification
+                email_sent = NotificationService.send_email_notification(
+                    user=ngo_user,
+                    subject=email_subject,
+                    template_name=email_template,
+                    context=email_context,
+                    notification=notification
+                )
+                
+                if email_sent:
+                    logger.info(f"Donation {response_type} email sent to {ngo_user.email}")
+                else:
+                    logger.warning(f"Failed to send donation {response_type} email to {ngo_user.email}")
+
+            logger.info(f"Donation {response_type} notification sent for interaction {interaction.id}")
+            return notification
+
+        except Exception as e:
+            logger.error(f"Failed to send donation {response_type} notification for interaction {interaction.id}: {str(e)}")
+            return None
+
+    @staticmethod
+    def send_donation_pickup_reminder(interaction, pickup_date=None):
+        """Send reminder notification for donation pickup"""
+        try:
+            ngo_user = interaction.user
+            business_name = interaction.business.business_name
+            food_item = interaction.items.first().food_listing if interaction.items.exists() else None
+            
+            title = "Donation Pickup Reminder"
+            message = f"Don't forget to pick up your donation from {business_name}"
+            if pickup_date:
+                message += f" scheduled for {pickup_date}"
+            message += "!"
+            
+            notification = NotificationService.create_notification(
+                recipient=ngo_user,
+                notification_type='pickup_reminder',
+                title=title,
+                message=message,
+                business=interaction.business,
+                data={
+                    'interaction_id': str(interaction.id),
+                    'business_name': business_name,
+                    'food_item_name': food_item.name if food_item else 'Multiple items',
+                    'pickup_date': pickup_date.isoformat() if pickup_date else None,
+                    'reminder_type': 'donation_pickup'
+                }
+            )
+
+            logger.info(f"Donation pickup reminder sent for interaction {interaction.id}")
+            return notification
+
+        except Exception as e:
+            logger.error(f"Failed to send donation pickup reminder for interaction {interaction.id}: {str(e)}")
+            return None

@@ -1,52 +1,167 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Bell, Check, Trash2, ArrowLeft } from 'lucide-react';
-import { useNotifications } from '../../services/contexts/NotificationContext';
+import { useAuth } from '../../context/AuthContext';
+import NotificationAPI from '../../services/NotificationAPI';
 import NotificationCard from '../../components/notifications/NotificationCard';
 
 const NotificationPage = () => {
   const navigate = useNavigate();
-  const {
-    notifications,
-    loading,
-    error,
-    unreadCount,
-    fetchNotifications,
-    markAsRead,
-    markAllAsRead,
-    deleteNotification,
-    clearAllNotifications
-  } = useNotifications();
-
+  const { logout, isAuthenticated } = useAuth();
+  
+  // Local state for notifications
+  const [notifications, setNotifications] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [unreadCount, setUnreadCount] = useState(0);
   const [filter, setFilter] = useState('all');
   const [isDeleting, setIsDeleting] = useState(false);
 
+  // Handle API auth responses
+  const handleApiResponse = (response) => {
+    // Only handle auth manually if there's a clear auth problem
+    if (response && !response.success && response.status === 401) {
+      console.log('401 error detected, user needs to log in again');
+      logout();
+      navigate('/login', { replace: true });
+      return false;
+    }
+    return true;
+  };
+
+  // Fetch notifications only when page loads or refreshed
+  const fetchNotifications = async (showLoading = true) => {
+    // Check authentication first
+    if (!isAuthenticated()) {
+      logout();
+      navigate('/login', { replace: true });
+      return;
+    }
+
+    if (showLoading) setLoading(true);
+    setError(null);
+    
+    try {
+      const response = await NotificationAPI.getFormattedNotifications();
+      
+      // Handle auth errors gracefully
+      if (!handleApiResponse(response)) {
+        return;
+      }
+      
+      if (response.success) {
+        setNotifications(response.data || []);
+        setUnreadCount(response.unreadCount || 0);
+      } else {
+        setError(response.error || 'Failed to fetch notifications');
+      }
+    } catch (err) {
+      console.error('Error fetching notifications:', err);
+      
+      // Handle 401 errors specifically
+      if (err.response?.status === 401) {
+        logout();
+        navigate('/login', { replace: true });
+        return;
+      }
+      
+      setError('Failed to fetch notifications');
+    } finally {
+      if (showLoading) setLoading(false);
+    }
+  };
+
+  // Only fetch on page load - no polling!
   useEffect(() => {
-    fetchNotifications();
+    fetchNotifications(true);
   }, []);
 
   const handleMarkAsRead = async (id) => {
     try {
-      await markAsRead(id);
+      // Optimistic update
+      setNotifications(prev => 
+        prev.map(notification => 
+          notification.id === id 
+            ? { ...notification, isRead: true }
+            : notification
+        )
+      );
+      
+      const wasUnread = notifications.find(n => n.id === id && !n.isRead);
+      if (wasUnread) {
+        setUnreadCount(prev => Math.max(0, prev - 1));
+      }
+
+      const response = await NotificationAPI.markAsRead(id);
+      
+      if (!handleApiResponse(response)) {
+        return;
+      }
+      
+      if (!response.success) {
+        // Revert optimistic update on failure
+        fetchNotifications(false);
+        console.error('Failed to mark notification as read');
+      }
     } catch (err) {
       console.error('Failed to mark notification as read', err);
+      // Revert optimistic update on error
+      fetchNotifications(false);
     }
   };
 
   const handleMarkAllAsRead = async () => {
     try {
-      await markAllAsRead();
+      // Optimistic update
+      setNotifications(prev => 
+        prev.map(notification => ({ ...notification, isRead: true }))
+      );
+      setUnreadCount(0);
+
+      const response = await NotificationAPI.markAllAsRead();
+      
+      if (!handleApiResponse(response)) {
+        return;
+      }
+      
+      if (!response.success) {
+        // Revert optimistic update on failure
+        fetchNotifications(false);
+        console.error('Failed to mark all notifications as read');
+      }
     } catch (err) {
       console.error('Failed to mark all notifications as read', err);
+      // Revert optimistic update on error
+      fetchNotifications(false);
     }
   };
 
   const handleDelete = async (id) => {
     setIsDeleting(true);
     try {
-      await deleteNotification(id);
+      const notificationToDelete = notifications.find(n => n.id === id);
+      
+      // Optimistic update
+      setNotifications(prev => prev.filter(n => n.id !== id));
+      if (notificationToDelete && !notificationToDelete.isRead) {
+        setUnreadCount(prev => Math.max(0, prev - 1));
+      }
+
+      const response = await NotificationAPI.deleteNotification(id);
+      
+      if (!handleApiResponse(response)) {
+        return;
+      }
+      
+      if (!response.success) {
+        // Revert optimistic update on failure
+        fetchNotifications(false);
+        console.error('Failed to delete notification');
+      }
     } catch (err) {
       console.error('Failed to delete notification', err);
+      // Revert optimistic update on error
+      fetchNotifications(false);
     } finally {
       setIsDeleting(false);
     }
@@ -59,11 +174,16 @@ const NotificationPage = () => {
     
     setIsDeleting(true);
     try {
-      const result = await clearAllNotifications();
-      if (!result.success) {
+      const response = await NotificationAPI.clearAllNotifications();
+      
+      if (!handleApiResponse(response)) {
+        return;
+      }
+      
+      if (!response.success) {
         // Since clearAllNotifications is not supported by backend, 
         // we'll show an alert to the user
-        alert(result.error || 'Bulk clear of all notifications is not supported.');
+        alert(response.error || 'Bulk clear of all notifications is not supported.');
       }
     } catch (err) {
       console.error('Failed to clear all notifications', err);
@@ -87,7 +207,7 @@ const NotificationPage = () => {
       // Default navigation based on notification type
       switch (notification.type) {
         case 'new_listing':
-          navigate('/food-listings');
+          navigate('/food-listing');
           break;
         case 'order_update':
           navigate('/orders');
@@ -97,9 +217,13 @@ const NotificationPage = () => {
           navigate('/dashboard');
           break;
         default:
-          navigate('/dashboard');
+          navigate('/food-listing'); // Default to food listing for customers/NGOs
       }
     }
+  };
+
+  const handleRefresh = () => {
+    fetchNotifications(true);
   };
 
   const getFilteredNotifications = () => {
@@ -113,30 +237,38 @@ const NotificationPage = () => {
   const filteredNotifications = getFilteredNotifications();
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="bg-white border-b border-gray-200">
-        <div className="max-w-5xl mx-auto px-4 py-4 flex items-center">
+ <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
+      <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
+        <div className="max-w-5xl mx-auto px-3 sm:px-4 py-3 sm:py-4 flex items-center">
           <button
-            onClick={() => navigate(-1)}
-            className="flex items-center text-gray-600 hover:text-gray-800 mr-4"
+            onClick={() => navigate('/food-listing', { replace: true })}
+            className="flex items-center text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-gray-100 mr-3 sm:mr-4 touch-target"
           >
-            <ArrowLeft size={20} />
+            <ArrowLeft size={18} className="sm:w-5 sm:h-5" />
           </button>
-          <h1 className="text-xl font-semibold text-gray-800">Notifications</h1>
+ <h1 className="text-lg sm:text-xl font-semibold text-gray-800 dark:text-gray-100">Notifications</h1>
+          <button
+            onClick={handleRefresh}
+            className="ml-auto text-xs sm:text-sm text-emerald-600 dark:text-emerald-400 hover:text-emerald-700 dark:hover:text-emerald-300 disabled:opacity-50 touch-target"
+            disabled={loading}
+          >
+            {loading ? 'Loading...' : 'Refresh'}
+          </button>
         </div>
       </div>
 
-      <div className="max-w-5xl mx-auto px-4 py-6">
+      <div className="container-responsive max-w-5xl mx-auto py-4 sm:py-6">
         {/* Filter and Actions Bar */}
-        <div className="bg-white rounded-lg shadow-sm mb-6">
-          <div className="p-4 flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-gray-100">
+{/* Filter and Actions Bar */}
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm mb-4 sm:mb-6 transition-colors duration-300">
+          <div className="p-3 sm:p-4 flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-gray-100 dark:border-gray-700">
             <div className="flex items-center mb-3 sm:mb-0">
-              <Bell size={20} className="text-emerald-600 mr-2" />
-              <h2 className="font-medium text-gray-800">
+              <Bell size={18} className="sm:w-5 sm:h-5 text-emerald-600 dark:text-emerald-400 mr-2" />
+              <h2 className="text-sm sm:text-base font-medium text-gray-800 dark:text-gray-100">
                 {unreadCount > 0 ? (
                   <>
                     You have{' '}
-                    <span className="text-emerald-600">{unreadCount} unread</span>{' '}
+                    <span className="text-emerald-600 dark:text-emerald-400">{unreadCount} unread</span>{' '}
                     notifications
                   </>
                 ) : (
@@ -148,84 +280,88 @@ const NotificationPage = () => {
               {unreadCount > 0 && (
                 <button
                   onClick={handleMarkAllAsRead}
-                  className="text-xs bg-emerald-50 text-emerald-600 px-3 py-1 rounded-full hover:bg-emerald-100 transition-colors flex items-center disabled:opacity-50"
+className="text-xs bg-emerald-50 dark:bg-emerald-900 text-emerald-600 dark:text-emerald-200 px-2 sm:px-3 py-1 rounded-full hover:bg-emerald-100 dark:hover:bg-emerald-800 transition-colors flex items-center disabled:opacity-50 touch-target"
                   disabled={loading || isDeleting}
                 >
-                  <Check size={12} className="mr-1" />
-                  Mark all as read
+                  <Check size={10} className="sm:w-3 sm:h-3 mr-1" />
+                  <span className="hidden sm:inline">Mark all as read</span>
+                  <span className="sm:hidden">All read</span>
                 </button>
               )}
               {notifications.length > 0 && (
                 <button
                   onClick={handleClearAll}
-                  className="text-xs bg-gray-100 text-gray-600 px-3 py-1 rounded-full hover:bg-gray-200 transition-colors flex items-center disabled:opacity-50"
+ className="text-xs bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 px-2 sm:px-3 py-1 rounded-full hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors flex items-center disabled:opacity-50 touch-target"
                   disabled={loading || isDeleting}
                 >
-                  <Trash2 size={12} className="mr-1" />
-                  Clear all
+                  <Trash2 size={10} className="sm:w-3 sm:h-3 mr-1" />
+                  <span className="hidden sm:inline">Clear all</span>
+                  <span className="sm:hidden">Clear</span>
                 </button>
               )}
             </div>
           </div>
 
           {/* Filter Tabs */}
-          <div className="flex overflow-x-auto">
+          <div className="flex overflow-x-auto bg-white dark:bg-gray-800">
             <button
               onClick={() => setFilter('all')}
-              className={`px-4 py-3 text-sm font-medium whitespace-nowrap ${
+              className={`px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm font-medium whitespace-nowrap touch-target ${
                 filter === 'all'
-                  ? 'text-emerald-600 border-b-2 border-emerald-600'
-                  : 'text-gray-600 hover:text-gray-800'
+                  ? 'text-emerald-600 dark:text-emerald-400 border-b-2 border-emerald-600 dark:border-emerald-400'
+                  : 'text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-gray-100'
               }`}
             >
               All ({notifications.length})
             </button>
             <button
               onClick={() => setFilter('unread')}
-              className={`px-4 py-3 text-sm font-medium whitespace-nowrap ${
+              className={`px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm font-medium whitespace-nowrap touch-target ${
                 filter === 'unread'
-                  ? 'text-emerald-600 border-b-2 border-emerald-600'
-                  : 'text-gray-600 hover:text-gray-800'
+                  ? 'text-emerald-600 dark:text-emerald-400 border-b-2 border-emerald-600 dark:border-emerald-400'
+                  : 'text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-gray-100'
               }`}
             >
               Unread ({unreadCount})
             </button>
             <button
               onClick={() => setFilter('new_listing')}
-              className={`px-4 py-3 text-sm font-medium whitespace-nowrap ${
+              className={`px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm font-medium whitespace-nowrap touch-target ${
                 filter === 'new_listing'
-                  ? 'text-emerald-600 border-b-2 border-emerald-600'
-                  : 'text-gray-600 hover:text-gray-800'
+                  ? 'text-emerald-600 dark:text-emerald-400 border-b-2 border-emerald-600 dark:border-emerald-400'
+                  : 'text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-gray-100'
               }`}
             >
-              New Listings ({notifications.filter(n => n.type === 'new_listing').length})
+              <span className="hidden sm:inline">New Listings</span>
+              <span className="sm:hidden">Listings</span> ({notifications.filter(n => n.type === 'new_listing').length})
             </button>
             <button
               onClick={() => setFilter('system')}
-              className={`px-4 py-3 text-sm font-medium whitespace-nowrap ${
+              className={`px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm font-medium whitespace-nowrap touch-target ${
                 filter === 'system'
-                  ? 'text-emerald-600 border-b-2 border-emerald-600'
-                  : 'text-gray-600 hover:text-gray-800'
+                  ? 'text-emerald-600 dark:text-emerald-400 border-b-2 border-emerald-600 dark:border-emerald-400'
+                  : 'text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-gray-100'
               }`}
             >
-              Save 'n Bite Notifications ({notifications.filter(n => ['welcome', 'system'].includes(n.type)).length})
+              <span className="hidden sm:inline">Save 'n Bite Notifications</span>
+              <span className="sm:hidden">System</span> ({notifications.filter(n => ['welcome', 'system'].includes(n.type)).length})
             </button>
           </div>
         </div>
 
         {/* Notifications List */}
-        <div className="bg-white rounded-lg shadow-sm overflow-hidden">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm overflow-hidden transition-colors duration-300">
           {loading ? (
-            <div className="p-6 text-center">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-emerald-600 mx-auto mb-4"></div>
-              <p className="text-gray-600">Loading notifications...</p>
+ <div className="p-4 sm:p-6 text-center">
+              <div className="animate-spin rounded-full h-6 w-6 sm:h-8 sm:w-8 border-b-2 border-emerald-600 mx-auto mb-3 sm:mb-4"></div>
+              <p className="text-sm sm:text-base text-gray-600 dark:text-gray-300">Loading notifications...</p>
             </div>
           ) : error ? (
-            <div className="p-6 text-center text-red-600">
-              <p>{error}</p>
+            <div className="p-4 sm:p-6 text-center text-red-600 dark:text-red-400">
+              <p className="text-sm sm:text-base">{error}</p>
               <button
-                onClick={() => fetchNotifications()}
-                className="mt-2 text-sm underline hover:no-underline"
+                onClick={handleRefresh}
+                className="mt-2 text-xs sm:text-sm underline hover:no-underline touch-target"
               >
                 Try again
               </button>
@@ -244,10 +380,10 @@ const NotificationPage = () => {
               ))}
             </div>
           ) : (
-            <div className="p-6 text-center text-gray-500">
-              <Bell size={32} className="mx-auto mb-2 text-gray-400" />
-              <p className="font-medium">No notifications found</p>
-              <p className="text-sm mt-1">
+  <div className="p-4 sm:p-6 text-center text-gray-500 dark:text-gray-400">
+              <Bell size={24} className="sm:w-8 sm:h-8 mx-auto mb-2 text-gray-400 dark:text-gray-600" />
+              <p className="text-sm sm:text-base font-medium">No notifications found</p>
+              <p className="text-xs sm:text-sm mt-1">
                 {filter !== 'all'
                   ? 'Try changing your filter to see more notifications'
                   : "You'll see notifications here when there are updates"}

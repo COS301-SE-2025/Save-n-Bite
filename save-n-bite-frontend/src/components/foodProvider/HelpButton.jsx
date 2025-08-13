@@ -13,7 +13,7 @@ export function HelpButton() {
     <>
       <button
         onClick={toggleHelp}
-        className="fixed bottom-6 right-6 bg-blue-600 hover:bg-blue-700 text-white p-3 rounded-full shadow-lg z-50 flex items-center justify-center transition-all duration-200 hover:scale-105"
+        className="fixed bottom-6 right-6 bg-blue-600 dark:bg-blue-700 hover:bg-blue-700 dark:hover:bg-blue-800 text-white p-3 rounded-full shadow-lg z-50 flex items-center justify-center transition-all duration-200 hover:scale-105"
         aria-label="Help"
       >
         <HelpCircleIcon className="h-6 w-6" />

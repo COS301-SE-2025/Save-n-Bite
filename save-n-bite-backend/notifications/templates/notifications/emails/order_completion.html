@@ -1,0 +1,251 @@
+<!-- notifications/templates/notifications/emails/order_completion.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Thank You - Order Completed Successfully</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f9f9f9;
+        }
+        .container {
+            background-color: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .logo {
+            max-width: 120px;
+            height: auto;
+            margin-bottom: 20px;
+        }
+        .title {
+            color: #2c5530;
+            font-size: 26px;
+            margin-bottom: 10px;
+        }
+        .subtitle {
+            color: #666;
+            font-size: 16px;
+        }
+        .thank-you-message {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 25px;
+            border-radius: 10px;
+            text-align: center;
+            margin: 20px 0;
+        }
+        .order-summary {
+            background-color: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+            border-left: 4px solid #28a745;
+        }
+        .detail-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+        .detail-label {
+            font-weight: bold;
+            color: #555;
+        }
+        .detail-value {
+            color: #333;
+        }
+        .impact-section {
+            background-color: #e8f5e8;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+            border-left: 4px solid #4caf50;
+        }
+        .impact-stats {
+            display: flex;
+            justify-content: space-around;
+            text-align: center;
+            margin: 15px 0;
+        }
+        .stat-item {
+            flex: 1;
+        }
+        .stat-number {
+            font-size: 24px;
+            font-weight: bold;
+            color: #2e7d32;
+        }
+        .stat-label {
+            font-size: 12px;
+            color: #555;
+            text-transform: uppercase;
+        }
+        .follow-section {
+            background-color: #fff3e0;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+            text-align: center;
+        }
+        .footer {
+            text-align: center;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #ddd;
+            color: #666;
+            font-size: 14px;
+        }
+        .button {
+            display: inline-block;
+            background-color: #28a745;
+            color: white;
+            padding: 12px 30px;
+            text-decoration: none;
+            border-radius: 5px;
+            margin: 15px 10px;
+            font-weight: bold;
+        }
+        .social-icons {
+            margin: 20px 0;
+        }
+        .feedback-section {
+            background-color: #f0f8ff;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            {% if business_logo %}
+                <img src="{{ business_logo }}" alt="{{ business_name }} Logo" class="logo">
+            {% endif %}
+            <h1 class="title">🎉 Thank You!</h1>
+            <p class="subtitle">Your order has been completed successfully</p>
+        </div>
+
+        <div class="thank-you-message">
+            <h2 style="margin: 0 0 15px 0; font-size: 22px;">Thank you for choosing {{ business_name }}!</h2>
+            <p style="margin: 0; font-size: 16px;">We appreciate your commitment to reducing food waste and supporting sustainable practices.</p>
+        </div>
+
+        <p>Hi {{ customer_name }},</p>
+        
+        <p>We hope you enjoyed your pickup experience! Your order has been completed successfully, and we're thrilled that you've joined us in the fight against food waste.</p>
+
+        <div class="order-summary">
+            <h3>📋 Order Summary</h3>
+            <div class="detail-row">
+                <span class="detail-label">Item:</span>
+                <span class="detail-value">{{ food_listing_name }}</span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">Quantity:</span>
+                <span class="detail-value">{{ total_quantity }}</span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">Confirmation Code:</span>
+                <span class="detail-value">{{ confirmation_code }}</span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">Pickup Time:</span>
+                <span class="detail-value">{{ pickup_time }}</span>
+            </div>
+            {% if food_listing_description %}
+            <div class="detail-row">
+                <span class="detail-label">Description:</span>
+                <span class="detail-value">{{ food_listing_description }}</span>
+            </div>
+            {% endif %}
+        </div>
+
+        <div class="impact-section">
+            <h3>🌱 Your Environmental Impact</h3>
+            <p>{{ sustainability_message }}</p>
+            
+            <div class="impact-stats">
+                <div class="stat-item">
+                    <div class="stat-number">{{ total_quantity }}</div>
+                    <div class="stat-label">Items Rescued</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">1</div>
+                    <div class="stat-label">Business Supported</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">🌍</div>
+                    <div class="stat-label">Planet Helped</div>
+                </div>
+            </div>
+            
+            <p style="font-size: 14px; color: #555; text-align: center; margin: 10px 0 0 0;">
+                Every purchase makes a difference in reducing food waste!
+            </p>
+        </div>
+
+        <div class="follow-section">
+            <h3>🔔 Stay Connected</h3>
+            <p>{{ invite_back_message }}</p>
+            <a href="#" class="button">Follow {{ business_name }}</a>
+            <p style="font-size: 14px; color: #666; margin: 10px 0 0 0;">
+                Get notified about new surplus food opportunities and special offers!
+            </p>
+        </div>
+
+        <div class="feedback-section">
+            <h3>💬 We'd Love Your Feedback</h3>
+            <p>How was your pickup experience? Your feedback helps us improve our service and helps other customers discover great food!</p>
+            <a href="#" class="button" style="background-color: #2196f3;">Leave a Review</a>
+        </div>
+
+        {% if customer_notes %}
+        <div style="background-color: #f0f8ff; padding: 15px; border-radius: 8px; margin: 20px 0;">
+            <strong>Your Original Notes:</strong> {{ customer_notes }}
+        </div>
+        {% endif %}
+
+        {% if business_notes %}
+        <div style="background-color: #fff9e6; padding: 15px; border-radius: 8px; margin: 20px 0;">
+            <strong>Message from {{ business_name }}:</strong> {{ business_notes }}
+        </div>
+        {% endif %}
+
+        <p>Thank you once again for being part of the Save n Bite community. Together, we're making a real difference in reducing food waste and supporting local businesses!</p>
+
+        <div class="footer">
+            <h4>{{ business_name }}</h4>
+            <p>{{ business_address }}</p>
+            <p>📞 {{ business_contact }}</p>
+            
+            <div style="margin: 20px 0; padding: 20px 0; border-top: 1px solid #eee;">
+                <p><strong>About Save n Bite</strong></p>
+                <p style="font-size: 13px; color: #666;">
+                    Save n Bite connects surplus food from local businesses with conscious consumers, 
+                    reducing food waste while making quality food more accessible. Every transaction 
+                    contributes to a more sustainable food system.
+                </p>
+            </div>
+            
+            <p style="font-size: 12px; margin-top: 20px; color: #999;">
+                This is an automated message from Save n Bite. Please do not reply to this email.
+                <br>If you have questions about your order, please contact {{ business_name }} directly.
+            </p>
+        </div>
+    </div>
+</body>
+</html>

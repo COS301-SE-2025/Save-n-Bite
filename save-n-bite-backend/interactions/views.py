@@ -12,6 +12,7 @@ from django.conf import settings
 from datetime import timedelta
 from .models import Cart, CartItem, Interaction, Order, Payment, InteractionItem, InteractionStatusHistory, CheckoutSession
 from food_listings.models import FoodListing
+from notifications.services import NotificationService
 from decimal import Decimal, ROUND_HALF_UP
 from .serializers import (
     CartResponseSerializer,
@@ -26,6 +27,9 @@ from .serializers import (
 )
 from django.db import transaction as db_transaction
 import uuid
+import logging
+
+logger = logging.getLogger(__name__)
 
 class CartView(APIView):
     permission_classes = [IsAuthenticated]
@@ -1054,16 +1058,231 @@ class CompleteCheckoutView(APIView):
                 status=status.HTTP_400_BAD_REQUEST
             )
         
+class DonationRequestView(APIView):
+    permission_classes = [IsAuthenticated]
 
-class NGODonationRequestsView(generics.ListAPIView):
-    serializer_class = InteractionSerializer
-    permission_classes = [permissions.IsAuthenticated]
+    def post(self, request):
+        # Verify NGO status
+        if request.user.user_type != 'ngo':
+            return Response(
+                {'error': 'Only NGOs can request donations.'}, 
+                status=status.HTTP_403_FORBIDDEN
+            )
 
-    def get_queryset(self):
-        user = self.request.user
-        if not hasattr(user, 'ngo_profile'):
-            return Interaction.objects.none()  # No access if not an NGO
+        data = request.data
+        food_listing = get_object_or_404(FoodListing, id=data.get("listingId"))
+        requested_quantity = data.get("quantity", 1)  # Default to 1 if not specified
 
-        return Interaction.objects.filter(
-            user=user
-        ).order_by('-created_at')
+        # Validate requested quantity
+        if requested_quantity <= 0:
+            return Response(
+                {'error': 'Quantity must be at least 1.'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # Check available quantity
+        if requested_quantity > food_listing.quantity_available:
+            return Response(
+                {
+                    'error': 'Requested quantity exceeds available amount.',
+                    'available_quantity': food_listing.quantity_available,
+                    'requested_quantity': requested_quantity
+                },
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        provider_profile = food_listing.provider.provider_profile
+
+        with db_transaction.atomic():
+            # Create the interaction (status will be PENDING by default)
+            interaction = Interaction.objects.create(
+                user=request.user,
+                business=provider_profile,
+                interaction_type=Interaction.InteractionType.DONATION,
+                quantity=requested_quantity,
+                total_amount=0.00,  # Donations are free
+                special_instructions=data.get("specialInstructions", ""),
+                motivation_message=data.get("motivationMessage", ""),
+                verification_documents=data.get("verificationDocuments", [])
+            )
+
+            # Create interaction item
+            InteractionItem.objects.create(
+                interaction=interaction,
+                food_listing=food_listing,
+                name=food_listing.name,
+                quantity=requested_quantity,
+                price_per_item=0.00,
+                total_price=0.00,
+                expiry_date=food_listing.expiry_date,
+                image_url=food_listing.images[0] if food_listing.images else ''
+            )
+
+            # Create pending order
+            Order.objects.create(
+                interaction=interaction,
+                pickup_window=food_listing.pickup_window,
+                pickup_code=str(uuid.uuid4())[:6].upper(),
+                status=Order.Status.PENDING
+            )
+
+            # Send donation request notifications
+            try:
+                ngo_notification, business_notification = NotificationService.send_donation_request_notification(interaction)
+                
+                notification_status = {
+                    'ngo_notification_sent': ngo_notification is not None,
+                    'business_notification_sent': business_notification is not None
+                }
+                
+            except Exception as e:
+                # Log the error but don't fail the request
+                logger.error(f"Failed to send donation request notifications: {str(e)}")
+                notification_status = {
+                    'ngo_notification_sent': False,
+                    'business_notification_sent': False,
+                    'notification_error': str(e)
+                }
+
+        return Response(
+            {
+                'message': 'Donation request submitted successfully',
+                'interaction_id': str(interaction.id),
+                'requested_quantity': requested_quantity,
+                'available_quantity': food_listing.quantity_available,
+                'notifications': notification_status
+            },
+            status=status.HTTP_201_CREATED
+        )
+    
+class AcceptDonationView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, interaction_id):
+        interaction = get_object_or_404(
+            Interaction, 
+            id=interaction_id, 
+            business=request.user.provider_profile,
+            interaction_type=Interaction.InteractionType.DONATION
+        )
+
+        if interaction.status != Interaction.Status.PENDING:
+            return Response({
+                'error': 'Only pending donations can be accepted.'
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        with db_transaction.atomic():
+            # Get the food listing and quantity from the interaction item
+            interaction_item = interaction.items.first()  # Assuming one item per donation
+            food_listing = interaction_item.food_listing
+            requested_quantity = interaction_item.quantity
+
+            # Verify quantity is still available
+            if food_listing.quantity_available < requested_quantity:
+                return Response(
+                    {'error': f'Not enough quantity available for {food_listing.name}.'}, 
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+
+            # Reduce the quantity
+            food_listing.quantity_available -= requested_quantity
+            food_listing.save()
+
+            # Update interaction and order status
+            interaction.status = Interaction.Status.READY_FOR_PICKUP
+            interaction.save()
+
+            # Update associated order status
+            if hasattr(interaction, 'order'):
+                interaction.order.status = Order.Status.CONFIRMED
+                interaction.order.save()
+
+            # Send acceptance notifications
+            try:
+                notification = NotificationService.send_donation_response_notification(
+                    interaction=interaction,
+                    response_type='accepted'
+                )
+                
+                notification_status = {
+                    'notification_sent': notification is not None,
+                    'notification_id': str(notification.id) if notification else None
+                }
+                
+            except Exception as e:
+                # Log the error but don't fail the acceptance
+                logger.error(f"Failed to send donation acceptance notifications: {str(e)}")
+                notification_status = {
+                    'notification_sent': False,
+                    'notification_error': str(e)
+                }
+
+        return Response(
+            {
+                'message': 'Donation accepted and marked as ready for pickup',
+                'interaction_id': str(interaction.id),
+                'status': interaction.status,
+                'pickup_code': interaction.order.pickup_code if hasattr(interaction, 'order') else None,
+                'notifications': notification_status
+            }, 
+            status=status.HTTP_200_OK
+        )
+    
+class RejectDonationView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, interaction_id):
+        interaction = get_object_or_404(
+            Interaction, 
+            id=interaction_id, 
+            business=request.user.provider_profile,
+            interaction_type=Interaction.InteractionType.DONATION
+        )
+
+        if interaction.status != Interaction.Status.PENDING:
+            return Response({
+                'error': 'Only pending donations can be rejected.'
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        rejection_reason = request.data.get('rejectionReason', '')
+        
+        with db_transaction.atomic():
+            # Update interaction status
+            interaction.status = Interaction.Status.REJECTED
+            if hasattr(interaction, 'rejection_reason'):
+                interaction.rejection_reason = rejection_reason
+            interaction.save()
+
+            # Update associated order status
+            if hasattr(interaction, 'order'):
+                interaction.order.status = Order.Status.CANCELLED
+                interaction.order.save()
+
+            # Send rejection notifications
+            try:
+                notification = NotificationService.send_donation_response_notification(
+                    interaction=interaction,
+                    response_type='rejected',
+                    rejection_reason=rejection_reason
+                )
+                
+                notification_status = {
+                    'notification_sent': notification is not None,
+                    'notification_id': str(notification.id) if notification else None
+                }
+                
+            except Exception as e:
+                # Log the error but don't fail the rejection
+                logger.error(f"Failed to send donation rejection notifications: {str(e)}")
+                notification_status = {
+                    'notification_sent': False,
+                    'notification_error': str(e)
+                }
+
+        return Response({
+            'message': 'Donation request rejected',
+            'interaction_id': str(interaction.id),
+            'status': interaction.status,
+            'rejection_reason': rejection_reason,
+            'notifications': notification_status
+        }, status=status.HTTP_200_OK)

@@ -330,13 +330,14 @@ const handleCheckout = async (paymentDetails) => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 w-full py-8">
+<div className="min-h-screen bg-gray-50 dark:bg-gray-900 w-full py-8 transition-colors duration-300">
+
         <CustomerNavBar />
-        <div className="max-w-4xl mx-auto px-4">
+        <div className="max-w-4xl mx-auto px-4 pt-4">
           <div className="flex items-center justify-center min-h-[60vh]">
             <div className="text-center">
               <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-600 mx-auto mb-4"></div>
-              <p className="text-gray-600">Loading cart...</p>
+              <p className="text-gray-600 dark:text-gray-300">Loading cart...</p>
             </div>
           </div>
         </div>
@@ -346,10 +347,11 @@ const handleCheckout = async (paymentDetails) => {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-gray-50 w-full py-8">
-        <CustomerNavBar />
-        <div className="max-w-4xl mx-auto px-4">
-          <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-md">
+<div className="min-h-screen bg-gray-50 dark:bg-gray-900 w-full py-8 transition-colors duration-300">
+  <CustomerNavBar />
+  <div className="max-w-4xl mx-auto px-4 pt-4">
+    <div className="bg-red-50 dark:bg-red-900 border border-red-200 dark:border-red-800 text-red-600 dark:text-red-300 px-4 py-3 rounded-md">
+
             <p className="font-medium">Error loading cart</p>
             <p className="text-sm">{error}</p>
             <button 
@@ -368,71 +370,85 @@ const handleCheckout = async (paymentDetails) => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 w-full py-8">
-      <CustomerNavBar />
-      <div className="max-w-4xl mx-auto px-4">
-        <h1 className="text-2xl font-bold mb-8 text-gray-800">Your Cart</h1>
-        
-        {cartItems.length === 0 ? (
-          <div className="text-center py-12">
-            <ShoppingCartIcon size={48} className="mx-auto text-gray-400 mb-4" />
-            <p className="text-xl text-gray-600 mb-4">Your cart is empty</p>
-            <Link to="/food-listing" className="inline-block px-6 py-3 bg-emerald-600 text-white rounded-md hover:bg-emerald-700 transition-colors">
+<div className="bg-gray-50 dark:bg-gray-900 min-h-screen w-full transition-colors duration-300">
+  <CustomerNavBar />
+  <div className="container-responsive max-w-4xl mx-auto px-4 pt-4 sm:pt-6">
+    <h1 className="text-xl sm:text-2xl font-bold mb-6 sm:mb-8 text-gray-800 dark:text-gray-100">Your Cart</h1>
+    
+    {cartItems.length === 0 ? (
+      <div className="text-center py-8 sm:py-12">
+        <ShoppingCartIcon size={40} className="sm:w-12 sm:h-12 mx-auto text-gray-400 dark:text-gray-600 mb-3 sm:mb-4" />
+        <p className="text-lg sm:text-xl text-gray-600 dark:text-gray-300 mb-3 sm:mb-4">Your cart is empty</p>
+        <Link
+          to="/food-listing"
+          className="inline-block px-4 sm:px-6 py-2 sm:py-3 bg-emerald-600 text-white rounded-md hover:bg-emerald-700 dark:bg-emerald-700 dark:hover:bg-emerald-800 transition-colors text-sm sm:text-base touch-target"
+        >
               Browse Food
             </Link>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div className="md:col-span-2">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-8">
+            <div className="lg:col-span-2">
               {cartItems.map(item => {
                 const listingId = item.food_listing_id || item.listingId || item.listing_id || item.id;
                 const itemSlots = selectedItemSlots[listingId] || [];
                 
                 return (
-                  <div key={item.id} className="bg-white rounded-lg shadow-sm p-4 mb-4">
-                    <div className="flex items-center">
+<div
+  key={item.id}
+  className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-3 sm:p-4 mb-3 sm:mb-4 card-responsive transition-colors duration-300"
+>
+  <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4">
+
                       <img 
                         src={item.image} 
                         alt={item.name} 
-                        className="w-20 h-20 object-cover rounded-md" 
+                        className="w-16 h-16 sm:w-20 sm:h-20 object-cover rounded-md flex-shrink-0" 
                       />
-                      <div className="ml-4 flex-grow">
-                        <h3 className="font-semibold text-gray-800">
-                          {item.name}
-                        </h3>
-                        <p className="text-sm text-gray-600">{item.provider?.business_name}</p>
-                        <p className="text-emerald-600 font-semibold mt-1">
+<div className="flex-grow min-w-0">
+  <h3 className="font-semibold text-gray-800 dark:text-gray-100 text-sm sm:text-base">
+    {item.name}
+  </h3>
+  <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-300">
+    {item.provider?.business_name}
+  </p>
+  <p className="text-emerald-600 dark:text-emerald-400 font-semibold mt-1 text-sm sm:text-base">
+
                           R{item.price.toFixed(2)}
                         </p>
                         {/* Show available slots for this item */}
-                        <p className="text-xs text-gray-500 mt-1">
+                        <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                           {itemSlots.length > 0 
                             ? `${itemSlots.length} pickup slots available`
                             : 'No pickup slots available'
                           }
                         </p>
                       </div>
-                      <div className="flex items-center">
-                        <button 
-                          onClick={() => updateQuantity(item.id, item.quantity - 1)} 
-                          className="px-2 py-1 border border-gray-300 rounded-l-md hover:bg-gray-50"
-                        >
-                          -
-                        </button>
-                        <span className="px-4 py-1 border-t border-b border-gray-300">
-                          {item.quantity}
-                        </span>
-                        <button 
-                          onClick={() => updateQuantity(item.id, item.quantity + 1)} 
-                          className="px-2 py-1 border border-gray-300 rounded-r-md hover:bg-gray-50"
-                        >
-                          +
-                        </button>
-                        <button 
-                          onClick={() => removeItem(item.id)} 
-                          className="ml-4 text-gray-400 hover:text-red-500"
-                        >
-                          <TrashIcon size={18} />
+<div className="flex items-center justify-between sm:justify-end gap-2 sm:gap-4">
+  <div className="flex items-center border border-gray-300 dark:border-gray-700 rounded-md">
+    <button 
+      onClick={() => updateQuantity(item.id, item.quantity - 1)} 
+      className="px-2 py-1 sm:px-3 sm:py-2 border-r border-gray-300 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 touch-target"
+    >
+      -
+    </button>
+    <span className="px-3 py-1 sm:px-4 sm:py-2 text-sm sm:text-base border-t border-b border-gray-300 dark:border-gray-700">
+      {item.quantity}
+    </span>
+    <button 
+      onClick={() => updateQuantity(item.id, item.quantity + 1)} 
+      className="px-2 py-1 sm:px-3 sm:py-2 border-l border-gray-300 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 touch-target"
+    >
+      +
+    </button>
+  </div>
+  <button 
+    onClick={() => removeItem(item.id)} 
+    className="text-gray-400 dark:text-gray-500 hover:text-red-500 touch-target p-1"
+  >
+
+                        
+                          <TrashIcon size={16} className="sm:w-5 sm:h-5" />
                         </button>
                       </div>
                     </div>
@@ -442,24 +458,24 @@ const handleCheckout = async (paymentDetails) => {
             </div>
 
             <div className="md:col-span-1">
-              <div className="bg-white rounded-lg shadow-sm p-6">
-                <h2 className="text-lg font-semibold mb-4">Order Summary</h2>
+              <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6 transition-colors duration-300">
+                <h2 className="text-lg font-semibold mb-4 text-gray-800 dark:text-gray-100">Order Summary</h2>
                 <div className="space-y-2 mb-4">
                   {cartItems.map(item => (
                     <div key={item.id} className="flex justify-between text-sm">
-                      <span className="text-gray-600">
+                      <span className="text-gray-600 dark:text-gray-300">
                         {item.name} (x{item.quantity})
                       </span>
-                      <span className="text-gray-800">
+                      <span className="text-gray-800 dark:text-gray-100">
                         R{(item.price * item.quantity).toFixed(2)}
                       </span>
                     </div>
                   ))}
                 </div>
-                <div className="border-t border-gray-200 pt-4 mb-6">
+                <div className="border-t border-gray-200 dark:border-gray-700 pt-4 mb-6">
                   <div className="flex justify-between">
-                    <span className="font-semibold">Total</span>
-                    <span className="font-semibold text-emerald-600">
+                    <span className="font-semibold text-gray-800 dark:text-gray-100">Total</span>
+                    <span className="font-semibold text-emerald-600 dark:text-emerald-400">
                       R{total.toFixed(2)}
                     </span>
                   </div>
@@ -467,20 +483,20 @@ const handleCheckout = async (paymentDetails) => {
 
                 {/* Pickup Time Selection */}
                 <div className="mb-6">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                     <ClockIcon size={16} className="inline mr-1" />
                     Select Pickup Time
                   </label>
                   {slotsLoading ? (
                     <div className="flex items-center justify-center py-4">
                       <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-emerald-600"></div>
-                      <span className="ml-2 text-sm text-gray-600">Loading available times...</span>
+                      <span className="ml-2 text-sm text-gray-600 dark:text-gray-300">Loading available times...</span>
                     </div>
                   ) : (
                     <select
                       value={selectedTimeSlot}
                       onChange={(e) => setSelectedTimeSlot(e.target.value)}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                      className="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-100"
                       required
                     >
                       <option value="">Choose a time slot...</option>
@@ -492,14 +508,14 @@ const handleCheckout = async (paymentDetails) => {
                     </select>
                   )}
                   {selectedTimeSlot && (
-                    <div className="text-xs text-gray-500 mt-2 p-2 bg-gray-50 rounded">
+                    <div className="text-xs text-gray-500 dark:text-gray-400 mt-2 p-2 bg-gray-50 dark:bg-gray-700 rounded">
                       <p><strong>Location:</strong> {timeSlots.find(s => s.value === selectedTimeSlot)?.location?.address}</p>
                       <p><strong>Contact:</strong> {timeSlots.find(s => s.value === selectedTimeSlot)?.location?.contact_person}</p>
                       <p><strong>Instructions:</strong> {timeSlots.find(s => s.value === selectedTimeSlot)?.location?.instructions}</p>
                     </div>
                   )}
                   {timeSlots.length === 0 && !slotsLoading && (
-                    <p className="text-xs text-orange-600 mt-1">
+                    <p className="text-xs text-orange-600 dark:text-orange-400 mt-1">
                       No pickup slots available for items in cart.
                     </p>
                   )}
@@ -507,14 +523,14 @@ const handleCheckout = async (paymentDetails) => {
 
                 <button 
                   onClick={handleProceedToPayment} 
-                  className="w-full py-3 bg-emerald-600 text-white rounded-md hover:bg-emerald-700 transition-colors flex items-center justify-center disabled:bg-gray-400 disabled:cursor-not-allowed"
+                  className="w-full py-3 bg-emerald-600 text-white rounded-md hover:bg-emerald-700 dark:bg-emerald-700 dark:hover:bg-emerald-800 transition-colors flex items-center justify-center disabled:bg-gray-400 dark:disabled:bg-gray-700 disabled:cursor-not-allowed"
                   disabled={!selectedTimeSlot || slotsLoading}
                 >
                   <CreditCardIcon size={20} className="mr-2" />
                   Proceed to Payment
                 </button>
                 {!selectedTimeSlot && (
-                  <p className="text-xs text-red-500 mt-1 text-center">
+                  <p className="text-xs text-red-500 dark:text-red-400 mt-1 text-center">
                     Please select a pickup time to continue
                   </p>
                 )}
@@ -524,16 +540,16 @@ const handleCheckout = async (paymentDetails) => {
         )}
 
         {showPayment && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4">
-            <div className="bg-white rounded-lg p-6 max-w-md w-full">
-              <h2 className="text-xl font-semibold mb-4">Payment Details</h2>
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+            <div className="bg-white dark:bg-gray-800 rounded-lg p-6 max-w-md w-full transition-colors duration-300">
+              <h2 className="text-xl font-semibold mb-4 text-gray-800 dark:text-gray-100">Payment Details</h2>
               {selectedTimeSlot && (
-                <div className="mb-4 p-3 bg-emerald-50 border border-emerald-200 rounded-md">
-                  <p className="text-sm text-emerald-800">
+                <div className="mb-4 p-3 bg-emerald-50 dark:bg-emerald-900 border border-emerald-200 dark:border-emerald-800 rounded-md">
+                  <p className="text-sm text-emerald-800 dark:text-emerald-200">
                     <ClockIcon size={14} className="inline mr-1" />
                     Pickup: {timeSlots.find(slot => slot.value === selectedTimeSlot)?.label}
                   </p>
-                  <p className="text-xs text-emerald-700 mt-1">
+                  <p className="text-xs text-emerald-700 dark:text-emerald-300 mt-1">
                     {timeSlots.find(slot => slot.value === selectedTimeSlot)?.location?.address}
                   </p>
                 </div>
@@ -551,38 +567,38 @@ const handleCheckout = async (paymentDetails) => {
                 className="space-y-4"
               >
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                     Card Number
                   </label>
                   <input 
                     type="text" 
                     name="card_number"
-                    className="w-full px-4 py-2 border border-gray-300 rounded-md" 
+                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-100" 
                     placeholder="1234 5678 9012 3456" 
                     required
                   />
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                       Expiry Date
                     </label>
                     <input 
                       type="text" 
                       name="expiry_date"
-                      className="w-full px-4 py-2 border border-gray-300 rounded-md" 
+                      className="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-100" 
                       placeholder="MM/YY" 
                       required
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                       CVV
                     </label>
                     <input 
                       type="text" 
                       name="cvv"
-                      className="w-full px-4 py-2 border border-gray-300 rounded-md" 
+                      className="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-100" 
                       placeholder="123" 
                       required
                     />
@@ -590,14 +606,14 @@ const handleCheckout = async (paymentDetails) => {
                 </div>
                 <button 
                   type="submit" 
-                  className="w-full py-3 bg-emerald-600 text-white rounded-md hover:bg-emerald-700 transition-colors"
+                  className="w-full py-3 bg-emerald-600 text-white rounded-md hover:bg-emerald-700 dark:bg-emerald-700 dark:hover:bg-emerald-800 transition-colors"
                 >
                   Pay R{total.toFixed(2)}
                 </button>
                 <button 
                   type="button" 
                   onClick={() => setShowPayment(false)} 
-                  className="w-full py-3 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors"
+                  className="w-full py-3 border border-gray-300 dark:border-gray-700 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
                 >
                   Cancel
                 </button>

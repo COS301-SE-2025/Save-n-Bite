@@ -182,6 +182,8 @@ class NGOProfile(models.Model):
     def __str__(self):
         return f"NGO: {self.organisation_name}"
 
+# authentication/models.py - Add these fields to your existing FoodProviderProfile
+
 class FoodProviderProfile(models.Model):
     STATUS_CHOICES = [
         ('pending_verification', 'Pending Verification'),
@@ -189,6 +191,7 @@ class FoodProviderProfile(models.Model):
         ('rejected', 'Rejected'),
     ]
     
+    # Existing fields (keep these unchanged)
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='provider_profile', db_column='user_id', to_field='UserID')
     business_name = models.CharField(max_length=255)
     business_address = models.TextField()
@@ -198,8 +201,216 @@ class FoodProviderProfile(models.Model):
     logo = models.ImageField(upload_to='provider_logos/', null=True, blank=True)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending_verification')
     
+    # Existing location fields
+    latitude = models.DecimalField(max_digits=10, decimal_places=8, null=True, blank=True)
+    longitude = models.DecimalField(max_digits=11, decimal_places=8, null=True, blank=True)
+    geocoded_at = models.DateTimeField(null=True, blank=True)
+    geocoding_failed = models.BooleanField(default=False)
+    geocoding_error = models.TextField(blank=True)
+    
+    # Existing optional business info
+    business_hours = models.CharField(max_length=255, blank=True, help_text="e.g., 'Mon-Fri: 9AM-6PM'")
+    phone_number = models.CharField(max_length=20, blank=True)
+    website = models.URLField(blank=True)
+    
+    # NEW FIELDS - Add these to your model
+    banner = models.ImageField(
+        upload_to='provider_banners/', 
+        null=True, 
+        blank=True,
+        help_text="Banner image for business profile page (recommended size: 1200x400px)"
+    )
+    
+    business_description = models.TextField(
+        max_length=1000,  # Appropriate length for business descriptions
+        blank=True,
+        help_text="Tell customers about your business, cuisine, values, or specialties"
+    )
+    
+    business_tags = models.JSONField(
+        default=list,
+        blank=True,
+        help_text="Custom tags to describe your business (e.g., ['Bakery', 'Vegan Options', 'Organic'])"
+    )
+    
+    # Additional tracking fields for the new features
+    banner_updated_at = models.DateTimeField(null=True, blank=True)
+    description_updated_at = models.DateTimeField(null=True, blank=True)
+    tags_updated_at = models.DateTimeField(null=True, blank=True)
+    
     class Meta:
         db_table = 'authentication_foodproviderprofile'
     
     def __str__(self):
         return f"Provider: {self.business_name}"
+    
+    def save(self, *args, **kwargs):
+        from django.utils import timezone
+        
+        # Track when new features are updated
+        if self.pk:  # Only for existing instances
+            try:
+                old_instance = FoodProviderProfile.objects.get(pk=self.pk)
+                
+                # Check if banner was updated
+                if old_instance.banner != self.banner:
+                    self.banner_updated_at = timezone.now()
+                
+                # Check if description was updated
+                if old_instance.business_description != self.business_description:
+                    self.description_updated_at = timezone.now()
+                
+                # Check if tags were updated
+                if old_instance.business_tags != self.business_tags:
+                    self.tags_updated_at = timezone.now()
+                    
+            except FoodProviderProfile.DoesNotExist:
+                pass
+        
+        # Auto-geocode address when saving if coordinates are missing
+        if self.business_address and (not self.latitude or not self.longitude):
+            self.geocode_address()
+        
+        super().save(*args, **kwargs)
+    
+    def geocode_address(self):
+        """
+        Free geocoding using Nominatim (OpenStreetMap's service)
+        NO API KEY REQUIRED!
+        """
+        from django.utils import timezone
+        import requests
+        import logging
+        import time
+        
+        logger = logging.getLogger(__name__)
+        
+        try:
+            # Use Nominatim - completely free geocoding service
+            base_url = 'https://nominatim.openstreetmap.org/search'
+            params = {
+                'q': self.business_address,
+                'format': 'json',
+                'countrycodes': 'za',  # Restrict to South Africa
+                'limit': 1,
+                'addressdetails': 1
+            }
+            
+            # Required User-Agent header for Nominatim
+            headers = {
+                'User-Agent': 'SaveNBite/1.0 (savenbite@gmail.com)'
+            }
+            
+            response = requests.get(base_url, params=params, headers=headers, timeout=10)
+            data = response.json()
+            
+            if data and len(data) > 0:
+                result = data[0]
+                self.latitude = float(result['lat'])
+                self.longitude = float(result['lon'])
+                self.geocoded_at = timezone.now()
+                self.geocoding_failed = False
+                self.geocoding_error = ''
+                
+                logger.info(f"Successfully geocoded {self.business_name}: {self.latitude}, {self.longitude}")
+                
+                # Respect Nominatim rate limit (1 request per second)
+                time.sleep(1)
+                
+            else:
+                self.geocoding_failed = True
+                self.geocoding_error = "No results found for address"
+                logger.warning(f"No geocoding results for {self.business_name}")
+                
+        except Exception as e:
+            self.geocoding_failed = True
+            self.geocoding_error = f"Geocoding error: {str(e)}"
+            logger.error(f"Geocoding exception for {self.business_name}: {str(e)}")
+    
+    @property
+    def coordinates(self):
+        """Return coordinates for Leaflet maps"""
+        if self.latitude and self.longitude:
+            return {
+                'lat': float(self.latitude),
+                'lng': float(self.longitude)
+            }
+        return None
+    
+    @property
+    def openstreetmap_url(self):
+        """Generate OpenStreetMap URL for directions"""
+        if self.coordinates:
+            return f"https://www.openstreetmap.org/directions?from=&to={self.latitude},{self.longitude}"
+        elif self.business_address:
+            from urllib.parse import quote
+            return f"https://www.openstreetmap.org/search?query={quote(self.business_address)}"
+        return None
+    
+    # NEW METHODS for business tags functionality
+    def add_tag(self, tag):
+        """Add a business tag if it doesn't already exist"""
+        if not isinstance(self.business_tags, list):
+            self.business_tags = []
+        
+        tag = tag.strip().title()  # Standardize formatting
+        if tag and tag not in self.business_tags:
+            self.business_tags.append(tag)
+            self.save()
+            return True
+        return False
+    
+    def remove_tag(self, tag):
+        """Remove a business tag"""
+        if not isinstance(self.business_tags, list):
+            return False
+        
+        tag = tag.strip().title()
+        if tag in self.business_tags:
+            self.business_tags.remove(tag)
+            self.save()
+            return True
+        return False
+    
+    def get_tag_display(self):
+        """Get formatted tags for display"""
+        if not isinstance(self.business_tags, list):
+            return []
+        return [tag.strip().title() for tag in self.business_tags if tag.strip()]
+    
+    @classmethod
+    def get_popular_tags(cls, limit=20):
+        """Get most popular business tags across all providers"""
+        from django.db.models import Q
+        from collections import Counter
+        
+        # Get all tags from verified providers
+        providers = cls.objects.filter(status='verified').exclude(business_tags__isnull=True)
+        
+        all_tags = []
+        for provider in providers:
+            if isinstance(provider.business_tags, list):
+                all_tags.extend([tag.strip().title() for tag in provider.business_tags if tag.strip()])
+        
+        # Count and return most popular
+        tag_counts = Counter(all_tags)
+        return [{'tag': tag, 'count': count} for tag, count in tag_counts.most_common(limit)]
+    
+    def has_complete_profile(self):
+        """Check if business profile is complete with new fields"""
+        required_fields = [
+            self.business_name,
+            self.business_email,
+            self.business_address,
+            self.business_contact
+        ]
+        
+        # Check if core fields are filled
+        if not all(required_fields):
+            return False
+        
+        # Consider profile more complete if they have description and tags
+        has_description = bool(self.business_description and self.business_description.strip())
+        has_tags = bool(self.business_tags and len(self.business_tags) > 0)
+        
+        return has_description or has_tags  # At least one should be filled for a "complete" profile

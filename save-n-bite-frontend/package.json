@@ -3,7 +3,6 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
-    "@esbuild/linux-x64": "^0.25.6",
     "axios": "^1.9.0",
     "esbuild": "^0.25.6",
     "framer-motion": "^12.19.1",
@@ -12,7 +11,12 @@
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-router-dom": "^6.13.0",
-    "recharts": "^3.0.0"
+    "recharts": "^3.0.0",
+    "sonner": "^2.0.6",
+    "leaflet": "^1.9.4",
+    "react-leaflet": "^4.2.1",
+     "react-is": "^18.2.0"
+
   },
   "scripts": {
     "dev": "vite",
@@ -40,9 +44,11 @@
     "jest": "^27.5.1",
     "jest-environment-jsdom": "^27.5.1",
     "jest-transform-stub": "^2.0.0",
+    "leaflet": "^1.9.4",
     "postcss": "^8.0.0",
+    "react-leaflet": "^4.2.1",
     "tailwindcss": "^3.4.17",
-    "vite": "^4.5.14"
+    "vite": "^4.4.0"
   },
   "eslintConfig": {
     "extends": [

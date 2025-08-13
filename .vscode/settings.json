@@ -1,6 +1,9 @@
 {
-    "workbench.colorTheme": "Night Pink",
+
+
+    "workbench.colorTheme": "Default Dark Modern",
     "python.pythonPath": "venv/bin/python",
     "python.analysis.extraPaths": ["venv/lib/python3.12/site-packages"],
     "python.linting.pylintEnabled": true
+
 }

@@ -18,6 +18,8 @@ from .models import (
 from food_listings.models import FoodListing
 from interactions.models import Order
 
+from notifications.services import NotificationService
+
 # Import services
 from .services import PickupSchedulingService, PickupOptimizationService, PickupAnalyticsService
 
@@ -478,6 +480,13 @@ def complete_pickup(request, pickup_id):
         
         completed_pickup = PickupSchedulingService.complete_pickup(pickup)
         
+        # NEW: Send order completion notification
+        try:
+            NotificationService.send_order_completion_notification(completed_pickup)
+        except Exception as e:
+            logger.error(f"Failed to send order completion notification: {str(e)}")
+            # Don't fail the request if notification fails
+        
         # Create simple response to avoid serializer issues
         return Response({
             'message': 'Pickup completed successfully',
@@ -604,6 +613,13 @@ def schedule_pickup(request):
                 order, serializer.validated_data
             )
             
+            # NEW: Send order preparation notification
+            try:
+                NotificationService.send_order_preparation_notification(scheduled_pickup)
+            except Exception as e:
+                logger.error(f"Failed to send order preparation notification: {str(e)}")
+                # Don't fail the request if notification fails
+            
             # Return simple response without using the problematic serializer
             return Response({
                 'message': 'Pickup scheduled successfully',
@@ -650,11 +666,11 @@ def schedule_pickup(request):
 @permission_classes([IsAuthenticated])
 def customer_pickups(request):
     """Get customer's scheduled pickups"""
-    if request.user.user_type != 'customer':
+    if request.user.user_type not in ['customer', 'ngo']:
         return Response({
             'error': {
                 'code': 'FORBIDDEN',
-                'message': 'Only customers can view their pickups'
+                'message': 'Only customers and NGOs can view their pickups'
             }
         }, status=status.HTTP_403_FORBIDDEN)
 
@@ -799,7 +815,7 @@ def pickup_details(request, pickup_id):
         }, status=status.HTTP_404_NOT_FOUND)
 
 
-@api_view(['POST'])
+@api_view(['DELETE'])
 @permission_classes([IsAuthenticated])
 def cancel_pickup(request, pickup_id):
     """Cancel a scheduled pickup"""

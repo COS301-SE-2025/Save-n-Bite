@@ -1,6 +1,8 @@
 import axios from 'axios';
 
-const API_BASE_URL = 'http://localhost:8000';
+// const API_BASE_URL = process.env.REACT_APP_API_URL || 'https://savenbiteservice-hzghg8gcgddtcfg7.southafricanorth-01.azurewebsites.net';
+
+const API_BASE_URL = 'http://localhost:8000' ;
 
 const apiClient = axios.create({
     baseURL: API_BASE_URL,
@@ -8,6 +10,35 @@ const apiClient = axios.create({
         'Content-Type': 'application/json',
     },
 });
+
+apiClient.interceptors.request.use(
+    (config) => {
+        const token = localStorage.getItem('authToken') || localStorage.getItem('access_token');
+        if (token) {
+            config.headers.Authorization = `Bearer ${token}`;
+        }
+        return config;
+    },
+    (error) => {
+        return Promise.reject(error);
+    }
+);
+
+// COMPLETELY REMOVED automatic logout/redirect logic
+// Let components handle their own authentication errors
+apiClient.interceptors.response.use(
+    (response) => {
+        return response;
+    },
+    (error) => {
+        // Just log errors for debugging, no automatic actions
+        if (error.response?.status === 401) {
+            console.log('401 response received for:', error.config?.url);
+        }
+        
+        return Promise.reject(error);
+    }
+);
 
 // Helper function to transform frontend form data to backend format
 const transformFormData = (formData, userType) => {
@@ -37,7 +68,10 @@ const transformFormData = (formData, userType) => {
                 business_postal_code: formData.zipCode,
                 cipc_document: formData.cipcDocument || '',
                 logo: formData.logo || '',
-                user_type: 'provider'  // Add user_type explicitly
+                user_type: 'provider',  // Add user_type explicitly
+                banner: formData.banner || '',
+                business_description: formData.businessDescription || '',
+                business_tags: formData.businessTags || []
             };
 
         case 'ngo':
@@ -58,7 +92,6 @@ const transformFormData = (formData, userType) => {
                 npo_document: formData.npoDocument || '',
                 organisation_logo: formData.logo || '',
             };
-
 
         default:
             return formData;
@@ -190,6 +223,4 @@ export const authAPI = {
             throw new Error(error.message || 'Google sign-in failed');
         }
     },
-
 };
-

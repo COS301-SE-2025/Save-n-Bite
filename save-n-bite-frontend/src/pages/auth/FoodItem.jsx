@@ -151,12 +151,12 @@ const FoodItem = () => {
 
   if (loading) {
     return (
-      <div className="bg-gray-50 min-h-screen w-full">
+      <div className="bg-gray-50 dark:bg-gray-900 min-h-screen w-full">
         <CustomerNavBar />
         <div className="flex items-center justify-center min-h-[60vh]">
           <div className="text-center">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-600 mx-auto mb-4"></div>
-            <p className="text-gray-600">Loading food item details...</p>
+            <p className="text-gray-600 dark:text-gray-300">Loading food item details...</p>
           </div>
         </div>
       </div>
@@ -165,10 +165,10 @@ const FoodItem = () => {
 
   if (error) {
     return (
-      <div className="bg-gray-50 min-h-screen w-full">
+      <div className="bg-gray-50 dark:bg-gray-900 min-h-screen w-full">
         <CustomerNavBar />
         <div className="max-w-6xl mx-auto p-4 md:p-6">
-          <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-md">
+          <div className="bg-red-50 dark:bg-red-900 border border-red-200 dark:border-red-700 text-red-600 dark:text-red-300 px-4 py-3 rounded-md">
             <p className="font-medium">Error loading food item</p>
             <p className="text-sm">{error}</p>
             <button 
@@ -185,15 +185,15 @@ const FoodItem = () => {
 
   if (!item) {
     return (
-      <div className="bg-gray-50 min-h-screen w-full">
+      <div className="bg-gray-50 dark:bg-gray-900 min-h-screen w-full">
         <CustomerNavBar />
         <div className="max-w-6xl mx-auto p-4 md:p-6">
           <div className="text-center py-12">
-            <h2 className="text-2xl font-semibold text-gray-800 mb-4">Food Item Not Found</h2>
-            <p className="text-gray-600 mb-6">The food item you're looking for doesn't exist or has been removed</p>
+            <h2 className="text-2xl font-semibold text-gray-800 dark:text-gray-100 mb-4">Food Item Not Found</h2>
+            <p className="text-gray-600 dark:text-gray-300 mb-6">The food item you're looking for doesn't exist or has been removed</p>
             <button
               onClick={() => navigate('/food-listing')}
-              className="px-6 py-3 bg-emerald-600 text-white rounded-md hover:bg-emerald-700"
+              className="px-6 py-3 bg-emerald-600 text-white rounded-md hover:bg-emerald-700 dark:bg-emerald-700 dark:hover:bg-emerald-800"
             >
               Browse Food Items
             </button>
@@ -204,16 +204,16 @@ const FoodItem = () => {
   }
 
   return (
-    <div className="bg-gray-50 min-h-screen w-full">
+    <div className="bg-gray-50 dark:bg-gray-900 min-h-screen w-full">
       <CustomerNavBar/>
       <div className="max-w-6xl mx-auto p-4 md:p-6">
         <div className="mb-6">
-          <Link to="/food-listing" className="text-emerald-600 hover:text-emerald-700">
+          <Link to="/food-listing" className="text-emerald-600 dark:text-emerald-400 hover:text-emerald-700 dark:hover:text-emerald-300">
             &larr; Back to listings
           </Link>
         </div>
 
-        <div className="bg-white rounded-lg shadow-sm overflow-hidden">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm overflow-hidden">
           <div className="md:flex">
             {/* Food Image */}
             <div className="md:w-1/2">
@@ -236,7 +236,7 @@ const FoodItem = () => {
                   className={`absolute top-4 left-4 p-3 rounded-full shadow-lg transition-all duration-200 ${
                     isFollowing 
                       ? 'bg-red-500 text-white hover:bg-red-600' 
-                      : 'bg-white text-gray-600 hover:bg-gray-50 hover:text-red-500'
+                      : 'bg-white dark:bg-gray-900 text-gray-600 dark:text-gray-100 hover:bg-gray-50 dark:hover:bg-gray-700 hover:text-red-500'
                   } ${followLoading ? 'opacity-50 cursor-not-allowed' : 'hover:scale-105'}`}
                   title={isFollowing ? `Unfollow ${item.provider.businessName}` : `Follow ${item.provider.businessName}`}
                 >
@@ -306,19 +306,19 @@ const FoodItem = () => {
 
               <div className="space-y-4">
                 <div className="flex items-center space-x-4">
-                  <label className="text-sm font-medium text-gray-700">Quantity:</label>
-                  <div className="flex items-center border border-gray-300 rounded-md">
+                  <label className="text-sm font-medium text-gray-700 dark:text-gray-200">Quantity:</label>
+                  <div className="flex items-center border border-gray-300 dark:border-gray-700 rounded-md">
                     <button
                       onClick={() => handleQuantityChange(quantity - 1)}
-                      className="px-3 py-1 text-gray-600 hover:text-gray-800"
+                      className="px-3 py-1 text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-gray-100"
                       disabled={quantity <= 1}
                     >
                       -
                     </button>
-                    <span className="px-4 py-1">{quantity}</span>
+                    <span className="px-4 py-1 text-gray-800 dark:text-gray-100">{quantity}</span>
                     <button
                       onClick={() => handleQuantityChange(quantity + 1)}
-                      className="px-3 py-1 text-gray-600 hover:text-gray-800"
+                      className="px-3 py-1 text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-gray-100"
                       disabled={quantity >= item.quantity}
                     >
                       +
@@ -331,8 +331,8 @@ const FoodItem = () => {
                     onClick={handleAddToCart}
                     disabled={buttonStatus === "loading"}
                     className={`w-full py-3 ${
-                      buttonStatus === "added" ? "bg-emerald-800" : "bg-emerald-600"
-                    } text-white font-medium rounded-md hover:bg-emerald-700 transition-colors flex items-center justify-center`}
+                      buttonStatus === "added" ? "bg-emerald-800 dark:bg-emerald-900" : "bg-emerald-600 dark:bg-emerald-700"
+                    } text-white font-medium rounded-md hover:bg-emerald-700 dark:hover:bg-emerald-800 transition-colors flex items-center justify-center`}
                   >
                     <ShoppingCartIcon size={20} className="mr-2" />
                     {buttonStatus === "idle" && "Add to Cart"}
@@ -344,7 +344,14 @@ const FoodItem = () => {
             </div>
           </div>
 
-          <StoreLocation address={item.provider.address} />
+          <StoreLocation 
+          address={item.provider.address}
+          businessName={item.provider.businessName}
+          phone={item.provider.business_contact || item.provider.phone_number} 
+          hours={item.provider.business_hours}
+          coordinates={item.provider.coordinates} // Auto-calculated coordinates
+          openstreetmapUrl={item.provider.openstreetmap_url} // Pre-generated directions URL
+        />
         </div>
       </div>
     </div>

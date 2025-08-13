@@ -10,21 +10,21 @@ const HelpCard = ({ title, children }) => {
   const [isOpen, setIsOpen] = useState(false)
 
   return (
-    <div className="border border-gray-200 rounded-lg overflow-hidden">
+    <div className="border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden">
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="w-full px-4 py-3 flex justify-between items-center bg-white hover:bg-gray-50 transition-colors"
+        className="w-full px-4 py-3 flex justify-between items-center bg-white dark:bg-gray-900 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
         aria-expanded={isOpen}
       >
-        <span className="font-medium text-gray-800">{title}</span>
+        <span className="font-medium text-gray-800 dark:text-gray-100">{title}</span>
         {isOpen ? (
-          <ChevronUpIcon size={20} className="text-emerald-600" />
+          <ChevronUpIcon size={20} className="text-emerald-600 dark:text-emerald-400" />
         ) : (
-          <ChevronDownIcon size={20} className="text-emerald-600" />
+          <ChevronDownIcon size={20} className="text-emerald-600 dark:text-emerald-400" />
         )}
       </button>
       {isOpen && (
-        <div className="px-4 py-3 bg-gray-50 text-gray-700 text-sm">
+        <div className="px-4 py-3 bg-gray-50 dark:bg-gray-800 text-gray-700 dark:text-gray-300 text-sm">
           {children}
         </div>
       )}
@@ -37,15 +37,15 @@ const RegistrationHelp = ({ isOpen, onClose }) => {
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-      <div className="bg-white rounded-lg shadow-lg w-full max-w-md max-h-[90vh] overflow-y-auto animate-fade-in">
-        <div className="sticky top-0 bg-emerald-600 text-white px-5 py-4 flex justify-between items-center">
+      <div className="bg-white dark:bg-gray-900 rounded-lg shadow-lg w-full max-w-md max-h-[90vh] overflow-y-auto animate-fade-in transition-colors duration-300">
+        <div className="sticky top-0 bg-emerald-600 dark:bg-emerald-700 text-white px-5 py-4 flex justify-between items-center">
           <div className="flex items-center">
             <HelpCircleIcon size={24} className="mr-2" />
             <h3 className="text-xl font-semibold">Need Help Registering?</h3>
           </div>
           <button
             onClick={onClose}
-            className="p-1 rounded-full hover:bg-emerald-700 transition-colors"
+            className="p-1 rounded-full hover:bg-emerald-700 dark:hover:bg-emerald-800 transition-colors"
             aria-label="Close help"
           >
             <XIcon size={24} />
@@ -66,7 +66,7 @@ const RegistrationHelp = ({ isOpen, onClose }) => {
               </p>
               <a
                 href="#"
-                className="text-emerald-600 hover:text-emerald-700 font-medium"
+                className="text-emerald-600 dark:text-emerald-400 hover:text-emerald-700 dark:hover:text-emerald-300 font-medium"
               >
                 Need more help? Contact support
               </a>
@@ -85,7 +85,7 @@ const RegistrationHelp = ({ isOpen, onClose }) => {
               <p>Your application will be reviewed within 2-3 business days.</p>
               <a
                 href="#"
-                className="text-emerald-600 hover:text-emerald-700 font-medium"
+                className="text-emerald-600 dark:text-emerald-400 hover:text-emerald-700 dark:hover:text-emerald-300 font-medium"
               >
                 Need more help? Contact support
               </a>
@@ -105,7 +105,7 @@ const RegistrationHelp = ({ isOpen, onClose }) => {
               <p>Your application will be reviewed within 1-2 business days.</p>
               <a
                 href="#"
-                className="text-emerald-600 hover:text-emerald-700 font-medium"
+                className="text-emerald-600 dark:text-emerald-400 hover:text-emerald-700 dark:hover:text-emerald-300 font-medium"
               >
                 Need more help? Contact support
               </a>
