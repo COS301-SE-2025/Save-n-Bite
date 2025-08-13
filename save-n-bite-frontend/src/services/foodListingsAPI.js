@@ -151,30 +151,6 @@ const formatExpirationTime = (expiryDate) => {
     }
 };
 
-// const getUserType = () => {
-//     try {
-//         const storedUser = localStorage.getItem('user');
-//         if (!storedUser) return 'customer';
-        
-//         const user = JSON.parse(storedUser);
-        
-//         // Check if user has organisation_name (NGO)
-//         if (user.organisation_name || user.representative_name) {
-//             return 'ngo';
-//         }
-        
-//         // Check if user has business_name (Provider)
-//         if (user.business_name) {
-//             return 'provider';
-//         }
-        
-//         // Default to customer
-//         return 'customer';
-//     } catch (error) {
-//         console.error('Error determining user type:', error);
-//         return 'customer';
-//     }
-// };
 const getUserType = () => {
     try {
         // Check multiple possible storage keys
@@ -211,10 +187,6 @@ const getUserType = () => {
         return 'customer';
     }
 };
-
-
-
-
 
 const buildQueryParams = (filters = {}, searchQuery = '', sortBy = '') => {
     const params = new URLSearchParams();
@@ -259,7 +231,9 @@ const buildQueryParams = (filters = {}, searchQuery = '', sortBy = '') => {
     
     return params.toString();
 };
+
 const foodListingsAPI = {
+    // Get all food listings for browsing (customer view)
     async getFoodListings(filters = {}, searchQuery = '', sortBy = '') {
         try {
             const queryParams = buildQueryParams(filters, searchQuery, sortBy);
@@ -293,7 +267,188 @@ const foodListingsAPI = {
         }
     },
 
-    getUserType: getUserType
+    // Get food listing details by ID
+    async getFoodListingDetails(listingId) {
+        try {
+            const response = await apiClient.get(`/api/food-listings/${listingId}/`);
+            
+            return {
+                success: true,
+                data: response.data
+            };
+        } catch (error) {
+            console.error('Error fetching food listing details:', error);
+            return {
+                success: false,
+                error: error.response?.data?.message || 'Failed to fetch listing details'
+            };
+        }
+    },
+
+    // Get provider's own listings
+    async getProviderListings() {
+        try {
+            const response = await apiClient.get('/api/provider/listings/');
+            console.log('Provider listings response:', response.data); // Debug log
+            
+            // Handle different response structures
+            let listings = [];
+            if (response.data.listings) {
+                listings = response.data.listings;
+            } else if (Array.isArray(response.data)) {
+                listings = response.data;
+            } else if (response.data.results) {
+                listings = response.data.results;
+            }
+            
+            return {
+                success: true,
+                data: listings.map(transformListingData)
+            };
+        } catch (error) {
+            console.error('Error fetching provider listings:', error);
+            return {
+                success: false,
+                error: error.response?.data?.message || 'Failed to fetch listings'
+            };
+        }
+    },
+
+    // Create new listing (provider functionality)
+    async createListing(listingData) {
+        try {
+            // If listingData is FormData, don't set Content-Type header
+            const config = listingData instanceof FormData ? {
+                headers: {
+                    'Content-Type': 'multipart/form-data'
+                }
+            } : {};
+
+            const response = await apiClient.post('/api/provider/listings/create/', listingData, config);
+            
+            console.log('=== RAW BACKEND RESPONSE ===');
+            console.log('Raw response.data:', response.data);
+            console.log('Raw response.data.listing:', response.data.listing);
+            
+            // Don't transform the data here - return the raw backend response
+            // so we can access response.data.listing.id in the frontend
+            return {
+                success: true,
+                data: response.data, // Return the raw backend response structure
+            };
+        } catch (error) {
+            console.error('Error creating food listing:', error);
+            return {
+                success: false,
+                error: error.response?.data?.message || 'Failed to create listing'
+            };
+        }
+    },
+
+    // Update existing listing
+    async updateFoodListing(listingId, listingData) {
+        try {
+            const response = await apiClient.put(`/food-listings/provider/listings/${listingId}/`, listingData);
+            
+            return {
+                success: true,
+                data: transformListingData(response.data)
+            };
+        } catch (error) {
+            console.error('Error updating food listing:', error);
+            return {
+                success: false,
+                error: error.response?.data || 'Failed to update listing'
+            };
+        }
+    },
+
+    // Delete food listing
+    async deleteFoodListing(listingId) {
+        try {
+            await apiClient.delete(`/food-listings/provider/listings/${listingId}/`);
+            
+            return {
+                success: true,
+                message: 'Listing deleted successfully'
+            };
+        } catch (error) {
+            console.error('Error deleting food listing:', error);
+            return {
+                success: false,
+                error: error.response?.data?.message || 'Failed to delete listing'
+            };
+        }
+    },
+
+    // Get unique providers for filtering
+    async getUniqueProviders() {
+        try {
+            const response = await this.getFoodListings();
+            if (response.success) {
+                const providers = [...new Set(response.data.listings.map(listing => listing.provider_name || listing.provider))];
+                return {
+                    success: true,
+                    data: providers.filter(provider => provider && provider !== 'Unknown Provider')
+                };
+            }
+            return { success: false, error: 'Failed to fetch providers' };
+        } catch (error) {
+            console.error('Error fetching unique providers:', error);
+            return {
+                success: false,
+                error: 'Failed to fetch providers'
+            };
+        }
+    },
+
+    // Get food categories/types for filtering
+    async getFoodCategories() {
+        try {
+            const response = await this.getFoodListings();
+            if (response.success) {
+                const categories = [...new Set(response.data.listings.map(listing => listing.foodType))];
+                return {
+                    success: true,
+                    data: categories.filter(category => category)
+                };
+            }
+            return { success: false, error: 'Failed to fetch categories' };
+        } catch (error) {
+            console.error('Error fetching food categories:', error);
+            return {
+                success: false,
+                error: 'Failed to fetch categories'
+            };
+        }
+    },
+
+    // Delete listing (alternative method name)
+    async deleteListing(id) {
+        try {
+            const response = await apiClient.delete(`/food-listings/${id}/`);
+            return {
+                success: true,
+                data: response.data
+            };
+        } catch (error) {
+            return {
+                success: false,
+                error: error.response?.data?.message || 'Failed to delete listing'
+            };
+        }
+    },
+
+    // Get user type with debug logging
+    getUserType: () => {
+        console.log("=== getUserType Debug ===");
+
+        const userTypeFromStorage = getUserType();
+        console.log("User type from localStorage:", userTypeFromStorage);
+
+        console.log("========================");
+        return userTypeFromStorage;
+    }
 };
 
 export { getUserType };
