@@ -155,7 +155,7 @@ Authorization: Bearer <provider_jwt_token>
 
 ---
 
-### 3. Update Food Listing
+### 3.1 Update Food Listing
 **PUT** `/api/provider/listings/{listing_id}/`
 
 Updates an existing food listing owned by the authenticated provider.
@@ -190,6 +190,239 @@ Authorization: Bearer <provider_jwt_token>
     "id": "06426c4f-4adc-4fea-9000-585457559ca1",
     "name": "Updated Sandwich Pack",
     "updatedAt": "2025-01-15T18:45:12.123456+00:00"
+  }
+}
+```
+
+---
+
+### 3.2. Delete Food Listing
+**DELETE** `/api/provider/listings/{listing_id}/delete/`
+
+Deletes an existing food listing owned by the authenticated provider. Supports both soft delete (default) and permanent deletion.
+
+**Headers:**
+```
+Content-Type: application/json
+Authorization: Bearer <provider_jwt_token>
+```
+
+**URL Parameters:**
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| listing_id | UUID | Unique identifier of the listing to delete |
+
+**Query Parameters:**
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| hard_delete | boolean | false | Set to `true` for permanent deletion |
+
+**Request Body:** *(Optional)*
+```json
+{
+  "confirm_deletion": true,
+  "deletion_reason": "No longer available"
+}
+```
+
+**Response (200 - Success - Soft Delete):**
+```json
+{
+  "message": "Listing deleted successfully",
+  "deleted_listing": {
+    "id": "06426c4f-4adc-4fea-9000-585457559ca1",
+    "name": "Fresh Sandwich Pack",
+    "created_at": "2025-01-15T10:30:00.123456+00:00",
+    "deleted_at": "2025-01-15T18:45:12.123456+00:00",
+    "deletion_type": "soft",
+    "deleted_images_count": 2,
+    "can_be_restored": true
+  }
+}
+```
+
+**Response (200 - Success - Hard Delete):**
+```json
+{
+  "message": "Listing permanently deleted",
+  "deleted_listing": {
+    "id": "06426c4f-4adc-4fea-9000-585457559ca1",
+    "name": "Fresh Sandwich Pack",
+    "created_at": "2025-01-15T10:30:00.123456+00:00",
+    "deleted_at": "2025-01-15T18:45:12.123456+00:00",
+    "deletion_type": "permanent",
+    "deleted_images_count": 2,
+    "can_be_restored": false
+  }
+}
+```
+
+**Response (400 - Already Deleted):**
+```json
+{
+  "error": {
+    "code": "ALREADY_DELETED",
+    "message": "This listing has already been deleted"
+  }
+}
+```
+
+**Response (400 - Has Active Orders):**
+```json
+{
+  "error": {
+    "code": "HAS_ACTIVE_ORDERS",
+    "message": "Cannot delete listing with active orders. Please complete or cancel all orders first.",
+    "details": [
+      {
+        "field": "orders",
+        "message": "Active orders exist for this listing"
+      }
+    ]
+  }
+}
+```
+
+**Response (403 - Forbidden):**
+```json
+{
+  "error": {
+    "code": "FORBIDDEN",
+    "message": "Only food providers can delete listings"
+  }
+}
+```
+
+**Response (404 - Not Found):**
+```json
+{
+  "error": {
+    "code": "NOT_FOUND",
+    "message": "Listing not found or you do not have permission to delete it"
+  }
+}
+```
+
+---
+
+### 3.3. Restore Food Listing
+**POST** `/api/provider/listings/{listing_id}/restore/`
+
+Restores a previously soft-deleted food listing owned by the authenticated provider.
+
+**Headers:**
+```
+Content-Type: application/json
+Authorization: Bearer <provider_jwt_token>
+```
+
+**URL Parameters:**
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| listing_id | UUID | Unique identifier of the deleted listing |
+
+**Request Body:** *(No body required)*
+
+**Response (200 - Success):**
+```json
+{
+  "message": "Listing restored successfully",
+  "restored_listing": {
+    "id": "06426c4f-4adc-4fea-9000-585457559ca1",
+    "name": "Fresh Sandwich Pack",
+    "status": "active",
+    "restored_at": "2025-01-15T19:00:00.123456+00:00"
+  }
+}
+```
+
+**Response (400 - Expired Listing):**
+```json
+{
+  "error": {
+    "code": "EXPIRED_LISTING",
+    "message": "Cannot restore expired listing. Please create a new listing instead."
+  }
+}
+```
+
+**Response (403 - Forbidden):**
+```json
+{
+  "error": {
+    "code": "FORBIDDEN",
+    "message": "Only food providers can restore listings"
+  }
+}
+```
+
+**Response (404 - Not Found):**
+```json
+{
+  "error": {
+    "code": "NOT_FOUND",
+    "message": "Removed listing not found or you do not have permission to restore it"
+  }
+}
+```
+
+---
+
+### 3.4. Get Deleted Listings
+**GET** `/api/provider/listings/deleted/`
+
+Retrieves all soft-deleted food listings for the authenticated provider.
+
+**Headers:**
+```
+Authorization: Bearer <provider_jwt_token>
+```
+
+**Response (200 - Success):**
+```json
+{
+  "deleted_listings": [
+    {
+      "id": "06426c4f-4adc-4fea-9000-585457559ca1",
+      "name": "Fresh Sandwich Pack",
+      "description": "Healthy sandwich pack with fresh ingredients",
+      "food_type": "ready_to_eat",
+      "original_price": "4.99",
+      "discounted_price": "2.99",
+      "quantity": 5,
+      "quantity_available": 5,
+      "expiry_date": "2025-01-16",
+      "pickup_window": "17:00-19:00",
+      "status": "removed",
+      "created_at": "2025-01-15T10:30:00.123456+00:00",
+      "updated_at": "2025-01-15T18:45:12.123456+00:00",
+      "provider": {
+        "id": "12345678-1234-1234-1234-123456789012",
+        "business_name": "Fresh Eats Cafe",
+        "business_address": "123 Main St, City"
+      }
+    }
+  ],
+  "count": 1,
+  "message": "Use the restore endpoint to recover any of these listings"
+}
+```
+
+**Response (200 - No Deleted Listings):**
+```json
+{
+  "deleted_listings": [],
+  "count": 0,
+  "message": "Use the restore endpoint to recover any of these listings"
+}
+```
+
+**Response (403 - Forbidden):**
+```json
+{
+  "error": {
+    "code": "FORBIDDEN",
+    "message": "Only food providers can access this endpoint"
   }
 }
 ```
