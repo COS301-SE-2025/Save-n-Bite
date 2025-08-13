@@ -1,8 +1,14 @@
-# authentication/models.py - Complete with all profile models
+# authentication/models.py - Updated with Azure Blob Storage
 
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 import uuid
+from blob_storage import (
+    get_customer_profile_storage, get_ngo_document_storage, get_ngo_logo_storage,
+    get_provider_document_storage, get_provider_logo_storage, get_provider_banner_storage,
+    customer_profile_image_path, ngo_document_path, ngo_logo_path,
+    provider_cipc_path, provider_logo_path, provider_banner_path
+)
 
 class User(AbstractUser):
     USER_TYPE_CHOICES = [
@@ -19,14 +25,15 @@ class User(AbstractUser):
     # Use the original database column name and include all existing fields
     UserID = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False, db_column='UserID')
     email = models.EmailField(unique=True)
-    phone_number = models.CharField(max_length=20, null=True, blank=True)  # Existing field
-    profile_picture = models.CharField(max_length=100, null=True, blank=True)  # Existing field  
-    admin_rights = models.BooleanField(default=False)  # Existing field
-    user_type = models.CharField(max_length=20)  # Match database varchar(20)
+    phone_number = models.CharField(max_length=20, null=True, blank=True)
+    profile_picture = models.CharField(max_length=100, null=True, blank=True)
+    admin_rights = models.BooleanField(default=False)
+    user_type = models.CharField(max_length=20)
     role = models.CharField(max_length=10, choices=ROLE_CHOICES, default='normal')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-        # Password reset functionality
+    
+    # Password reset functionality
     has_temporary_password = models.BooleanField(default=False)
     password_must_change = models.BooleanField(default=False)
     temp_password_created_at = models.DateTimeField(null=True, blank=True)
@@ -35,7 +42,8 @@ class User(AbstractUser):
     last_login_ip = models.GenericIPAddressField(null=True, blank=True)
     account_locked_until = models.DateTimeField(null=True, blank=True)
     failed_login_attempts = models.IntegerField(default=0)
-        # Admin-specific fields
+    
+    # Admin-specific fields
     admin_notes = models.TextField(blank=True, help_text="Admin notes about this user")
     deactivation_reason = models.CharField(max_length=255, blank=True)
     deactivated_by = models.ForeignKey(
@@ -75,17 +83,14 @@ class User(AbstractUser):
         """Check if user can login (not locked, active, etc.)"""
         from django.utils import timezone
         
-        # Check if account is active
         if not self.is_active:
             return False, "Account is deactivated"
         
-        # Check if account is temporarily locked
         if self.account_locked_until and self.account_locked_until > timezone.now():
             return False, "Account is temporarily locked"
         
-        # Check if password must be changed
         if self.password_must_change:
-            return True, "Password must be changed"  # Allow login but force change
+            return True, "Password must be changed"
         
         return True, "OK"
     
@@ -94,7 +99,6 @@ class User(AbstractUser):
         from django.utils import timezone
         self.failed_login_attempts += 1
         
-        # Lock account after 5 failed attempts for 30 minutes
         if self.failed_login_attempts >= 5:
             self.account_locked_until = timezone.now() + timezone.timedelta(minutes=30)
         
@@ -139,16 +143,26 @@ class User(AbstractUser):
         self.deactivated_at = None
         self.save()
 
+
 class CustomerProfile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='customer_profile', db_column='user_id', to_field='UserID')
     full_name = models.CharField(max_length=255)
-    profile_image = models.ImageField(upload_to='customer_profiles/', null=True, blank=True)
+    
+    # UPDATED: Use Azure Blob Storage for profile images
+    profile_image = models.ImageField(
+        upload_to=customer_profile_image_path,
+        storage=get_customer_profile_storage,
+        null=True, 
+        blank=True,
+        help_text="Profile image (max 5MB)"
+    )
     
     class Meta:
         db_table = 'authentication_customerprofile'
     
     def __str__(self):
         return f"Customer: {self.full_name}"
+
 
 class NGOProfile(models.Model):
     STATUS_CHOICES = [
@@ -172,8 +186,21 @@ class NGOProfile(models.Model):
     postal_code = models.CharField(max_length=20)
     country = models.CharField(max_length=100)
 
-    npo_document = models.FileField(upload_to='ngo_documents/')
-    organisation_logo = models.ImageField(upload_to='ngo_logos/', null=True, blank=True)
+    # UPDATED: Use Azure Blob Storage for documents and logos
+    npo_document = models.FileField(
+        upload_to=ngo_document_path,
+        storage=get_ngo_document_storage,
+        help_text="NPO registration document (PDF, max 10MB)"
+    )
+    
+    organisation_logo = models.ImageField(
+        upload_to=ngo_logo_path,
+        storage=get_ngo_logo_storage,
+        null=True, 
+        blank=True,
+        help_text="Organisation logo (max 5MB)"
+    )
+    
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending_verification')
 
     class Meta:
@@ -182,7 +209,6 @@ class NGOProfile(models.Model):
     def __str__(self):
         return f"NGO: {self.organisation_name}"
 
-# authentication/models.py - Add these fields to your existing FoodProviderProfile
 
 class FoodProviderProfile(models.Model):
     STATUS_CHOICES = [
@@ -197,8 +223,22 @@ class FoodProviderProfile(models.Model):
     business_address = models.TextField()
     business_contact = models.CharField(max_length=20)
     business_email = models.EmailField()
-    cipc_document = models.FileField(upload_to='provider_documents/')
-    logo = models.ImageField(upload_to='provider_logos/', null=True, blank=True)
+    
+    # UPDATED: Use Azure Blob Storage for documents and images
+    cipc_document = models.FileField(
+        upload_to=provider_cipc_path,
+        storage=get_provider_document_storage,
+        help_text="CIPC registration document (PDF, max 10MB)"
+    )
+    
+    logo = models.ImageField(
+        upload_to=provider_logo_path,
+        storage=get_provider_logo_storage,
+        null=True, 
+        blank=True,
+        help_text="Business logo (max 5MB)"
+    )
+    
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending_verification')
     
     # Existing location fields
@@ -213,16 +253,17 @@ class FoodProviderProfile(models.Model):
     phone_number = models.CharField(max_length=20, blank=True)
     website = models.URLField(blank=True)
     
-    # NEW FIELDS - Add these to your model
+    # UPDATED: Use Azure Blob Storage for banner
     banner = models.ImageField(
-        upload_to='provider_banners/', 
+        upload_to=provider_banner_path,
+        storage=get_provider_banner_storage,
         null=True, 
         blank=True,
-        help_text="Banner image for business profile page (recommended size: 1200x400px)"
+        help_text="Banner image for business profile page (recommended size: 1200x400px, max 5MB)"
     )
     
     business_description = models.TextField(
-        max_length=1000,  # Appropriate length for business descriptions
+        max_length=1000,
         blank=True,
         help_text="Tell customers about your business, cuisine, values, or specialties"
     )

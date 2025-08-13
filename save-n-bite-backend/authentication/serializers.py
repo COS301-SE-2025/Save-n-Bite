@@ -7,7 +7,9 @@ from .models import User, CustomerProfile, NGOProfile, FoodProviderProfile
 from django.contrib.auth import get_user_model
 import base64
 from django.core.files.base import ContentFile
+import logging
 
+logger = logging.getLogger(__name__)
 User = get_user_model()
 
 class BaseRegistrationSerializer(serializers.ModelSerializer):
@@ -52,15 +54,33 @@ class CustomerRegistrationSerializer(BaseRegistrationSerializer):
             full_name=full_name
         )
 
+        # UPDATED: Handle profile image upload to blob storage
         if profile_image_data:
             try:
-                format, imgstr = profile_image_data.split(';base64,')
-                ext = format.split('/')[-1]
-                data = ContentFile(base64.b64decode(imgstr), name=f'profile_{user.id}.{ext}')
-                customer_profile.profile_image = data
-                customer_profile.save()
+                # Parse base64 data
+                if profile_image_data.startswith('data:'):
+                    format_part, data_part = profile_image_data.split(';base64,')
+                    ext = format_part.split('/')[-1]
+                else:
+                    data_part = profile_image_data
+                    ext = 'jpg'
+                
+                # Decode and create file
+                image_data = base64.b64decode(data_part)
+                image_file = ContentFile(image_data, name=f'profile_{user.UserID}.{ext}')
+                
+                # Save to blob storage (Django will handle this automatically)
+                customer_profile.profile_image.save(
+                    f'profile_{user.UserID}.{ext}',
+                    image_file,
+                    save=True
+                )
+                
+                logger.info(f"Successfully uploaded profile image for customer {user.email}")
+                
             except Exception as e:
-                pass
+                logger.error(f"Failed to upload profile image for customer {user.email}: {str(e)}")
+                # Don't fail registration for image upload errors
 
         return user
 
@@ -89,13 +109,12 @@ class NGORegistrationSerializer(BaseRegistrationSerializer):
         ]
 
     def create(self, validated_data):
-        # Extract NGO-specific data (don't pass to User model)
+        # Extract NGO-specific data
         organisation_data = {
             'organisation_name': validated_data.pop('organisation_name'),
             'organisation_contact': validated_data.pop('organisation_contact'),
             'representative_name': validated_data.pop('representative_name'),
-            'representative_email': validated_data.pop('representative_email'),  # Remove from User creation
-
+            'representative_email': validated_data.pop('representative_email'),
             'organisation_email': validated_data.pop('organisational_email'),
             'address_line1': validated_data.pop('organisation_street'),
             'city': validated_data.pop('organisation_city'),
@@ -117,25 +136,61 @@ class NGORegistrationSerializer(BaseRegistrationSerializer):
             **organisation_data
         )
 
-        # Handle document upload
+        # UPDATED: Handle document upload to blob storage
         if npo_document_data:
             try:
-                format, docstr = npo_document_data.split(';base64,')
-                ext = format.split('/')[-1] if '/' in format else 'pdf'
-                doc_data = ContentFile(base64.b64decode(docstr), name=f'npo_doc_{user.UserID}.{ext}')
-                ngo_profile.npo_document = doc_data
+                # Parse base64 data
+                if npo_document_data.startswith('data:'):
+                    format_part, data_part = npo_document_data.split(';base64,')
+                    ext = format_part.split('/')[-1] if '/' in format_part else 'pdf'
+                else:
+                    data_part = npo_document_data
+                    ext = 'pdf'
+                
+                # Decode and create file
+                doc_data = base64.b64decode(data_part)
+                doc_file = ContentFile(doc_data, name=f'npo_doc_{user.UserID}.{ext}')
+                
+                # Save to blob storage
+                ngo_profile.npo_document.save(
+                    f'npo_doc_{user.UserID}.{ext}',
+                    doc_file,
+                    save=False  # Don't save yet
+                )
+                
+                logger.info(f"Successfully uploaded NPO document for {user.email}")
+                
             except Exception as e:
-                pass
+                logger.error(f"Failed to upload NPO document for {user.email}: {str(e)}")
+                raise serializers.ValidationError("Failed to process NPO document")
 
-        # Handle logo upload
+        # UPDATED: Handle logo upload to blob storage
         if logo_data:
             try:
-                format, imgstr = logo_data.split(';base64,')
-                ext = format.split('/')[-1]
-                img_data = ContentFile(base64.b64decode(imgstr), name=f'ngo_logo_{user.UserID}.{ext}')
-                ngo_profile.organisation_logo = img_data
+                # Parse base64 data
+                if logo_data.startswith('data:'):
+                    format_part, data_part = logo_data.split(';base64,')
+                    ext = format_part.split('/')[-1]
+                else:
+                    data_part = logo_data
+                    ext = 'png'
+                
+                # Decode and create file
+                img_data = base64.b64decode(data_part)
+                img_file = ContentFile(img_data, name=f'ngo_logo_{user.UserID}.{ext}')
+                
+                # Save to blob storage
+                ngo_profile.organisation_logo.save(
+                    f'ngo_logo_{user.UserID}.{ext}',
+                    img_file,
+                    save=False  # Don't save yet
+                )
+                
+                logger.info(f"Successfully uploaded NGO logo for {user.email}")
+                
             except Exception as e:
-                pass
+                logger.error(f"Failed to upload NGO logo for {user.email}: {str(e)}")
+                # Logo is optional, so don't fail registration
 
         ngo_profile.save()
         return user
@@ -219,7 +274,6 @@ class FoodProviderRegistrationSerializer(BaseRegistrationSerializer):
                 'business_contact': validated_data.pop('business_contact'),
                 'business_address': business_address,
                 'business_email': validated_data.pop('business_email'),
-                # NEW FIELDS
                 'business_description': validated_data.pop('business_description', ''),
                 'business_tags': validated_data.pop('business_tags', []),
             }
@@ -236,35 +290,89 @@ class FoodProviderRegistrationSerializer(BaseRegistrationSerializer):
                 **provider_data
             )
 
-            # Handle CIPC document upload
+            # UPDATED: Handle CIPC document upload to blob storage
             if cipc_document_data:
                 try:
-                    format, docstr = cipc_document_data.split(';base64,')
-                    ext = format.split('/')[-1] if '/' in format else 'pdf'
-                    doc_data = ContentFile(base64.b64decode(docstr), name=f'cipc_doc_{user.id}.{ext}')
-                    provider_profile.cipc_document = doc_data
+                    # Parse base64 data
+                    if cipc_document_data.startswith('data:'):
+                        format_part, data_part = cipc_document_data.split(';base64,')
+                        ext = format_part.split('/')[-1] if '/' in format_part else 'pdf'
+                    else:
+                        data_part = cipc_document_data
+                        ext = 'pdf'
+                    
+                    # Decode and create file
+                    doc_data = base64.b64decode(data_part)
+                    doc_file = ContentFile(doc_data, name=f'cipc_doc_{user.UserID}.{ext}')
+                    
+                    # Save to blob storage
+                    provider_profile.cipc_document.save(
+                        f'cipc_doc_{user.UserID}.{ext}',
+                        doc_file,
+                        save=False  # Don't save yet
+                    )
+                    
+                    logger.info(f"Successfully uploaded CIPC document for {user.email}")
+                    
                 except Exception as e:
-                    raise serializers.ValidationError("Invalid CIPC document format")
+                    logger.error(f"Failed to upload CIPC document for {user.email}: {str(e)}")
+                    raise serializers.ValidationError("Failed to process CIPC document")
 
-            # Handle logo upload
+            # UPDATED: Handle logo upload to blob storage
             if logo_data:
                 try:
-                    format, imgstr = logo_data.split(';base64,')
-                    ext = format.split('/')[-1]
-                    img_data = ContentFile(base64.b64decode(imgstr), name=f'provider_logo_{user.id}.{ext}')
-                    provider_profile.logo = img_data
+                    # Parse base64 data
+                    if logo_data.startswith('data:'):
+                        format_part, data_part = logo_data.split(';base64,')
+                        ext = format_part.split('/')[-1]
+                    else:
+                        data_part = logo_data
+                        ext = 'png'
+                    
+                    # Decode and create file
+                    img_data = base64.b64decode(data_part)
+                    img_file = ContentFile(img_data, name=f'provider_logo_{user.UserID}.{ext}')
+                    
+                    # Save to blob storage
+                    provider_profile.logo.save(
+                        f'provider_logo_{user.UserID}.{ext}',
+                        img_file,
+                        save=False  # Don't save yet
+                    )
+                    
+                    logger.info(f"Successfully uploaded provider logo for {user.email}")
+                    
                 except Exception as e:
-                    pass
+                    logger.error(f"Failed to upload provider logo for {user.email}: {str(e)}")
+                    # Logo is optional, so don't fail registration
 
-            # NEW: Handle banner upload
+            # UPDATED: Handle banner upload to blob storage
             if banner_data:
                 try:
-                    format, imgstr = banner_data.split(';base64,')
-                    ext = format.split('/')[-1]
-                    banner_file = ContentFile(base64.b64decode(imgstr), name=f'provider_banner_{user.id}.{ext}')
-                    provider_profile.banner = banner_file
+                    # Parse base64 data
+                    if banner_data.startswith('data:'):
+                        format_part, data_part = banner_data.split(';base64,')
+                        ext = format_part.split('/')[-1]
+                    else:
+                        data_part = banner_data
+                        ext = 'jpg'
+                    
+                    # Decode and create file
+                    banner_file_data = base64.b64decode(data_part)
+                    banner_file = ContentFile(banner_file_data, name=f'provider_banner_{user.UserID}.{ext}')
+                    
+                    # Save to blob storage
+                    provider_profile.banner.save(
+                        f'provider_banner_{user.UserID}.{ext}',
+                        banner_file,
+                        save=False  # Don't save yet
+                    )
+                    
+                    logger.info(f"Successfully uploaded provider banner for {user.email}")
+                    
                 except Exception as e:
-                    pass  # Banner is optional, so don't fail registration
+                    logger.error(f"Failed to upload provider banner for {user.email}: {str(e)}")
+                    # Banner is optional, so don't fail registration
 
             provider_profile.save()
             return user
@@ -323,36 +431,64 @@ class FoodProviderProfileUpdateSerializer(serializers.ModelSerializer):
         """Update provider profile with new fields"""
         from django.utils import timezone
         
-        # Handle banner upload
+        # UPDATED: Handle banner upload to blob storage
         banner_data = validated_data.pop('banner', None)
         if banner_data:
             try:
                 if banner_data.startswith('data:'):
-                    format, imgstr = banner_data.split(';base64,')
-                    ext = format.split('/')[-1]
-                    banner_file = ContentFile(
-                        base64.b64decode(imgstr), 
-                        name=f'provider_banner_{instance.user.UserID}.{ext}'
+                    format_part, data_part = banner_data.split(';base64,')
+                    ext = format_part.split('/')[-1]
+                    
+                    # Decode and create file
+                    banner_file_data = base64.b64decode(data_part)
+                    banner_file = ContentFile(banner_file_data, name=f'provider_banner_{instance.user.UserID}.{ext}')
+                    
+                    # Delete old banner if exists
+                    if instance.banner:
+                        instance.banner.delete(save=False)
+                    
+                    # Save new banner to blob storage
+                    instance.banner.save(
+                        f'provider_banner_{instance.user.UserID}_{int(timezone.now().timestamp())}.{ext}',
+                        banner_file,
+                        save=False
                     )
-                    instance.banner = banner_file
                     instance.banner_updated_at = timezone.now()
+                    
+                    logger.info(f"Successfully updated banner for provider {instance.business_name}")
+                    
             except Exception as e:
-                pass  # Don't fail update if banner upload fails
+                logger.error(f"Failed to update banner for provider {instance.business_name}: {str(e)}")
+                # Don't fail update for banner upload errors
         
-        # Handle logo upload
+        # UPDATED: Handle logo upload to blob storage
         logo_data = validated_data.pop('logo', None)
         if logo_data:
             try:
                 if logo_data.startswith('data:'):
-                    format, imgstr = logo_data.split(';base64,')
-                    ext = format.split('/')[-1]
-                    logo_file = ContentFile(
-                        base64.b64decode(imgstr), 
-                        name=f'provider_logo_{instance.user.UserID}.{ext}'
+                    format_part, data_part = logo_data.split(';base64,')
+                    ext = format_part.split('/')[-1]
+                    
+                    # Decode and create file
+                    logo_file_data = base64.b64decode(data_part)
+                    logo_file = ContentFile(logo_file_data, name=f'provider_logo_{instance.user.UserID}.{ext}')
+                    
+                    # Delete old logo if exists
+                    if instance.logo:
+                        instance.logo.delete(save=False)
+                    
+                    # Save new logo to blob storage
+                    instance.logo.save(
+                        f'provider_logo_{instance.user.UserID}_{int(timezone.now().timestamp())}.{ext}',
+                        logo_file,
+                        save=False
                     )
-                    instance.logo = logo_file
+                    
+                    logger.info(f"Successfully updated logo for provider {instance.business_name}")
+                    
             except Exception as e:
-                pass
+                logger.error(f"Failed to update logo for provider {instance.business_name}: {str(e)}")
+                # Don't fail update for logo upload errors
         
         # Update other fields
         for attr, value in validated_data.items():
@@ -383,9 +519,9 @@ class LoginSerializer(serializers.Serializer):
 
         return attrs
 
-# Enhanced UserProfileSerializer to include new fields
+# UPDATED: Enhanced user profile serializer with blob storage URLs
 class UserProfileSerializer(serializers.ModelSerializer):
-    """Enhanced serializer for user profile information with new provider fields"""
+    """Enhanced serializer for user profile information with blob storage support"""
     member_since = serializers.SerializerMethodField()
     profile_type = serializers.SerializerMethodField()
     full_name = serializers.SerializerMethodField()
@@ -438,7 +574,7 @@ class UserProfileSerializer(serializers.ModelSerializer):
             return 'pending'
     
     def get_profile_details(self, obj):
-        """Get additional profile details based on user type - UPDATED with new provider fields"""
+        """Get additional profile details with blob storage URLs"""
         try:
             if obj.user_type == 'customer' and hasattr(obj, 'customer_profile'):
                 profile = obj.customer_profile
@@ -466,18 +602,19 @@ class UserProfileSerializer(serializers.ModelSerializer):
                     'phone_number': profile.phone_number,
                     'website': profile.website,
                     'logo': profile.logo.url if profile.logo else None,
-                    # NEW FIELDS
                     'banner': profile.banner.url if profile.banner else None,
                     'business_description': profile.business_description,
                     'business_tags': profile.get_tag_display(),
                     'profile_completeness': profile.has_complete_profile(),
                 }
             return {}
-        except Exception:
+        except Exception as e:
+            logger.error(f"Error getting profile details for user {obj.email}: {str(e)}")
             return {}
         
+# UPDATED: Enhanced business profile serializer with blob storage URLs
 class BusinessPublicProfileSerializer(serializers.ModelSerializer):
-    """Enhanced serializer for public business profiles with new fields"""
+    """Enhanced serializer for public business profiles with blob storage URLs"""
     business_id = serializers.UUIDField(source='user.UserID', read_only=True)
     logo = serializers.SerializerMethodField()
     banner = serializers.SerializerMethodField()
@@ -495,10 +632,16 @@ class BusinessPublicProfileSerializer(serializers.ModelSerializer):
         ]
     
     def get_logo(self, obj):
-        return obj.logo.url if obj.logo else None
+        try:
+            return obj.logo.url if obj.logo else None
+        except Exception:
+            return None
     
     def get_banner(self, obj):
-        return obj.banner.url if obj.banner else None
+        try:
+            return obj.banner.url if obj.banner else None
+        except Exception:
+            return None
     
     def get_business_tags(self, obj):
         return obj.get_tag_display()

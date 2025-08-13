@@ -13,3 +13,16 @@ db.sqlite3
 .vscode/settings.json
 /save-n-bite-frontend/node_modules/@esbuild/win32-x64
 .coverage
+# Azure Storage Emulator (Azurite) - Local Development Only
+AzuriteConfig
+__azurite_db_blob__.json
+__azurite_db_blob_extent__.json
+__azurite_db_queue__.json
+__azurite_db_queue_extent__.json
+__azurite_db_table__.json
+azurite-data/
+blobstorage/
+
+# Azure Storage Local Development
+*.azurite
+azurite-workspace/
