@@ -293,6 +293,32 @@ const foodListingsAPI = {
         }
     },
 
+async getProviderListings() {
+    try {
+        const response = await apiClient.get('/api/provider/listings/');
+        const transformedListings = response.data.listings?.map(transformListingData) || [];
+
+        return {
+            success: true,
+            data: {
+                listings: transformedListings,
+                count: response.data.totalCount || transformedListings.length,
+                next: false, // assuming provider listings are not paginated; update if needed
+                previous: false,
+                filters: {} // no filters for provider listings yet
+            }
+        };
+    } catch (error) {
+        console.error('Error fetching provider listings:', error);
+        return {
+            success: false,
+            error: error.response?.data?.message || error.message || 'Failed to fetch provider listings'
+        };
+    }
+},
+
+
+
     getUserType: getUserType
 };
 

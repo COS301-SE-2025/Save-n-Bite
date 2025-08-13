@@ -7,8 +7,15 @@ export const analyticsAPI = {
       const response = await apiClient.get('/api/business/');
       return response.data;
     } catch (error) {
-      console.error('Error fetching business analytics:', error);
-      throw error;
+      if (error.response) {
+      console.error('Error response data:', error.response.data);
+      console.error('Error status:', error.response.status);
+    } else if (error.request) {
+      console.error('No response received:', error.request);
+    } else {
+      console.error('Error message:', error.message);
+    }
+    throw error;
     }
   },
 

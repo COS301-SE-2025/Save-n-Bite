@@ -11,6 +11,14 @@ export function ListingForm() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [userData, setUserData] = useState(null);
 
+  const addDebugLog = (message, data = null) => {
+    const timestamp = new Date().toISOString();
+    const logEntry = { timestamp, message, data };
+    console.log(`[DEBUG ${timestamp}]`, message, data);
+    setDebugLog(prev => [...prev, logEntry]);
+  };
+
+
   useEffect(() => {
     // Check if user is a verified provider
     const storedUserData = localStorage.getItem('userData');
@@ -176,6 +184,7 @@ export function ListingForm() {
       console.log('Form validation:', isValid);
 
       if (!isValid) {
+        addDebugLog('Form validation failed, stopping submission');
         setIsSubmitting(false);
         return;
       }
@@ -253,6 +262,7 @@ export function ListingForm() {
 
             navigate('/listings-overview');
           } else {
+             addDebugLog('Listing creation failed', response);
             setErrors(prev => ({
               ...prev,
               submit: response.error || 'Failed to create listing. Please try again.'

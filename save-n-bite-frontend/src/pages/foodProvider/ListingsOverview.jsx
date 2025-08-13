@@ -23,7 +23,7 @@ export default function ListingsOverview() {
       
       if (response.success) {
         console.log('Setting listings:', response.data);
-        setListings(response.data);
+        setListings(response.data.listings);
       } else {
         console.error('Error in response:', response.error);
         setError(response.error);
