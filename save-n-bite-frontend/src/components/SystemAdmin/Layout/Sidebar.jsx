@@ -84,7 +84,7 @@ const Sidebar = ({ isOpen }) => {
     delete apiClient.defaults.headers.common['Authorization']
     
     // Redirect to admin login
-    navigate('/admin-login')
+    navigate('/login')
   }
 
   return (
