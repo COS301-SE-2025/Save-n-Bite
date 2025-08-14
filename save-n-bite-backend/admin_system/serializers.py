@@ -177,7 +177,14 @@ class SimpleAnalyticsSerializer(serializers.Serializer):
 
 class DataExportSerializer(serializers.Serializer):
     """Serializer for data export requests"""
-    export_type = serializers.ChoiceField(choices=['users', 'transactions', 'listings', 'analytics'])
+    export_type = serializers.ChoiceField(choices=[
+        'users',           # Keep - essential for user management
+        'analytics',       # Keep - dashboard data
+        'audit_logs',      # ADD - important for compliance/security
+        'system_logs',     # ADD - important for troubleshooting
+        'transactions',    # Keep if you have interaction/payment data
+        'listings',        # Keep - food listing data
+    ])
     date_from = serializers.DateField(required=False)
     date_to = serializers.DateField(required=False)
     format = serializers.ChoiceField(choices=['csv', 'excel'], default='csv')

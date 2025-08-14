@@ -363,7 +363,7 @@ const AdminAPI = {
     }
   },
 
-  getSystemLogs: async (page = 1, search = '', logLevel = '', startDate = '', endDate = '', perPage = 20) => {
+ getSystemLogs: async (page = 1, search = '', logLevel = '', startDate = '', endDate = '', perPage = 20) => {
     try {
       const params = new URLSearchParams({
         page: page.toString(),
@@ -371,7 +371,8 @@ const AdminAPI = {
       });
       
       if (search) params.append('search', search);
-      if (logLevel) params.append('log_level', logLevel);
+      // Map frontend "logLevel" to backend "severity"
+      if (logLevel) params.append('severity', logLevel);
       if (startDate) params.append('start_date', startDate);
       if (endDate) params.append('end_date', endDate);
 
@@ -390,7 +391,7 @@ const AdminAPI = {
       };
     }
   },
-
+  
   resolveSystemLog: async (logId, resolutionNotes = '') => {
     try {
       const response = await apiClient.post('/api/admin/logs/system/resolve/', {

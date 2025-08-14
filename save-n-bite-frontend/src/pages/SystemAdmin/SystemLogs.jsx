@@ -59,7 +59,7 @@ const SystemLogs = () => {
   }
 
   /**
-   * Fetch system logs from API using correct AdminAPI method and signature
+   * Fetch system logs from API with proper field mapping
    */
   const fetchSystemLogs = async () => {
     try {
@@ -70,47 +70,97 @@ const SystemLogs = () => {
       let startDate = ''
       let endDate = ''
       
-      if (statusFilter === 'Today') {
+      if (search.includes('today')) {
         startDate = new Date().toISOString().split('T')[0]
         endDate = startDate
-      } else if (statusFilter === 'This Week') {
+      } else if (search.includes('week')) {
         const weekAgo = new Date()
         weekAgo.setDate(weekAgo.getDate() - 7)
         startDate = weekAgo.toISOString().split('T')[0]
         endDate = new Date().toISOString().split('T')[0]
-      } else if (statusFilter === 'This Month') {
+      } else if (search.includes('month')) {
         const monthAgo = new Date()
         monthAgo.setMonth(monthAgo.getMonth() - 1)
         startDate = monthAgo.toISOString().split('T')[0]
         endDate = new Date().toISOString().split('T')[0]
       }
 
-      // Convert filters to match AdminAPI signature
-      const logLevel = levelFilter === 'All' ? '' : levelFilter.toLowerCase()
+      // Convert filters to match backend API expectations
+      const severity = levelFilter === 'All' ? '' : levelFilter.toLowerCase()
+      const status = statusFilter === 'All' ? '' : statusFilter.toLowerCase()
+      const category = serviceFilter === 'All' ? '' : serviceFilter.toLowerCase()
+
+      console.log('API call parameters:', {
+        page: Number(currentPage) || 1,
+        search,
+        severity,
+        status,
+        category,
+        startDate,
+        endDate,
+        perPage: 20
+      })
       
-      // Use correct AdminAPI method signature
-      const response = await AdminAPI.getSystemLogs(
-        Number(currentPage) || 1,  // Ensure it's a number
-        search,                    // search
-        logLevel,                  // logLevel
-        startDate,                 // startDate
-        endDate,                   // endDate
-        20                         // perPage
-      )
+      // Build query parameters for the API call
+      const params = new URLSearchParams({
+        page: (Number(currentPage) || 1).toString(),
+        per_page: '20'
+      })
       
-      if (response.success) {
-        setLogs(response.data.logs)
+      if (search) params.append('search', search)
+      if (severity) params.append('severity', severity)
+      if (status) params.append('status', status)
+      if (category) params.append('category', category)
+      if (startDate) params.append('start_date', startDate)
+      if (endDate) params.append('end_date', endDate)
+
+      // Make direct API call since AdminAPI method may need parameter adjustment
+      const response = await apiClient.get(`/api/admin/logs/system/?${params.toString()}`)
+      
+      console.log('Raw API response:', response.data)
+      console.log('Individual logs from API:', response.data.logs)
+      
+      if (response.data.logs) {
+        // Transform backend data to frontend format
+        const transformedLogs = response.data.logs.map(log => ({
+          id: log.id,
+          level: (log.severity || 'info').toUpperCase(),    // severity -> level
+          message: log.title || log.description || 'No message',  // title -> message
+          service: log.category || 'unknown',               // category -> service
+          timestamp: log.timestamp,
+          status: log.status || 'open',
+          description: log.description,
+          error_details: log.error_details,
+          resolved_by_name: log.resolved_by_name,
+          resolution_notes: log.resolution_notes,
+          resolved_at: log.resolved_at,
+          // Map backend fields for modals
+          title: log.title,
+          severity: log.severity,
+          category: log.category,
+          details: log.description,
+          stack: log.error_details ? JSON.stringify(log.error_details, null, 2) : null,
+          // Keep original data for reference
+          originalData: log
+        }))
+        
+        console.log('Transformed logs:', transformedLogs)
+        console.log('First transformed log:', transformedLogs[0])
+        
+        setLogs(transformedLogs)
         setCurrentPage(Number(response.data.pagination.current_page) || 1)
         setTotalPages(Number(response.data.pagination.total_pages) || 1)
         setTotalCount(Number(response.data.pagination.total_count) || 0)
-        setSummary(response.data.summary)
+        setSummary(response.data.summary || { total_open: 0, total_critical: 0 })
       } else {
-        throw new Error(response.error || 'Failed to fetch system logs')
+        setLogs([])
+        setTotalCount(0)
+        setSummary({ total_open: 0, total_critical: 0 })
       }
       
     } catch (err) {
       console.error('System logs fetch error:', err)
-      setError(err.message)
+      setError(err.response?.data?.error?.message || err.message || 'Failed to fetch system logs')
     } finally {
       setLoading(false)
     }
@@ -123,15 +173,9 @@ const SystemLogs = () => {
     try {
       setResolving(true)
       
-      // Use correct AdminAPI method
       const response = await AdminAPI.resolveSystemLog(logId, resolutionNotes)
       
       if (response.success) {
-        // Refresh logs after successful resolution
-          console.log('System logs response:', response.data.logs)
-          console.log('Raw API response:', response.data)
-          console.log('System logs array:', response.data.logs)
-          console.log('First log data:', response.data.logs[0])
         await fetchSystemLogs()
         setShowResolveModal(false)
         setSelectedLog(null)
@@ -228,8 +272,8 @@ const SystemLogs = () => {
     setShowResolveModal(true)
   }
 
-  // Get unique services for filter from current logs
-  const services = ['All', ...Array.from(new Set(logs.map(log => log.category)))]
+  // Get unique services for filter from current logs - FIXED
+  const services = ['All', ...Array.from(new Set(logs.map(log => log.service).filter(Boolean)))]
 
   const getSeverityIcon = (severity) => {
     switch (severity) {

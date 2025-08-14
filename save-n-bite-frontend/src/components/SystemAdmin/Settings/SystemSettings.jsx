@@ -47,6 +47,8 @@ const SystemSettings = () => {
       const dateFrom = thirtyDaysAgo.toISOString().split('T')[0]
       const dateTo = today.toISOString().split('T')[0]
 
+      console.log(`Exporting ${exportType} data from ${dateFrom} to ${dateTo}`)
+
       const response = await AdminAPI.exportData(exportType, dateFrom, dateTo)
 
       if (response.success) {
@@ -54,7 +56,7 @@ const SystemSettings = () => {
         const url = window.URL.createObjectURL(new Blob([response.data]))
         const link = document.createElement('a')
         link.href = url
-        link.download = `${exportType}_export_${new Date().toISOString().split('T')[0]}.csv`
+        link.download = `${exportType}_export_${new Date().toISOString().split('T')[0]}.${format}`
         link.click()
         window.URL.revokeObjectURL(url)
         
@@ -77,10 +79,21 @@ const SystemSettings = () => {
     setIsExporting(true)
     
     try {
-      const exportTypes = ['users', 'analytics', 'audit_logs', 'system_logs']
-      const promises = exportTypes.map(type => handleDataExport(type))
+      // Export all available data types from the backend serializer
+      const exportTypes = ['users', 'analytics', 'audit_logs', 'system_logs', 'transactions', 'listings']
       
-      await Promise.all(promises)
+      // Export each type sequentially to avoid overwhelming the server
+      for (const type of exportTypes) {
+        try {
+          await handleDataExport(type)
+          // Small delay between exports to prevent server overload
+          await new Promise(resolve => setTimeout(resolve, 500))
+        } catch (error) {
+          console.error(`Failed to export ${type}:`, error)
+          // Continue with other exports even if one fails
+        }
+      }
+      
       toast.success('Full database export completed successfully')
     } catch (error) {
       console.error('Full export error:', error)
@@ -106,34 +119,62 @@ const SystemSettings = () => {
   }
 
   /**
-   * Export types available in the system
+   * All export types available in the backend serializer
    */
   const exportTypes = [
     {
       type: 'users',
       name: 'Users Data',
       description: 'All user accounts, profiles, and activity data',
-      icon: '👥'
+      icon: '👥',
+      category: 'User Management'
     },
     {
       type: 'analytics',
       name: 'Analytics Data',
       description: 'System metrics, statistics, and performance data',
-      icon: '📊'
+      icon: '📊',
+      category: 'Performance'
     },
     {
       type: 'audit_logs',
       name: 'Audit Logs',
       description: 'Admin action logs and system access records',
-      icon: '📋'
+      icon: '📋',
+      category: 'Security & Compliance'
     },
     {
       type: 'system_logs',
       name: 'System Logs',
       description: 'Error logs, warnings, and system events',
-      icon: '⚠️'
+      icon: '⚠️',
+      category: 'System Health'
+    },
+    {
+      type: 'transactions',
+      name: 'Transactions',
+      description: 'Payment records, interactions, and financial data',
+      icon: '💳',
+      category: 'Financial'
+    },
+    {
+      type: 'listings',
+      name: 'Food Listings',
+      description: 'All food listings, provider data, and listing activity',
+      icon: '🍕',
+      category: 'Content Management'
     }
   ]
+
+  // Group export types by category for better organization
+  const exportsByCategory = exportTypes.reduce((acc, exportType) => {
+    const category = exportType.category
+    if (!acc[category]) {
+      acc[category] = []
+    }
+    acc[category].push(exportType)
+    return acc
+  }, {})
 
   if (error) {
     return (
@@ -228,49 +269,56 @@ const SystemSettings = () => {
         </div>
       </div>
 
-      {/* Individual Data Export Section */}
+      {/* Individual Data Export Section - Organized by Category */}
       <div className="bg-blue-50 p-6 rounded-lg">
         <div className="flex items-center mb-4">
           <DownloadIcon className="h-5 w-5 text-blue-500 mr-2" />
           <h4 className="text-base font-medium text-gray-900">Individual Data Export</h4>
         </div>
         
-        <p className="text-sm text-gray-600 mb-4">
+        <p className="text-sm text-gray-600 mb-6">
           Export specific data types for analysis, reporting, or compliance purposes. Data from the last 30 days will be included.
         </p>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          {exportTypes.map((exportType) => (
-            <div key={exportType.type} className="bg-white p-4 rounded-md border border-blue-200">
-              <div className="flex items-center mb-2">
-                <span className="text-lg mr-2">{exportType.icon}</span>
-                <h5 className="font-medium text-gray-900">{exportType.name}</h5>
-              </div>
-              <p className="text-xs text-gray-500 mb-3">{exportType.description}</p>
-              <button
-                type="button"
-                onClick={() => handleDataExport(exportType.type)}
-                disabled={exportProgress[exportType.type]}
-                className="w-full inline-flex justify-center items-center px-3 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {exportProgress[exportType.type] ? (
-                  <>
-                    <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                    </svg>
-                    Exporting...
-                  </>
-                ) : (
-                  <>
-                    <DownloadIcon className="mr-1 h-4 w-4" />
-                    Export CSV
-                  </>
-                )}
-              </button>
+        {Object.entries(exportsByCategory).map(([category, categoryTypes]) => (
+          <div key={category} className="mb-6 last:mb-0">
+            <h5 className="text-sm font-semibold text-gray-700 mb-3 uppercase tracking-wide">
+              {category}
+            </h5>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {categoryTypes.map((exportType) => (
+                <div key={exportType.type} className="bg-white p-4 rounded-md border border-blue-200 hover:border-blue-300 transition-colors">
+                  <div className="flex items-center mb-2">
+                    <span className="text-lg mr-2">{exportType.icon}</span>
+                    <h6 className="font-medium text-gray-900 text-sm">{exportType.name}</h6>
+                  </div>
+                  <p className="text-xs text-gray-500 mb-3 line-clamp-2">{exportType.description}</p>
+                  <button
+                    type="button"
+                    onClick={() => handleDataExport(exportType.type)}
+                    disabled={exportProgress[exportType.type]}
+                    className="w-full inline-flex justify-center items-center px-3 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  >
+                    {exportProgress[exportType.type] ? (
+                      <>
+                        <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        Exporting...
+                      </>
+                    ) : (
+                      <>
+                        <DownloadIcon className="mr-1 h-4 w-4" />
+                        Export CSV
+                      </>
+                    )}
+                  </button>
+                </div>
+              ))}
             </div>
-          ))}
-        </div>
+          </div>
+        ))}
       </div>
 
       {/* Full Database Export Section */}
@@ -281,14 +329,21 @@ const SystemSettings = () => {
         </div>
         
         <p className="text-sm text-gray-600 mb-4">
-          Export all system data at once. This will download multiple CSV files containing all data types.
+          Export all system data at once. This will download multiple CSV files containing all 6 data types: 
+          <span className="font-medium"> Users, Analytics, Audit Logs, System Logs, Transactions, and Listings</span>.
         </p>
+
+        <div className="bg-white p-4 rounded-md border border-green-200 mb-4">
+          <p className="text-sm text-green-700">
+            <strong>Export includes:</strong> {exportTypes.map(t => t.name).join(', ')}
+          </p>
+        </div>
 
         <button
           type="button"
           onClick={handleFullDatabaseExport}
           disabled={isExporting}
-          className="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
         >
           {isExporting ? (
             <>
@@ -296,19 +351,38 @@ const SystemSettings = () => {
                 <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                 <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
               </svg>
-              Exporting All Data...
+              Exporting All Data... ({exportTypes.length} files)
             </>
           ) : (
             <>
               <DownloadIcon className="mr-2 h-5 w-5" />
-              Export Full Database
+              Export Full Database ({exportTypes.length} files)
             </>
           )}
         </button>
       </div>
 
+      {/* Export Statistics */}
+      <div className="bg-gray-50 p-6 rounded-lg">
+        <h4 className="text-base font-medium text-gray-900 mb-3">Export Information</h4>
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-4 text-sm">
+          <div className="bg-white p-3 rounded border">
+            <p className="font-medium text-gray-900">Available Types</p>
+            <p className="text-gray-600">{exportTypes.length} data categories</p>
+          </div>
+          <div className="bg-white p-3 rounded border">
+            <p className="font-medium text-gray-900">Date Range</p>
+            <p className="text-gray-600">Last 30 days</p>
+          </div>
+          <div className="bg-white p-3 rounded border">
+            <p className="font-medium text-gray-900">Format</p>
+            <p className="text-gray-600">CSV files</p>
+          </div>
+        </div>
+      </div>
+
       {/* Warning Notice */}
-      <div className="mt-4 p-4 bg-yellow-50 border border-yellow-200 rounded-md">
+      <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-md">
         <div className="flex">
           <div className="flex-shrink-0">
             <svg className="h-5 w-5 text-yellow-400" viewBox="0 0 20 20" fill="currentColor">
@@ -319,6 +393,7 @@ const SystemSettings = () => {
             <p className="text-sm text-yellow-700">
               <strong>Important:</strong> Large exports may take several minutes to process. 
               Exported data includes sensitive information - handle with care and follow your organization's data privacy policies.
+              Full database exports will download {exportTypes.length} separate CSV files.
             </p>
           </div>
         </div>
