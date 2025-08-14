@@ -1,44 +1,45 @@
 import React, { useState, useEffect } from 'react'
-import VerificationFilters from '../../components/SystemAdmin/Verifications/VerificationFilter'
-import VerificationTable from '../../components/SystemAdmin/Verifications/VerificationTable'
-import VerificationModal from '../../components/SystemAdmin/Verifications/VerificationModal'
-import ConfirmationModal from '../../components/SystemAdmin/UI/ConfirmationModal'
+import { toast } from 'sonner'
 import AdminAPI from '../../services/AdminAPI'
 import { apiClient } from '../../services/FoodAPI.js'
-import { toast } from 'sonner'
+import VerificationTable from '../../components/SystemAdmin/Verifications/VerificationTable'
+import VerificationModal from '../../components/SystemAdmin/Verifications/VerificationModal'
+import {
+  RefreshCwIcon,
+  SearchIcon,
+  FilterIcon,
+  AlertCircleIcon,
+  ShieldCheckIcon,
+  ClockIcon,
+  XIcon
+} from 'lucide-react'
 
 const Verifications = () => {
-  // STANDARD STATE SETUP 
   const [verifications, setVerifications] = useState([])
+  const [filteredVerifications, setFilteredVerifications] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
-  
-  // 2. UI STATE 
-  const [search, setSearch] = useState('')
-  const [typeFilter, setTypeFilter] = useState('All')
-  const [statusFilter, setStatusFilter] = useState('pending_verification')
   const [selectedVerification, setSelectedVerification] = useState(null)
-  const [showVerificationModal, setShowVerificationModal] = useState(false)
-  const [showConfirmModal, setShowConfirmModal] = useState(false)
-  const [confirmAction, setConfirmAction] = useState(null)
-  const [processingAction, setProcessingAction] = useState(false)
+  const [showModal, setShowModal] = useState(false)
+  
+  // Filters
+  const [search, setSearch] = useState('')
+  const [typeFilter, setTypeFilter] = useState('All Types')
+  const [statusFilter, setStatusFilter] = useState('Pending')
 
-  // SETUP AUTHENTICATION + FETCH DATA 
+  // Authentication setup
   useEffect(() => {
-    setupAuthAndFetchData()
+    setupAuthAndFetchVerifications()
   }, [])
 
-  const setupAuthAndFetchData = async () => {
+  const setupAuthAndFetchVerifications = async () => {
     try {
       const token = localStorage.getItem('adminToken')
       if (!token) {
         throw new Error('No admin token found. Please log in again.')
       }
-
-      // Set token for API calls
       apiClient.defaults.headers.common['Authorization'] = `Bearer ${token}`
       
-      // Fetch verification data
       await fetchVerifications()
       
     } catch (error) {
@@ -48,257 +49,422 @@ const Verifications = () => {
     }
   }
 
-  // API INTEGRATION (following our pattern)
+  /**
+   * Fetch verification requests from API
+   */
   const fetchVerifications = async () => {
     try {
       setLoading(true)
+      setError(null)
+
       console.log('Fetching verifications...')
-      
       const response = await AdminAPI.getPendingVerifications()
-      console.log('Verifications response:', response)
       
+      console.log('Verifications API response:', response)
+
       if (response.success) {
-        setVerifications(response.data)
-        setError(null)
-        console.log('✅ Verifications loaded successfully')
+        console.log('Verifications loaded successfully:', response.data)
+        setVerifications(response.data || [])
       } else {
-        console.error('❌ Verifications API error:', response.error)
-        setError(response.error)
-        toast.error(response.error || 'Failed to load verifications')
-      }
-    } catch (error) {
-      console.error('❌ Verifications fetch error:', error)
-      
-      if (error.response?.status === 401) {
-        setError('Session expired. Please log in again.')
-        localStorage.removeItem('adminToken')
-        localStorage.removeItem('adminUser')
-      } else if (error.response?.status === 403) {
-        setError('Access denied. Admin privileges required.')
-      } else {
-        setError('Failed to fetch verification requests')
+        throw new Error(response.error || 'Failed to fetch verification requests')
       }
       
-      toast.error('Failed to load verification requests')
+    } catch (err) {
+      console.error('Verifications fetch error:', err)
+      setError(err.message || 'Failed to fetch verification requests')
     } finally {
       setLoading(false)
     }
   }
 
-  // FILTER LOGIC 
-  const filteredVerifications = verifications.filter((verification) => {
-    const matchesSearch =
-      verification.name?.toLowerCase().includes(search.toLowerCase()) ||
-      verification.email?.toLowerCase().includes(search.toLowerCase()) ||
-      verification.id?.toLowerCase().includes(search.toLowerCase())
-    
-    const matchesType = typeFilter === 'All' || verification.type === typeFilter
-    const matchesStatus = statusFilter === 'All' || verification.status === statusFilter
-    
-    return matchesSearch && matchesType && matchesStatus
-  })
+  /**
+   * Apply filters to verifications
+   */
+  useEffect(() => {
+    let filtered = [...verifications]
 
-  // ACTION HANDLERS 
-  const handleViewVerification = (verification) => {
-    setSelectedVerification(verification)
-    setShowVerificationModal(true)
-  }
+    // Apply search filter
+    if (search.trim()) {
+      filtered = filtered.filter(verification =>
+        verification.name?.toLowerCase().includes(search.toLowerCase()) ||
+        verification.email?.toLowerCase().includes(search.toLowerCase()) ||
+        verification.id?.toLowerCase().includes(search.toLowerCase())
+      )
+    }
 
-  const handleApprove = (verificationId, approvalReason) => {
-    const verification = verifications.find(v => v.id === verificationId)
-    setConfirmAction({
-      type: 'approve',
-      verificationId,
-      reason: approvalReason,
-      profileType: verification.type.toLowerCase(), // Provider -> provider, NGO -> ngo
-      profileId: verification.id
-    })
-    setShowConfirmModal(true)
-  }
+    // Apply type filter
+    if (typeFilter !== 'All Types') {
+      filtered = filtered.filter(verification => verification.type === typeFilter)
+    }
 
-  const handleReject = (verificationId, rejectionReason) => {
-    const verification = verifications.find(v => v.id === verificationId)
-    setConfirmAction({
-      type: 'reject',
-      verificationId,
-      rejectionReason,
-      profileType: verification.type.toLowerCase(), // Provider -> provider, NGO -> ngo  
-      profileId: verification.id
-    })
-    setShowConfirmModal(true)
-  }
+    // Apply status filter
+    if (statusFilter !== 'All') {
+      if (statusFilter === 'Pending') {
+        filtered = filtered.filter(verification => 
+          verification.status === 'pending_verification' || verification.status === 'Pending'
+        )
+      } else if (statusFilter === 'Approved') {
+        filtered = filtered.filter(verification => 
+          verification.status === 'verified' || verification.status === 'Approved'
+        )
+      } else if (statusFilter === 'Rejected') {
+        filtered = filtered.filter(verification => 
+          verification.status === 'rejected' || verification.status === 'Rejected'
+        )
+      }
+    }
 
-  // EXECUTE ACTION 
-  const executeAction = async () => {
-    if (!confirmAction || processingAction) return
+    console.log('Filtered verifications:', filtered)
+    setFilteredVerifications(filtered)
+  }, [verifications, search, typeFilter, statusFilter])
 
-    setProcessingAction(true)
-    
+  /**
+   * Handle verification status update
+   */
+  const handleVerificationUpdate = async (verificationId, newStatus, reason = '') => {
     try {
-      const { type, profileType, profileId, rejectionReason } = confirmAction
-      const newStatus = type === 'approve' ? 'Approved' : 'Rejected'
-      const reason = rejectionReason || 'Verification processed'
+      const verification = verifications.find(v => v.id === verificationId)
+      if (!verification) {
+        throw new Error('Verification not found')
+      }
 
-      console.log('Processing verification action:', {
-        profileType,
-        profileId, 
-        newStatus,
-        reason
-      })
+      console.log('=== VERIFICATION UPDATE DEBUG ===');
+      console.log('verificationId:', verificationId);
+      console.log('verification object:', verification);
+      console.log('newStatus:', newStatus);
+      console.log('reason:', reason);
+      console.log('verification.type:', verification.type);
+      console.log('verification.id:', verification.id);
+      console.log('verification.rawProfile:', verification.rawProfile);
 
-      // Call the real API
+      // Try using different possible profile IDs from the verification object
+      const possibleProfileId = verification.id || verification.profileId || verificationId;
+      
+      console.log('Using profile ID:', possibleProfileId);
+
+      // Use the actual profile_id instead of the UserID
       const response = await AdminAPI.updateVerificationStatus(
-        profileType, // 'provider' or 'ngo'
-        profileId,
-        newStatus,   // 'Approved' or 'Rejected'
+        verification.type, // 'NGO' or 'Provider'
+        verification.rawProfile.profile_id || verification.profileId, // Use profile_id from rawProfile
+        newStatus,         // 'Approved' or 'Rejected'
         reason
       )
 
-      if (response.success) {
-        // Update local state to reflect the change
-        setVerifications(prev =>
-          prev.map(verification =>
-            verification.id === confirmAction.verificationId
-              ? { 
-                  ...verification, 
-                  status: newStatus.toLowerCase(),
-                  rejectionReason: type === 'reject' ? rejectionReason : undefined
-                }
-              : verification
-          )
-        )
+      console.log('Update response:', response);
 
-        toast.success(`Verification request ${confirmAction.verificationId} has been ${type === 'approve' ? 'approved' : 'rejected'}`)
-        
-        // Close modals
-        setShowConfirmModal(false)
-        setShowVerificationModal(false)
-        setConfirmAction(null)
+      if (response.success) {
+        // Refresh verifications after successful update
+        await fetchVerifications()
+        setShowModal(false)
+        setSelectedVerification(null)
+        toast.success(`Verification ${newStatus.toLowerCase()} successfully`)
       } else {
-        toast.error(response.error || `Failed to ${type} verification`)
-        console.error(`Failed to ${type} verification:`, response.error)
+        throw new Error(response.error || 'Failed to update verification status')
       }
-    } catch (error) {
-      console.error('Error processing verification:', error)
-      toast.error(`Failed to ${confirmAction.type} verification`)
-    } finally {
-      setProcessingAction(false)
+      
+    } catch (err) {
+      console.error('Verification update error:', err)
+      toast.error('Failed to update verification: ' + err.message)
     }
   }
 
-  // LOADING STATE 
+  /**
+   * Handle approve verification
+   */
+  const handleApprove = (verificationId, reason) => {
+    handleVerificationUpdate(verificationId, 'Approved', reason)
+  }
+
+  /**
+   * Handle reject verification
+   */
+  const handleReject = (verificationId, reason) => {
+    handleVerificationUpdate(verificationId, 'Rejected', reason)
+  }
+
+  /**
+   * Handle view verification details
+   */
+  const handleViewVerification = (verification) => {
+    setSelectedVerification(verification)
+    setShowModal(true)
+  }
+
+  /**
+   * Handle refresh
+   */
+  const handleRefresh = () => {
+    fetchVerifications()
+    toast.success('Verification requests refreshed')
+  }
+
+  /**
+   * Clear all filters
+   */
+  const clearFilters = () => {
+    setSearch('')
+    setTypeFilter('All Types')
+    setStatusFilter('All')
+  }
+
+  const hasActiveFilters = search || typeFilter !== 'All Types' || statusFilter !== 'All'
+
+  // Get verification statistics
+  const stats = {
+    total: verifications.length,
+    pending: verifications.filter(v => v.status === 'pending_verification' || v.status === 'Pending').length,
+    approved: verifications.filter(v => v.status === 'verified' || v.status === 'Approved').length,
+    rejected: verifications.filter(v => v.status === 'rejected' || v.status === 'Rejected').length,
+    ngos: verifications.filter(v => v.type === 'NGO').length,
+    providers: verifications.filter(v => v.type === 'Provider').length
+  }
+
   if (loading) {
     return (
       <div className="space-y-6">
-        <div className="animate-pulse">
-          <div className="h-8 bg-gray-200 rounded w-1/3 mb-2"></div>
-          <div className="h-4 bg-gray-200 rounded w-1/2 mb-6"></div>
+        <div className="flex items-center justify-between">
+          <h1 className="text-2xl font-bold text-gray-900">Verification Requests</h1>
+          <button className="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">
+            <RefreshCwIcon className="w-4 h-4 mr-2 inline" />
+            Refresh
+          </button>
         </div>
-        
-        {/* Filters skeleton */}
-        <div className="bg-white p-4 rounded-lg shadow animate-pulse">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <div className="h-10 bg-gray-200 rounded"></div>
-            <div className="h-10 bg-gray-200 rounded"></div>
-            <div className="h-10 bg-gray-200 rounded"></div>
-            <div className="h-10 bg-gray-200 rounded"></div>
-          </div>
-        </div>
-        
-        {/* Table skeleton */}
-        <div className="bg-white rounded-lg shadow animate-pulse">
-          <div className="p-6">
-            {[...Array(5)].map((_, i) => (
-              <div key={i} className="flex items-center space-x-4 py-4 border-b">
-                <div className="h-4 bg-gray-200 rounded w-1/4"></div>
-                <div className="h-4 bg-gray-200 rounded w-1/4"></div>
-                <div className="h-4 bg-gray-200 rounded w-1/6"></div>
-                <div className="h-4 bg-gray-200 rounded w-1/6"></div>
-                <div className="h-4 bg-gray-200 rounded w-1/6"></div>
-              </div>
-            ))}
+        <div className="flex items-center justify-center h-64">
+          <div className="flex flex-col items-center space-y-3">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+            <div className="text-gray-500">Loading verification requests...</div>
           </div>
         </div>
       </div>
     )
   }
 
-  // ERROR STATE 
   if (error) {
     return (
       <div className="space-y-6">
-        <div className="bg-red-50 border border-red-200 rounded-md p-4">
-          <div className="flex">
-            <div className="ml-3">
-              <h3 className="text-sm font-medium text-red-800">Error Loading Verifications</h3>
-              <p className="mt-1 text-sm text-red-700">{error}</p>
-              <button 
-                onClick={fetchVerifications}
-                className="mt-2 text-sm text-red-600 hover:text-red-500 underline"
-              >
-                Try Again
-              </button>
+        <h1 className="text-2xl font-bold text-gray-900">Verification Requests</h1>
+        <div className="flex items-center justify-center h-64">
+          <div className="text-center">
+            <AlertCircleIcon className="w-12 h-12 text-red-500 mx-auto mb-4" />
+            <h3 className="text-lg font-medium text-gray-900 mb-2">Error Loading Verifications</h3>
+            <p className="text-gray-500 mb-4">{error}</p>
+            <button
+              onClick={setupAuthAndFetchVerifications}
+              className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+            >
+              Try Again
+            </button>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  return (
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900">Verification Requests</h1>
+          <p className="text-gray-500">Review and process verification requests</p>
+        </div>
+        <div className="mt-4 md:mt-0">
+          <button
+            onClick={handleRefresh}
+            className="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
+          >
+            <RefreshCwIcon className="w-4 h-4 mr-2 inline" />
+            Refresh
+          </button>
+        </div>
+      </div>
+
+      {/* Statistics Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="bg-white rounded-lg shadow p-6">
+          <div className="flex items-center">
+            <div className="flex-shrink-0">
+              <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+                <ShieldCheckIcon className="w-5 h-5 text-blue-600" />
+              </div>
+            </div>
+            <div className="ml-4">
+              <p className="text-sm font-medium text-gray-500">Total Requests</p>
+              <p className="text-2xl font-semibold text-gray-900">{stats.total}</p>
+            </div>
+          </div>
+        </div>
+        <div className="bg-white rounded-lg shadow p-6">
+          <div className="flex items-center">
+            <div className="flex-shrink-0">
+              <div className="w-8 h-8 bg-yellow-100 rounded-full flex items-center justify-center">
+                <ClockIcon className="w-5 h-5 text-yellow-600" />
+              </div>
+            </div>
+            <div className="ml-4">
+              <p className="text-sm font-medium text-gray-500">Pending</p>
+              <p className="text-2xl font-semibold text-gray-900">{stats.pending}</p>
+            </div>
+          </div>
+        </div>
+        <div className="bg-white rounded-lg shadow p-6">
+          <div className="flex items-center">
+            <div className="flex-shrink-0">
+              <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
+                <ShieldCheckIcon className="w-5 h-5 text-green-600" />
+              </div>
+            </div>
+            <div className="ml-4">
+              <p className="text-sm font-medium text-gray-500">NGOs</p>
+              <p className="text-2xl font-semibold text-gray-900">{stats.ngos}</p>
+            </div>
+          </div>
+        </div>
+        <div className="bg-white rounded-lg shadow p-6">
+          <div className="flex items-center">
+            <div className="flex-shrink-0">
+              <div className="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center">
+                <ShieldCheckIcon className="w-5 h-5 text-purple-600" />
+              </div>
+            </div>
+            <div className="ml-4">
+              <p className="text-sm font-medium text-gray-500">Providers</p>
+              <p className="text-2xl font-semibold text-gray-900">{stats.providers}</p>
             </div>
           </div>
         </div>
       </div>
-    )
-  }
 
-  // MAIN RENDER 
-  return (
-    <div className="space-y-6">
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between">
-        <h1 className="text-2xl font-bold text-gray-900">
-          Verification Requests
-        </h1>
-        <p className="text-gray-500">
-          Review and process verification requests
-        </p>
+      {/* Filters */}
+      <div className="bg-white rounded-lg shadow p-6">
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-lg font-medium text-gray-900 flex items-center">
+            <FilterIcon className="w-5 h-5 mr-2 text-gray-500" />
+            Filter Verifications
+          </h3>
+          {hasActiveFilters && (
+            <button
+              onClick={clearFilters}
+              className="flex items-center text-sm text-gray-500 hover:text-gray-700"
+            >
+              <XIcon className="w-4 h-4 mr-1" />
+              Clear filters
+            </button>
+          )}
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          {/* Search */}
+          <div>
+            <label htmlFor="search" className="block text-sm font-medium text-gray-700 mb-1">
+              Search
+            </label>
+            <div className="relative">
+              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <SearchIcon className="h-5 w-5 text-gray-400" />
+              </div>
+              <input
+                type="text"
+                id="search"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                placeholder="Search by name, email, or ID..."
+              />
+            </div>
+          </div>
+
+          {/* Type Filter */}
+          <div>
+            <label htmlFor="typeFilter" className="block text-sm font-medium text-gray-700 mb-1">
+              Type
+            </label>
+            <select
+              id="typeFilter"
+              value={typeFilter}
+              onChange={(e) => setTypeFilter(e.target.value)}
+              className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+            >
+              <option value="All Types">All Types</option>
+              <option value="NGO">NGO</option>
+              <option value="Provider">Provider</option>
+            </select>
+          </div>
+
+          {/* Status Filter */}
+          <div>
+            <label htmlFor="statusFilter" className="block text-sm font-medium text-gray-700 mb-1">
+              Status
+            </label>
+            <select
+              id="statusFilter"
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+              className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+            >
+              <option value="All">All</option>
+              <option value="Pending">Pending</option>
+              <option value="Approved">Approved</option>
+              <option value="Rejected">Rejected</option>
+            </select>
+          </div>
+        </div>
       </div>
 
-      <VerificationFilters
-        search={search}
-        setSearch={setSearch}
-        typeFilter={typeFilter}
-        setTypeFilter={setTypeFilter}
-        statusFilter={statusFilter}
-        setStatusFilter={setStatusFilter}
-      />
+      {/* Show message if no verifications after filtering */}
+      {filteredVerifications.length === 0 && verifications.length > 0 && (
+        <div className="bg-gray-50 rounded-lg border-2 border-dashed border-gray-300 p-12">
+          <div className="text-center">
+            <FilterIcon className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+            <h3 className="text-lg font-medium text-gray-900 mb-2">No verification requests found</h3>
+            <p className="text-gray-500">
+              No verification requests match your current filters. Try adjusting your search criteria.
+            </p>
+          </div>
+        </div>
+      )}
 
-      <VerificationTable
-        verifications={filteredVerifications}
-        onViewVerification={handleViewVerification}
-      />
+      {/* Show message if no verifications at all */}
+      {verifications.length === 0 && !loading && !error && (
+        <div className="bg-gray-50 rounded-lg border-2 border-dashed border-gray-300 p-12">
+          <div className="text-center">
+            <ShieldCheckIcon className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+            <h3 className="text-lg font-medium text-gray-900 mb-2">No verification requests</h3>
+            <p className="text-gray-500">
+              There are currently no pending verification requests to review.
+            </p>
+          </div>
+        </div>
+      )}
 
-      {showVerificationModal && selectedVerification && (
+      {/* Verification Table */}
+      {filteredVerifications.length > 0 && (
+        <VerificationTable
+          verifications={filteredVerifications}
+          onViewVerification={handleViewVerification}
+        />
+      )}
+
+      {/* Verification Modal */}
+      {showModal && selectedVerification && (
         <VerificationModal
           verification={selectedVerification}
-          onClose={() => setShowVerificationModal(false)}
+          onClose={() => {
+            setShowModal(false)
+            setSelectedVerification(null)
+          }}
           onApprove={handleApprove}
           onReject={handleReject}
         />
       )}
 
-      {showConfirmModal && confirmAction && (
-        <ConfirmationModal
-          title={
-            confirmAction.type === 'approve'
-              ? 'Approve Verification'
-              : 'Reject Verification'
-          }
-          message={
-            confirmAction.type === 'approve'
-              ? 'Are you sure you want to approve this verification request? This will grant the organisation verified status on the platform.'
-              : 'Are you sure you want to reject this verification request? The organisation will need to resubmit their documents.'
-          }
-          confirmButtonText={processingAction ? 'Processing...' : 'Confirm'}
-          confirmButtonColor={confirmAction.type === 'approve' ? 'green' : 'red'}
-          onConfirm={executeAction}
-          onCancel={() => setShowConfirmModal(false)}
-          disabled={processingAction}
-        />
-      )}
+      {/* Backend Connection Status */}
+      <div className="bg-gray-50 rounded-lg border p-4">
+        <div className="flex items-center text-sm text-gray-600">
+          <div className={`w-2 h-2 rounded-full mr-2 ${!error ? 'bg-green-500' : 'bg-red-500'}`}></div>
+          {!error ? 'Connected to verification API' : 'API connection failed'}
+        </div>
+      </div>
     </div>
   )
 }

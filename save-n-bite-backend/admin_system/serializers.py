@@ -69,9 +69,8 @@ class VerificationRequestSerializer(serializers.Serializer):
     documents = serializers.DictField()
 
 class VerificationUpdateSerializer(serializers.Serializer):
-    """Serializer for updating verification status"""
     profile_type = serializers.ChoiceField(choices=['ngo', 'provider'])
-    profile_id = serializers.UUIDField()
+    profile_id = serializers.CharField() 
     new_status = serializers.ChoiceField(choices=['verified', 'rejected'])
     reason = serializers.CharField(required=False, allow_blank=True)
 

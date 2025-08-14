@@ -127,60 +127,115 @@ const AdminAPI = {
   },
 
   // ==================== VERIFICATION MANAGEMENT ====================
-  getPendingVerifications: async () => {
-    try {
-      const response = await apiClient.get('/api/admin/verifications/pending/');
+getPendingVerifications: async () => {
+  try {
+    const response = await apiClient.get('/api/admin/verifications/pending/');
+    
+    console.log('Raw verification response:', response.data);
+    
+    // Transform verification data without external dependency
+    const transformVerificationData = (profile, type) => {
+      console.log('Transforming profile data:', profile);
       
-      // Transform verification data
-      const allVerifications = [
-        ...response.data.pending_verifications.ngos.map(ngo => 
-          transformVerificationData({ ...ngo, type: 'ngo' })
-        ),
-        ...response.data.pending_verifications.providers.map(provider => 
-          transformVerificationData({ ...provider, type: 'provider' })
-        )
-      ];
-      
+      // Handle both NGO and Provider profiles from backend
       return {
-        data: allVerifications,
-        success: true,
-        error: null
+        id: profile.id,
+        type: type === 'ngo' ? 'NGO' : 'Provider',
+        // Fixed: Use profile.name first (what backend actually returns), then fallbacks
+        name: profile.name || profile.organisation_name || profile.business_name || 'Unknown Organization',
+        email: profile.user?.email || profile.email || 'No email',
+        contact: profile.phone_number || profile.contact || 'No contact',
+        number: profile.phone_number || profile.contact || 'No contact',
+        address: profile.address || 'No address provided',
+        representative: profile.representative_name || 'Not specified',
+        submitted: profile.user?.created_at || profile.created_at || profile.created_at || new Date().toISOString(),
+        status: profile.status || 'pending_verification',
+        // Convert documents object to array format that modal expects
+        documents: profile.documents ? Object.entries(profile.documents).map(([key, value]) => ({
+          type: key,
+          name: key.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase()),
+          url: value,
+          path: value
+        })) : [],
+        // Keep original documents for reference
+        originalDocuments: profile.documents || {},
+        // Add more fields that the frontend expects
+        profileId: profile.id,
+        profileType: type === 'ngo' ? 'NGO' : 'Provider',
+        // Add raw profile data for debugging
+        rawProfile: profile
       };
-    } catch (error) {
-      return {
-        data: null,
-        success: false,
-        error: error.response?.data?.error?.message || "Failed to fetch verification requests"
-      };
-    }
-  },
+    };
 
-  updateVerificationStatus: async (profileType, profileId, newStatus, reason = '') => {
-    try {
-      // Transform frontend types to backend format
-      const backendType = profileType === 'NGO' ? 'ngo' : 'provider';
-      const backendStatus = newStatus === 'Approved' ? 'verified' : 'rejected';
-      
-      const response = await apiClient.post('/api/admin/verifications/update/', {
-        profile_type: backendType,
-        profile_id: profileId,
-        new_status: backendStatus,
-        reason: reason
-      });
-      
+    // Check if the response has the expected structure
+    if (!response.data.pending_verifications) {
+      console.error('Unexpected response structure:', response.data);
       return {
-        data: response.data,
+        data: [],
         success: true,
         error: null
       };
-    } catch (error) {
-      return {
-        data: null,
-        success: false,
-        error: error.response?.data?.error?.message || "Failed to update verification status"
-      };
     }
-  },
+
+    const allVerifications = [
+      ...(response.data.pending_verifications.ngos || []).map(ngo => 
+        transformVerificationData(ngo, 'ngo')
+      ),
+      ...(response.data.pending_verifications.providers || []).map(provider => 
+        transformVerificationData(provider, 'provider')
+      )
+    ];
+    
+    console.log('Transformed verifications:', allVerifications);
+    
+    return {
+      data: allVerifications,
+      success: true,
+      error: null
+    };
+  } catch (error) {
+    console.error('getPendingVerifications error:', error);
+    return {
+      data: [],
+      success: false,
+      error: error.response?.data?.error?.message || error.message || "Failed to fetch verification requests"
+    };
+  }
+},
+
+updateVerificationStatus: async (profileType, profileId, newStatus, reason = '') => {
+  console.log('🚀 UPDATED ADMINAPI.JS IS RUNNING!');
+  console.log('INPUTS:', profileType, profileId, newStatus, reason);
+  
+  try {
+    const backendType = profileType === 'NGO' ? 'ngo' : 'provider';
+    const backendStatus = newStatus === 'Approved' ? 'verified' : 'rejected';
+    
+    const payload = {
+      profile_type: backendType,
+      profile_id: profileId,
+      new_status: backendStatus,
+      reason: reason
+    };
+    
+    console.log('SENDING PAYLOAD:', payload);
+    
+    const response = await apiClient.post('/api/admin/verifications/update/', payload);
+    console.log('SUCCESS:', response.data);
+    
+    return { data: response.data, success: true, error: null };
+  } catch (error) {
+    console.log('ERROR STATUS:', error.response?.status);
+    console.log('ERROR DATA:', error.response?.data);
+    console.log('FULL ERROR:', error);
+    
+    return {
+      data: null,
+      success: false,
+      error: JSON.stringify(error.response?.data) || error.message
+    };
+  }
+},
 
   // ==================== FOOD LISTINGS MANAGEMENT ====================
   getAllListings: async (page = 1, search = '', typeFilter = '', statusFilter = '', perPage = 20) => {

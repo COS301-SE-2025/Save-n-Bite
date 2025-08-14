@@ -369,11 +369,12 @@ def get_pending_verifications(request):
     try:
         verifications = VerificationService.get_pending_verifications()
         
-        # Format NGO data
+        # Format NGO data - Use User ID instead of profile ID
         ngo_data = []
         for ngo in verifications['ngos']:
             ngo_data.append({
-                'id': str(ngo.id),
+                'id': str(ngo.user.UserID),  # ✅ Use User ID instead of profile ID
+                'profile_id': str(ngo.id),   # Keep profile ID for reference
                 'type': 'ngo',
                 'name': ngo.organisation_name,
                 'email': ngo.organisation_email,
@@ -387,11 +388,12 @@ def get_pending_verifications(request):
                 }
             })
         
-        # Format Provider data
+        # Format Provider data - Use User ID instead of profile ID
         provider_data = []
         for provider in verifications['providers']:
             provider_data.append({
-                'id': str(provider.id),
+                'id': str(provider.user.UserID),  # ✅ Use User ID instead of profile ID
+                'profile_id': str(provider.id),   # Keep profile ID for reference
                 'type': 'provider',
                 'name': provider.business_name,
                 'email': provider.business_email,
