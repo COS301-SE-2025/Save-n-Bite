@@ -134,7 +134,7 @@ function Dashboard() {
 
   const topSaverMessage = analyticsData?.top_saver_badge_percent
     ? transformAnalyticsData.formatTopSaverBadge(analyticsData.top_saver_badge_percent)
-    : "Keep going! You're making a difference in reducing food waste! 💪"
+    : "Keep going! You're making a difference in reducing food waste! "
 
   const aiSuggestion = getAISuggestion(analyticsData)
 
@@ -332,7 +332,7 @@ function Dashboard() {
               </div>
               <div className="h-48 sm:h-72 flex items-center justify-center">
                 {salesDonationData.length > 0 && (salesDonationData[0].value > 0 || salesDonationData[1].value > 0) ? (
-                  <div className="w-full max-w-xs">
+                  <div className="w-full">
                     <ResponsiveContainer width="100%" height={200}>
                       <PieChart>
                         <Pie
@@ -474,7 +474,7 @@ function Dashboard() {
               </p>
             </div>
             <div className="bg-gradient-to-r from-purple-500 to-purple-600 rounded-lg shadow-md p-4 sm:p-5 text-white">
-              <h3 className="text-base sm:text-lg font-medium mb-2">AI Suggestion</h3>
+              <h3 className="text-base sm:text-lg font-medium mb-2">Suggestion</h3>
               <p className="text-lg sm:text-xl font-bold mb-3">{aiSuggestion}</p>
               <p className="text-purple-100 text-xs sm:text-sm">
                 Based on your current performance and platform trends
