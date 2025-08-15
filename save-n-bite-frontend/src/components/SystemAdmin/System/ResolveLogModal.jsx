@@ -12,7 +12,7 @@ const ResolveLogModal = ({ log, onClose, onResolve, resolving }) => {
   const [error, setError] = useState('')
 
   const getSeverityIcon = (severity) => {
-    switch (severity) {
+    switch (severity?.toLowerCase()) {
       case 'critical':
         return <AlertCircleIcon className="w-5 h-5 text-red-600" />
       case 'error':
@@ -27,7 +27,7 @@ const ResolveLogModal = ({ log, onClose, onResolve, resolving }) => {
   }
 
   const getSeverityClass = (severity) => {
-    switch (severity) {
+    switch (severity?.toLowerCase()) {
       case 'critical':
         return 'bg-red-100 text-red-800'
       case 'error':
@@ -69,6 +69,15 @@ const ResolveLogModal = ({ log, onClose, onResolve, resolving }) => {
     }
   }
 
+  // Get the display severity - prioritize 'severity' field, fallback to level
+  const displaySeverity = log.severity || log.level?.toLowerCase() || 'info'
+  // Get the display title - prioritize 'title' field, fallback to message
+  const displayTitle = log.title || log.message || 'System Log'
+  // Get the display description
+  const displayDescription = log.description || log.details || 'No description available'
+  // Get the display category/service
+  const displayCategory = log.category || log.service || 'unknown'
+
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto">
       <div className="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
@@ -104,24 +113,24 @@ const ResolveLogModal = ({ log, onClose, onResolve, resolving }) => {
                   <div className="mt-4 bg-gray-50 rounded-lg p-4">
                     <div className="flex items-center justify-between mb-2">
                       <span
-                        className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getSeverityClass(log.severity)}`}
+                        className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getSeverityClass(displaySeverity)}`}
                       >
-                        {getSeverityIcon(log.severity)}
-                        <span className="ml-1 uppercase">{log.severity}</span>
+                        {getSeverityIcon(displaySeverity)}
+                        <span className="ml-1 uppercase">{displaySeverity}</span>
                       </span>
                       <span className="text-xs text-gray-500">
                         {formatTimestamp(log.timestamp)}
                       </span>
                     </div>
                     <h4 className="text-sm font-medium text-gray-900 mb-1">
-                      {log.title}
+                      {displayTitle}
                     </h4>
                     <p className="text-sm text-gray-600">
-                      {log.description}
+                      {displayDescription}
                     </p>
                     <div className="mt-2">
                       <span className="text-xs font-medium text-gray-500">Category:</span>
-                      <span className="text-xs text-gray-700 ml-1 capitalize">{log.category}</span>
+                      <span className="text-xs text-gray-700 ml-1 capitalize">{displayCategory}</span>
                     </div>
                   </div>
 

@@ -194,3 +194,19 @@ def admin_required(view_func):
         return view_func(request, *args, **kwargs)
     
     return wrapper
+
+def get_client_ip(request):
+    """
+    Get the client's IP address from the request.
+    Handles cases where the app is behind a proxy/load balancer.
+    """
+    # Check for IP in various headers (common proxy headers)
+    x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
+    if x_forwarded_for:
+        # X-Forwarded-For can contain multiple IPs, take the first one
+        ip = x_forwarded_for.split(',')[0].strip()
+    else:
+        # Fall back to REMOTE_ADDR
+        ip = request.META.get('REMOTE_ADDR')
+    
+    return ip
