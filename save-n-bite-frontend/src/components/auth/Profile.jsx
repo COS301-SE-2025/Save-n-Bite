@@ -320,8 +320,8 @@ const ProfilePage = () => {
                     </div>
                     <div className="flex items-center">
                       <span className={`px-2 py-1 rounded-full text-xs mr-3 ${business.status === 'verified'
-                          ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300'
-                          : 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300'
+                        ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300'
+                        : 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300'
                         }`}>
                         {business.status}
                       </span>

@@ -66,8 +66,8 @@ const notificationReducer = (state, action) => {
       return {
         ...state,
         notifications: updatedNotifications,
-        unreadCount: deletedNotification && !deletedNotification.isRead 
-          ? state.unreadCount - 1 
+        unreadCount: deletedNotification && !deletedNotification.isRead
+          ? state.unreadCount - 1
           : state.unreadCount
       };
 
@@ -229,9 +229,9 @@ export const NotificationProvider = ({ children }) => {
 
   // Add notification (for real-time updates)
   const addNotification = (notification) => {
-    dispatch({ 
-      type: 'ADD_NOTIFICATION', 
-      payload: NotificationAPI.transformNotificationForUI(notification) 
+    dispatch({
+      type: 'ADD_NOTIFICATION',
+      payload: NotificationAPI.transformNotificationForUI(notification)
     });
   };
 
