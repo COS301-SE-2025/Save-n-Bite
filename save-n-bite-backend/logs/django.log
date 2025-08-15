@@ -3968,3 +3968,411 @@ WARNING 2025-08-15 15:03:33,754 log 7096 28608 Unauthorized: /api/notifications/
 WARNING 2025-08-15 15:03:33,754 basehttp 7096 28608 "GET /api/notifications/unread-count/ HTTP/1.1" 401 58
 WARNING 2025-08-15 15:04:03,756 log 7096 29780 Unauthorized: /api/notifications/unread-count/
 WARNING 2025-08-15 15:04:03,757 basehttp 7096 29780 "GET /api/notifications/unread-count/ HTTP/1.1" 401 58
+WARNING 2025-08-15 15:04:34,138 log 7096 28576 Unauthorized: /api/notifications/unread-count/
+WARNING 2025-08-15 15:04:34,139 basehttp 7096 28576 "GET /api/notifications/unread-count/ HTTP/1.1" 401 58
+WARNING 2025-08-15 15:05:04,134 log 7096 10368 Unauthorized: /api/notifications/unread-count/
+WARNING 2025-08-15 15:05:04,135 basehttp 7096 10368 "GET /api/notifications/unread-count/ HTTP/1.1" 401 58
+WARNING 2025-08-15 15:05:55,126 log 7096 22544 Unauthorized: /api/notifications/unread-count/
+WARNING 2025-08-15 15:05:55,127 basehttp 7096 22544 "GET /api/notifications/unread-count/ HTTP/1.1" 401 58
+WARNING 2025-08-15 15:06:54,832 log 7096 22544 Unauthorized: /api/notifications/unread-count/
+WARNING 2025-08-15 15:06:54,846 basehttp 7096 22544 "GET /api/notifications/unread-count/ HTTP/1.1" 401 58
+WARNING 2025-08-15 15:07:54,835 log 7096 22544 Unauthorized: /api/notifications/unread-count/
+WARNING 2025-08-15 15:07:54,839 basehttp 7096 22544 "GET /api/notifications/unread-count/ HTTP/1.1" 401 58
+WARNING 2025-08-15 15:08:54,830 log 7096 22544 Unauthorized: /api/notifications/unread-count/
+WARNING 2025-08-15 15:08:54,833 basehttp 7096 22544 "GET /api/notifications/unread-count/ HTTP/1.1" 401 58
+WARNING 2025-08-15 15:09:55,137 log 7096 12832 Unauthorized: /api/notifications/unread-count/
+WARNING 2025-08-15 15:09:55,139 basehttp 7096 12832 "GET /api/notifications/unread-count/ HTTP/1.1" 401 58
+WARNING 2025-08-15 15:10:55,133 log 7096 7104 Unauthorized: /api/notifications/unread-count/
+WARNING 2025-08-15 15:10:55,136 basehttp 7096 7104 "GET /api/notifications/unread-count/ HTTP/1.1" 401 58
+WARNING 2025-08-15 15:11:54,822 log 7096 7104 Unauthorized: /api/notifications/unread-count/
+WARNING 2025-08-15 15:11:54,823 basehttp 7096 7104 "GET /api/notifications/unread-count/ HTTP/1.1" 401 58
+WARNING 2025-08-15 15:12:54,823 log 7096 7104 Unauthorized: /api/notifications/unread-count/
+WARNING 2025-08-15 15:12:54,826 basehttp 7096 7104 "GET /api/notifications/unread-count/ HTTP/1.1" 401 58
+WARNING 2025-08-15 15:13:54,818 log 7096 7104 Unauthorized: /api/notifications/unread-count/
+WARNING 2025-08-15 15:13:54,819 basehttp 7096 7104 "GET /api/notifications/unread-count/ HTTP/1.1" 401 58
+WARNING 2025-08-15 15:14:54,836 log 7096 7104 Unauthorized: /api/notifications/unread-count/
+WARNING 2025-08-15 15:14:54,840 basehttp 7096 7104 "GET /api/notifications/unread-count/ HTTP/1.1" 401 58
+WARNING 2025-08-15 15:15:30,212 log 7096 7104 Unauthorized: /api/notifications/unread-count/
+WARNING 2025-08-15 15:15:30,215 basehttp 7096 7104 "GET /api/notifications/unread-count/ HTTP/1.1" 401 58
+WARNING 2025-08-15 15:15:33,739 log 7096 30432 Unauthorized: /api/notifications/unread-count/
+WARNING 2025-08-15 15:15:33,739 basehttp 7096 30432 "GET /api/notifications/unread-count/ HTTP/1.1" 401 58
+WARNING 2025-08-15 15:16:03,751 log 7096 28620 Unauthorized: /api/notifications/unread-count/
+WARNING 2025-08-15 15:16:03,753 basehttp 7096 28620 "GET /api/notifications/unread-count/ HTTP/1.1" 401 58
+WARNING 2025-08-15 15:16:33,434 log 7096 28620 Unauthorized: /api/notifications/unread-count/
+WARNING 2025-08-15 15:16:33,436 basehttp 7096 28620 "GET /api/notifications/unread-count/ HTTP/1.1" 401 58
+WARNING 2025-08-15 15:17:03,432 log 7096 28620 Unauthorized: /api/notifications/unread-count/
+WARNING 2025-08-15 15:17:03,435 basehttp 7096 28620 "GET /api/notifications/unread-count/ HTTP/1.1" 401 58
+WARNING 2025-08-15 15:17:33,441 log 7096 28620 Unauthorized: /api/notifications/unread-count/
+WARNING 2025-08-15 15:17:33,443 basehttp 7096 28620 "GET /api/notifications/unread-count/ HTTP/1.1" 401 58
+WARNING 2025-08-15 15:18:03,447 log 7096 28620 Unauthorized: /api/notifications/unread-count/
+WARNING 2025-08-15 15:18:03,450 basehttp 7096 28620 "GET /api/notifications/unread-count/ HTTP/1.1" 401 58
+WARNING 2025-08-15 15:18:33,740 log 7096 27116 Unauthorized: /api/notifications/unread-count/
+WARNING 2025-08-15 15:18:33,741 basehttp 7096 27116 "GET /api/notifications/unread-count/ HTTP/1.1" 401 58
+WARNING 2025-08-15 15:19:03,767 log 7096 8240 Unauthorized: /api/notifications/unread-count/
+WARNING 2025-08-15 15:19:03,770 basehttp 7096 8240 "GET /api/notifications/unread-count/ HTTP/1.1" 401 58
+WARNING 2025-08-15 15:19:33,742 log 7096 30332 Unauthorized: /api/notifications/unread-count/
+WARNING 2025-08-15 15:19:33,743 basehttp 7096 30332 "GET /api/notifications/unread-count/ HTTP/1.1" 401 58
+WARNING 2025-08-15 15:20:03,742 log 7096 27036 Unauthorized: /api/notifications/unread-count/
+WARNING 2025-08-15 15:20:03,744 basehttp 7096 27036 "GET /api/notifications/unread-count/ HTTP/1.1" 401 58
+WARNING 2025-08-15 15:20:33,752 log 7096 20420 Unauthorized: /api/notifications/unread-count/
+WARNING 2025-08-15 15:20:33,755 basehttp 7096 20420 "GET /api/notifications/unread-count/ HTTP/1.1" 401 58
+WARNING 2025-08-15 15:21:03,752 log 7096 16844 Unauthorized: /api/notifications/unread-count/
+WARNING 2025-08-15 15:21:03,755 basehttp 7096 16844 "GET /api/notifications/unread-count/ HTTP/1.1" 401 58
+WARNING 2025-08-15 15:21:33,430 log 7096 16844 Unauthorized: /api/notifications/unread-count/
+WARNING 2025-08-15 15:21:33,433 basehttp 7096 16844 "GET /api/notifications/unread-count/ HTTP/1.1" 401 58
+WARNING 2025-08-15 15:22:03,757 log 7096 16840 Unauthorized: /api/notifications/unread-count/
+WARNING 2025-08-15 15:22:03,759 basehttp 7096 16840 "GET /api/notifications/unread-count/ HTTP/1.1" 401 58
+WARNING 2025-08-15 15:22:33,758 log 7096 27152 Unauthorized: /api/notifications/unread-count/
+WARNING 2025-08-15 15:22:33,763 basehttp 7096 27152 "GET /api/notifications/unread-count/ HTTP/1.1" 401 58
+WARNING 2025-08-15 15:23:04,130 log 7096 11020 Unauthorized: /api/notifications/unread-count/
+WARNING 2025-08-15 15:23:04,134 basehttp 7096 11020 "GET /api/notifications/unread-count/ HTTP/1.1" 401 58
+WARNING 2025-08-15 15:23:33,751 log 7096 18644 Unauthorized: /api/notifications/unread-count/
+WARNING 2025-08-15 15:23:33,753 basehttp 7096 18644 "GET /api/notifications/unread-count/ HTTP/1.1" 401 58
+WARNING 2025-08-15 15:24:04,152 log 7096 16460 Unauthorized: /api/notifications/unread-count/
+WARNING 2025-08-15 15:24:04,155 basehttp 7096 16460 "GET /api/notifications/unread-count/ HTTP/1.1" 401 58
+WARNING 2025-08-15 15:24:34,141 log 7096 25628 Unauthorized: /api/notifications/unread-count/
+WARNING 2025-08-15 15:24:34,144 basehttp 7096 25628 "GET /api/notifications/unread-count/ HTTP/1.1" 401 58
+WARNING 2025-08-15 15:25:35,132 log 7096 6020 Unauthorized: /api/notifications/unread-count/
+WARNING 2025-08-15 15:25:35,135 basehttp 7096 6020 "GET /api/notifications/unread-count/ HTTP/1.1" 401 58
+WARNING 2025-08-15 15:26:36,133 log 7096 208 Unauthorized: /api/notifications/unread-count/
+WARNING 2025-08-15 15:26:36,134 basehttp 7096 208 "GET /api/notifications/unread-count/ HTTP/1.1" 401 58
+WARNING 2025-08-15 15:27:37,139 log 7096 20904 Unauthorized: /api/notifications/unread-count/
+WARNING 2025-08-15 15:27:37,141 basehttp 7096 20904 "GET /api/notifications/unread-count/ HTTP/1.1" 401 58
+WARNING 2025-08-15 15:28:30,570 log 7096 30632 Unauthorized: /api/notifications/unread-count/
+WARNING 2025-08-15 15:28:30,571 basehttp 7096 30632 "GET /api/notifications/unread-count/ HTTP/1.1" 401 58
+WARNING 2025-08-15 15:28:33,447 log 7096 30632 Unauthorized: /api/notifications/unread-count/
+WARNING 2025-08-15 15:28:33,450 basehttp 7096 30632 "GET /api/notifications/unread-count/ HTTP/1.1" 401 58
+WARNING 2025-08-15 15:29:03,747 log 7096 27688 Unauthorized: /api/notifications/unread-count/
+WARNING 2025-08-15 15:29:03,749 basehttp 7096 27688 "GET /api/notifications/unread-count/ HTTP/1.1" 401 58
+WARNING 2025-08-15 15:29:33,764 log 7096 1628 Unauthorized: /api/notifications/unread-count/
+WARNING 2025-08-15 15:29:33,766 basehttp 7096 1628 "GET /api/notifications/unread-count/ HTTP/1.1" 401 58
+WARNING 2025-08-15 15:30:03,745 log 7096 28912 Unauthorized: /api/notifications/unread-count/
+WARNING 2025-08-15 15:30:03,746 basehttp 7096 28912 "GET /api/notifications/unread-count/ HTTP/1.1" 401 58
+INFO 2025-08-15 15:30:18,956 basehttp 7096 29340 "OPTIONS /auth/register/customer/ HTTP/1.1" 200 0
+INFO 2025-08-15 15:30:24,720 blob_storage 7096 29340 Successfully uploaded blob with public access: customer_profiles/38d82580-b0a5-47da-8256-1619ff9ab7c8.png
+INFO 2025-08-15 15:30:24,723 serializers 7096 29340 Successfully uploaded profile image for customer jjtheron@gmail.com
+INFO 2025-08-15 15:30:24,891 basehttp 7096 29340 "POST /auth/register/customer/ HTTP/1.1" 201 1200
+WARNING 2025-08-15 15:30:33,758 log 7096 6088 Unauthorized: /api/notifications/unread-count/
+WARNING 2025-08-15 15:30:33,759 basehttp 7096 6088 "GET /api/notifications/unread-count/ HTTP/1.1" 401 58
+WARNING 2025-08-15 15:31:03,758 log 7096 28280 Unauthorized: /api/notifications/unread-count/
+WARNING 2025-08-15 15:31:03,759 basehttp 7096 28280 "GET /api/notifications/unread-count/ HTTP/1.1" 401 58
+WARNING 2025-08-15 15:31:33,431 log 7096 28280 Unauthorized: /api/notifications/unread-count/
+WARNING 2025-08-15 15:31:33,432 basehttp 7096 28280 "GET /api/notifications/unread-count/ HTTP/1.1" 401 58
+WARNING 2025-08-15 15:32:03,437 log 7096 28280 Unauthorized: /api/notifications/unread-count/
+WARNING 2025-08-15 15:32:03,439 basehttp 7096 28280 "GET /api/notifications/unread-count/ HTTP/1.1" 401 58
+WARNING 2025-08-15 15:32:33,826 log 7096 28280 Unauthorized: /api/notifications/unread-count/
+WARNING 2025-08-15 15:32:33,828 basehttp 7096 28280 "GET /api/notifications/unread-count/ HTTP/1.1" 401 58
+WARNING 2025-08-15 15:33:03,819 log 7096 28280 Unauthorized: /api/notifications/unread-count/
+WARNING 2025-08-15 15:33:03,822 basehttp 7096 28280 "GET /api/notifications/unread-count/ HTTP/1.1" 401 58
+WARNING 2025-08-15 15:33:54,817 log 7096 28280 Unauthorized: /api/notifications/unread-count/
+WARNING 2025-08-15 15:33:54,818 basehttp 7096 28280 "GET /api/notifications/unread-count/ HTTP/1.1" 401 58
+WARNING 2025-08-15 15:34:54,832 log 7096 28280 Unauthorized: /api/notifications/unread-count/
+WARNING 2025-08-15 15:34:54,836 basehttp 7096 28280 "GET /api/notifications/unread-count/ HTTP/1.1" 401 58
+WARNING 2025-08-15 15:35:35,688 log 7096 6972 Unauthorized: /api/notifications/unread-count/
+WARNING 2025-08-15 15:35:35,701 basehttp 7096 6972 "GET /api/notifications/unread-count/ HTTP/1.1" 401 58
+WARNING 2025-08-15 15:36:03,744 log 7096 5568 Unauthorized: /api/notifications/unread-count/
+WARNING 2025-08-15 15:36:03,745 basehttp 7096 5568 "GET /api/notifications/unread-count/ HTTP/1.1" 401 58
+WARNING 2025-08-15 15:36:33,436 log 7096 5568 Unauthorized: /api/notifications/unread-count/
+WARNING 2025-08-15 15:36:33,439 basehttp 7096 5568 "GET /api/notifications/unread-count/ HTTP/1.1" 401 58
+WARNING 2025-08-15 15:37:03,808 log 7096 5568 Unauthorized: /api/notifications/unread-count/
+WARNING 2025-08-15 15:37:03,808 basehttp 7096 5568 "GET /api/notifications/unread-count/ HTTP/1.1" 401 58
+WARNING 2025-08-15 15:37:33,836 log 7096 5568 Unauthorized: /api/notifications/unread-count/
+WARNING 2025-08-15 15:37:33,839 basehttp 7096 5568 "GET /api/notifications/unread-count/ HTTP/1.1" 401 58
+WARNING 2025-08-15 15:38:34,818 log 7096 5568 Unauthorized: /api/notifications/unread-count/
+WARNING 2025-08-15 15:38:34,820 basehttp 7096 5568 "GET /api/notifications/unread-count/ HTTP/1.1" 401 58
+WARNING 2025-08-15 15:39:35,879 log 7096 5568 Unauthorized: /api/notifications/unread-count/
+WARNING 2025-08-15 15:39:35,879 basehttp 7096 5568 "GET /api/notifications/unread-count/ HTTP/1.1" 401 58
+WARNING 2025-08-15 15:40:36,819 log 7096 5568 Unauthorized: /api/notifications/unread-count/
+WARNING 2025-08-15 15:40:36,820 basehttp 7096 5568 "GET /api/notifications/unread-count/ HTTP/1.1" 401 58
+WARNING 2025-08-15 15:41:03,749 log 7096 700 Unauthorized: /api/notifications/unread-count/
+WARNING 2025-08-15 15:41:03,751 basehttp 7096 700 "GET /api/notifications/unread-count/ HTTP/1.1" 401 58
+WARNING 2025-08-15 15:41:29,104 log 7096 700 Bad Request: /auth/register/customer/
+WARNING 2025-08-15 15:41:29,105 basehttp 7096 700 "POST /auth/register/customer/ HTTP/1.1" 400 271
+WARNING 2025-08-15 15:41:33,430 log 7096 700 Unauthorized: /api/notifications/unread-count/
+WARNING 2025-08-15 15:41:33,432 basehttp 7096 700 "GET /api/notifications/unread-count/ HTTP/1.1" 401 58
+WARNING 2025-08-15 15:41:42,791 log 7096 700 Unauthorized: /api/notifications/unread-count/
+WARNING 2025-08-15 15:41:42,792 log 7096 23320 Unauthorized: /api/notifications/preferences/
+WARNING 2025-08-15 15:41:42,793 basehttp 7096 700 "GET /api/notifications/unread-count/ HTTP/1.1" 401 58
+WARNING 2025-08-15 15:41:42,793 basehttp 7096 23320 "GET /api/notifications/preferences/ HTTP/1.1" 401 58
+WARNING 2025-08-15 15:41:42,797 log 7096 700 Unauthorized: /api/notifications/unread-count/
+WARNING 2025-08-15 15:41:42,798 log 7096 23320 Unauthorized: /api/notifications/preferences/
+WARNING 2025-08-15 15:41:42,799 basehttp 7096 700 "GET /api/notifications/unread-count/ HTTP/1.1" 401 58
+WARNING 2025-08-15 15:41:42,799 basehttp 7096 23320 "GET /api/notifications/preferences/ HTTP/1.1" 401 58
+WARNING 2025-08-15 15:42:05,795 log 7096 23320 Bad Request: /auth/register/customer/
+WARNING 2025-08-15 15:42:05,796 basehttp 7096 23320 "POST /auth/register/customer/ HTTP/1.1" 400 271
+WARNING 2025-08-15 15:42:12,807 log 7096 23320 Unauthorized: /api/notifications/unread-count/
+WARNING 2025-08-15 15:42:12,813 basehttp 7096 23320 "GET /api/notifications/unread-count/ HTTP/1.1" 401 58
+WARNING 2025-08-15 15:42:21,626 log 7096 23320 Bad Request: /auth/register/customer/
+WARNING 2025-08-15 15:42:21,627 basehttp 7096 23320 "POST /auth/register/customer/ HTTP/1.1" 400 271
+WARNING 2025-08-15 15:42:42,799 log 7096 23320 Unauthorized: /api/notifications/unread-count/
+WARNING 2025-08-15 15:42:42,802 basehttp 7096 23320 "GET /api/notifications/unread-count/ HTTP/1.1" 401 58
+WARNING 2025-08-15 15:43:13,117 log 7096 16424 Unauthorized: /api/notifications/unread-count/
+WARNING 2025-08-15 15:43:13,120 basehttp 7096 16424 "GET /api/notifications/unread-count/ HTTP/1.1" 401 58
+WARNING 2025-08-15 15:43:23,207 log 7096 16424 Bad Request: /auth/register/customer/
+WARNING 2025-08-15 15:43:23,207 basehttp 7096 16424 "POST /auth/register/customer/ HTTP/1.1" 400 271
+WARNING 2025-08-15 15:43:43,125 log 7096 30028 Unauthorized: /api/notifications/unread-count/
+WARNING 2025-08-15 15:43:43,127 basehttp 7096 30028 "GET /api/notifications/unread-count/ HTTP/1.1" 401 58
+WARNING 2025-08-15 15:44:13,158 log 7096 30504 Unauthorized: /api/notifications/unread-count/
+WARNING 2025-08-15 15:44:13,160 basehttp 7096 30504 "GET /api/notifications/unread-count/ HTTP/1.1" 401 58
+WARNING 2025-08-15 15:44:14,539 log 7096 30504 Bad Request: /auth/register/customer/
+WARNING 2025-08-15 15:44:14,540 basehttp 7096 30504 "POST /auth/register/customer/ HTTP/1.1" 400 271
+WARNING 2025-08-15 15:44:43,151 log 7096 30296 Unauthorized: /api/notifications/unread-count/
+WARNING 2025-08-15 15:44:43,156 basehttp 7096 30296 "GET /api/notifications/unread-count/ HTTP/1.1" 401 58
+WARNING 2025-08-15 15:45:13,115 log 7096 27464 Unauthorized: /api/notifications/unread-count/
+WARNING 2025-08-15 15:45:13,117 basehttp 7096 27464 "GET /api/notifications/unread-count/ HTTP/1.1" 401 58
+WARNING 2025-08-15 15:45:43,119 log 7096 24880 Unauthorized: /api/notifications/unread-count/
+WARNING 2025-08-15 15:45:43,122 basehttp 7096 24880 "GET /api/notifications/unread-count/ HTTP/1.1" 401 58
+WARNING 2025-08-15 15:45:58,745 log 7096 12820 Bad Request: /auth/register/customer/
+WARNING 2025-08-15 15:45:58,748 basehttp 7096 12820 "POST /auth/register/customer/ HTTP/1.1" 400 149
+WARNING 2025-08-15 15:46:08,975 log 7096 12820 Bad Request: /auth/register/customer/
+WARNING 2025-08-15 15:46:08,977 basehttp 7096 12820 "POST /auth/register/customer/ HTTP/1.1" 400 149
+WARNING 2025-08-15 15:46:12,794 log 7096 12820 Unauthorized: /api/notifications/unread-count/
+WARNING 2025-08-15 15:46:12,795 basehttp 7096 12820 "GET /api/notifications/unread-count/ HTTP/1.1" 401 58
+WARNING 2025-08-15 15:46:29,316 log 7096 12820 Bad Request: /auth/register/customer/
+WARNING 2025-08-15 15:46:29,316 basehttp 7096 12820 "POST /auth/register/customer/ HTTP/1.1" 400 149
+WARNING 2025-08-15 15:46:42,809 log 7096 12820 Unauthorized: /api/notifications/unread-count/
+WARNING 2025-08-15 15:46:42,811 basehttp 7096 12820 "GET /api/notifications/unread-count/ HTTP/1.1" 401 58
+WARNING 2025-08-15 15:46:45,842 log 7096 7472 Bad Request: /auth/register/customer/
+WARNING 2025-08-15 15:46:45,844 basehttp 7096 7472 "POST /auth/register/customer/ HTTP/1.1" 400 149
+WARNING 2025-08-15 15:47:02,227 log 7096 7108 Bad Request: /auth/register/customer/
+WARNING 2025-08-15 15:47:02,234 basehttp 7096 7108 "POST /auth/register/customer/ HTTP/1.1" 400 149
+WARNING 2025-08-15 15:47:11,482 log 7096 7108 Bad Request: /auth/register/customer/
+WARNING 2025-08-15 15:47:11,492 basehttp 7096 7108 "POST /auth/register/customer/ HTTP/1.1" 400 149
+WARNING 2025-08-15 15:47:12,801 log 7096 7108 Unauthorized: /api/notifications/unread-count/
+WARNING 2025-08-15 15:47:12,804 basehttp 7096 7108 "GET /api/notifications/unread-count/ HTTP/1.1" 401 58
+WARNING 2025-08-15 15:47:15,411 log 7096 7108 Bad Request: /auth/register/customer/
+WARNING 2025-08-15 15:47:15,422 basehttp 7096 7108 "POST /auth/register/customer/ HTTP/1.1" 400 149
+WARNING 2025-08-15 15:47:19,774 log 7096 7108 Bad Request: /auth/register/customer/
+WARNING 2025-08-15 15:47:19,778 basehttp 7096 7108 "POST /auth/register/customer/ HTTP/1.1" 400 149
+WARNING 2025-08-15 15:47:25,833 log 7096 7108 Bad Request: /auth/register/customer/
+WARNING 2025-08-15 15:47:25,835 basehttp 7096 7108 "POST /auth/register/customer/ HTTP/1.1" 400 149
+WARNING 2025-08-15 15:47:42,803 log 7096 7108 Unauthorized: /api/notifications/unread-count/
+WARNING 2025-08-15 15:47:42,805 basehttp 7096 7108 "GET /api/notifications/unread-count/ HTTP/1.1" 401 58
+WARNING 2025-08-15 15:47:43,745 log 7096 7108 Bad Request: /auth/register/customer/
+WARNING 2025-08-15 15:47:43,751 basehttp 7096 7108 "POST /auth/register/customer/ HTTP/1.1" 400 149
+WARNING 2025-08-15 15:47:59,601 log 7096 23976 Bad Request: /auth/register/customer/
+WARNING 2025-08-15 15:47:59,603 basehttp 7096 23976 "POST /auth/register/customer/ HTTP/1.1" 400 149
+WARNING 2025-08-15 15:48:13,098 log 7096 16744 Unauthorized: /api/notifications/unread-count/
+WARNING 2025-08-15 15:48:13,099 basehttp 7096 16744 "GET /api/notifications/unread-count/ HTTP/1.1" 401 58
+WARNING 2025-08-15 15:48:43,113 log 7096 9952 Unauthorized: /api/notifications/unread-count/
+WARNING 2025-08-15 15:48:43,115 basehttp 7096 9952 "GET /api/notifications/unread-count/ HTTP/1.1" 401 58
+WARNING 2025-08-15 15:48:48,532 log 7096 29420 Bad Request: /auth/register/customer/
+WARNING 2025-08-15 15:48:48,535 basehttp 7096 29420 "POST /auth/register/customer/ HTTP/1.1" 400 149
+WARNING 2025-08-15 15:49:13,111 log 7096 30332 Unauthorized: /api/notifications/unread-count/
+WARNING 2025-08-15 15:49:13,113 basehttp 7096 30332 "GET /api/notifications/unread-count/ HTTP/1.1" 401 58
+WARNING 2025-08-15 15:49:43,165 log 7096 27944 Unauthorized: /api/notifications/unread-count/
+WARNING 2025-08-15 15:49:43,170 basehttp 7096 27944 "GET /api/notifications/unread-count/ HTTP/1.1" 401 58
+WARNING 2025-08-15 15:50:13,103 log 7096 30164 Unauthorized: /api/notifications/unread-count/
+WARNING 2025-08-15 15:50:13,105 basehttp 7096 30164 "GET /api/notifications/unread-count/ HTTP/1.1" 401 58
+WARNING 2025-08-15 15:50:43,121 log 7096 26712 Unauthorized: /api/notifications/unread-count/
+WARNING 2025-08-15 15:50:43,124 basehttp 7096 26712 "GET /api/notifications/unread-count/ HTTP/1.1" 401 58
+WARNING 2025-08-15 15:51:03,630 log 7096 20664 Bad Request: /auth/register/customer/
+WARNING 2025-08-15 15:51:03,631 basehttp 7096 20664 "POST /auth/register/customer/ HTTP/1.1" 400 149
+WARNING 2025-08-15 15:51:12,810 log 7096 20664 Unauthorized: /api/notifications/unread-count/
+WARNING 2025-08-15 15:51:12,815 basehttp 7096 20664 "GET /api/notifications/unread-count/ HTTP/1.1" 401 58
+WARNING 2025-08-15 15:51:18,800 log 7096 20664 Bad Request: /auth/register/customer/
+WARNING 2025-08-15 15:51:18,803 basehttp 7096 20664 "POST /auth/register/customer/ HTTP/1.1" 400 149
+WARNING 2025-08-15 15:51:42,813 log 7096 20664 Unauthorized: /api/notifications/unread-count/
+WARNING 2025-08-15 15:51:42,817 basehttp 7096 20664 "GET /api/notifications/unread-count/ HTTP/1.1" 401 58
+WARNING 2025-08-15 15:52:13,106 log 7096 16744 Unauthorized: /api/notifications/unread-count/
+WARNING 2025-08-15 15:52:13,106 basehttp 7096 16744 "GET /api/notifications/unread-count/ HTTP/1.1" 401 58
+WARNING 2025-08-15 15:52:43,108 log 7096 30420 Unauthorized: /api/notifications/unread-count/
+WARNING 2025-08-15 15:52:43,109 basehttp 7096 30420 "GET /api/notifications/unread-count/ HTTP/1.1" 401 58
+WARNING 2025-08-15 15:53:13,100 log 7096 14568 Unauthorized: /api/notifications/unread-count/
+WARNING 2025-08-15 15:53:13,101 basehttp 7096 14568 "GET /api/notifications/unread-count/ HTTP/1.1" 401 58
+WARNING 2025-08-15 15:53:43,152 log 7096 12224 Unauthorized: /api/notifications/unread-count/
+WARNING 2025-08-15 15:53:43,154 basehttp 7096 12224 "GET /api/notifications/unread-count/ HTTP/1.1" 401 58
+WARNING 2025-08-15 15:54:13,124 log 7096 18412 Unauthorized: /api/notifications/unread-count/
+WARNING 2025-08-15 15:54:13,126 basehttp 7096 18412 "GET /api/notifications/unread-count/ HTTP/1.1" 401 58
+WARNING 2025-08-15 15:54:43,119 log 7096 26400 Unauthorized: /api/notifications/unread-count/
+WARNING 2025-08-15 15:54:43,122 basehttp 7096 26400 "GET /api/notifications/unread-count/ HTTP/1.1" 401 58
+WARNING 2025-08-15 15:55:13,101 log 7096 21684 Unauthorized: /api/notifications/unread-count/
+WARNING 2025-08-15 15:55:13,103 basehttp 7096 21684 "GET /api/notifications/unread-count/ HTTP/1.1" 401 58
+WARNING 2025-08-15 15:55:43,110 log 7096 27276 Unauthorized: /api/notifications/unread-count/
+WARNING 2025-08-15 15:55:43,111 basehttp 7096 27276 "GET /api/notifications/unread-count/ HTTP/1.1" 401 58
+WARNING 2025-08-15 15:56:13,106 log 7096 16864 Unauthorized: /api/notifications/unread-count/
+WARNING 2025-08-15 15:56:13,107 basehttp 7096 16864 "GET /api/notifications/unread-count/ HTTP/1.1" 401 58
+WARNING 2025-08-15 15:56:42,813 log 7096 16864 Unauthorized: /api/notifications/unread-count/
+WARNING 2025-08-15 15:56:42,818 basehttp 7096 16864 "GET /api/notifications/unread-count/ HTTP/1.1" 401 58
+WARNING 2025-08-15 15:57:12,802 log 7096 16864 Unauthorized: /api/notifications/unread-count/
+WARNING 2025-08-15 15:57:12,804 basehttp 7096 16864 "GET /api/notifications/unread-count/ HTTP/1.1" 401 58
+WARNING 2025-08-15 15:57:42,807 log 7096 16864 Unauthorized: /api/notifications/unread-count/
+WARNING 2025-08-15 15:57:42,809 basehttp 7096 16864 "GET /api/notifications/unread-count/ HTTP/1.1" 401 58
+WARNING 2025-08-15 15:58:13,138 log 7096 27140 Unauthorized: /api/notifications/unread-count/
+WARNING 2025-08-15 15:58:13,140 basehttp 7096 27140 "GET /api/notifications/unread-count/ HTTP/1.1" 401 58
+WARNING 2025-08-15 15:58:43,112 log 7096 15260 Unauthorized: /api/notifications/unread-count/
+WARNING 2025-08-15 15:58:43,114 basehttp 7096 15260 "GET /api/notifications/unread-count/ HTTP/1.1" 401 58
+WARNING 2025-08-15 15:59:28,920 log 7096 15260 Unauthorized: /api/notifications/unread-count/
+WARNING 2025-08-15 15:59:28,921 basehttp 7096 15260 "GET /api/notifications/unread-count/ HTTP/1.1" 401 58
+WARNING 2025-08-15 15:59:43,134 log 7096 6700 Unauthorized: /api/notifications/unread-count/
+WARNING 2025-08-15 15:59:43,136 basehttp 7096 6700 "GET /api/notifications/unread-count/ HTTP/1.1" 401 58
+WARNING 2025-08-15 15:59:49,665 log 7096 6700 Bad Request: /auth/register/customer/
+WARNING 2025-08-15 15:59:49,667 basehttp 7096 6700 "POST /auth/register/customer/ HTTP/1.1" 400 149
+WARNING 2025-08-15 16:00:13,138 log 7096 27216 Unauthorized: /api/notifications/unread-count/
+WARNING 2025-08-15 16:00:13,144 basehttp 7096 27216 "GET /api/notifications/unread-count/ HTTP/1.1" 401 58
+WARNING 2025-08-15 16:00:43,146 log 7096 19544 Unauthorized: /api/notifications/unread-count/
+WARNING 2025-08-15 16:00:43,148 basehttp 7096 19544 "GET /api/notifications/unread-count/ HTTP/1.1" 401 58
+WARNING 2025-08-15 16:01:41,146 log 7096 27868 Unauthorized: /api/notifications/unread-count/
+WARNING 2025-08-15 16:01:41,158 basehttp 7096 27868 "GET /api/notifications/unread-count/ HTTP/1.1" 401 58
+WARNING 2025-08-15 16:01:42,809 log 7096 27868 Unauthorized: /api/notifications/unread-count/
+WARNING 2025-08-15 16:01:42,819 basehttp 7096 27868 "GET /api/notifications/unread-count/ HTTP/1.1" 401 58
+WARNING 2025-08-15 16:01:44,718 log 7096 27868 Bad Request: /auth/register/customer/
+WARNING 2025-08-15 16:01:44,719 basehttp 7096 27868 "POST /auth/register/customer/ HTTP/1.1" 400 149
+WARNING 2025-08-15 16:02:12,858 log 7096 27868 Unauthorized: /api/notifications/unread-count/
+WARNING 2025-08-15 16:02:12,859 basehttp 7096 27868 "GET /api/notifications/unread-count/ HTTP/1.1" 401 58
+WARNING 2025-08-15 16:02:21,832 log 7096 3920 Bad Request: /auth/register/customer/
+WARNING 2025-08-15 16:02:21,835 basehttp 7096 3920 "POST /auth/register/customer/ HTTP/1.1" 400 149
+WARNING 2025-08-15 16:02:43,110 log 7096 28728 Unauthorized: /api/notifications/unread-count/
+WARNING 2025-08-15 16:02:43,114 basehttp 7096 28728 "GET /api/notifications/unread-count/ HTTP/1.1" 401 58
+WARNING 2025-08-15 16:03:13,119 log 7096 23352 Unauthorized: /api/notifications/unread-count/
+WARNING 2025-08-15 16:03:13,121 basehttp 7096 23352 "GET /api/notifications/unread-count/ HTTP/1.1" 401 58
+WARNING 2025-08-15 16:03:31,777 log 7096 28760 Bad Request: /auth/register/customer/
+WARNING 2025-08-15 16:03:31,780 basehttp 7096 28760 "POST /auth/register/customer/ HTTP/1.1" 400 149
+WARNING 2025-08-15 16:03:43,122 log 7096 20332 Unauthorized: /api/notifications/unread-count/
+WARNING 2025-08-15 16:03:43,123 basehttp 7096 20332 "GET /api/notifications/unread-count/ HTTP/1.1" 401 58
+WARNING 2025-08-15 16:04:09,481 log 7096 29540 Bad Request: /auth/register/customer/
+WARNING 2025-08-15 16:04:09,485 basehttp 7096 29540 "POST /auth/register/customer/ HTTP/1.1" 400 149
+WARNING 2025-08-15 16:04:12,821 log 7096 29540 Unauthorized: /api/notifications/unread-count/
+WARNING 2025-08-15 16:04:12,824 basehttp 7096 29540 "GET /api/notifications/unread-count/ HTTP/1.1" 401 58
+WARNING 2025-08-15 16:04:43,133 log 7096 27892 Unauthorized: /api/notifications/unread-count/
+WARNING 2025-08-15 16:04:43,137 basehttp 7096 27892 "GET /api/notifications/unread-count/ HTTP/1.1" 401 58
+WARNING 2025-08-15 16:05:13,104 log 7096 28136 Unauthorized: /api/notifications/unread-count/
+WARNING 2025-08-15 16:05:13,107 basehttp 7096 28136 "GET /api/notifications/unread-count/ HTTP/1.1" 401 58
+WARNING 2025-08-15 16:05:43,121 log 7096 20212 Unauthorized: /api/notifications/unread-count/
+WARNING 2025-08-15 16:05:43,124 basehttp 7096 20212 "GET /api/notifications/unread-count/ HTTP/1.1" 401 58
+WARNING 2025-08-15 16:06:13,109 log 7096 29824 Unauthorized: /api/notifications/unread-count/
+WARNING 2025-08-15 16:06:13,111 basehttp 7096 29824 "GET /api/notifications/unread-count/ HTTP/1.1" 401 58
+WARNING 2025-08-15 16:06:42,789 log 7096 29824 Unauthorized: /api/notifications/unread-count/
+WARNING 2025-08-15 16:06:42,790 basehttp 7096 29824 "GET /api/notifications/unread-count/ HTTP/1.1" 401 58
+WARNING 2025-08-15 16:07:13,147 log 7096 18188 Unauthorized: /api/notifications/unread-count/
+WARNING 2025-08-15 16:07:13,150 basehttp 7096 18188 "GET /api/notifications/unread-count/ HTTP/1.1" 401 58
+WARNING 2025-08-15 16:07:43,180 log 7096 26600 Unauthorized: /api/notifications/unread-count/
+WARNING 2025-08-15 16:07:43,182 basehttp 7096 26600 "GET /api/notifications/unread-count/ HTTP/1.1" 401 58
+WARNING 2025-08-15 16:08:03,716 log 7096 30164 Bad Request: /auth/register/customer/
+WARNING 2025-08-15 16:08:03,718 basehttp 7096 30164 "POST /auth/register/customer/ HTTP/1.1" 400 149
+WARNING 2025-08-15 16:08:13,114 log 7096 24736 Unauthorized: /api/notifications/unread-count/
+WARNING 2025-08-15 16:08:13,115 basehttp 7096 24736 "GET /api/notifications/unread-count/ HTTP/1.1" 401 58
+WARNING 2025-08-15 16:08:43,151 log 7096 3112 Unauthorized: /api/notifications/unread-count/
+WARNING 2025-08-15 16:08:43,163 basehttp 7096 3112 "GET /api/notifications/unread-count/ HTTP/1.1" 401 58
+WARNING 2025-08-15 16:09:13,139 log 7096 19180 Unauthorized: /api/notifications/unread-count/
+WARNING 2025-08-15 16:09:13,141 basehttp 7096 19180 "GET /api/notifications/unread-count/ HTTP/1.1" 401 58
+WARNING 2025-08-15 16:09:55,139 log 7096 1812 Unauthorized: /api/notifications/unread-count/
+WARNING 2025-08-15 16:09:55,141 basehttp 7096 1812 "GET /api/notifications/unread-count/ HTTP/1.1" 401 58
+WARNING 2025-08-15 16:10:26,417 log 7096 29352 Unauthorized: /api/notifications/unread-count/
+WARNING 2025-08-15 16:10:26,417 basehttp 7096 29352 "GET /api/notifications/unread-count/ HTTP/1.1" 401 58
+WARNING 2025-08-15 16:10:31,332 log 7096 6288 Bad Request: /auth/register/customer/
+WARNING 2025-08-15 16:10:31,336 basehttp 7096 6288 "POST /auth/register/customer/ HTTP/1.1" 400 149
+WARNING 2025-08-15 16:10:43,114 log 7096 11524 Unauthorized: /api/notifications/unread-count/
+WARNING 2025-08-15 16:10:43,118 basehttp 7096 11524 "GET /api/notifications/unread-count/ HTTP/1.1" 401 58
+WARNING 2025-08-15 16:10:44,018 log 7096 11524 Bad Request: /auth/register/customer/
+WARNING 2025-08-15 16:10:44,019 basehttp 7096 11524 "POST /auth/register/customer/ HTTP/1.1" 400 149
+WARNING 2025-08-15 16:11:13,116 log 7096 21760 Unauthorized: /api/notifications/unread-count/
+WARNING 2025-08-15 16:11:13,117 basehttp 7096 21760 "GET /api/notifications/unread-count/ HTTP/1.1" 401 58
+WARNING 2025-08-15 16:11:42,810 log 7096 21760 Unauthorized: /api/notifications/unread-count/
+WARNING 2025-08-15 16:11:42,812 basehttp 7096 21760 "GET /api/notifications/unread-count/ HTTP/1.1" 401 58
+WARNING 2025-08-15 16:12:03,734 log 7096 29132 Bad Request: /auth/register/customer/
+WARNING 2025-08-15 16:12:03,734 basehttp 7096 29132 "POST /auth/register/customer/ HTTP/1.1" 400 149
+WARNING 2025-08-15 16:12:13,126 log 7096 28072 Unauthorized: /api/notifications/unread-count/
+WARNING 2025-08-15 16:12:13,134 basehttp 7096 28072 "GET /api/notifications/unread-count/ HTTP/1.1" 401 58
+WARNING 2025-08-15 16:12:43,104 log 7096 23864 Unauthorized: /api/notifications/unread-count/
+WARNING 2025-08-15 16:12:43,105 basehttp 7096 23864 "GET /api/notifications/unread-count/ HTTP/1.1" 401 58
+WARNING 2025-08-15 16:13:13,112 log 7096 29252 Unauthorized: /api/notifications/unread-count/
+WARNING 2025-08-15 16:13:13,114 basehttp 7096 29252 "GET /api/notifications/unread-count/ HTTP/1.1" 401 58
+WARNING 2025-08-15 16:13:43,123 log 7096 29328 Unauthorized: /api/notifications/unread-count/
+WARNING 2025-08-15 16:13:43,124 basehttp 7096 29328 "GET /api/notifications/unread-count/ HTTP/1.1" 401 58
+WARNING 2025-08-15 16:14:13,140 log 7096 5240 Unauthorized: /api/notifications/unread-count/
+WARNING 2025-08-15 16:14:13,144 basehttp 7096 5240 "GET /api/notifications/unread-count/ HTTP/1.1" 401 58
+WARNING 2025-08-15 16:14:21,125 log 7096 27060 Bad Request: /auth/register/customer/
+WARNING 2025-08-15 16:14:21,127 basehttp 7096 27060 "POST /auth/register/customer/ HTTP/1.1" 400 149
+WARNING 2025-08-15 16:14:30,837 log 7096 19772 Bad Request: /auth/register/customer/
+WARNING 2025-08-15 16:14:30,840 basehttp 7096 19772 "POST /auth/register/customer/ HTTP/1.1" 400 149
+WARNING 2025-08-15 16:14:43,097 log 7096 10000 Unauthorized: /api/notifications/unread-count/
+WARNING 2025-08-15 16:14:43,098 basehttp 7096 10000 "GET /api/notifications/unread-count/ HTTP/1.1" 401 58
+WARNING 2025-08-15 16:15:13,120 log 7096 25960 Unauthorized: /api/notifications/unread-count/
+WARNING 2025-08-15 16:15:13,121 basehttp 7096 25960 "GET /api/notifications/unread-count/ HTTP/1.1" 401 58
+WARNING 2025-08-15 16:15:14,464 log 7096 25960 Bad Request: /auth/register/customer/
+WARNING 2025-08-15 16:15:14,464 basehttp 7096 25960 "POST /auth/register/customer/ HTTP/1.1" 400 149
+WARNING 2025-08-15 16:15:43,121 log 7096 5692 Unauthorized: /api/notifications/unread-count/
+WARNING 2025-08-15 16:15:43,122 basehttp 7096 5692 "GET /api/notifications/unread-count/ HTTP/1.1" 401 58
+WARNING 2025-08-15 16:16:13,116 log 7096 18200 Unauthorized: /api/notifications/unread-count/
+WARNING 2025-08-15 16:16:13,117 basehttp 7096 18200 "GET /api/notifications/unread-count/ HTTP/1.1" 401 58
+WARNING 2025-08-15 16:16:42,793 log 7096 18200 Unauthorized: /api/notifications/unread-count/
+WARNING 2025-08-15 16:16:42,794 basehttp 7096 18200 "GET /api/notifications/unread-count/ HTTP/1.1" 401 58
+WARNING 2025-08-15 16:16:52,473 log 7096 7696 Bad Request: /auth/register/customer/
+WARNING 2025-08-15 16:16:52,476 basehttp 7096 7696 "POST /auth/register/customer/ HTTP/1.1" 400 149
+WARNING 2025-08-15 16:17:13,105 log 7096 10964 Unauthorized: /api/notifications/unread-count/
+WARNING 2025-08-15 16:17:13,108 basehttp 7096 10964 "GET /api/notifications/unread-count/ HTTP/1.1" 401 58
+WARNING 2025-08-15 16:17:39,277 log 7096 1628 Bad Request: /auth/register/customer/
+WARNING 2025-08-15 16:17:39,280 basehttp 7096 1628 "POST /auth/register/customer/ HTTP/1.1" 400 149
+WARNING 2025-08-15 16:17:42,800 log 7096 1628 Unauthorized: /api/notifications/unread-count/
+WARNING 2025-08-15 16:17:42,802 basehttp 7096 1628 "GET /api/notifications/unread-count/ HTTP/1.1" 401 58
+WARNING 2025-08-15 16:18:13,118 log 7096 16432 Unauthorized: /api/notifications/unread-count/
+WARNING 2025-08-15 16:18:13,118 basehttp 7096 16432 "GET /api/notifications/unread-count/ HTTP/1.1" 401 58
+WARNING 2025-08-15 16:18:40,245 log 7096 19132 Bad Request: /auth/register/customer/
+WARNING 2025-08-15 16:18:40,247 basehttp 7096 19132 "POST /auth/register/customer/ HTTP/1.1" 400 149
+WARNING 2025-08-15 16:18:42,812 log 7096 19132 Unauthorized: /api/notifications/unread-count/
+WARNING 2025-08-15 16:18:42,816 basehttp 7096 19132 "GET /api/notifications/unread-count/ HTTP/1.1" 401 58
+WARNING 2025-08-15 16:19:07,745 log 7096 21016 Bad Request: /auth/register/customer/
+WARNING 2025-08-15 16:19:07,745 basehttp 7096 21016 "POST /auth/register/customer/ HTTP/1.1" 400 149
+WARNING 2025-08-15 16:19:12,819 log 7096 21016 Unauthorized: /api/notifications/unread-count/
+WARNING 2025-08-15 16:19:12,824 basehttp 7096 21016 "GET /api/notifications/unread-count/ HTTP/1.1" 401 58
+WARNING 2025-08-15 16:19:43,124 log 7096 8076 Unauthorized: /api/notifications/unread-count/
+WARNING 2025-08-15 16:19:43,126 basehttp 7096 8076 "GET /api/notifications/unread-count/ HTTP/1.1" 401 58
+WARNING 2025-08-15 16:20:13,115 log 7096 26752 Unauthorized: /api/notifications/unread-count/
+WARNING 2025-08-15 16:20:13,116 basehttp 7096 26752 "GET /api/notifications/unread-count/ HTTP/1.1" 401 58
+WARNING 2025-08-15 16:20:35,499 log 7096 20104 Bad Request: /auth/register/customer/
+WARNING 2025-08-15 16:20:35,503 basehttp 7096 20104 "POST /auth/register/customer/ HTTP/1.1" 400 149
+WARNING 2025-08-15 16:20:42,853 log 7096 20104 Unauthorized: /api/notifications/unread-count/
+WARNING 2025-08-15 16:20:42,858 basehttp 7096 20104 "GET /api/notifications/unread-count/ HTTP/1.1" 401 58
+WARNING 2025-08-15 16:20:57,199 log 7096 30076 Bad Request: /auth/register/customer/
+WARNING 2025-08-15 16:20:57,202 basehttp 7096 30076 "POST /auth/register/customer/ HTTP/1.1" 400 149
+WARNING 2025-08-15 16:21:13,111 log 7096 20648 Unauthorized: /api/notifications/unread-count/
+WARNING 2025-08-15 16:21:13,114 basehttp 7096 20648 "GET /api/notifications/unread-count/ HTTP/1.1" 401 58
+WARNING 2025-08-15 16:21:42,803 log 7096 20648 Unauthorized: /api/notifications/unread-count/
+WARNING 2025-08-15 16:21:42,809 basehttp 7096 20648 "GET /api/notifications/unread-count/ HTTP/1.1" 401 58
+WARNING 2025-08-15 16:21:51,453 log 7096 20648 Bad Request: /auth/register/customer/
+WARNING 2025-08-15 16:21:51,454 basehttp 7096 20648 "POST /auth/register/customer/ HTTP/1.1" 400 149
+WARNING 2025-08-15 16:22:13,133 log 7096 12956 Unauthorized: /api/notifications/unread-count/
+WARNING 2025-08-15 16:22:13,160 basehttp 7096 12956 "GET /api/notifications/unread-count/ HTTP/1.1" 401 58
+WARNING 2025-08-15 16:22:43,116 log 7096 29388 Unauthorized: /api/notifications/unread-count/
+WARNING 2025-08-15 16:22:43,118 basehttp 7096 29388 "GET /api/notifications/unread-count/ HTTP/1.1" 401 58
+WARNING 2025-08-15 16:23:13,130 log 7096 19036 Unauthorized: /api/notifications/unread-count/
+WARNING 2025-08-15 16:23:13,138 basehttp 7096 19036 "GET /api/notifications/unread-count/ HTTP/1.1" 401 58
+WARNING 2025-08-15 16:23:43,114 log 7096 29424 Unauthorized: /api/notifications/unread-count/
+WARNING 2025-08-15 16:23:43,114 basehttp 7096 29424 "GET /api/notifications/unread-count/ HTTP/1.1" 401 58
+WARNING 2025-08-15 16:24:13,115 log 7096 17492 Unauthorized: /api/notifications/unread-count/
+WARNING 2025-08-15 16:24:13,116 basehttp 7096 17492 "GET /api/notifications/unread-count/ HTTP/1.1" 401 58
+WARNING 2025-08-15 16:24:27,822 log 7096 20212 Bad Request: /auth/register/customer/
+WARNING 2025-08-15 16:24:27,823 basehttp 7096 20212 "POST /auth/register/customer/ HTTP/1.1" 400 149
+WARNING 2025-08-15 16:24:38,570 log 7096 30100 Bad Request: /auth/register/customer/
+WARNING 2025-08-15 16:24:38,571 basehttp 7096 30100 "POST /auth/register/customer/ HTTP/1.1" 400 149
+WARNING 2025-08-15 16:24:42,805 log 7096 30100 Unauthorized: /api/notifications/unread-count/
+WARNING 2025-08-15 16:24:42,805 basehttp 7096 30100 "GET /api/notifications/unread-count/ HTTP/1.1" 401 58
+WARNING 2025-08-15 16:25:13,123 log 7096 18696 Unauthorized: /api/notifications/unread-count/
+WARNING 2025-08-15 16:25:13,125 basehttp 7096 18696 "GET /api/notifications/unread-count/ HTTP/1.1" 401 58
+WARNING 2025-08-15 16:25:20,872 log 7096 29448 Bad Request: /auth/register/customer/
+WARNING 2025-08-15 16:25:20,873 basehttp 7096 29448 "POST /auth/register/customer/ HTTP/1.1" 400 149
+WARNING 2025-08-15 16:25:31,694 log 7096 27732 Bad Request: /auth/register/customer/
+WARNING 2025-08-15 16:25:31,697 basehttp 7096 27732 "POST /auth/register/customer/ HTTP/1.1" 400 149
+WARNING 2025-08-15 16:25:43,121 log 7096 23156 Unauthorized: /api/notifications/unread-count/
+WARNING 2025-08-15 16:25:43,124 basehttp 7096 23156 "GET /api/notifications/unread-count/ HTTP/1.1" 401 58
+WARNING 2025-08-15 16:26:05,525 log 7096 3396 Bad Request: /auth/register/customer/
+WARNING 2025-08-15 16:26:05,529 basehttp 7096 3396 "POST /auth/register/customer/ HTTP/1.1" 400 149
+WARNING 2025-08-15 16:26:13,108 log 7096 18304 Unauthorized: /api/notifications/unread-count/
+WARNING 2025-08-15 16:26:13,110 basehttp 7096 18304 "GET /api/notifications/unread-count/ HTTP/1.1" 401 58
+WARNING 2025-08-15 16:26:43,143 log 7096 5464 Unauthorized: /api/notifications/unread-count/
+WARNING 2025-08-15 16:26:43,147 basehttp 7096 5464 "GET /api/notifications/unread-count/ HTTP/1.1" 401 58
+WARNING 2025-08-15 16:27:09,921 log 7096 27724 Bad Request: /auth/register/customer/
+WARNING 2025-08-15 16:27:09,927 basehttp 7096 27724 "POST /auth/register/customer/ HTTP/1.1" 400 149
+WARNING 2025-08-15 16:27:12,799 log 7096 27724 Unauthorized: /api/notifications/unread-count/
+WARNING 2025-08-15 16:27:12,800 basehttp 7096 27724 "GET /api/notifications/unread-count/ HTTP/1.1" 401 58
+WARNING 2025-08-15 16:27:43,130 log 7096 23888 Unauthorized: /api/notifications/unread-count/
+WARNING 2025-08-15 16:27:43,132 basehttp 7096 23888 "GET /api/notifications/unread-count/ HTTP/1.1" 401 58
+WARNING 2025-08-15 16:28:13,119 log 7096 17520 Unauthorized: /api/notifications/unread-count/
+WARNING 2025-08-15 16:28:13,119 basehttp 7096 17520 "GET /api/notifications/unread-count/ HTTP/1.1" 401 58
+WARNING 2025-08-15 16:28:40,018 log 7096 9116 Bad Request: /auth/register/customer/
+WARNING 2025-08-15 16:28:40,020 basehttp 7096 9116 "POST /auth/register/customer/ HTTP/1.1" 400 149
+WARNING 2025-08-15 16:28:42,815 log 7096 9116 Unauthorized: /api/notifications/unread-count/
+WARNING 2025-08-15 16:28:42,818 basehttp 7096 9116 "GET /api/notifications/unread-count/ HTTP/1.1" 401 58
+WARNING 2025-08-15 16:29:07,489 log 7096 30712 Bad Request: /auth/register/customer/
+WARNING 2025-08-15 16:29:07,491 basehttp 7096 30712 "POST /auth/register/customer/ HTTP/1.1" 400 149

@@ -320,10 +320,11 @@ const handleTagsChange = (e) => {
             onSuccess(response);
         } catch (error) {
             const errorMessage = error?.message || 'Registration failed. Please try again.';
-            setServerError(errorMessage);
+            // setServerError(errorMessage);
             onError(errorMessage);
         } finally {
             setIsLoading(false);
+            window.scrollTo({ top: 0, behavior: 'smooth' });
         }
     };
 
@@ -547,7 +548,9 @@ const handleTagsChange = (e) => {
                             name="profileImage"
                             onChange={handleFileChange}
                             accept=".jpg,.jpeg,.png"
-                            className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-emerald-500 focus:border-emerald-500"
+                            className="w-full px-4 py-2 border border-gray-300 rounded-md 
+               focus:ring-emerald-500 focus:border-emerald-500
+               text-black dark:text-white"
                         />
                         {errors.profileImage && (
                             <p className="mt-1 text-sm text-red-600">{errors.profileImage}</p>
