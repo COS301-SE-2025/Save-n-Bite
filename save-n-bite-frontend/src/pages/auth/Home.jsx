@@ -18,7 +18,7 @@ const HomePage = () => {
     <div className="w-full min-h-screen bg-white dark:bg-gray-900 transition-colors duration-300">
       <NavBar />
       {/* Hero Section */}
-      <section className="bg-gradient-to-br from-emerald-50 to-blue-50 dark:from-gray-900 dark:to-gray-800 py-20 px-6">
+      <section id="hero" className="bg-gradient-to-br from-emerald-50 to-blue-50 dark:from-gray-900 dark:to-gray-800 py-20 px-6">
         <div className="max-w-5xl mx-auto text-center">
           <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-gray-800 dark:text-gray-100 mb-6">
             Good for your pocket. <br className="hidden md:block" />
@@ -45,7 +45,7 @@ const HomePage = () => {
         </div>
       </section>
       {/* Benefits Section */}
-      <section className="py-16 px-6">
+      <section id="about" className="py-16 px-6">
         <div className="max-w-6xl mx-auto">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {/* Benefit 1 */}
@@ -100,7 +100,7 @@ const HomePage = () => {
         </div>
       </section>
       {/* How It Works Section */}
-      <section className="py-16 px-6" id="how-it-works">
+      <section id="how-it-works" className="py-16 px-6" >
         <div className="max-w-6xl mx-auto">
           <h2 className="text-3xl font-bold mb-12 text-center text-gray-800 dark:text-gray-100">
             How It Works
@@ -163,7 +163,7 @@ const HomePage = () => {
               Win-win!"
             </p>
             <p className="font-semibold text-gray-800 dark:text-gray-100">
-              — Sarah K., Regular User
+              — Jason de Bruin, Regular User
             </p>
           </div>
           <div className="flex flex-col md:flex-row justify-center items-center gap-8">
