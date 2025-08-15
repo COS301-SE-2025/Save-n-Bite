@@ -19,8 +19,8 @@ from .views import (
     CompleteCheckoutView,
     NGODonationRequestsView,
     CancelDonationView
-    #admin_views
 )
+from . import admin_views
 
 urlpatterns = [
     path('', CartView.as_view(), name='cart'),
@@ -32,8 +32,7 @@ urlpatterns = [
     path('interactions/<uuid:interaction_id>/review-status/', check_interaction_review_status, name='check_interaction_review_status'),
     path('interactions/<uuid:interaction_id>/review/', get_interaction_review, name='get_interaction_review'),
         # Admin endpoints
-    #path('admin/transactions/', admin_views.admin_get_all_transactions, name='admin_get_all_transactions'),
-    #path('admin/transactions/update-status/', admin_views.admin_update_transaction_status, name='admin_update_transaction_status'),
+    path('admin/transactions/', admin_views.admin_get_all_transactions, name='admin_get_all_transactions'),
     path('donation/request/', DonationRequestView.as_view(), name='donation-request'),
     path('donation/<uuid:interaction_id>/accept/', AcceptDonationView.as_view(), name='donation-accept'),
     path('donation/<uuid:interaction_id>/reject/', RejectDonationView.as_view(), name='donation-reject'),

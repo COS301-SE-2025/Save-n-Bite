@@ -4,6 +4,9 @@
     "workbench.colorTheme": "Night Pink",
     "python.pythonPath": "venv/bin/python",
     "python.analysis.extraPaths": ["venv/lib/python3.12/site-packages"],
-    "python.linting.pylintEnabled": true
+    "python.linting.pylintEnabled": true,
+    "editor.formatOnSave": true,
+    "prettier.singleQuote": true,
+    "prettier.trailingComma": "all"
 
 }

@@ -5,6 +5,9 @@ from . import views
 app_name = 'admin_panel'
 
 urlpatterns = [
+    # ==================== ADMIN AUTHENTICATION ====================
+    path('', views.admin_login_check, name='admin_login_check'),
+
     # ==================== DASHBOARD ====================
     path('dashboard/', views.admin_dashboard, name='admin_dashboard'),
     

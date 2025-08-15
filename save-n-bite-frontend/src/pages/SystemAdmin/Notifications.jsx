@@ -1,87 +1,241 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import NotificationFilters from '../../components/SystemAdmin/Notifications/NotificationFilters'
 import NotificationList from '../../components/SystemAdmin/Notifications/NotificationList'
 import NotificationComposer from '../../components/SystemAdmin/Notifications/NotificationComposer'
 import ConfirmationModal from '../../components/SystemAdmin/UI/ConfirmationModal'
 import { toast } from 'sonner'
-
-// Enhanced mock data with scheduled notifications
-const mockNotifications = [
-  {
-    id: 'NOT001',
-    title: 'System Maintenance',
-    message:
-      'The platform will be undergoing scheduled maintenance tonight from 2 AM to 4 AM UTC. Some features may be unavailable during this time.',
-    audience: 'All Users',
-    sender: 'System',
-    date: '2023-08-10',
-    status: 'Sent',
-    readCount: 1245,
-    type: 'maintenance',
-    scheduledFor: null,
-  },
-  {
-    id: 'NOT002',
-    title: 'New Feature: Bulk Listings',
-    message:
-      'Food providers can now create multiple listings at once using our new bulk upload feature. Check it out in your dashboard!',
-    audience: 'Providers',
-    sender: 'Admin',
-    date: '2023-08-08',
-    status: 'Sent',
-    readCount: 387,
-    type: 'update',
-    scheduledFor: null,
-  },
-  {
-    id: 'NOT003',
-    title: 'Weekly Platform Update',
-    message:
-      'This week we launched improved search functionality and faster loading times. Check out the latest updates in your app!',
-    audience: 'All Users',
-    sender: 'Admin',
-    date: '2023-08-15',
-    status: 'Scheduled',
-    readCount: 0,
-    type: 'update',
-    scheduledFor: '2023-08-15T10:00:00',
-  },
-  {
-    id: 'NOT004',
-    title: 'Holiday Hours Reminder',
-    message:
-      'Many of our providers will have modified hours during the upcoming holiday. Please check listing details before planning pickups.',
-    audience: 'Consumers',
-    sender: 'Admin',
-    date: '2023-08-20',
-    status: 'Scheduled',
-    readCount: 0,
-    type: 'announcement',
-    scheduledFor: '2023-08-20T08:00:00',
-  },
-  {
-    id: 'NOT005',
-    title: 'Verification Process Update',
-    message:
-      "We've streamlined our verification process for NGOs. You can now get verified faster with fewer document requirements.",
-    audience: 'NGOs',
-    sender: 'Admin',
-    date: '2023-08-05',
-    status: 'Sent',
-    readCount: 98,
-    type: 'announcement',
-    scheduledFor: null,
-  },
-]
+import AdminAPI from '../../services/AdminAPI'
 
 const Notifications = () => {
-  const [notifications, setNotifications] = useState(mockNotifications)
+  // Backend integration state
+  const [notifications, setNotifications] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
+  const [audienceCounts, setAudienceCounts] = useState({})
+  const [analytics, setAnalytics] = useState(null)
+  const [sending, setSending] = useState(false)
+
+  // UI state
   const [search, setSearch] = useState('')
   const [audienceFilter, setAudienceFilter] = useState('All')
   const [statusFilter, setStatusFilter] = useState('All')
   const [showComposer, setShowComposer] = useState(false)
   const [showConfirmModal, setShowConfirmModal] = useState(false)
   const [notificationToDelete, setNotificationToDelete] = useState(null)
+
+  // ==================== BACKEND INTEGRATION ====================
+
+  /**
+   * Load initial data when component mounts
+   */
+  useEffect(() => {
+    loadInitialData()
+  }, [])
+
+  /**
+   * Load all necessary data for the notifications page
+   */
+  const loadInitialData = async () => {
+    setLoading(true)
+    setError(null)
+
+    try {
+      // Load audience counts for composer
+      const audienceResponse = await AdminAPI.getAudienceCounts()
+      if (audienceResponse.success) {
+        setAudienceCounts(audienceResponse.data.audience_counts || {})
+      }
+
+      // Load notification analytics
+      const analyticsResponse = await AdminAPI.getNotificationAnalytics()
+      if (analyticsResponse.success) {
+        setAnalytics(analyticsResponse.data.analytics)
+      }
+
+      // Note: If you implement notification history endpoint, uncomment below:
+      // const historyResponse = await AdminAPI.getNotificationHistory({ page: 1, page_size: 50 })
+      // if (historyResponse.success) {
+      //   setNotifications(transformBackendNotifications(historyResponse.data.results || []))
+      // }
+
+    } catch (err) {
+      console.error('Error loading initial data:', err)
+      setError('Failed to load notification data')
+      toast.error('Failed to load notification data')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  /**
+   * Transform backend notification data to match UI expectations
+   * This function converts the backend notification format to the frontend format
+   */
+  const transformBackendNotifications = (backendNotifications) => {
+    return backendNotifications.map(notification => ({
+      id: notification.id,
+      title: notification.subject || notification.title,
+      message: notification.body || notification.message,
+      audience: capitalizeFirstLetter(notification.target_audience || 'all'),
+      type: notification.notification_type || 'system_announcement',
+      sender: notification.sender?.name || 'Admin',
+      date: new Date(notification.created_at).toISOString().split('T')[0],
+      status: notification.status || 'Sent',
+      readCount: notification.stats?.notifications_sent || 0,
+      scheduledFor: notification.scheduled_for || null,
+      emailsSent: notification.stats?.emails_sent || 0,
+      emailsFailed: notification.stats?.emails_failed || 0
+    }))
+  }
+
+  /**
+   * Helper function to capitalize first letter
+   */
+  const capitalizeFirstLetter = (string) => {
+    return string.charAt(0).toUpperCase() + string.slice(1)
+  }
+
+  /**
+   * Send notification through backend
+   */
+  const handleSendNotification = async (notification) => {
+    setSending(true)
+
+    try {
+      // Map frontend audience to backend format
+      const audienceMapping = {
+        'All': 'all',
+        'Customers': 'customers',
+        'Businesses': 'businesses',
+        'NGOs': 'organisations'
+      }
+
+      const notificationData = {
+        title: notification.title,
+        message: notification.message,
+        audience: audienceMapping[notification.audience] || 'all',
+        type: notification.type
+      }
+
+      const response = await AdminAPI.sendCustomNotification(notificationData)
+
+      if (response.success) {
+        // Create a local notification object for immediate UI update
+        const newNotification = {
+          id: `local_${Date.now()}`, // Temporary ID
+          title: notification.title,
+          message: notification.message,
+          audience: notification.audience,
+          type: notification.type,
+          sender: 'Admin',
+          date: new Date().toISOString().split('T')[0],
+          status: 'Sent',
+          readCount: response.data.stats?.total_users || 0,
+          emailsSent: response.data.stats?.emails_sent || 0,
+          emailsFailed: response.data.stats?.emails_failed || 0,
+          scheduledFor: null
+        }
+
+        // Add to local state for immediate feedback
+        setNotifications(prev => [newNotification, ...prev])
+
+        // Show success message with stats
+        const stats = response.data.stats
+        toast.success(
+          `Notification sent successfully! Reached ${stats?.total_users || 0} users, ${stats?.emails_sent || 0} emails sent.`
+        )
+
+        // Refresh analytics
+        const analyticsResponse = await AdminAPI.getNotificationAnalytics()
+        if (analyticsResponse.success) {
+          setAnalytics(analyticsResponse.data.analytics)
+        }
+
+      } else {
+        toast.error(response.error || 'Failed to send notification')
+      }
+    } catch (error) {
+      console.error('Error sending notification:', error)
+      toast.error('Failed to send notification')
+    } finally {
+      setSending(false)
+      setShowComposer(false)
+    }
+  }
+
+  /**
+   * Handle scheduled notifications (if implementing scheduling)
+   */
+  const handleScheduleNotification = async (notification) => {
+    // This would require backend support for scheduling
+    // For now, we'll show a message that scheduling is not yet implemented
+    toast.info('Notification scheduling will be implemented in a future update')
+    setShowComposer(false)
+  }
+
+  /**
+   * Handle canceling scheduled notifications
+   */
+  const handleCancelScheduled = (id) => {
+    setNotifications(
+      notifications.map((notification) =>
+        notification.id === id
+          ? { ...notification, status: 'Cancelled' }
+          : notification
+      )
+    )
+    toast.success('Scheduled notification cancelled')
+  }
+
+  /**
+   * Handle sending scheduled notifications immediately
+   */
+  const handleSendScheduledNow = (id) => {
+    setNotifications(
+      notifications.map((notification) =>
+        notification.id === id
+          ? { 
+              ...notification, 
+              status: 'Sent', 
+              date: new Date().toISOString().split('T')[0],
+              scheduledFor: null 
+            }
+          : notification
+      )
+    )
+    toast.success('Scheduled notification sent immediately')
+  }
+
+  /**
+   * Handle deleting notifications (if implemented on backend)
+   */
+  const handleDeleteNotification = (id) => {
+    setNotificationToDelete(id)
+    setShowConfirmModal(true)
+  }
+
+  const confirmDelete = () => {
+    if (notificationToDelete) {
+      // For now, just remove from local state
+      // In a full implementation, you'd call a backend API to delete
+      setNotifications(
+        notifications.filter((n) => n.id !== notificationToDelete)
+      )
+      toast.success(`Notification has been deleted`)
+      setNotificationToDelete(null)
+      setShowConfirmModal(false)
+    }
+  }
+
+  /**
+   * Refresh data manually
+   */
+  const handleRefresh = () => {
+    loadInitialData()
+    toast.success('Data refreshed')
+  }
+
+  // ==================== UI FILTERING ====================
 
   // Enhanced filtering with status
   const filteredNotifications = notifications.filter((notification) => {
@@ -95,167 +249,142 @@ const Notifications = () => {
     return matchesSearch && matchesAudience && matchesStatus
   })
 
-  const handleDeleteNotification = (id) => {
-    setNotificationToDelete(id)
-    setShowConfirmModal(true)
-  }
+  // ==================== RENDER ====================
 
-  const confirmDelete = () => {
-    if (notificationToDelete) {
-      setNotifications(
-        notifications.filter((n) => n.id !== notificationToDelete)
-      )
-      toast.success(`Notification ${notificationToDelete} has been deleted`)
-      setNotificationToDelete(null)
-      setShowConfirmModal(false)
-    }
-  }
-
-  const handleSendNotification = (notification) => {
-    const newNotification = {
-      id: `NOT${(notifications.length + 1).toString().padStart(3, '0')}`,
-      title: notification.title,
-      message: notification.message,
-      audience: notification.audience,
-      type: notification.type,
-      sender: 'Admin',
-      date: new Date().toISOString().split('T')[0],
-      status: 'Sent',
-      readCount: 0,
-      scheduledFor: null,
-    }
-    setNotifications([newNotification, ...notifications])
-    toast.success('Notification sent successfully')
-    setShowComposer(false)
-  }
-
-  const handleScheduleNotification = (notification) => {
-    const newNotification = {
-      id: `NOT${(notifications.length + 1).toString().padStart(3, '0')}`,
-      title: notification.title,
-      message: notification.message,
-      audience: notification.audience,
-      type: notification.type,
-      sender: 'Admin',
-      date: new Date(notification.scheduledDateTime).toISOString().split('T')[0],
-      status: 'Scheduled',
-      readCount: 0,
-      scheduledFor: notification.scheduledDateTime,
-    }
-    setNotifications([newNotification, ...notifications])
-    
-    const scheduledDate = new Date(notification.scheduledDateTime)
-    toast.success(
-      `Notification scheduled for ${scheduledDate.toLocaleDateString()} at ${scheduledDate.toLocaleTimeString()}`
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Loading notifications...</p>
+        </div>
+      </div>
     )
-    setShowComposer(false)
   }
 
-  const handleCancelScheduled = (id) => {
-    setNotifications(
-      notifications.map((notification) =>
-        notification.id === id
-          ? { ...notification, status: 'Cancelled' }
-          : notification
-      )
+  if (error) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <div className="text-red-500 text-lg mb-4">Error: {error}</div>
+          <button
+            onClick={loadInitialData}
+            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+          >
+            Retry
+          </button>
+        </div>
+      </div>
     )
-    toast.success('Scheduled notification cancelled')
   }
-
-  const handleSendScheduledNow = (id) => {
-    setNotifications(
-      notifications.map((notification) =>
-        notification.id === id
-          ? { 
-              ...notification, 
-              status: 'Sent',
-              date: new Date().toISOString().split('T')[0],
-              scheduledFor: null
-            }
-          : notification
-      )
-    )
-    toast.success('Notification sent immediately')
-  }
-
-  // Statistics for scheduled notifications
-  const scheduledCount = notifications.filter(n => n.status === 'Scheduled').length
-  const sentCount = notifications.filter(n => n.status === 'Sent').length
-  const totalReads = notifications.reduce((sum, n) => sum + n.readCount, 0)
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">Notifications</h1>
-          <p className="text-gray-500">
-            Send and schedule notifications to platform users
-          </p>
-        </div>
-        <button
-          onClick={() => setShowComposer(true)}
-          className="mt-4 md:mt-0 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-        >
-          Create Notification
-        </button>
-      </div>
-
-      {/* Quick Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <div className="bg-blue-50 p-4 rounded-lg">
-          <div className="text-2xl font-bold text-blue-600">{sentCount}</div>
-          <div className="text-sm text-blue-800">Sent Notifications</div>
-        </div>
-        <div className="bg-amber-50 p-4 rounded-lg">
-          <div className="text-2xl font-bold text-amber-600">{scheduledCount}</div>
-          <div className="text-sm text-amber-800">Scheduled</div>
-        </div>
-        <div className="bg-green-50 p-4 rounded-lg">
-          <div className="text-2xl font-bold text-green-600">{totalReads.toLocaleString()}</div>
-          <div className="text-sm text-green-800">Total Reads</div>
-        </div>
-        <div className="bg-purple-50 p-4 rounded-lg">
-          <div className="text-2xl font-bold text-purple-600">
-            {sentCount > 0 ? Math.round((totalReads / sentCount) * 100) / 100 : 0}
+    <div className="min-h-screen bg-gray-50 p-6">
+      <div className="max-w-7xl mx-auto">
+        {/* Header */}
+        <div className="mb-6 flex justify-between items-center">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900">Notifications</h1>
+            <p className="text-gray-600 mt-2">
+              Send and manage system-wide notifications
+            </p>
+            {analytics && (
+              <div className="mt-2 text-sm text-gray-500">
+                Total sent: {analytics.total_notifications_sent || 0} | 
+                This month: {analytics.monthly_stats?.current_month || 0}
+              </div>
+            )}
           </div>
-          <div className="text-sm text-purple-800">Avg. Reads per Notification</div>
+          <div className="flex gap-3">
+            <button
+              onClick={handleRefresh}
+              className="px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50"
+              disabled={loading}
+            >
+              Refresh
+            </button>
+            <button
+              onClick={() => setShowComposer(true)}
+              className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+              disabled={sending}
+            >
+              {sending ? 'Sending...' : 'Compose Notification'}
+            </button>
+          </div>
         </div>
+
+        {/* Audience counts info */}
+        {Object.keys(audienceCounts).length > 0 && (
+          <div className="mb-6 grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="bg-white p-4 rounded-lg border">
+              <div className="text-sm text-gray-600">Total Users</div>
+              <div className="text-2xl font-bold text-blue-600">
+                {audienceCounts.all || 0}
+              </div>
+            </div>
+            <div className="bg-white p-4 rounded-lg border">
+              <div className="text-sm text-gray-600">Customers</div>
+              <div className="text-2xl font-bold text-green-600">
+                {audienceCounts.customers || 0}
+              </div>
+            </div>
+            <div className="bg-white p-4 rounded-lg border">
+              <div className="text-sm text-gray-600">Businesses</div>
+              <div className="text-2xl font-bold text-purple-600">
+                {audienceCounts.businesses || 0}
+              </div>
+            </div>
+            <div className="bg-white p-4 rounded-lg border">
+              <div className="text-sm text-gray-600">NGOs</div>
+              <div className="text-2xl font-bold text-orange-600">
+                {audienceCounts.organisations || 0}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Filters */}
+        <NotificationFilters
+          search={search}
+          setSearch={setSearch}
+          audienceFilter={audienceFilter}
+          setAudienceFilter={setAudienceFilter}
+          statusFilter={statusFilter}
+          setStatusFilter={setStatusFilter}
+        />
+
+        {/* Notifications List */}
+        <NotificationList
+          notifications={filteredNotifications}
+          onDeleteNotification={handleDeleteNotification}
+          onCancelScheduled={handleCancelScheduled}
+          onSendScheduledNow={handleSendScheduledNow}
+        />
+
+        {/* Notification Composer Modal */}
+        {showComposer && (
+          <NotificationComposer
+            onClose={() => setShowComposer(false)}
+            onSendNotification={handleSendNotification}
+            onScheduleNotification={handleScheduleNotification}
+            audienceCounts={audienceCounts}
+            isLoading={sending}
+          />
+        )}
+
+        {/* Delete Confirmation Modal */}
+        {showConfirmModal && (
+          <ConfirmationModal
+            isOpen={showConfirmModal}
+            onClose={() => setShowConfirmModal(false)}
+            onConfirm={confirmDelete}
+            title="Delete Notification"
+            message="Are you sure you want to delete this notification? This action cannot be undone."
+            confirmButtonText="Delete"
+            cancelButtonText="Cancel"
+          />
+        )}
       </div>
-
-      <NotificationFilters
-        search={search}
-        setSearch={setSearch}
-        audienceFilter={audienceFilter}
-        setAudienceFilter={setAudienceFilter}
-        statusFilter={statusFilter}
-        setStatusFilter={setStatusFilter}
-      />
-
-      <NotificationList
-        notifications={filteredNotifications}
-        onDelete={handleDeleteNotification}
-        onCancelScheduled={handleCancelScheduled}
-        onSendNow={handleSendScheduledNow}
-      />
-
-      {showComposer && (
-        <NotificationComposer
-          onClose={() => setShowComposer(false)}
-          onSend={handleSendNotification}
-          onSchedule={handleScheduleNotification}
-        />
-      )}
-
-      {showConfirmModal && (
-        <ConfirmationModal
-          title="Delete Notification"
-          message="Are you sure you want to delete this notification? This action cannot be undone."
-          confirmButtonText="Delete"
-          confirmButtonColor="red"
-          onConfirm={confirmDelete}
-          onCancel={() => setShowConfirmModal(false)}
-        />
-      )}
     </div>
   )
 }

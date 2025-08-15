@@ -2,8 +2,9 @@
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
+from rest_framework.permissions import AllowAny
 from django.core.paginator import Paginator
-from django.db.models import Q
+from django.db.models import Count, Avg, Q, F
 from django.contrib.auth import get_user_model
 from django.http import HttpResponse
 from django.utils import timezone
@@ -41,6 +42,56 @@ def get_client_ip(request):
         ip = request.META.get('REMOTE_ADDR')
     return ip
 
+# # ======================== LOGIN =========================
+
+@api_view(['POST'])
+@permission_classes([AllowAny])  # Allow anyone to attempt admin login
+def admin_login_check(request):
+    """Check if provided email belongs to an admin user"""
+    try:
+        email = request.data.get('email')
+        
+        if not email:
+            return Response({
+                'error': 'Email is required'
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
+        # Check if user exists and has admin rights OR is superuser
+        try:
+            user = User.objects.get(
+                email=email, 
+                is_active=True
+            ).filter(
+                Q(admin_rights=True) | Q(is_superuser=True)
+            ).first()
+            
+            if not user:
+                return Response({
+                    'error': 'Invalid admin credentials or insufficient permissions'
+                }, status=status.HTTP_401_UNAUTHORIZED)
+            
+            return Response({
+                'message': 'Admin user found',
+                'admin_info': {
+                    'id': str(user.UserID),
+                    'email': user.email,
+                    'username': user.username,
+                    'is_superuser': user.is_superuser,
+                    'admin_rights': user.admin_rights
+                }
+            }, status=status.HTTP_200_OK)
+            
+        except User.DoesNotExist:
+            return Response({
+                'error': 'Invalid admin credentials or insufficient permissions'
+            }, status=status.HTTP_401_UNAUTHORIZED)
+    
+    except Exception as e:
+        logger.error(f"Admin login check error: {str(e)}")
+        return Response({
+            'error': 'Failed to verify admin credentials'
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    
 # ==================== DASHBOARD VIEWS ====================
 
 @api_view(['GET'])
@@ -318,11 +369,12 @@ def get_pending_verifications(request):
     try:
         verifications = VerificationService.get_pending_verifications()
         
-        # Format NGO data
+        # Format NGO data - Use User ID instead of profile ID
         ngo_data = []
         for ngo in verifications['ngos']:
             ngo_data.append({
-                'id': str(ngo.id),
+                'id': str(ngo.user.UserID),  # ✅ Use User ID instead of profile ID
+                'profile_id': str(ngo.id),   # Keep profile ID for reference
                 'type': 'ngo',
                 'name': ngo.organisation_name,
                 'email': ngo.organisation_email,
@@ -336,11 +388,12 @@ def get_pending_verifications(request):
                 }
             })
         
-        # Format Provider data
+        # Format Provider data - Use User ID instead of profile ID
         provider_data = []
         for provider in verifications['providers']:
             provider_data.append({
-                'id': str(provider.id),
+                'id': str(provider.user.UserID),  # ✅ Use User ID instead of profile ID
+                'profile_id': str(provider.id),   # Keep profile ID for reference
                 'type': 'provider',
                 'name': provider.business_name,
                 'email': provider.business_email,
@@ -755,6 +808,48 @@ def export_data(request):
             writer.writerow(['Active Listings', stats['listings']['active']])
             writer.writerow(['Total Transactions', stats['transactions']['total']])
             writer.writerow(['Completed Transactions', stats['transactions']['completed']])
+
+        elif export_type == 'audit_logs':
+            # Export audit logs
+            writer.writerow(['ID', 'Admin', 'Action', 'Target', 'Description', 'Timestamp', 'IP Address'])
+    
+            queryset = AdminActionLog.objects.all()
+            if date_from:
+                queryset = queryset.filter(timestamp__gte=date_from)
+            if date_to:
+                queryset = queryset.filter(timestamp__lte=date_to)
+    
+            for log in queryset:
+                writer.writerow([
+                    str(log.id),
+                    log.admin_user.username,
+                    log.action_type,
+                    log.target_type,
+                    log.action_description,
+                    log.timestamp.strftime('%Y-%m-%d %H:%M:%S'),
+                    log.ip_address or 'Unknown'
+                ])
+
+        elif export_type == 'system_logs':
+        # Export system logs
+            writer.writerow(['ID', 'Severity', 'Category', 'Title', 'Description', 'Status', 'Timestamp'])
+    
+            queryset = SystemLogEntry.objects.all()
+            if date_from:
+                queryset = queryset.filter(timestamp__gte=date_from)
+            if date_to:
+                queryset = queryset.filter(timestamp__lte=date_to)
+    
+            for log in queryset:
+                writer.writerow([
+                str(log.id),
+                log.severity,
+                log.category,
+                log.title,
+                log.description,
+                log.status,
+                log.timestamp.strftime('%Y-%m-%d %H:%M:%S')
+            ])
         
         # Log the export action
         AdminService.log_admin_action(
