@@ -261,15 +261,6 @@ export const NotificationProvider = ({ children }) => {
     }
   };
 
-  // Auto-refresh notifications every 30 seconds
-  useEffect(() => {
-    const interval = setInterval(() => {
-      fetchUnreadCount();
-    }, 30000);
-
-    return () => clearInterval(interval);
-  }, []);
-
   // Initial load
   useEffect(() => {
     fetchUnreadCount();

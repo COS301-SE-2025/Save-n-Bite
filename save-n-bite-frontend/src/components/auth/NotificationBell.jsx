@@ -19,7 +19,7 @@ const NotificationBell = () => {
   const bellRef = useRef(null);
   const [showPopup, setShowPopup] = useState(false);
   
-  // Close dropdown when clicking outside
+  // Separate useEffect for click outside handler
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (
@@ -33,35 +33,23 @@ const NotificationBell = () => {
     };
 
     document.addEventListener('mousedown', handleClickOutside);
-    // Listen for custom event to show popup
-    const handleShowUnreadPopup = (e) => {
-      if (unreadCount > 0) {
-        setShowPopup(true);
-        setTimeout(() => setShowPopup(false), 4000);
-      }
-    };
-    window.addEventListener('show-unread-popup', handleShowUnreadPopup);
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
-      window.removeEventListener('show-unread-popup', handleShowUnreadPopup);
     };
-  }, [unreadCount]);
+  }, []);
 
-  // Fetch notifications when opening dropdown
+  // Separate useEffect for fetching notifications
   useEffect(() => {
     if (isOpen) {
       fetchRecentNotifications();
-      if (unreadCount > 0) {
-        setShowPopup(true);
-        setTimeout(() => {
-          setShowPopup(false);
-        }, 4000); // Hide popup after 4 seconds
-      }
     }
-  }, [isOpen, fetchRecentNotifications]);
+  }, [isOpen]); // Only depend on isOpen
 
   const handleBellClick = () => {
     setIsOpen(!isOpen);
+    if (!isOpen) {
+      fetchRecentNotifications(); // Only fetch when opening the dropdown
+    }
   };
 
   const handleNotificationClick = async (notification) => {
@@ -114,7 +102,7 @@ const NotificationBell = () => {
     <div className="relative">
       <button
         ref={bellRef}
-        onClick={handleBellClick}
+        onClick={() => setIsOpen(!isOpen)}
         className="relative p-2 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-full transition-colors duration-200"
         aria-label="Notifications"
       >

@@ -19,7 +19,7 @@ const FoodListings = () => {
     provider: 'all'
   });
   const [selectedSort, setSelectedSort] = useState('');
-  
+
   // State for API data
   const [allFoodListings, setAllFoodListings] = useState([]);
   const [filteredListings, setFilteredListings] = useState([]);
@@ -32,10 +32,10 @@ const FoodListings = () => {
   // Helper function to determine what listings a user can see
   const filterListingsByUserType = (listings) => {
     if (!Array.isArray(listings)) return [];
-    
+
     const currentUserType = foodListingsAPI.getUserType();
-    
-    switch(currentUserType) {
+
+    switch (currentUserType) {
       case 'customer':
         // Customers only see discounted items (items with a price > 0)
         return listings.filter(listing => {
@@ -57,7 +57,7 @@ const FoodListings = () => {
   // Apply filters to the listings
   const applyFilters = (listings) => {
     let filtered = [...listings];
-    
+
     // Apply search filter
     if (searchQuery.trim()) {
       const query = searchQuery.toLowerCase();
@@ -68,7 +68,7 @@ const FoodListings = () => {
         (item.provider_name && item.provider_name.toLowerCase().includes(query))
       );
     }
-    
+
     // Apply type filter
     if (filters.type !== 'all') {
       filtered = filtered.filter(item => {
@@ -77,34 +77,34 @@ const FoodListings = () => {
         return itemType === filterType;
       });
     }
-    
+
     // Apply price range filter
     filtered = filtered.filter(item => {
       const itemPrice = item.discountedPrice || item.discountPrice || 0;
       return itemPrice >= filters.priceRange[0] && itemPrice <= filters.priceRange[1];
     });
-    
+
     // Apply provider filter
     if (filters.provider !== 'all') {
-      filtered = filtered.filter(item => 
+      filtered = filtered.filter(item =>
         item.provider_name === filters.provider ||
         item.provider?.business_name === filters.provider
       );
     }
-    
+
     // Apply expiration filter
     if (filters.expiration !== 'all') {
       const now = new Date();
       const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
       const tomorrow = new Date(today.getTime() + 24 * 60 * 60 * 1000);
       const nextWeek = new Date(today.getTime() + 7 * 24 * 60 * 60 * 1000);
-      
+
       filtered = filtered.filter(item => {
         if (!item.expiryDate) return filters.expiration === 'later';
-        
+
         const expiryDate = new Date(item.expiryDate);
-        
-        switch(filters.expiration) {
+
+        switch (filters.expiration) {
           case 'today':
             return expiryDate >= today && expiryDate < tomorrow;
           case 'tomorrow':
@@ -118,48 +118,63 @@ const FoodListings = () => {
         }
       });
     }
-    
-    // Apply sorting
+
+    // Apply sorting - Update this section
     if (selectedSort) {
       filtered.sort((a, b) => {
-        switch(selectedSort) {
+        switch (selectedSort) {
           case 'price-low':
-            return (a.discountedPrice || a.discountPrice || 0) - (b.discountedPrice || b.discountPrice || 0);
+            const priceA = parseFloat(a.discounted_price) || parseFloat(a.discountedPrice) || 0;
+            const priceB = parseFloat(b.discounted_price) || parseFloat(b.discountedPrice) || 0;
+            return priceA - priceB;
+
           case 'price-high':
-            return (b.discountedPrice || b.discountPrice || 0) - (a.discountedPrice || a.discountPrice || 0);
+            const priceHighA = parseFloat(a.discounted_price) || parseFloat(a.discountedPrice) || 0;
+            const priceHighB = parseFloat(b.discounted_price) || parseFloat(b.discountedPrice) || 0;
+            return priceHighB - priceHighA;
+
           case 'name':
-            return (a.title || a.name || '').localeCompare(b.title || b.name || '');
+            const nameA = (a.name || '').toLowerCase();
+            const nameB = (b.name || '').toLowerCase();
+            return nameA.localeCompare(nameB);
+
           case 'expiry':
-            return new Date(a.expiryDate || 0) - new Date(b.expiryDate || 0);
+            const dateA = new Date(a.expiry_date || a.expiryDate || 0);
+            const dateB = new Date(b.expiry_date || b.expiryDate || 0);
+            return dateA - dateB;
+
           case 'newest':
-            return new Date(b.createdAt || 0) - new Date(a.createdAt || 0);
+            const createdAtA = new Date(a.created_at || a.createdAt || 0);
+            const createdAtB = new Date(b.created_at || b.createdAt || 0);
+            return createdAtB - createdAtA;
+
           default:
             return 0;
         }
       });
     }
-    
+
     return filtered;
   };
 
   // Get available type filter options based on user type
   const getAvailableTypeFilters = () => {
     const currentUserType = foodListingsAPI.getUserType();
-    
+
     const options = [
       { value: 'all', label: 'All Items' }
     ];
-    
+
     // Add discount option for all users
     if (allFoodListings.some(item => item.type?.toLowerCase() === 'discount')) {
       options.push({ value: 'discount', label: 'Discounted Items' });
     }
-    
+
     // Add donation option only for NGOs
     if (currentUserType === 'ngo' && allFoodListings.some(item => item.type?.toLowerCase() === 'donation')) {
       options.push({ value: 'donation', label: 'Donations' });
     }
-    
+
     return options;
   };
 
@@ -172,7 +187,7 @@ const FoodListings = () => {
         providerSet.add(providerName);
       }
     });
-    
+
     return Array.from(providerSet).map(name => ({
       value: name,
       label: name
@@ -184,27 +199,27 @@ const FoodListings = () => {
     setLoading(true);
     try {
       const response = await foodListingsAPI.getFoodListings();
-      
+
       if (response.success) {
         console.log('Raw API data:', response.data);
-        
+
         const allListings = response.data.listings || [];
         setAllFoodListings(allListings);
-        
+
         // Filter by user type first
         const currentUserType = foodListingsAPI.getUserType();
         setUserType(currentUserType);
         const userTypeFiltered = filterListingsByUserType(allListings);
-        
+
         // Then apply other filters
         const finalFiltered = applyFilters(userTypeFiltered);
-        
+
         setFilteredListings(finalFiltered);
         setTotalCount(finalFiltered.length);
-        
+
         // Update unique providers
         setUniqueProviders(getUniqueProviders(allListings));
-        
+
         setError(null);
       } else {
         setError(response.error || 'Failed to fetch listings');
@@ -222,10 +237,10 @@ const FoodListings = () => {
     if (allFoodListings.length > 0) {
       const currentUserType = foodListingsAPI.getUserType();
       setUserType(currentUserType);
-      
+
       const userTypeFiltered = filterListingsByUserType(allFoodListings);
       const finalFiltered = applyFilters(userTypeFiltered);
-      
+
       setFilteredListings(finalFiltered);
       setTotalCount(finalFiltered.length);
     }
@@ -264,24 +279,24 @@ const FoodListings = () => {
 
   return (
     <div className="bg-gray-50 dark:bg-gray-900 min-h-screen w-full transition-colors duration-300">
-      <CustomerNavBar/>
-      <br/>
-      <SearchBar 
+      <CustomerNavBar />
+      <br />
+      <SearchBar
         searchQuery={searchQuery}
         setSearchQuery={setSearchQuery}
         showFilters={showFilters}
         setShowFilters={setShowFilters}
       />
-      
+
       <br />
-      
-<div className="container-responsive max-w-6xl mx-auto p-4 md:p-6">
-  {/* Error message */}
-  {error && (
-    <div className="mb-4 sm:mb-6 bg-red-50 dark:bg-red-900 border border-red-200 dark:border-red-800 text-red-600 dark:text-red-200 px-3 py-3 sm:px-4 sm:py-3 rounded-md transition-colors duration-300">
-      <p className="font-medium text-sm sm:text-base">Error loading listings</p>
-      <p className="text-xs sm:text-sm mt-1">{error}</p>
-            <button 
+
+      <div className="container-responsive max-w-6xl mx-auto p-4 md:p-6">
+        {/* Error message */}
+        {error && (
+          <div className="mb-4 sm:mb-6 bg-red-50 dark:bg-red-900 border border-red-200 dark:border-red-800 text-red-600 dark:text-red-200 px-3 py-3 sm:px-4 sm:py-3 rounded-md transition-colors duration-300">
+            <p className="font-medium text-sm sm:text-base">Error loading listings</p>
+            <p className="text-xs sm:text-sm mt-1">{error}</p>
+            <button
               onClick={fetchFoodListings}
               className="mt-2 text-xs sm:text-sm underline hover:no-underline touch-target"
             >
@@ -291,7 +306,7 @@ const FoodListings = () => {
         )}
 
         <div className="flex flex-col lg:flex-row gap-4 sm:gap-6">
-          <FilterSidebar 
+          <FilterSidebar
             showFilters={showFilters}
             filters={filters}
             setFilters={setFilters}
@@ -299,10 +314,10 @@ const FoodListings = () => {
             typeOptions={getAvailableTypeFilters()}
             onResetFilters={handleResetFilters}
           />
-          
+
           <div className="flex-grow">
-<div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-4 mb-4">
-  <div className="text-xs sm:text-sm text-gray-600 dark:text-gray-200">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-4 mb-4">
+              <div className="text-xs sm:text-sm text-gray-600 dark:text-gray-200">
 
                 {loading ? 'Loading...' : `${totalCount} listings found`}
                 {userType === 'customer' && (
@@ -312,36 +327,36 @@ const FoodListings = () => {
                   <span className="text-gray-500 ml-2">(Discounted items & donations)</span>
                 )}
               </div>
-              <Sort 
-                selectedSort={selectedSort} 
-                setSelectedSort={setSelectedSort} 
+              <Sort
+                selectedSort={selectedSort}
+                setSelectedSort={setSelectedSort}
               />
             </div>
-            
+
             {loading && filteredListings.length > 0 && (
               <div className="mb-4 text-center">
-<div className="inline-flex items-center px-3 py-2 sm:px-4 sm:py-2 bg-emerald-50 dark:bg-emerald-900 text-emerald-600 dark:text-emerald-200 rounded-md text-sm transition-colors duration-300">
-  <div className="animate-spin rounded-full h-3 w-3 sm:h-4 sm:w-4 border-b-2 border-emerald-600 mr-2"></div>
+                <div className="inline-flex items-center px-3 py-2 sm:px-4 sm:py-2 bg-emerald-50 dark:bg-emerald-900 text-emerald-600 dark:text-emerald-200 rounded-md text-sm transition-colors duration-300">
+                  <div className="animate-spin rounded-full h-3 w-3 sm:h-4 sm:w-4 border-b-2 border-emerald-600 mr-2"></div>
 
                   Updating listings...
                 </div>
               </div>
             )}
-            
+
             <FoodListingsGrid listings={filteredListings} />
-            
+
             {/* Empty state */}
             {!loading && filteredListings.length === 0 && (
               <div className="text-center py-12 bg-white rounded-lg shadow-sm">
                 <p className="text-xl text-gray-600 mb-4">No listings found</p>
                 <p className="text-gray-500 mb-4">
-                  {allFoodListings.length === 0 
+                  {allFoodListings.length === 0
                     ? 'No food listings available at the moment.'
                     : 'Try adjusting your search or filters to see more results.'
                   }
                 </p>
                 {filteredListings.length === 0 && allFoodListings.length > 0 && (
-                  <button 
+                  <button
                     onClick={handleResetFilters}
                     className="px-4 py-2 bg-emerald-600 text-white rounded-md hover:bg-emerald-700 transition-colors"
                   >
@@ -352,7 +367,7 @@ const FoodListings = () => {
             )}
           </div>
         </div>
-        
+
         {/* Food Provider Carousel Section */}
         {!loading && filteredListings.length > 0 && (
           <div className="mt-12">
@@ -363,7 +378,7 @@ const FoodListings = () => {
         <div className="text-center mt-6">
           <Link
             to="/providers"
-  className="inline-flex items-center px-5 py-2.5 bg-emerald-600 text-white font-medium rounded-md hover:bg-emerald-700 dark:bg-emerald-700 dark:hover:bg-emerald-800 transition-colors"
+            className="inline-flex items-center px-5 py-2.5 bg-emerald-600 text-white font-medium rounded-md hover:bg-emerald-700 dark:bg-emerald-700 dark:hover:bg-emerald-800 transition-colors"
 
           >
             View All Food Providers
