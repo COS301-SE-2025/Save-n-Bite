@@ -4077,3 +4077,17 @@ INFO 2025-08-15 13:21:42,942 blob_storage 21892 7648 Updated existing container 
 INFO 2025-08-15 13:21:42,951 blob_storage 21892 7648 Updated existing container to public access: provider-logos
 INFO 2025-08-15 13:21:42,963 blob_storage 21892 7648 Updated existing container to public access: ngo-documents
 INFO 2025-08-15 13:21:42,996 blob_storage 21892 7648 Updated existing container to public access: ngo-logos
+INFO 2025-08-15 14:18:05,169 autoreload 21892 3000 C:\Users\Capleton\Desktop\COS214\practical\Save-n-Bite\save-n-bite-backend\backend\settings.py changed, reloading.
+INFO 2025-08-15 14:18:44,261 blob_storage 20900 10044 Updated existing container to public access: customer-profiles
+INFO 2025-08-15 14:18:44,292 blob_storage 20900 10044 Updated existing container to public access: ngo-documents
+INFO 2025-08-15 14:18:44,321 blob_storage 20900 10044 Updated existing container to public access: ngo-logos
+INFO 2025-08-15 14:18:44,353 blob_storage 20900 10044 Updated existing container to public access: provider-documents
+INFO 2025-08-15 14:18:44,385 blob_storage 20900 10044 Updated existing container to public access: provider-logos
+INFO 2025-08-15 14:18:44,414 blob_storage 20900 10044 Updated existing container to public access: provider-banners
+INFO 2025-08-15 14:18:44,578 autoreload 20900 10044 Watching for file changes with StatReloader
+INFO 2025-08-15 14:18:45,151 blob_storage 20900 16164 Updated existing container to public access: customer-profiles
+INFO 2025-08-15 14:18:45,163 blob_storage 20900 16164 Updated existing container to public access: provider-banners
+INFO 2025-08-15 14:18:45,177 blob_storage 20900 16164 Updated existing container to public access: provider-documents
+INFO 2025-08-15 14:18:45,209 blob_storage 20900 16164 Updated existing container to public access: provider-logos
+INFO 2025-08-15 14:18:45,223 blob_storage 20900 16164 Updated existing container to public access: ngo-documents
+INFO 2025-08-15 14:18:45,237 blob_storage 20900 16164 Updated existing container to public access: ngo-logos
