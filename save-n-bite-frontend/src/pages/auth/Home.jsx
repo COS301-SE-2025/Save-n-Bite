@@ -1,5 +1,5 @@
 import React, { useContext } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate} from 'react-router-dom';
 import { LeafIcon, DollarSignIcon, RecycleIcon } from 'lucide-react';
 import NavBar from '../../components/auth/NavBar';
 import Footer from '../../components/auth/Footer';
@@ -7,6 +7,12 @@ import {ThemeContext}  from '../../context/ThemeContext';
 
 const HomePage = () => {
   const { theme } = useContext(ThemeContext);
+  const navigate  = useNavigate();
+  const handleGetStarted = () => {
+    window.scrollTo(0, 0);
+    navigate('/register');
+    
+  };
 
   return (
     <div className="w-full min-h-screen bg-white dark:bg-gray-900 transition-colors duration-300">
@@ -191,12 +197,12 @@ const HomePage = () => {
           <p className="text-xl text-gray-600 dark:text-gray-300 mb-8">
             Sign up today and start making a positive impact with every meal.
           </p>
-          <Link
-            to="/register"
+          <button
+             onClick={handleGetStarted}
             className="px-8 py-3 bg-emerald-600 text-white font-medium rounded-md hover:bg-emerald-700 dark:bg-emerald-700 dark:hover:bg-emerald-800 transition-colors"
           >
             Get Started
-          </Link>
+          </button>
         </div>
       </section>
       <Footer />
