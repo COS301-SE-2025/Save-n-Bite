@@ -55,7 +55,7 @@ class CartItemSerializer(serializers.ModelSerializer):
     name = serializers.CharField(source='food_listing.name')
     pricePerItem = serializers.DecimalField(source='food_listing.discounted_price', max_digits=10, decimal_places=2)
     imageUrl = serializers.URLField(source='food_listing.images')
-    provider = serializers.CharField(source='food_listing.provider.provider_profile.business_name')  # Changed to provider_profile
+    provider = serializers.CharField(source='food_listing.provider.business_name')
     pickupWindow = serializers.CharField(source='food_listing.pickup_window')
     expiryDate = serializers.DateField(source='food_listing.expiry_date')
     totalPrice = serializers.SerializerMethodField()
@@ -92,10 +92,14 @@ class AddToCartSerializer(serializers.Serializer):
             
         return data
 
+
+
+
 class RemoveCartItemSerializer(serializers.Serializer):
     cartItemId = serializers.UUIDField()
 
 class CheckoutSerializer(serializers.Serializer):
+     
     paymentMethod = serializers.ChoiceField(choices=Payment.PaymentMethod.choices)
     paymentDetails = serializers.JSONField()
     specialInstructions = serializers.CharField(required=False, allow_blank=True)
@@ -178,7 +182,7 @@ class DonationRequestSerializer(serializers.Serializer):
         
         if data['quantity'] > food_listing.quantity_available:
             raise serializers.ValidationError(
-                f"Cannot request more than available quantity ({food_listing.quantity})"
+                f"Cannot request more than available quantity ({food_listing.quantity_available})"
             )
             
         return data
@@ -213,3 +217,11 @@ class CheckoutSessionSerializer(serializers.ModelSerializer):
         from django.utils import timezone
         delta = obj.expires_at - timezone.now()
         return max(0, delta.total_seconds())
+    
+
+class CancelDonationSerializer(serializers.Serializer):
+    reason = serializers.CharField(
+        required=False,
+        allow_blank=True,
+        help_text="Optional reason for cancelling the donation request."
+    )

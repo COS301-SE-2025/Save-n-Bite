@@ -1,8 +1,14 @@
-# authentication/models.py - Complete with all profile models
+# authentication/models.py - Updated with Azure Blob Storage
 
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 import uuid
+from blob_storage import (
+    get_customer_profile_storage, get_ngo_document_storage, get_ngo_logo_storage,
+    get_provider_document_storage, get_provider_logo_storage, get_provider_banner_storage,
+    customer_profile_image_path, ngo_document_path, ngo_logo_path,
+    provider_cipc_path, provider_logo_path, provider_banner_path
+)
 
 class User(AbstractUser):
     USER_TYPE_CHOICES = [
@@ -19,14 +25,15 @@ class User(AbstractUser):
     # Use the original database column name and include all existing fields
     UserID = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False, db_column='UserID')
     email = models.EmailField(unique=True)
-    phone_number = models.CharField(max_length=20, null=True, blank=True)  # Existing field
-    profile_picture = models.CharField(max_length=100, null=True, blank=True)  # Existing field  
-    admin_rights = models.BooleanField(default=False)  # Existing field
-    user_type = models.CharField(max_length=20)  # Match database varchar(20)
+    phone_number = models.CharField(max_length=20, null=True, blank=True)
+    profile_picture = models.CharField(max_length=100, null=True, blank=True)
+    admin_rights = models.BooleanField(default=False)
+    user_type = models.CharField(max_length=20)
     role = models.CharField(max_length=10, choices=ROLE_CHOICES, default='normal')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-        # Password reset functionality
+    
+    # Password reset functionality
     has_temporary_password = models.BooleanField(default=False)
     password_must_change = models.BooleanField(default=False)
     temp_password_created_at = models.DateTimeField(null=True, blank=True)
@@ -35,7 +42,8 @@ class User(AbstractUser):
     last_login_ip = models.GenericIPAddressField(null=True, blank=True)
     account_locked_until = models.DateTimeField(null=True, blank=True)
     failed_login_attempts = models.IntegerField(default=0)
-        # Admin-specific fields
+    
+    # Admin-specific fields
     admin_notes = models.TextField(blank=True, help_text="Admin notes about this user")
     deactivation_reason = models.CharField(max_length=255, blank=True)
     deactivated_by = models.ForeignKey(
@@ -75,17 +83,14 @@ class User(AbstractUser):
         """Check if user can login (not locked, active, etc.)"""
         from django.utils import timezone
         
-        # Check if account is active
         if not self.is_active:
             return False, "Account is deactivated"
         
-        # Check if account is temporarily locked
         if self.account_locked_until and self.account_locked_until > timezone.now():
             return False, "Account is temporarily locked"
         
-        # Check if password must be changed
         if self.password_must_change:
-            return True, "Password must be changed"  # Allow login but force change
+            return True, "Password must be changed"
         
         return True, "OK"
     
@@ -94,7 +99,6 @@ class User(AbstractUser):
         from django.utils import timezone
         self.failed_login_attempts += 1
         
-        # Lock account after 5 failed attempts for 30 minutes
         if self.failed_login_attempts >= 5:
             self.account_locked_until = timezone.now() + timezone.timedelta(minutes=30)
         
@@ -139,16 +143,26 @@ class User(AbstractUser):
         self.deactivated_at = None
         self.save()
 
+
 class CustomerProfile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='customer_profile', db_column='user_id', to_field='UserID')
     full_name = models.CharField(max_length=255)
-    profile_image = models.ImageField(upload_to='customer_profiles/', null=True, blank=True)
+    
+    # UPDATED: Use Azure Blob Storage for profile images
+    profile_image = models.ImageField(
+        upload_to=customer_profile_image_path,
+        storage=get_customer_profile_storage,
+        null=True, 
+        blank=True,
+        help_text="Profile image (max 5MB)"
+    )
     
     class Meta:
         db_table = 'authentication_customerprofile'
     
     def __str__(self):
         return f"Customer: {self.full_name}"
+
 
 class NGOProfile(models.Model):
     STATUS_CHOICES = [
@@ -172,8 +186,21 @@ class NGOProfile(models.Model):
     postal_code = models.CharField(max_length=20)
     country = models.CharField(max_length=100)
 
-    npo_document = models.FileField(upload_to='ngo_documents/')
-    organisation_logo = models.ImageField(upload_to='ngo_logos/', null=True, blank=True)
+    # UPDATED: Use Azure Blob Storage for documents and logos
+    npo_document = models.FileField(
+        upload_to=ngo_document_path,
+        storage=get_ngo_document_storage,
+        help_text="NPO registration document (PDF, max 10MB)"
+    )
+    
+    organisation_logo = models.ImageField(
+        upload_to=ngo_logo_path,
+        storage=get_ngo_logo_storage,
+        null=True, 
+        blank=True,
+        help_text="Organisation logo (max 5MB)"
+    )
+    
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending_verification')
 
     class Meta:
@@ -182,7 +209,6 @@ class NGOProfile(models.Model):
     def __str__(self):
         return f"NGO: {self.organisation_name}"
 
-# authentication/models.py - Add these fields to your existing FoodProviderProfile
 
 class FoodProviderProfile(models.Model):
     STATUS_CHOICES = [
@@ -191,27 +217,67 @@ class FoodProviderProfile(models.Model):
         ('rejected', 'Rejected'),
     ]
     
-    # Your existing fields (keep these unchanged)
+    # Existing fields (keep these unchanged)
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='provider_profile', db_column='user_id', to_field='UserID')
     business_name = models.CharField(max_length=255)
     business_address = models.TextField()
     business_contact = models.CharField(max_length=20)
     business_email = models.EmailField()
-    cipc_document = models.FileField(upload_to='provider_documents/')
-    logo = models.ImageField(upload_to='provider_logos/', null=True, blank=True)
+    
+    # UPDATED: Use Azure Blob Storage for documents and images
+    cipc_document = models.FileField(
+        upload_to=provider_cipc_path,
+        storage=get_provider_document_storage,
+        help_text="CIPC registration document (PDF, max 10MB)"
+    )
+    
+    logo = models.ImageField(
+        upload_to=provider_logo_path,
+        storage=get_provider_logo_storage,
+        null=True, 
+        blank=True,
+        help_text="Business logo (max 5MB)"
+    )
+    
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending_verification')
     
-    # ADD THESE NEW FIELDS FOR MAPS
+    # Existing location fields
     latitude = models.DecimalField(max_digits=10, decimal_places=8, null=True, blank=True)
     longitude = models.DecimalField(max_digits=11, decimal_places=8, null=True, blank=True)
     geocoded_at = models.DateTimeField(null=True, blank=True)
     geocoding_failed = models.BooleanField(default=False)
     geocoding_error = models.TextField(blank=True)
     
-    # Optional business info for better maps
+    # Existing optional business info
     business_hours = models.CharField(max_length=255, blank=True, help_text="e.g., 'Mon-Fri: 9AM-6PM'")
     phone_number = models.CharField(max_length=20, blank=True)
     website = models.URLField(blank=True)
+    
+    # UPDATED: Use Azure Blob Storage for banner
+    banner = models.ImageField(
+        upload_to=provider_banner_path,
+        storage=get_provider_banner_storage,
+        null=True, 
+        blank=True,
+        help_text="Banner image for business profile page (recommended size: 1200x400px, max 5MB)"
+    )
+    
+    business_description = models.TextField(
+        max_length=1000,
+        blank=True,
+        help_text="Tell customers about your business, cuisine, values, or specialties"
+    )
+    
+    business_tags = models.JSONField(
+        default=list,
+        blank=True,
+        help_text="Custom tags to describe your business (e.g., ['Bakery', 'Vegan Options', 'Organic'])"
+    )
+    
+    # Additional tracking fields for the new features
+    banner_updated_at = models.DateTimeField(null=True, blank=True)
+    description_updated_at = models.DateTimeField(null=True, blank=True)
+    tags_updated_at = models.DateTimeField(null=True, blank=True)
     
     class Meta:
         db_table = 'authentication_foodproviderprofile'
@@ -220,9 +286,32 @@ class FoodProviderProfile(models.Model):
         return f"Provider: {self.business_name}"
     
     def save(self, *args, **kwargs):
+        from django.utils import timezone
+        
+        # Track when new features are updated
+        if self.pk:  # Only for existing instances
+            try:
+                old_instance = FoodProviderProfile.objects.get(pk=self.pk)
+                
+                # Check if banner was updated
+                if old_instance.banner != self.banner:
+                    self.banner_updated_at = timezone.now()
+                
+                # Check if description was updated
+                if old_instance.business_description != self.business_description:
+                    self.description_updated_at = timezone.now()
+                
+                # Check if tags were updated
+                if old_instance.business_tags != self.business_tags:
+                    self.tags_updated_at = timezone.now()
+                    
+            except FoodProviderProfile.DoesNotExist:
+                pass
+        
         # Auto-geocode address when saving if coordinates are missing
         if self.business_address and (not self.latitude or not self.longitude):
             self.geocode_address()
+        
         super().save(*args, **kwargs)
     
     def geocode_address(self):
@@ -298,3 +387,71 @@ class FoodProviderProfile(models.Model):
             from urllib.parse import quote
             return f"https://www.openstreetmap.org/search?query={quote(self.business_address)}"
         return None
+    
+    # NEW METHODS for business tags functionality
+    def add_tag(self, tag):
+        """Add a business tag if it doesn't already exist"""
+        if not isinstance(self.business_tags, list):
+            self.business_tags = []
+        
+        tag = tag.strip().title()  # Standardize formatting
+        if tag and tag not in self.business_tags:
+            self.business_tags.append(tag)
+            self.save()
+            return True
+        return False
+    
+    def remove_tag(self, tag):
+        """Remove a business tag"""
+        if not isinstance(self.business_tags, list):
+            return False
+        
+        tag = tag.strip().title()
+        if tag in self.business_tags:
+            self.business_tags.remove(tag)
+            self.save()
+            return True
+        return False
+    
+    def get_tag_display(self):
+        """Get formatted tags for display"""
+        if not isinstance(self.business_tags, list):
+            return []
+        return [tag.strip().title() for tag in self.business_tags if tag.strip()]
+    
+    @classmethod
+    def get_popular_tags(cls, limit=20):
+        """Get most popular business tags across all providers"""
+        from django.db.models import Q
+        from collections import Counter
+        
+        # Get all tags from verified providers
+        providers = cls.objects.filter(status='verified').exclude(business_tags__isnull=True)
+        
+        all_tags = []
+        for provider in providers:
+            if isinstance(provider.business_tags, list):
+                all_tags.extend([tag.strip().title() for tag in provider.business_tags if tag.strip()])
+        
+        # Count and return most popular
+        tag_counts = Counter(all_tags)
+        return [{'tag': tag, 'count': count} for tag, count in tag_counts.most_common(limit)]
+    
+    def has_complete_profile(self):
+        """Check if business profile is complete with new fields"""
+        required_fields = [
+            self.business_name,
+            self.business_email,
+            self.business_address,
+            self.business_contact
+        ]
+        
+        # Check if core fields are filled
+        if not all(required_fields):
+            return False
+        
+        # Consider profile more complete if they have description and tags
+        has_description = bool(self.business_description and self.business_description.strip())
+        has_tags = bool(self.business_tags and len(self.business_tags) > 0)
+        
+        return has_description or has_tags  # At least one should be filled for a "complete" profile

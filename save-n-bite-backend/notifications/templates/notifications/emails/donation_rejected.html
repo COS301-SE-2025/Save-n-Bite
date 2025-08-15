@@ -1,0 +1,42 @@
+<!-- notifications/templates/notifications/emails/donation_rejected.html -->
+{% extends "notifications/emails/base.html" %}
+
+{% block content %}
+<h2>Donation Request Update</h2>
+
+<p>Hi {{ ngo_name }},</p>
+
+<p>Thank you for your interest in the food donation from <strong>{{ business_name }}</strong>.</p>
+
+<p>Unfortunately, they were unable to fulfill your request for <strong>{{ food_item_name }}</strong> at this time.</p>
+
+{% if rejection_reason and rejection_reason != 'No specific reason was provided' %}
+<div style="background-color: #fff3cd; padding: 15px; border-radius: 4px; margin: 15px 0; border-left: 4px solid #ffc107;">
+    <p><strong>Reason provided:</strong></p>
+    <p>{{ rejection_reason }}</p>
+</div>
+{% endif %}
+
+<div style="background-color: #d1ecf1; padding: 15px; border-radius: 4px; margin: 15px 0; border-left: 4px solid #17a2b8;">
+    <p><strong>Don't worry!</strong> There are many other donation opportunities available on Save n Bite.</p>
+    <p>We encourage you to:</p>
+    <ul>
+        <li>Browse other available donations from different businesses</li>
+        <li>Follow businesses to get notified about new donation opportunities</li>
+        <li>Try submitting requests for similar items from other providers</li>
+    </ul>
+</div>
+
+<p>Your organization's work in reducing food waste and supporting the community is valuable, and we appreciate your efforts.</p>
+
+<a href="{{ browse_url }}" class="button" style="display: inline-block; background-color: #4CAF50; color: white; padding: 12px 24px; text-decoration: none; border-radius: 4px; margin: 10px 0;">
+    Browse Available Donations
+</a>
+
+<p>If you have any questions or need assistance finding suitable donations, please don't hesitate to contact our support team.</p>
+
+<p>Thank you for being part of our mission to reduce food waste!</p>
+
+<p>Best regards,</p>
+<p>The Save n Bite Team</p>
+{% endblock %}

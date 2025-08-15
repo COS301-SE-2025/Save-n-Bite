@@ -2,6 +2,27 @@
 import { apiClient } from './FoodAPI';
 
 class BusinessAPI {
+  // Helper method to extract error messages
+  getErrorMessage(error) {
+    if (error.response?.data?.error?.message) {
+      return error.response.data.error.message;
+    } else if (error.response?.data?.message) {
+      return error.response.data.message;
+    } else if (error.response?.data) {
+      // Handle validation errors
+      const errorData = error.response.data;
+      if (typeof errorData === 'object') {
+        const firstError = Object.values(errorData)[0];
+        if (Array.isArray(firstError)) {
+          return firstError[0];
+        } else if (typeof firstError === 'string') {
+          return firstError;
+        }
+      }
+    }
+    return error.message || 'An unexpected error occurred';
+  }
+
   // Search for businesses
   async searchBusinesses(searchTerm = '') {
     try {
@@ -51,7 +72,7 @@ class BusinessAPI {
       return {
         success: true,
         data: response.data,
-        message: response.data.message
+        message: response.data.message || 'Successfully followed business'
       };
     } catch (error) {
       console.error('Failed to follow business:', error);
@@ -70,7 +91,7 @@ class BusinessAPI {
       return {
         success: true,
         data: response.data,
-        message: response.data.message
+        message: response.data.message || 'Successfully unfollowed business'
       };
     } catch (error) {
       console.error('Failed to unfollow business:', error);
@@ -81,40 +102,18 @@ class BusinessAPI {
     }
   }
 
-  // Get list of businesses user is following
-  async getFollowingList() {
+  // Get user's followed businesses
+  async getFollowedBusinesses() {
     try {
-      const response = await apiClient.get('/api/following/');
+      const response = await apiClient.get('/api/followed-businesses/');
 
       return {
         success: true,
-        data: response.data.following,
-        count: response.data.count,
-        message: response.data.message
+        data: response.data.businesses || response.data,
+        count: response.data.count
       };
     } catch (error) {
-      console.error('Failed to fetch following list:', error);
-      return {
-        success: false,
-        error: this.getErrorMessage(error)
-      };
-    }
-  }
-
-  // Get followers for a business (Provider only)
-  async getBusinessFollowers() {
-    try {
-      const response = await apiClient.get('/api/followers/');
-
-      return {
-        success: true,
-        data: response.data.followers,
-        summary: response.data.summary,
-        count: response.data.count,
-        message: response.data.message
-      };
-    } catch (error) {
-      console.error('Failed to fetch business followers:', error);
+      console.error('Failed to fetch followed businesses:', error);
       return {
         success: false,
         error: this.getErrorMessage(error)
@@ -123,9 +122,10 @@ class BusinessAPI {
   }
 
   // Check if user is following a specific business
-  async checkFollowStatus(businessId) {
+  async isFollowingBusiness(businessId) {
     try {
-      const response = await apiClient.get(`/api/follow-status/${businessId}/`);
+      const response = await apiClient.get(`/api/is-following/${businessId}/`);
+
       return {
         success: true,
         isFollowing: response.data.is_following
@@ -134,24 +134,11 @@ class BusinessAPI {
       console.error('Failed to check follow status:', error);
       return {
         success: false,
+        isFollowing: false,
         error: this.getErrorMessage(error)
       };
     }
   }
-
-  // Error message helper (matches FoodAPI pattern)
-  getErrorMessage(error) {
-    if (error.response?.data?.message) {
-      return error.response.data.message;
-    }
-    if (error.response?.data?.error) {
-      return error.response.data.error;
-    }
-    if (error.response?.data?.detail) {
-      return error.response.data.detail;
-    }
-    return error.message || 'An unexpected error occurred';
-  }
 }
 
-export default new BusinessAPI();
+export default BusinessAPI;

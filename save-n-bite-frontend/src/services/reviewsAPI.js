@@ -99,7 +99,7 @@ const reviewsAPI = {
     }
   },
   
-  // Get business reviews (for food providers)
+  // Get business reviews (for food providers - business owners only)
   getBusinessReviews: async (params = {}) => {
     try {
       const searchParams = new URLSearchParams();
@@ -129,7 +129,57 @@ const reviewsAPI = {
     }
   },
 
-  // Get business review statistics
+  // 🆕 NEW: Get public reviews for any business (customers can view)
+  getPublicBusinessReviews: async (businessId, params = {}) => {
+    try {
+      const searchParams = new URLSearchParams();
+      
+      // Add query parameters if provided
+      if (params.rating) searchParams.append('rating', params.rating);
+      if (params.date_range) searchParams.append('date_range', params.date_range);
+      if (params.page) searchParams.append('page', params.page);
+      if (params.page_size) searchParams.append('page_size', params.page_size);
+      if (params.sort) searchParams.append('sort', params.sort);
+      
+      const queryString = searchParams.toString();
+      const url = `/api/public/business/${businessId}/reviews/${queryString ? `?${queryString}` : ''}`;
+      
+      const response = await apiClient.get(url);
+      
+      return {
+        success: true,
+        data: response.data,
+        error: null
+      };
+    } catch (error) {
+      return {
+        success: false,
+        data: null,
+        error: error.response?.data?.message || error.message || 'Failed to fetch business reviews'
+      };
+    }
+  },
+
+  // 🆕 NEW: Get public review statistics for any business
+  getPublicBusinessReviewStats: async (businessId) => {
+    try {
+      const response = await apiClient.get(`/api/public/business/${businessId}/reviews/stats/`);
+      
+      return {
+        success: true,
+        data: response.data,
+        error: null
+      };
+    } catch (error) {
+      return {
+        success: false,
+        data: null,
+        error: error.response?.data?.message || error.message || 'Failed to fetch review statistics'
+      };
+    }
+  },
+
+  // Get business review statistics (business owners only)
   getBusinessReviewStats: async () => {
     try {
       const response = await apiClient.get('/api/business/reviews/stats/');
@@ -144,6 +194,37 @@ const reviewsAPI = {
         success: false,
         data: null,
         error: error.response?.data?.message || error.message || 'Failed to fetch review statistics'
+      };
+    }
+  },
+
+  
+  // 🆕 NEW: Get comprehensive provider reviews (includes provider info, summary stats, and reviews)
+  getProviderReviews: async (providerId, params = {}) => {
+    try {
+      const searchParams = new URLSearchParams();
+      
+      // Add query parameters if provided
+      if (params.page) searchParams.append('page', params.page);
+      if (params.page_size) searchParams.append('page_size', params.page_size);
+      if (params.rating) searchParams.append('rating', params.rating);
+      if (params.sort) searchParams.append('sort', params.sort);
+      
+      const queryString = searchParams.toString();
+      const url = `/api/reviews/provider/${providerId}/${queryString ? `?${queryString}` : ''}`;
+      
+      const response = await apiClient.get(url);
+      
+      return {
+        success: true,
+        data: response.data,
+        error: null
+      };
+    } catch (error) {
+      return {
+        success: false,
+        data: null,
+        error: error.response?.data?.message || error.message || 'Failed to fetch provider reviews'
       };
     }
   },

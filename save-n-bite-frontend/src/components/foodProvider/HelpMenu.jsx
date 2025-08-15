@@ -45,12 +45,12 @@ export function HelpMenu({ onClose }) {
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-      <div className="bg-white rounded-lg shadow-xl w-full max-w-3xl max-h-[90vh] flex flex-col">
-        <div className="flex justify-between items-center border-b border-gray-200 p-4">
-          <h2 className="text-xl font-bold text-blue-900">Help Center</h2>
+      <div className="bg-white dark:bg-gray-900 rounded-lg shadow-xl w-full max-w-3xl max-h-[90vh] flex flex-col transition-colors duration-300">
+        <div className="flex justify-between items-center border-b border-gray-200 dark:border-gray-700 p-4">
+          <h2 className="text-xl font-bold text-blue-900 dark:text-blue-200">Help Center</h2>
           <button
             onClick={onClose}
-            className="text-gray-500 hover:text-gray-700"
+            className="text-gray-500 dark:text-gray-300 hover:text-gray-700 dark:hover:text-gray-100"
             aria-label="Close help menu"
           >
             <CloseIcon className="h-6 w-6" />
@@ -58,7 +58,7 @@ export function HelpMenu({ onClose }) {
         </div>
         <div className="flex-1 overflow-y-auto">
           <div className="p-4">
-            <p className="text-gray-600 mb-4">
+            <p className="text-gray-600 dark:text-gray-300 mb-4">
               Welcome to the Save n Bite Help Center. Find answers to common
               questions and learn how to make the most of our platform.
             </p>
@@ -66,13 +66,13 @@ export function HelpMenu({ onClose }) {
             <div className="mb-6">
               <button
                 onClick={handleStartWalkthrough}
-                className="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-md font-medium transition-colors"
+                className="w-full py-3 bg-blue-600 dark:bg-blue-700 hover:bg-blue-700 dark:hover:bg-blue-800 text-white rounded-md font-medium transition-colors"
               >
                 Start Platform Walkthrough
               </button>
             </div>
 
-            <div className="mb-4 bg-gray-50 rounded-lg">
+            <div className="mb-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
               <AccordionItem
                 title="General Help"
                 isOpen={openSections.general}
@@ -123,7 +123,7 @@ export function HelpMenu({ onClose }) {
               </AccordionItem>
             </div>
 
-            <div className="mb-4 bg-gray-50 rounded-lg">
+            <div className="mb-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
               <AccordionItem
                 title="Help for Food Providers"
                 isOpen={openSections.provider}
@@ -167,7 +167,7 @@ export function HelpMenu({ onClose }) {
               </AccordionItem>
             </div>
 
-            <div className="mb-4 bg-gray-50 rounded-lg">
+            <div className="mb-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
               <AccordionItem
                 title="Frequently Asked Questions"
                 isOpen={openSections.faq}

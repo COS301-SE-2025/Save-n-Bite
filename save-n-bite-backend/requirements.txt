@@ -15,6 +15,7 @@ celery>=5.4.0
 django-cors-headers>=4.0.0
 # Image Processing
 pillow>=11.2.1
+requests>=2.28.0
 
 # Configuration
 python-decouple>=3.8
@@ -50,3 +51,10 @@ django-redis>=5.2.0
 
 # Health checks (optional)
 django-health-check>=3.17.0
+
+# Azure Blob Storage
+azure-storage-blob>=12.19.0
+azure-identity>=1.15.0
+
+# Additional Azure utilities (optional but recommended)
+azure-core>=1.29.0

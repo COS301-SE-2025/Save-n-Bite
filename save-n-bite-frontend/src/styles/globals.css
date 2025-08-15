@@ -1,3 +1,274 @@
 @import 'tailwindcss/base';
 @import 'tailwindcss/components';
 @import 'tailwindcss/utilities';
+
+/* Custom responsive utilities */
+@layer utilities {
+  /* Mobile-first responsive text sizing */
+  .text-responsive-sm {
+    @apply text-sm sm:text-base;
+  }
+  
+  .text-responsive-base {
+    @apply text-base sm:text-lg;
+  }
+  
+  .text-responsive-lg {
+    @apply text-lg sm:text-xl md:text-2xl;
+  }
+  
+  .text-responsive-xl {
+    @apply text-xl sm:text-2xl md:text-3xl lg:text-4xl;
+  }
+  
+  /* Mobile-first responsive spacing */
+  .container-responsive {
+    @apply px-4 sm:px-6 md:px-8 lg:px-12;
+  }
+  
+  .section-responsive {
+    @apply py-8 sm:py-12 md:py-16 lg:py-20;
+  }
+  
+  /* Mobile-optimized touch targets */
+  .touch-target {
+    @apply min-h-[44px] min-w-[44px];
+  }
+  
+  /* Mobile-friendly table styles */
+  .table-responsive {
+    @apply overflow-x-auto -mx-4 sm:mx-0;
+  }
+  
+  .table-responsive table {
+    @apply min-w-full;
+  }
+  
+  /* Mobile-optimized form styles */
+  .form-responsive {
+    @apply space-y-4 sm:space-y-6;
+  }
+  
+  .input-responsive {
+    @apply w-full px-3 py-2 sm:px-4 sm:py-3 text-base;
+  }
+  
+  .button-responsive {
+    @apply w-full sm:w-auto px-4 py-2 sm:px-6 sm:py-3 text-base;
+  }
+}
+
+/* Mobile-specific improvements */
+@layer components {
+  /* Mobile navigation improvements */
+  .mobile-nav-link {
+    @apply block w-full text-left px-4 py-3 text-base font-medium text-gray-700 hover:text-emerald-600 hover:bg-gray-50 transition-colors;
+  }
+  
+  /* Mobile card improvements */
+  .card-responsive {
+    @apply bg-white rounded-lg shadow-sm border border-gray-100 p-4 sm:p-6;
+  }
+  
+  /* Mobile grid improvements */
+  .grid-responsive {
+    @apply grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6;
+  }
+  
+  /* Mobile sidebar improvements */
+  .sidebar-responsive {
+    @apply fixed inset-y-0 left-0 z-50 w-64 bg-white shadow-lg transform transition-transform duration-300 ease-in-out;
+  }
+  
+  .sidebar-responsive.closed {
+    @apply -translate-x-full;
+  }
+  
+  /* Mobile modal improvements */
+  .modal-responsive {
+    @apply fixed inset-0 z-50 overflow-y-auto;
+  }
+  
+  .modal-content-responsive {
+    @apply relative bg-white rounded-lg mx-4 my-8 sm:mx-auto sm:my-16 max-w-lg sm:max-w-md lg:max-w-lg;
+  }
+}
+
+/* Responsive typography improvements */
+@media (max-width: 640px) {
+  h1 {
+    @apply text-2xl sm:text-3xl;
+  }
+  
+  h2 {
+    @apply text-xl sm:text-2xl;
+  }
+  
+  h3 {
+    @apply text-lg sm:text-xl;
+  }
+  
+  p {
+    @apply text-sm sm:text-base;
+  }
+}
+
+/* Mobile-specific spacing adjustments */
+@media (max-width: 640px) {
+  .mobile-p-2 {
+    @apply p-2;
+  }
+  
+  .mobile-p-4 {
+    @apply p-4;
+  }
+  
+  .mobile-m-2 {
+    @apply m-2;
+  }
+  
+  .mobile-m-4 {
+    @apply m-4;
+  }
+}
+
+/* Improved mobile navigation */
+@media (max-width: 768px) {
+  .nav-container {
+    @apply px-4;
+  }
+  
+  .nav-brand {
+    @apply text-lg;
+  }
+  
+  .nav-menu {
+    @apply absolute top-full left-0 right-0 bg-white shadow-lg border-t border-gray-200;
+  }
+}
+
+/* Mobile table improvements */
+@media (max-width: 768px) {
+  .table-mobile {
+    @apply block w-full;
+  }
+  
+  .table-mobile thead {
+    @apply hidden;
+  }
+  
+  .table-mobile tbody {
+    @apply block w-full;
+  }
+  
+  .table-mobile tr {
+    @apply block w-full mb-4 border border-gray-200 rounded-lg p-4;
+  }
+  
+  .table-mobile td {
+    @apply block w-full text-left pb-2 before:content-[attr(data-label)] before:font-semibold before:mr-2;
+  }
+  
+  .table-mobile td:last-child {
+    @apply pb-0;
+  }
+}
+
+/* Mobile form improvements */
+@media (max-width: 640px) {
+  .form-mobile {
+    @apply space-y-4;
+  }
+  
+  .form-group-mobile {
+    @apply space-y-2;
+  }
+  
+  .input-mobile {
+    @apply w-full px-3 py-3 text-base;
+  }
+  
+  .button-mobile {
+    @apply w-full py-3 text-base font-medium;
+  }
+}
+
+/* Mobile card improvements */
+@media (max-width: 640px) {
+  .card-mobile {
+    @apply p-4;
+  }
+  
+  .card-header-mobile {
+    @apply pb-3;
+  }
+  
+  .card-content-mobile {
+    @apply space-y-3;
+  }
+}
+
+/* Mobile grid improvements */
+@media (max-width: 640px) {
+  .grid-mobile {
+    @apply grid-cols-1 gap-4;
+  }
+}
+
+@media (min-width: 641px) and (max-width: 1024px) {
+  .grid-tablet {
+    @apply grid-cols-2 gap-6;
+  }
+}
+
+/* Mobile image improvements */
+@media (max-width: 640px) {
+  .image-mobile {
+    @apply w-full h-48 object-cover;
+  }
+}
+
+/* Mobile button improvements */
+@media (max-width: 640px) {
+  .button-group-mobile {
+    @apply flex flex-col space-y-2;
+  }
+  
+  .button-group-mobile .btn {
+    @apply w-full;
+  }
+}
+
+/* Mobile spacing utilities */
+.mobile-space-y-2 > * + * {
+  @apply mt-2;
+}
+
+.mobile-space-y-4 > * + * {
+  @apply mt-4;
+}
+
+.mobile-space-x-2 > * + * {
+  @apply ml-2;
+}
+
+.mobile-space-x-4 > * + * {
+  @apply ml-4;
+}
+
+/* Responsive container improvements */
+.container-mobile {
+  @apply px-4 mx-auto max-w-7xl;
+}
+
+@media (min-width: 640px) {
+  .container-mobile {
+    @apply px-6;
+  }
+}
+
+@media (min-width: 1024px) {
+  .container-mobile {
+    @apply px-8;
+  }
+}

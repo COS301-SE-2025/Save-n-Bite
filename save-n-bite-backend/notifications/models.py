@@ -59,6 +59,8 @@ class Notification(models.Model):
         ('pickup_reminder', 'Pickup Reminder'),  # Existing type from scheduling
         ('order_preparation', 'Order Preparation'),
         ('order_completion', 'Order Completion'),
+        ('donation_request', 'Donation Request'),
+        ('donation_response', 'Donation Response'), 
     ]
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)

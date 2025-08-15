@@ -22,6 +22,10 @@ const RegisterForm = ({ userType = USER_TYPES.CUSTOMER, onSuccess, onError }) =>
         businessEmail: '',
         cipcDocument: null,
         logo: null,
+        businessDescription: '',
+        businessTags: [],
+        banner: null,
+        businessTagsInput: '',
         
         // NGO fields
         organisationName: '',
@@ -94,6 +98,27 @@ const RegisterForm = ({ userType = USER_TYPES.CUSTOMER, onSuccess, onError }) =>
                     isValid = true;
                 }
                 break;
+            case 'businessDescription':
+            // Optional field, but if provided should have reasonable length
+            if (value && value.length > 1000) {
+                error = 'Description should be less than 1000 characters';
+            } else if (value) {
+                isValid = true;
+            }
+            break;
+        case 'businessTags':
+            // Optional field, but if provided should be an array
+            if (value && Array.isArray(value)) {
+                isValid = true;
+            } else if (!value || value.length === 0) {
+                isValid = true; // Empty is valid since it's optional
+            }
+            break;
+        case 'banner':
+            if (value) {
+                isValid = true;
+            }
+            break;
             case 'firstName':
             case 'lastName':
             case 'businessName':
@@ -132,6 +157,37 @@ const RegisterForm = ({ userType = USER_TYPES.CUSTOMER, onSuccess, onError }) =>
         return { error, isValid };
     };
 
+const handleTagsChange = (e) => {
+    const { value } = e.target;
+    
+    // Update the raw input value in state for display
+    setFormData(prev => ({
+        ...prev,
+        businessTagsInput: value, // Store the raw input
+        businessTags: value ? value.split(',').map(tag => tag.trim()).filter(tag => tag) : []
+    }));
+
+    // Clear server error when user starts typing
+    if (serverError) {
+        setServerError('');
+    }
+
+    // Convert to tags array for validation
+    const tags = value ? value.split(',').map(tag => tag.trim()).filter(tag => tag) : [];
+    
+    // Validate tags
+    const { error, isValid } = validateField('businessTags', tags);
+    
+    setErrors(prev => ({
+        ...prev,
+        businessTags: error
+    }));
+
+    setValidFields(prev => ({
+        ...prev,
+        businessTags: isValid
+    }));
+};
     const handleInputChange = (e) => {
         const { name, value } = e.target;
         setFormData(prev => ({
@@ -337,7 +393,7 @@ const RegisterForm = ({ userType = USER_TYPES.CUSTOMER, onSuccess, onError }) =>
 
             {/* Common fields for all user types */}
             <div className="relative">
-                <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
+                <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                     Email Address
                 </label>
                 <input
@@ -357,7 +413,7 @@ const RegisterForm = ({ userType = USER_TYPES.CUSTOMER, onSuccess, onError }) =>
             </div>
 
             <div className="relative">
-                <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
+                <label htmlFor="password" className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                     Password
                     {renderTooltip('Password must be at least 6 characters long')}
                 </label>
@@ -378,7 +434,7 @@ const RegisterForm = ({ userType = USER_TYPES.CUSTOMER, onSuccess, onError }) =>
             </div>
 
             <div className="relative">
-                <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 mb-1">
+                <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                     Confirm Password
                 </label>
                 <input
@@ -400,7 +456,7 @@ const RegisterForm = ({ userType = USER_TYPES.CUSTOMER, onSuccess, onError }) =>
             {userType === USER_TYPES.CUSTOMER && (
                 <>
                     <div className="relative">
-                        <label htmlFor="firstName" className="block text-sm font-medium text-gray-700 mb-1">
+                        <label htmlFor="firstName" className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                             First Name
                         </label>
                         <input
@@ -420,7 +476,7 @@ const RegisterForm = ({ userType = USER_TYPES.CUSTOMER, onSuccess, onError }) =>
                     </div>
 
                     <div className="relative">
-                        <label htmlFor="lastName" className="block text-sm font-medium text-gray-700 mb-1">
+                        <label htmlFor="lastName" className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                             Last Name
                         </label>
                         <input
@@ -440,7 +496,7 @@ const RegisterForm = ({ userType = USER_TYPES.CUSTOMER, onSuccess, onError }) =>
                     </div>
 
                     <div className="relative">
-                        <label htmlFor="city" className="block text-sm font-medium text-gray-700 mb-1">
+                        <label htmlFor="city" className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                             City
                         </label>
                         <input
@@ -460,7 +516,7 @@ const RegisterForm = ({ userType = USER_TYPES.CUSTOMER, onSuccess, onError }) =>
                     </div>
 
                     <div className="relative">
-                        <label htmlFor="province" className="block text-sm font-medium text-gray-700 mb-1">
+                        <label htmlFor="province" className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                             Province
                         </label>
                         <select
@@ -481,7 +537,7 @@ const RegisterForm = ({ userType = USER_TYPES.CUSTOMER, onSuccess, onError }) =>
                     </div>
 
                     <div>
-                        <label htmlFor="profileImage" className="block text-sm font-medium text-gray-700 mb-1">
+                        <label htmlFor="profileImage" className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                             Profile Image (Optional)
                             {renderTooltip('Upload a JPG, PNG image (max 5MB)')}
                         </label>
@@ -503,7 +559,7 @@ const RegisterForm = ({ userType = USER_TYPES.CUSTOMER, onSuccess, onError }) =>
             {userType === USER_TYPES.PROVIDER && (
                 <>
                     <div className="relative">
-                        <label htmlFor="businessName" className="block text-sm font-medium text-gray-700 mb-1">
+                        <label htmlFor="businessName" className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                             Business Name
                         </label>
                         <input
@@ -523,7 +579,7 @@ const RegisterForm = ({ userType = USER_TYPES.CUSTOMER, onSuccess, onError }) =>
                     </div>
 
                     <div className="relative">
-                        <label htmlFor="businessEmail" className="block text-sm font-medium text-gray-700 mb-1">
+                        <label htmlFor="businessEmail" className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                             Business Email
                         </label>
                         <input
@@ -543,7 +599,7 @@ const RegisterForm = ({ userType = USER_TYPES.CUSTOMER, onSuccess, onError }) =>
                     </div>
 
                     <div className="relative">
-                        <label htmlFor="businessContact" className="block text-sm font-medium text-gray-700 mb-1">
+                        <label htmlFor="businessContact" className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                             Business Contact
                             {renderTooltip('Enter phone number (e.g., 0123456789)')}
                         </label>
@@ -564,7 +620,7 @@ const RegisterForm = ({ userType = USER_TYPES.CUSTOMER, onSuccess, onError }) =>
                     </div>
 
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                             Business Address
                         </label>
                         <div className="space-y-2">
@@ -640,7 +696,7 @@ const RegisterForm = ({ userType = USER_TYPES.CUSTOMER, onSuccess, onError }) =>
                     </div>
 
                     <div>
-                        <label htmlFor="cipcDocument" className="block text-sm font-medium text-gray-700 mb-1">
+                        <label htmlFor="cipcDocument" className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                             CIPC Document
                             {renderTooltip('Upload PDF or image file (max 5MB)')}
                         </label>
@@ -658,7 +714,7 @@ const RegisterForm = ({ userType = USER_TYPES.CUSTOMER, onSuccess, onError }) =>
                     </div>
 
                     <div>
-                        <label htmlFor="logo" className="block text-sm font-medium text-gray-700 mb-1">
+                        <label htmlFor="logo" className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                             Business Logo (Optional)
                             {renderTooltip('Upload JPG, PNG image (max 5MB)')}
                         </label>
@@ -674,13 +730,98 @@ const RegisterForm = ({ userType = USER_TYPES.CUSTOMER, onSuccess, onError }) =>
                             <p className="mt-1 text-sm text-red-600">{errors.logo}</p>
                         )}
                     </div>
+                    <div>
+    <label htmlFor="banner" className="block text-sm font-medium text-gray-700 mb-1">
+        Business Banner (Optional)
+        {renderTooltip('Upload JPG, PNG image for business banner (max 5MB)')}
+    </label>
+    <input
+        type="file"
+        id="banner"
+        name="banner"
+        onChange={handleFileChange}
+        accept=".jpg,.jpeg,.png"
+        className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-emerald-500 focus:border-emerald-500"
+    />
+    {errors.banner && (
+        <p className="mt-1 text-sm text-red-600">{errors.banner}</p>
+    )}
+</div>
+
+<div className="relative">
+    <label htmlFor="businessDescription" className="block text-sm font-medium text-gray-700 mb-1">
+        Business Description (Optional)
+        {renderTooltip('Describe your business, specialties, and what makes you unique (max 1000 characters)')}
+    </label>
+    <textarea
+        id="businessDescription"
+        name="businessDescription"
+        value={formData.businessDescription}
+        onChange={handleInputChange}
+        onBlur={handleBlur}
+        rows={4}
+        maxLength={1000}
+        className={getFieldClassName('businessDescription')}
+        placeholder="Describe your business, specialties, and what makes you unique..."
+    />
+    {renderValidationIcon('businessDescription')}
+    {errors.businessDescription && touchedFields.businessDescription && (
+        <p className="mt-1 text-sm text-red-600">{errors.businessDescription}</p>
+    )}
+    <p className="mt-1 text-sm text-gray-500">
+        {formData.businessDescription.length}/1000 characters
+    </p>
+</div>
+
+<div className="relative">
+    <label htmlFor="businessTags" className="block text-sm font-medium text-gray-700 mb-1">
+        Business Tags (Optional)
+        {renderTooltip('Add tags to help customers find you (e.g., Bakery, Artisan, Local). Separate with commas.')}
+    </label>
+    <input
+        type="text"
+        id="businessTags"
+        name="businessTags"
+        value={formData.businessTagsInput || formData.businessTags.join(', ')}
+        onChange={handleTagsChange}
+        onBlur={handleBlur}
+        className={getFieldClassName('businessTags')}
+        placeholder="e.g., Bakery, Artisan, Local, Fresh Daily"
+    />
+    {renderValidationIcon('businessTags')}
+    {errors.businessTags && touchedFields.businessTags && (
+        <p className="mt-1 text-sm text-red-600">{errors.businessTags}</p>
+    )}
+    {formData.businessTags.length > 0 && (
+        <div className="mt-2 flex flex-wrap gap-2">
+            {formData.businessTags.map((tag, index) => (
+                <span
+                    key={index}
+                    className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-100 text-emerald-800"
+                >
+                    {tag}
+                    <button
+                        type="button"
+                        onClick={() => removeTag(index)}
+                        className="ml-1 inline-flex items-center justify-center w-4 h-4 text-emerald-600 hover:text-emerald-800 hover:bg-emerald-200 rounded-full"
+                    >
+                        ×
+                    </button>
+                </span>
+            ))}
+        </div>
+    )}
+    <p className="mt-1 text-sm text-gray-500">
+        Separate tags with commas. These help customers find your business.
+    </p>
+</div>
                 </>
             )}
 
             {userType === USER_TYPES.NGO && (
                 <>
                     <div className="relative">
-                        <label htmlFor="organisationName" className="block text-sm font-medium text-gray-700 mb-1">
+                        <label htmlFor="organisationName" className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                             Organisation Name
                         </label>
                         <input
@@ -700,7 +841,7 @@ const RegisterForm = ({ userType = USER_TYPES.CUSTOMER, onSuccess, onError }) =>
                     </div>
 
                     <div className="relative">
-                        <label htmlFor="organisationContact" className="block text-sm font-medium text-gray-700 mb-1">
+                        <label htmlFor="organisationContact" className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                             Organisation Contact
                             {renderTooltip('Enter phone number (e.g., 0123456789)')}
                         </label>
@@ -721,7 +862,7 @@ const RegisterForm = ({ userType = USER_TYPES.CUSTOMER, onSuccess, onError }) =>
                     </div>
 
                     <div className="relative">
-                        <label htmlFor="organisationEmail" className="block text-sm font-medium text-gray-700 mb-1">
+                        <label htmlFor="organisationEmail" className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                             Organisation Email
                         </label>
                         <input
@@ -741,7 +882,7 @@ const RegisterForm = ({ userType = USER_TYPES.CUSTOMER, onSuccess, onError }) =>
                     </div>
 
                     <div className="relative">
-                        <label htmlFor="representativeName" className="block text-sm font-medium text-gray-700 mb-1">
+                        <label htmlFor="representativeName" className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                             Representative Name
                         </label>
                         <input
@@ -761,7 +902,7 @@ const RegisterForm = ({ userType = USER_TYPES.CUSTOMER, onSuccess, onError }) =>
                     </div>
 
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                             Organisation Address
                         </label>
                         <div className="space-y-2">
@@ -837,7 +978,7 @@ const RegisterForm = ({ userType = USER_TYPES.CUSTOMER, onSuccess, onError }) =>
                     </div>
 
                     <div>
-                        <label htmlFor="npoDocument" className="block text-sm font-medium text-gray-700 mb-1">
+                        <label htmlFor="npoDocument" className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                             NPO Document
                             {renderTooltip('Upload PDF or image file (max 5MB)')}
                         </label>
@@ -855,7 +996,7 @@ const RegisterForm = ({ userType = USER_TYPES.CUSTOMER, onSuccess, onError }) =>
                     </div>
 
                     <div>
-                        <label htmlFor="logo" className="block text-sm font-medium text-gray-700 mb-1">
+                        <label htmlFor="logo" className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                             Organisation Logo (Optional)
                             {renderTooltip('Upload JPG, PNG image (max 5MB)')}
                         </label>

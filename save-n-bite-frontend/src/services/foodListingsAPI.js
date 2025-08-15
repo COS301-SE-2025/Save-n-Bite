@@ -84,7 +84,9 @@ const transformListingData = (backendListing) => {
         name: listing.name,
         title: listing.name, // Map name to title for compatibility
         description: listing.description,
-        image: listing.imageUrl || 'https://images.unsplash.com/photo-1546833999-b9f581a1996d?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80', // fallback image
+        image: listing.imageUrl && listing.imageUrl.trim() !== '' 
+            ? listing.imageUrl 
+            : 'https://images.unsplash.com/photo-1546833999-b9f581a1996d?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80',
         imageUrl: listing.imageUrl,
         provider: {
             id: listing.provider?.id,
@@ -151,97 +153,86 @@ const formatExpirationTime = (expiryDate) => {
     }
 };
 
-// const getUserType = () => {
-//     try {
-//         const storedUser = localStorage.getItem('user');
-//         if (!storedUser) return 'customer';
-        
-//         const user = JSON.parse(storedUser);
-        
-//         // Check if user has organisation_name (NGO)
-//         if (user.organisation_name || user.representative_name) {
-//             return 'ngo';
-//         }
-        
-//         // Check if user has business_name (Provider)
-//         if (user.business_name) {
-//             return 'provider';
-//         }
-        
-//         // Default to customer
-//         return 'customer';
-//     } catch (error) {
-//         console.error('Error determining user type:', error);
-//         return 'customer';
-//     }
-// };
-
 const getUserType = () => {
     try {
-        const keysToCheck = ['user', 'userData', 'currentUser', 'authUser', 'profile'];
-
-        for (const key of keysToCheck) {
+        // Check multiple possible storage keys
+        const possibleKeys = ['user', 'userData', 'currentUser', 'authUser', 'profile'];
+        
+        for (const key of possibleKeys) {
             const item = localStorage.getItem(key);
             if (item) {
-                const user = JSON.parse(item);
-                if (user.user_type) {
-                    return user.user_type; 
+                try {
+                    const user = JSON.parse(item);
+                    
+                    // Check for explicit user_type field
+                    if (user.user_type) {
+                        return user.user_type;
+                    }
+                    
+                    // Fallback: determine from user properties
+                    if (user.organisation_name || user.representative_name) {
+                        return 'ngo';
+                    }
+                    if (user.business_name) {
+                        return 'provider';
+                    }
+                } catch (parseError) {
+                    console.warn(`Failed to parse ${key} from localStorage:`, parseError);
                 }
             }
         }
-
-        return 'customer'; 
-    } catch (err) {
-        console.error("Error reading user type:", err);
+        
+        // Default fallback
+        return 'customer';
+    } catch (error) {
+        console.error('Error determining user type:', error);
         return 'customer';
     }
 };
 
-
-
-
-
 const buildQueryParams = (filters = {}, searchQuery = '', sortBy = '') => {
     const params = new URLSearchParams();
     
+    // Search query
     if (searchQuery.trim()) {
         params.append('search', searchQuery.trim());
     }
     
+    // Sorting
     if (sortBy) {
         const sortMapping = {
-            'price_asc': 'discounted_price',
-            'price_desc': '-discounted_price',
-            'expiry_asc': 'expiry_date',
-            'distance': 'created_at' // Fallback to created_at since distance sorting is not implemented yet
+            'price-low': 'discounted_price',
+            'price-high': '-discounted_price',
+            'expiry': 'expiry_date',
+            'name': 'name',
+            'newest': '-created_at'
         };
-        params.append('sort', sortMapping[sortBy] || sortBy);
+        params.append('ordering', sortMapping[sortBy] || sortBy);
     }
     
-    // Filter by price range
-    if (filters.priceRange && filters.priceRange[1] < 20) {
-        params.append('priceMin', filters.priceRange[0]);
-        params.append('priceMax', filters.priceRange[1]);
+    // Price range filter - only add if not at maximum
+    if (filters.priceRange && filters.priceRange[1] < 1000) {
+        params.append('min_price', filters.priceRange[0]);
+        params.append('max_price', filters.priceRange[1]);
     }
     
-    // Filter by type
+    // Type filter
     if (filters.type && filters.type !== 'all') {
         params.append('type', filters.type);
     }
     
-    // Filter by provider
+    // Provider filter
     if (filters.provider && filters.provider !== 'all') {
-        params.append('store', filters.provider);
+        params.append('provider', filters.provider);
     }
     
-    // Filter by expiration
+    // Expiration filter
     if (filters.expiration && filters.expiration !== 'all') {
-        params.append('expiry_filter', filters.expiration);
+        params.append('expiration', filters.expiration);
     }
     
     return params.toString();
 };
-
 
 const foodListingsAPI = {
     // Get all food listings for browsing (customer view)
@@ -250,10 +241,14 @@ const foodListingsAPI = {
             const queryParams = buildQueryParams(filters, searchQuery, sortBy);
             const url = `/api/food-listings/${queryParams ? `?${queryParams}` : ''}`;
             
+            console.log('API Request URL:', url); // Debug log
+            
             const response = await apiClient.get(url);
             
             // Transform the data to match your frontend format
             const transformedListings = response.data.listings?.map(transformListingData) || [];
+            
+            console.log('Transformed listings:', transformedListings); // Debug log
             
             return {
                 success: true,
@@ -269,12 +264,13 @@ const foodListingsAPI = {
             console.error('Error fetching food listings:', error);
             return {
                 success: false,
-                error: error.response?.data?.message || 'Failed to fetch food listings'
+                error: error.response?.data?.message || error.message || 'Failed to fetch food listings'
             };
         }
     },
 
-     async getFoodListingDetails(listingId) {
+    // Get food listing details by ID
+    async getFoodListingDetails(listingId) {
         try {
             const response = await apiClient.get(`/api/food-listings/${listingId}/`);
             
@@ -291,11 +287,7 @@ const foodListingsAPI = {
         }
     },
 
-
-    
-
-
-
+    // Get provider's own listings
     async getProviderListings() {
         try {
             const response = await apiClient.get('/api/provider/listings/');
@@ -324,38 +316,38 @@ const foodListingsAPI = {
         }
     },
 
-// Replace your createListing method in foodListingsAPI.js with this:
+    // Create new listing (provider functionality)
+    async createListing(listingData) {
+        try {
+            // If listingData is FormData, don't set Content-Type header
+            const config = listingData instanceof FormData ? {
+                headers: {
+                    'Content-Type': 'multipart/form-data'
+                }
+            } : {};
 
-async createListing(listingData) {
-    try {
-        // If listingData is FormData, don't set Content-Type header
-        const config = listingData instanceof FormData ? {
-            headers: {
-                'Content-Type': 'multipart/form-data'
-            }
-        } : {};
+            const response = await apiClient.post('/api/provider/listings/create/', listingData, config);
+            
+            console.log('=== RAW BACKEND RESPONSE ===');
+            console.log('Raw response.data:', response.data);
+            console.log('Raw response.data.listing:', response.data.listing);
+            
+            // Don't transform the data here - return the raw backend response
+            // so we can access response.data.listing.id in the frontend
+            return {
+                success: true,
+                data: response.data, // Return the raw backend response structure
+            };
+        } catch (error) {
+            console.error('Error creating food listing:', error);
+            return {
+                success: false,
+                error: error.response?.data?.message || 'Failed to create listing'
+            };
+        }
+    },
 
-        const response = await apiClient.post('/api/provider/listings/create/', listingData, config);
-        
-        console.log('=== RAW BACKEND RESPONSE ===');
-        console.log('Raw response.data:', response.data);
-        console.log('Raw response.data.listing:', response.data.listing);
-        
-        // Don't transform the data here - return the raw backend response
-        // so we can access response.data.listing.id in the frontend
-        return {
-            success: true,
-            data: response.data, // Return the raw backend response structure
-        };
-    } catch (error) {
-        console.error('Error creating food listing:', error);
-        return {
-            success: false,
-            error: error.response?.data?.message || 'Failed to create listing'
-        };
-    }
-},
-
+    // Update existing listing
     async updateFoodListing(listingId, listingData) {
         try {
             const response = await apiClient.put(`/food-listings/provider/listings/${listingId}/`, listingData);
@@ -373,6 +365,7 @@ async createListing(listingData) {
         }
     },
 
+    // Delete food listing
     async deleteFoodListing(listingId) {
         try {
             await apiClient.delete(`/food-listings/provider/listings/${listingId}/`);
@@ -390,7 +383,7 @@ async createListing(listingData) {
         }
     },
 
-
+    // Get unique providers for filtering
     async getUniqueProviders() {
         try {
             const response = await this.getFoodListings();
@@ -431,8 +424,25 @@ async createListing(listingData) {
             };
         }
     },
+async getListingForEdit(listingId) {
+        try {
+            const response = await apiClient.get(`/api/food-listings/${listingId}/`);
+            
+            return {
+                success: true,
+                data: response.data.listing || response.data
+            };
+        } catch (error) {
+            console.error('Error fetching listing for edit:', error);
+            return {
+                success: false,
+                error: error.response?.data?.message || 'Failed to fetch listing details'
+            };
+        }
+    },
 
-    async createListing(listingData) {
+    // Update existing listing
+    async updateListing(listingId, listingData) {
         try {
             // If listingData is FormData, don't set Content-Type header
             const config = listingData instanceof FormData ? {
@@ -441,50 +451,55 @@ async createListing(listingData) {
                 }
             } : {};
 
-            const response = await apiClient.post('/api/provider/listings/create/', listingData, config);
+            const response = await apiClient.put(`/api/provider/listings/${listingId}/`, listingData, config);
             
-            console.log( response);
-            return {
-                success: true,
-                data: transformListingData(response.data),
-
-            };
-        } catch (error) {
-            console.error('Error creating food listing:', error);
-            return {
-                success: false,
-                error: error.response?.data?.message || 'Failed to create listing'
-            };
-        }
-    },
-
-    async deleteListing(id) {
-        try {
-            const response = await apiClient.delete(`/food-listings/${id}/`);
             return {
                 success: true,
                 data: response.data
             };
         } catch (error) {
+            console.error('Error updating listing:', error);
             return {
                 success: false,
-                error: error.response?.data?.message || 'Failed to delete listing'
+                error: error.response?.data?.message || error.response?.data?.error || 'Failed to update listing'
             };
         }
     },
 
+    // Delete listing - updated to match your endpoint structure
+    async deleteListing(listingId) {
+        try {
+            const response = await apiClient.delete(`/api/provider/listings/${listingId}/delete/`);
+            
+            return {
+                success: true,
+                data: response.data,
+                message: response.data?.message || 'Listing deleted successfully'
+            };
+        } catch (error) {
+            console.error('Error deleting listing:', error);
+            return {
+                success: false,
+                error: error.response?.data?.message || error.response?.data?.error || 'Failed to delete listing'
+            };
+        }
+    },
+
+    // Alternative delete method (keeping both for compatibility)
+    async deleteFoodListing(listingId) {
+        return this.deleteListing(listingId);
+    },
+    // Get user type with debug logging
     getUserType: () => {
-    console.log("=== getUserType Debug ===");
+        console.log("=== getUserType Debug ===");
 
-    const userTypeFromStorage = getUserType();
-    console.log("User type from localStorage:", userTypeFromStorage);
+        const userTypeFromStorage = getUserType();
+        console.log("User type from localStorage:", userTypeFromStorage);
 
-    console.log("========================");
-    return userTypeFromStorage;
-}
-
+        console.log("========================");
+        return userTypeFromStorage;
+    }
 };
 
-// Export for use
 export { getUserType };
 export default foodListingsAPI;

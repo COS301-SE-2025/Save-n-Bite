@@ -3,9 +3,13 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import ProtectedRoute from './components/ProtectedRoutes';
+import { ThemeProvider } from "./context/ThemeContext";
+
+
 import { USER_TYPES } from './config/routes';
 
 // Import your components
+import EditListing from './pages/foodProvider/EditListing';
 import Register from './pages/auth/Register';
 import Login from './pages/auth/Login';
 import Home from './pages/auth/Home';
@@ -24,9 +28,10 @@ import Dashboard from './pages/foodProvider/Dashboard';
 import OrdersAndFeedback from './pages/foodProvider/OrdersAndFeedback';
 import PickupCoordination from './pages/foodProvider/PickupCoordination';
 import ManageDonations from './pages/foodProvider/Donations';
+import CustomerSettings from './pages/auth/CustomerSettings';
 //FoodProvider
 import FoodProvidersPage from './pages/auth/AllFoodproviders';
-import SpecificFoodProvider from './pages/auth//SpecificFoodProvider'
+import SpecificFoodProvider from './pages/auth/SpecificFoodProvider';
 import ProfilePage from './components/auth/Profile';
 import FoodproviderProfile from './pages/foodProvider/Profile'
 import FoodproviderSettings from './pages/foodProvider/Settings'
@@ -51,6 +56,7 @@ import ForgotPassword from './pages/auth/ForgotPassword';
 
 function App() {
   return (
+       <ThemeProvider>
     <AuthProvider>
       <Router>
         <Routes>
@@ -140,13 +146,15 @@ function App() {
 
 
        
-         
+         <Route path="/edit-listing/:listingId" element={<EditListing />} />
           <Route path="/providers" element={<FoodProvidersPage />} />
-           <Route path="/providers/:id" element={<SpecificFoodProvider />} />
+           <Route path="/provider/:id" element={<SpecificFoodProvider />} />
             <Route path="/profile" element={<ProfilePage />} />
             <Route path="/edit-profile" element={<EditProfilePage />} />
             <Route path="/foodprovider-profile" element={<FoodproviderProfile />} />
             <Route path="/settings" element={<FoodproviderSettings />} />
+             <Route path="/customer-settings" element={<CustomerSettings />} />
+
 
               <Route path="/admin-login" element={<AdminLogin />} />
         <Route element={<Layout />}>
@@ -230,7 +238,11 @@ function App() {
         </Routes>
       </Router>
     </AuthProvider>
+    </ThemeProvider>
+ 
   );
 }
+
+
 
 export default App;

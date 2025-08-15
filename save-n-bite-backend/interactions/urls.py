@@ -1,7 +1,6 @@
 # Updated urls.py file
 
 from django.urls import path
-
 from .views import (
     AcceptDonationView,
     CartView,
@@ -12,18 +11,16 @@ from .views import (
     CheckoutView,
     OrderListView,
     OrderDetailView,
-    UpdateInteractionStatusView,  
+    UpdateInteractionStatusView,  # Add this import
     check_interaction_review_status,
     get_interaction_review,
     BusinessHistoryView, 
     InitiateCheckoutView,
     CompleteCheckoutView,
+    NGODonationRequestsView,
+    CancelDonationView
 )
-
 from . import admin_views
-
-
-
 
 urlpatterns = [
     path('', CartView.as_view(), name='cart'),
@@ -36,7 +33,6 @@ urlpatterns = [
     path('interactions/<uuid:interaction_id>/review/', get_interaction_review, name='get_interaction_review'),
         # Admin endpoints
     path('admin/transactions/', admin_views.admin_get_all_transactions, name='admin_get_all_transactions'),
-    #path('admin/transactions/update-status/', admin_views.admin_update_transaction_status, name='admin_update_transaction_status'),
     path('donation/request/', DonationRequestView.as_view(), name='donation-request'),
     path('donation/<uuid:interaction_id>/accept/', AcceptDonationView.as_view(), name='donation-accept'),
     path('donation/<uuid:interaction_id>/reject/', RejectDonationView.as_view(), name='donation-reject'),
@@ -44,4 +40,6 @@ urlpatterns = [
     path('interactions/<uuid:interaction_id>/status/', UpdateInteractionStatusView.as_view(), name='update_interaction_status'), 
     path('checkout/initiate/', InitiateCheckoutView.as_view(), name='initiate-checkout'),
     path('checkout/complete/', CompleteCheckoutView.as_view(), name='complete-checkout'),
+    path('donations/<uuid:interaction_id>/cancel/', CancelDonationView.as_view(), name='cancel-donation'),
+    path('ngo/history/', NGODonationRequestsView.as_view(), name='ngo-history'),
 ]

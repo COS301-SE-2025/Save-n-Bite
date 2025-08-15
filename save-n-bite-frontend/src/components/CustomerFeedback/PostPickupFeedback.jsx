@@ -19,11 +19,11 @@ const PostPickupFeedback = ({ orderNumber, providerName, itemName, onClose }) =>
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
-      <div className="bg-white w-full max-w-md rounded-xl shadow-xl">
+      <div className="bg-white dark:bg-gray-900 w-full max-w-md rounded-xl shadow-xl transition-colors duration-300">
         <div className="relative p-6">
           <button
             onClick={onClose}
-            className="absolute right-4 top-4 text-gray-400 hover:text-gray-600"
+            className="absolute right-4 top-4 text-gray-400 dark:text-gray-300 hover:text-gray-600 dark:hover:text-gray-100"
           >
             <XIcon size={24} />
           </button>
@@ -37,13 +37,13 @@ const PostPickupFeedback = ({ orderNumber, providerName, itemName, onClose }) =>
                 className="space-y-6"
               >
                 <div className="text-center space-y-2">
-                  <h2 className="text-xl font-semibold text-gray-800">
+                  <h2 className="text-xl font-semibold text-gray-800 dark:text-gray-100">
                     Would you like to review more details?
                   </h2>
-                  <p className="text-gray-600">
+                  <p className="text-gray-600 dark:text-gray-300">
                     Order #{orderNumber} from {providerName}
                   </p>
-                  <p className="text-sm text-gray-500">
+                  <p className="text-sm text-gray-500 dark:text-gray-400">
                     Your feedback helps us and our providers improve.
                   </p>
                 </div>
@@ -51,13 +51,13 @@ const PostPickupFeedback = ({ orderNumber, providerName, itemName, onClose }) =>
                 <div className="grid grid-cols-2 gap-4">
                   <button
                     onClick={() => setShowProviderReview(true)}
-                    className="p-4 border rounded-lg hover:border-emerald-500 hover:text-emerald-600 transition-colors"
+                    className="p-4 border border-gray-300 dark:border-gray-700 rounded-lg hover:border-emerald-500 dark:hover:border-emerald-400 hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors"
                   >
                     Review Provider
                   </button>
                   <button
                     onClick={() => setShowItemReview(true)}
-                    className="p-4 border rounded-lg hover:border-emerald-500 hover:text-emerald-600 transition-colors"
+                    className="p-4 border border-gray-300 dark:border-gray-700 rounded-lg hover:border-emerald-500 dark:hover:border-emerald-400 hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors"
                   >
                     Review Item
                   </button>
@@ -66,7 +66,7 @@ const PostPickupFeedback = ({ orderNumber, providerName, itemName, onClose }) =>
                 <div className="flex justify-end">
                   <button
                     onClick={handleSkip}
-                    className="px-6 py-2 text-gray-600 hover:text-gray-800"
+                    className="px-6 py-2 text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-gray-100"
                   >
                     No, thanks
                   </button>
@@ -80,11 +80,11 @@ const PostPickupFeedback = ({ orderNumber, providerName, itemName, onClose }) =>
                 animate={{ opacity: 1, scale: 1 }}
                 className="py-8 text-center space-y-4"
               >
-                <CheckCircleIcon size={48} className="text-emerald-500 mx-auto" />
-                <h2 className="text-xl font-semibold text-gray-800">
+                <CheckCircleIcon size={48} className="text-emerald-500 dark:text-emerald-400 mx-auto" />
+                <h2 className="text-xl font-semibold text-gray-800 dark:text-gray-100">
                   Thanks for your feedback!
                 </h2>
-                <p className="text-gray-600">
+                <p className="text-gray-600 dark:text-gray-300">
                   Your input helps us improve our service.
                 </p>
               </motion.div>

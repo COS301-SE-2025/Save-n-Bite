@@ -105,10 +105,10 @@ class PickupSchedulingService:
                         slot_number=slot_config['slot_number'],
                         start_time=slot_config['start_time'],
                         end_time=slot_config['end_time'],
-                        max_orders_per_slot=slot_config.get('max_orders', pickup_schedule.max_orders_per_slot),  # Ensure this is set
+                        max_orders_per_slot=slot_config.get('max_orders', pickup_schedule.max_orders_per_slot),
                         date=target_date,
-                        current_bookings=0,  # Explicitly set to 0
-                        is_active=True  # Explicitly set to True
+                        current_bookings=0,
+                        is_active=True
                     )
                     created_slots.append(slot)
                 
@@ -134,7 +134,7 @@ class PickupSchedulingService:
                 pickup_schedule__food_listing=food_listing,
                 date=target_date,
                 is_active=True,
-                current_bookings__lt=F('max_orders_per_slot')  # Filter for available slots in database
+                current_bookings__lt=F('max_orders_per_slot')
             ).select_related(
                 'pickup_schedule__food_listing',
                 'pickup_schedule__location'
@@ -144,7 +144,7 @@ class PickupSchedulingService:
             
         except Exception as e:
             logger.error(f"Error getting available slots: {str(e)}")
-            return PickupTimeSlot.objects.none()  # Return empty QuerySet instead of empty list
+            return PickupTimeSlot.objects.none()
 
     @staticmethod
     def schedule_pickup(order, schedule_data):
@@ -162,7 +162,7 @@ class PickupSchedulingService:
                 if not time_slot.is_available:
                     raise ValidationError("Time slot is no longer available")
                 
-                # Get the food listing from the order (assuming order has food listing reference)
+                # Get the food listing from the order
                 food_listing = FoodListing.objects.get(id=schedule_data['food_listing_id'])
                 
                 # Validate that the time slot belongs to this food listing
@@ -311,7 +311,7 @@ class PickupSchedulingService:
             pickups = ScheduledPickup.objects.filter(
                 location__business=business,
                 scheduled_date=target_date
-            ).select_related('food_listing', 'location', 'order')
+            ).select_related('food_listing', 'location', 'order', 'order__interaction', 'order__interaction__user')
             
             # Calculate metrics
             total_pickups = pickups.count()
@@ -322,27 +322,65 @@ class PickupSchedulingService:
             # Group by hour
             pickups_by_hour = {}
             for pickup in pickups:
-                hour = pickup.scheduled_start_time.hour
-                if hour not in pickups_by_hour:
-                    pickups_by_hour[hour] = []
-                pickups_by_hour[hour].append({
-                    'id': pickup.id,
-                    'confirmation_code': pickup.confirmation_code,
-                    'food_listing_name': pickup.food_listing.name,
-                    'customer_name': getattr(pickup.order.interaction.user.customer_profile, 'full_name', 'Unknown'),
-                    'status': pickup.status,
-                    'time': pickup.scheduled_start_time.strftime('%H:%M')
-                })
+                if pickup.scheduled_start_time:  # Check if time exists
+                    hour = pickup.scheduled_start_time.hour
+                    if hour not in pickups_by_hour:
+                        pickups_by_hour[hour] = []
+                    
+                    # Safely get customer name - handle both customers and NGOs
+                    customer_name = 'Unknown'
+                    try:
+                        user = pickup.order.interaction.user
+                        user_type = getattr(user, 'user_type', 'unknown')
+                        
+                        if user_type == 'customer' and hasattr(user, 'customer_profile') and user.customer_profile:
+                            # Customer user with customer_profile
+                            customer_name = getattr(user.customer_profile, 'full_name', 'Unknown')
+                        elif user_type == 'ngo' and hasattr(user, 'ngo_profile') and user.ngo_profile:
+                            # NGO user with ngo_profile
+                            ngo_name = getattr(user.ngo_profile, 'organization_name', None)
+                            contact_name = getattr(user.ngo_profile, 'contact_person_name', None)
+                            if ngo_name:
+                                customer_name = ngo_name
+                                if contact_name:
+                                    customer_name = f"{ngo_name} ({contact_name})"
+                            elif contact_name:
+                                customer_name = contact_name
+                            else:
+                                customer_name = user.email or 'Unknown NGO'
+                        elif hasattr(user, 'get_full_name'):
+                            # Fallback to user's get_full_name method
+                            customer_name = user.get_full_name() or user.email or 'Unknown'
+                        else:
+                            # Final fallback to email
+                            customer_name = user.email or 'Unknown'
+                            
+                    except Exception as e:
+                        logger.warning(f"Error getting customer name for pickup {pickup.id}: {str(e)}")
+                        customer_name = 'Unknown'
+                    
+                    pickups_by_hour[hour].append({
+                        'id': str(pickup.id),
+                        'confirmation_code': pickup.confirmation_code,
+                        'food_listing_name': pickup.food_listing.name if pickup.food_listing else 'Unknown',
+                        'customer_name': customer_name,
+                        'status': pickup.status,
+                        'time': pickup.scheduled_start_time.strftime('%H:%M')
+                    })
             
             # Get food listings with pickups
-            food_listings_with_pickups = list(
-                pickups.values('food_listing__id', 'food_listing__name')
-                .distinct()
-                .annotate(pickup_count=Count('id'))
-            )
+            food_listings_with_pickups = []
+            try:
+                food_listings_with_pickups = list(
+                    pickups.values('food_listing__id', 'food_listing__name')
+                    .distinct()
+                    .annotate(pickup_count=Count('id'))
+                )
+            except Exception as e:
+                logger.warning(f"Error getting food listings with pickups: {str(e)}")
             
             return {
-                'date': target_date,
+                'date': target_date.isoformat(),
                 'total_pickups': total_pickups,
                 'completed_pickups': completed_pickups,
                 'pending_pickups': pending_pickups,
@@ -353,7 +391,19 @@ class PickupSchedulingService:
             
         except Exception as e:
             logger.error(f"Error getting schedule overview: {str(e)}")
-            return None
+            import traceback
+            logger.error(f"Full traceback: {traceback.format_exc()}")
+            
+            # Return empty structure instead of None
+            return {
+                'date': target_date.isoformat() if target_date else timezone.now().date().isoformat(),
+                'total_pickups': 0,
+                'completed_pickups': 0,
+                'pending_pickups': 0,
+                'missed_pickups': 0,
+                'pickups_by_hour': {},
+                'food_listings_with_pickups': []
+            }
 
     @staticmethod
     def send_pickup_reminders():
