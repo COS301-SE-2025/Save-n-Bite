@@ -11,6 +11,7 @@ import {
 import { useAuth } from '../../context/AuthContext';
 import CustomerNavBar from './CustomerNavBar';
 import ProfileAPI from '../../services/ProfileAPI';
+import BusinessAPI from '../../services/BusinessAPI';
 
 // Placeholder image for users without profile pictures
 const PLACEHOLDER_AVATAR = 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-4.0.3&auto=format&fit=crop&w=150&q=80';
@@ -29,7 +30,7 @@ const ProfilePage = () => {
         setLoading(true);
         const profileAPI = new ProfileAPI();
         const result = await profileAPI.getMyProfile();
-        
+
         if (result.success) {
           setProfileData(result.data);
           setError(null);
@@ -48,32 +49,46 @@ const ProfilePage = () => {
   }, []);
 
   const handleUnfollow = async (businessId) => {
-    // TODO: Implement unfollow API call
-    // For now, just update the UI
-    if (profileData?.followed_businesses?.businesses) {
-      const updatedBusinesses = profileData.followed_businesses.businesses.filter(
-        (business) => business.id !== businessId
-      );
-      setProfileData(prev => ({
-        ...prev,
-        followed_businesses: {
-          ...prev.followed_businesses,
-          businesses: updatedBusinesses,
-          count: updatedBusinesses.length
+    try {
+      const businessAPI = new BusinessAPI();
+      const result = await businessAPI.unfollowBusiness(businessId);
+
+      if (result.success) {
+        // Update UI only if the API call was successful
+        if (profileData?.followed_businesses?.businesses) {
+          const updatedBusinesses = profileData.followed_businesses.businesses.filter(
+            (business) => business.id !== businessId
+          );
+          setProfileData(prev => ({
+            ...prev,
+            followed_businesses: {
+              ...prev.followed_businesses,
+              businesses: updatedBusinesses,
+              count: updatedBusinesses.length
+            }
+          }));
         }
-      }));
+      } else {
+        // Show error if unfollow failed
+        setError(result.error || 'Failed to unfollow business');
+        setTimeout(() => setError(null), 3000); // Clear error after 3 seconds
+      }
+    } catch (err) {
+      console.error('Error unfollowing business:', err);
+      setError('Failed to unfollow business. Please try again.');
+      setTimeout(() => setError(null), 3000);
     }
   };
 
   // Loading state
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 w-full transition-colors duration-200">
+      <div className="bg-gray-50 dark:bg-gray-900 min-h-screen w-full transition-colors duration-300">
         <CustomerNavBar />
         <div className="flex items-center justify-center min-h-[60vh]">
           <div className="text-center">
-            <Loader className="h-8 w-8 animate-spin mx-auto mb-4 text-emerald-600" />
-            <p className="text-gray-600 dark:text-gray-300">Loading profile...</p>
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-600 mx-auto mb-4"></div>
+            <p className="text-gray-600 dark:text-gray-200">Loading profile...</p>
           </div>
         </div>
       </div>
@@ -88,7 +103,7 @@ const ProfilePage = () => {
         <div className="flex items-center justify-center min-h-[60vh]">
           <div className="text-center">
             <p className="text-red-600 mb-4">Error: {error}</p>
-            <button 
+            <button
               onClick={() => window.location.reload()}
               className="px-4 py-2 bg-emerald-600 text-white rounded-md hover:bg-emerald-700"
             >
@@ -109,14 +124,14 @@ const ProfilePage = () => {
   const followedBusinesses = profileData.followed_businesses;
 
   return (
-<div className="min-h-screen bg-gray-50 dark:bg-gray-900 w-full transition-colors duration-200">
-  <CustomerNavBar />
-  <div className="max-w-4xl mx-auto px-4 py-8">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 w-full transition-colors duration-200">
+      <CustomerNavBar />
+      <div className="max-w-4xl mx-auto px-4 py-8">
 
         <h1 className="text-2xl font-bold text-gray-800 dark:text-white mb-6">
           My Profile
         </h1>
-        
+
         {/* Error message */}
         {error && (
           <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-md">
@@ -207,7 +222,7 @@ const ProfilePage = () => {
             <h3 className="text-lg font-medium text-gray-800 dark:text-white mb-4">
               Account Overview
             </h3>
-            
+
             {/* Order Statistics */}
             <div className="mb-6">
               <h4 className="text-md font-medium text-gray-700 dark:text-gray-300 mb-3">
@@ -304,11 +319,10 @@ const ProfilePage = () => {
                       </div>
                     </div>
                     <div className="flex items-center">
-                      <span className={`px-2 py-1 rounded-full text-xs mr-3 ${
-                        business.status === 'verified' 
-                          ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300' 
+                      <span className={`px-2 py-1 rounded-full text-xs mr-3 ${business.status === 'verified'
+                          ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300'
                           : 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300'
-                      }`}>
+                        }`}>
                         {business.status}
                       </span>
                       <button
@@ -405,7 +419,7 @@ const ProfilePage = () => {
                 </p>
               </div>
             )}
-            
+
             {reviews.statistics && (
               <div className="mt-6 pt-4 border-t border-gray-200 dark:border-gray-600">
                 <p className="text-sm text-gray-600 dark:text-gray-400">
