@@ -4063,3 +4063,17 @@ WARNING 2025-08-15 13:16:14,733 log 21736 9648 Unauthorized: /api/notifications/
 WARNING 2025-08-15 13:16:14,734 basehttp 21736 9648 "GET /api/notifications/unread-count/ HTTP/1.1" 401 58
 WARNING 2025-08-15 13:17:14,812 log 21736 9648 Unauthorized: /api/notifications/unread-count/
 WARNING 2025-08-15 13:17:14,812 basehttp 21736 9648 "GET /api/notifications/unread-count/ HTTP/1.1" 401 58
+INFO 2025-08-15 13:21:36,314 autoreload 21736 16704 C:\Users\Capleton\Desktop\COS214\practical\Save-n-Bite\save-n-bite-backend\interactions\views.py changed, reloading.
+INFO 2025-08-15 13:21:42,090 blob_storage 21892 3000 Updated existing container to public access: customer-profiles
+INFO 2025-08-15 13:21:42,125 blob_storage 21892 3000 Updated existing container to public access: ngo-documents
+INFO 2025-08-15 13:21:42,157 blob_storage 21892 3000 Updated existing container to public access: ngo-logos
+INFO 2025-08-15 13:21:42,187 blob_storage 21892 3000 Updated existing container to public access: provider-documents
+INFO 2025-08-15 13:21:42,220 blob_storage 21892 3000 Updated existing container to public access: provider-logos
+INFO 2025-08-15 13:21:42,252 blob_storage 21892 3000 Updated existing container to public access: provider-banners
+INFO 2025-08-15 13:21:42,410 autoreload 21892 3000 Watching for file changes with StatReloader
+INFO 2025-08-15 13:21:42,902 blob_storage 21892 7648 Updated existing container to public access: customer-profiles
+INFO 2025-08-15 13:21:42,932 blob_storage 21892 7648 Updated existing container to public access: provider-banners
+INFO 2025-08-15 13:21:42,942 blob_storage 21892 7648 Updated existing container to public access: provider-documents
+INFO 2025-08-15 13:21:42,951 blob_storage 21892 7648 Updated existing container to public access: provider-logos
+INFO 2025-08-15 13:21:42,963 blob_storage 21892 7648 Updated existing container to public access: ngo-documents
+INFO 2025-08-15 13:21:42,996 blob_storage 21892 7648 Updated existing container to public access: ngo-logos
