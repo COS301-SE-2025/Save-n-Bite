@@ -5449,3 +5449,63 @@ INFO 2025-08-15 20:45:50,171 basehttp 11300 16708 "GET /cart/business/history/ H
 INFO 2025-08-15 20:45:58,232 basehttp 11300 16708 "GET /cart/business/history/ HTTP/1.1" 200 18279
 INFO 2025-08-15 20:46:15,564 basehttp 11300 16708 "GET /cart/business/history/ HTTP/1.1" 200 18279
 INFO 2025-08-15 20:46:16,646 basehttp 11300 16708 "GET /cart/business/history/ HTTP/1.1" 200 18279
+INFO 2025-08-16 09:54:34,932 blob_storage 26192 34412 Updated existing container to public access: customer-profiles
+INFO 2025-08-16 09:54:34,962 blob_storage 26192 34412 Updated existing container to public access: ngo-documents
+INFO 2025-08-16 09:54:35,005 blob_storage 26192 34412 Updated existing container to public access: ngo-logos
+INFO 2025-08-16 09:54:35,047 blob_storage 26192 34412 Updated existing container to public access: provider-documents
+INFO 2025-08-16 09:54:35,079 blob_storage 26192 34412 Updated existing container to public access: provider-logos
+INFO 2025-08-16 09:54:35,117 blob_storage 26192 34412 Updated existing container to public access: provider-banners
+INFO 2025-08-16 09:54:37,062 blob_storage 30204 35760 Updated existing container to public access: customer-profiles
+INFO 2025-08-16 09:54:37,107 blob_storage 30204 35760 Updated existing container to public access: ngo-documents
+INFO 2025-08-16 09:54:37,157 blob_storage 30204 35760 Updated existing container to public access: ngo-logos
+INFO 2025-08-16 09:54:37,206 blob_storage 30204 35760 Updated existing container to public access: provider-documents
+INFO 2025-08-16 09:54:37,236 blob_storage 30204 35760 Updated existing container to public access: provider-logos
+INFO 2025-08-16 09:54:37,266 blob_storage 30204 35760 Updated existing container to public access: provider-banners
+INFO 2025-08-16 09:54:37,371 autoreload 30204 35760 Watching for file changes with StatReloader
+INFO 2025-08-16 09:54:38,135 blob_storage 30204 31888 Updated existing container to public access: customer-profiles
+INFO 2025-08-16 09:54:38,159 blob_storage 30204 31888 Updated existing container to public access: provider-banners
+INFO 2025-08-16 09:54:38,184 blob_storage 30204 31888 Updated existing container to public access: provider-documents
+INFO 2025-08-16 09:54:38,221 blob_storage 30204 31888 Updated existing container to public access: provider-logos
+INFO 2025-08-16 09:54:38,242 blob_storage 30204 31888 Updated existing container to public access: ngo-documents
+INFO 2025-08-16 09:54:38,271 blob_storage 30204 31888 Updated existing container to public access: ngo-logos
+WARNING 2025-08-16 09:55:24,116 log 30204 30096 Unauthorized: /api/notifications/unread-count/
+WARNING 2025-08-16 09:55:24,117 log 30204 35608 Unauthorized: /api/notifications/preferences/
+WARNING 2025-08-16 09:55:24,120 basehttp 30204 30096 "GET /api/notifications/unread-count/ HTTP/1.1" 401 58
+WARNING 2025-08-16 09:55:24,121 basehttp 30204 35608 "GET /api/notifications/preferences/ HTTP/1.1" 401 58
+WARNING 2025-08-16 09:55:24,126 log 30204 30096 Unauthorized: /api/notifications/unread-count/
+WARNING 2025-08-16 09:55:24,129 log 30204 35608 Unauthorized: /api/notifications/preferences/
+WARNING 2025-08-16 09:55:24,130 basehttp 30204 30096 "GET /api/notifications/unread-count/ HTTP/1.1" 401 58
+WARNING 2025-08-16 09:55:24,131 basehttp 30204 35608 "GET /api/notifications/preferences/ HTTP/1.1" 401 58
+WARNING 2025-08-16 09:57:42,956 log 30204 27016 Unauthorized: /api/notifications/unread-count/
+WARNING 2025-08-16 09:57:42,958 log 30204 34148 Unauthorized: /api/notifications/preferences/
+WARNING 2025-08-16 09:57:42,959 basehttp 30204 27016 "GET /api/notifications/unread-count/ HTTP/1.1" 401 58
+WARNING 2025-08-16 09:57:42,959 basehttp 30204 34148 "GET /api/notifications/preferences/ HTTP/1.1" 401 58
+WARNING 2025-08-16 09:57:42,964 log 30204 34148 Unauthorized: /api/notifications/unread-count/
+WARNING 2025-08-16 09:57:42,965 log 30204 27016 Unauthorized: /api/notifications/preferences/
+WARNING 2025-08-16 09:57:42,966 basehttp 30204 34148 "GET /api/notifications/unread-count/ HTTP/1.1" 401 58
+WARNING 2025-08-16 09:57:42,966 basehttp 30204 27016 "GET /api/notifications/preferences/ HTTP/1.1" 401 58
+INFO 2025-08-16 10:06:25,604 basehttp 30204 27784 "OPTIONS /auth/register/provider/ HTTP/1.1" 200 0
+INFO 2025-08-16 10:06:34,910 models 30204 27784 Successfully geocoded New Provider: -25.7563048, 28.2360429
+ERROR 2025-08-16 10:07:59,199 blob_storage 30204 27784 Failed to upload blob provider_documents/2b8dfd1b-32df-41d1-af58-cca60a4e2095.pdf: Internal Server Error
+ErrorCode:None
+ERROR 2025-08-16 10:07:59,200 serializers 30204 27784 Failed to upload CIPC document for newProvider@gmail.com: Internal Server Error
+ErrorCode:None
+WARNING 2025-08-16 10:07:59,202 log 30204 27784 Bad Request: /auth/register/provider/
+WARNING 2025-08-16 10:07:59,203 basehttp 30204 27784 "POST /auth/register/provider/ HTTP/1.1" 400 229
+WARNING 2025-08-16 10:09:14,152 log 30204 27784 Bad Request: /auth/register/provider/
+WARNING 2025-08-16 10:09:14,153 basehttp 30204 27784 "POST /auth/register/provider/ HTTP/1.1" 400 308
+INFO 2025-08-16 10:09:33,893 basehttp 30204 27784 "OPTIONS /auth/login/ HTTP/1.1" 200 0
+INFO 2025-08-16 10:09:36,247 basehttp 30204 27784 "POST /auth/login/ HTTP/1.1" 200 1443
+INFO 2025-08-16 10:09:36,268 basehttp 30204 27784 "OPTIONS /api/notifications/unread-count/ HTTP/1.1" 200 0
+INFO 2025-08-16 10:09:36,442 basehttp 30204 27784 "GET /api/notifications/unread-count/ HTTP/1.1" 200 18
+INFO 2025-08-16 10:09:36,446 basehttp 30204 27784 "OPTIONS /api/business/ HTTP/1.1" 200 0
+INFO 2025-08-16 10:09:36,452 basehttp 30204 27784 "OPTIONS /api/business/ HTTP/1.1" 200 0
+INFO 2025-08-16 10:09:36,688 basehttp 30204 27784 "GET /api/business/ HTTP/1.1" 200 860
+INFO 2025-08-16 10:09:36,841 basehttp 30204 29644 "GET /api/business/ HTTP/1.1" 200 860
+INFO 2025-08-16 10:17:17,239 basehttp 30204 29920 "OPTIONS /api/provider/listings/create/ HTTP/1.1" 200 0
+WARNING 2025-08-16 10:17:17,678 log 30204 29920 Forbidden: /api/provider/listings/create/
+WARNING 2025-08-16 10:17:17,683 basehttp 30204 29920 "POST /api/provider/listings/create/ HTTP/1.1" 403 107
+WARNING 2025-08-16 10:22:29,115 log 30204 27280 Forbidden: /api/provider/listings/create/
+WARNING 2025-08-16 10:22:29,122 basehttp 30204 27280 "POST /api/provider/listings/create/ HTTP/1.1" 403 107
+INFO 2025-08-16 10:23:15,204 basehttp 30204 34092 "GET /api/business/ HTTP/1.1" 200 860
+INFO 2025-08-16 10:23:15,377 basehttp 30204 23840 "GET /api/business/ HTTP/1.1" 200 860

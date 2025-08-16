@@ -457,6 +457,7 @@ export function ListingForm() {
               className={`w-full p-2 border rounded-lg ${errors.expiry_date ? 'border-red-500' : 'border-gray-300 dark:border-gray-700'} bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500`}
               min={new Date().toISOString().split('T')[0]}
               required
+              
             />
             {errors.expiry_date && <p className="text-red-500 dark:text-red-400 text-sm mt-1">{errors.expiry_date}</p>}
           </div>
