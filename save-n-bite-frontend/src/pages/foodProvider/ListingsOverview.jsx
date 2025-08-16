@@ -90,12 +90,12 @@ const handleDelete = async (id) => {
 
   <div className="flex-1 overflow-auto">
     {/* Mobile Header */}
-    <div className="md:hidden bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 px-4 py-3 flex items-center justify-between">
+   <div className="md:hidden bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-4 py-3 flex items-center justify-between transition-colors duration-300">
       <button
-        onClick={toggleMobileSidebar}
-        className="p-2 text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg"
-        aria-label="Open menu"
-      >
+      onClick={toggleMobileSidebar}
+      className="p-2 text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg"
+      aria-label="Open menu"
+    >
         <Menu size={24} />
       </button>
       <h1 className="text-lg font-semibold text-gray-900 dark:text-gray-100">My Listings</h1>
