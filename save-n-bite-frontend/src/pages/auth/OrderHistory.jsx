@@ -4,7 +4,7 @@ import CustomerNavBar from '../../components/auth/CustomerNavBar';
 import OrderCard from '../../components/auth/OrderCard';
 import ImpactSummary from '../../components/auth/ImpactSummary';
 import schedulingAPI from '../../services/schedulingAPI'; // Keep using schedulingAPI for pickups
-import donationsAPI from '../../services/donationsAPI'; // Add donationsAPI
+import donationsAPI from '../../services/DonationsAPI'; // Add donationsAPI
 import reviewsAPI from '../../services/reviewsAPI'; // Use reviewsAPI only for interaction status
 import {
   CheckCircleIcon,
