@@ -6,11 +6,11 @@ import ImpactSummary from '../../components/auth/ImpactSummary';
 import schedulingAPI from '../../services/schedulingAPI'; // Keep using schedulingAPI for pickups
 import donationsAPI from '../../services/donationsAPI'; // Add donationsAPI
 import reviewsAPI from '../../services/reviewsAPI'; // Use reviewsAPI only for interaction status
-import { 
-  CheckCircleIcon, 
-  LeafIcon, 
-  ClockIcon, 
-  MapPinIcon, 
+import {
+  CheckCircleIcon,
+  LeafIcon,
+  ClockIcon,
+  MapPinIcon,
   AlertCircleIcon,
   QrCodeIcon,
   PhoneIcon,
@@ -22,6 +22,8 @@ import {
   HeartIcon,
   GiftIcon
 } from 'lucide-react';
+import { Toast } from '../../components/ui/Toast';
+import { ConfirmDialog } from '../../components/ui/ConfirmDialog';
 
 // Simple inline OrderFilters to avoid import issues
 const SimpleOrderFilters = ({ filters, setFilters, orders = [], userType, onResetFilters }) => {
@@ -116,10 +118,35 @@ const PickupDetailsModal = ({ order, isOpen, onClose, onStatusUpdate }) => {
 
   // Check if this is a donation or pickup
   const isDonation = order.interaction_type === 'Donation';
-  
+
   // Generate QR code URL - use pickup code for pickups, verification code for donations
   const codeToShow = isDonation ? order.verification_code : order.confirmation_code;
   const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=${codeToShow}`;
+
+  // Add handleCancel function inside modal
+  const handleCancel = async (reason) => {
+    try {
+      let response;
+      if (isDonation) {
+        response = await donationsAPI.cancelDonationRequest(order.id, reason);
+      } else {
+        response = await schedulingAPI.cancelPickup(order.id, reason, true);
+      }
+
+      if (response.success) {
+        showToast(response.data.message || `${isDonation ? 'Donation' : 'Pickup'} cancelled successfully`, 'success');
+        if (!isDonation && response.data.refund_eligible) {
+          showToast('You may be eligible for a refund. Please check your account.', 'info');
+        }
+        onStatusUpdate();
+        onClose();
+      } else {
+        showToast(`Failed to cancel ${isDonation ? 'donation' : 'pickup'}: ${response.error}`, 'error');
+      }
+    } catch (error) {
+      showToast(`Failed to cancel ${isDonation ? 'donation' : 'pickup'}. Please try again.`, 'error');
+    }
+  };
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
@@ -135,7 +162,7 @@ const PickupDetailsModal = ({ order, isOpen, onClose, onStatusUpdate }) => {
             <XIcon size={24} />
           </button>
         </div>
-        
+
         <div className="p-6 space-y-6">
           {/* Order Header */}
           <div className="text-center border-b border-gray-100 dark:border-gray-700 pb-4">
@@ -170,7 +197,7 @@ const PickupDetailsModal = ({ order, isOpen, onClose, onStatusUpdate }) => {
                 <QrCodeIcon size={20} className="mr-2 text-emerald-600 dark:text-emerald-400" />
                 {isDonation ? 'Show for Collection' : 'Show at Pickup'}
               </h3>
-              
+
               <div className="flex flex-col items-center space-y-4">
                 <img
                   src={qrCodeUrl}
@@ -181,7 +208,7 @@ const PickupDetailsModal = ({ order, isOpen, onClose, onStatusUpdate }) => {
                     e.target.style.display = 'none';
                   }}
                 />
-                
+
                 <div className="text-center">
                   <p className="text-sm text-gray-600 dark:text-gray-300 mb-1">
                     {isDonation ? 'Verification Code' : 'Confirmation Code'}
@@ -315,38 +342,16 @@ const PickupDetailsModal = ({ order, isOpen, onClose, onStatusUpdate }) => {
           <div className="flex gap-3 pt-4 border-t border-gray-100 dark:border-gray-700">
             {((isDonation && order.status === 'ready') || (!isDonation && order.can_cancel && order.status === 'scheduled')) && (
               <button
-                onClick={async () => {
-                  const reason = prompt('Please provide a reason for cancellation (optional):') || 'Cancelled by customer';
-                  if (confirm(`Are you sure you want to cancel this ${isDonation ? 'donation' : 'pickup'}? This action cannot be undone.`)) {
-                    try {
-                      let response;
-                      if (isDonation) {
-                        response = await donationsAPI.cancelDonationRequest(order.id, reason);
-                      } else {
-                        response = await schedulingAPI.cancelPickup(order.id, reason, true);
-                      }
-                      
-                      if (response.success) {
-                        alert(response.data.message || `${isDonation ? 'Donation' : 'Pickup'} cancelled successfully`);
-                        if (!isDonation && response.data.refund_eligible) {
-                          alert('You may be eligible for a refund. Please check your account or contact support.');
-                        }
-                        onStatusUpdate();
-                        onClose();
-                      } else {
-                        alert(`Failed to cancel ${isDonation ? 'donation' : 'pickup'}: ` + response.error);
-                      }
-                    } catch (error) {
-                      alert(`Failed to cancel ${isDonation ? 'donation' : 'pickup'}. Please try again.`);
-                    }
-                  }
+                onClick={() => {
+                  // Open a custom dialog or use the handleCancel directly
+                  handleCancel('Cancelled by customer');
                 }}
                 className="px-4 py-2 border border-red-300 dark:border-red-700 text-red-600 dark:text-red-400 rounded-lg hover:bg-red-50 dark:hover:bg-red-900 transition-colors"
               >
                 Cancel {isDonation ? 'Donation' : 'Pickup'}
               </button>
             )}
-            
+
             <button
               onClick={onClose}
               className="flex-1 px-6 py-2 border border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-100 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
@@ -368,13 +373,18 @@ const OrderHistory = () => {
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [showPickupModal, setShowPickupModal] = useState(false);
   const [error, setError] = useState(null);
-  
+  const [toast, setToast] = useState(null);
+
   const [filters, setFilters] = useState({
     status: 'all',
     type: 'all',
     dateRange: 'all',
     provider: 'all'
   });
+
+  // Add state for confirmation dialog
+  const [showConfirmCancel, setShowConfirmCancel] = useState(false);
+  const [orderToCancel, setOrderToCancel] = useState(null);
 
   // Load orders from API - both pickups and donations
   useEffect(() => {
@@ -420,7 +430,7 @@ const OrderHistory = () => {
 
       // Check for completed orders and sync interaction status
       await syncCompletedInteractions(allOrders);
-      
+
       setOrders(allOrders);
       setFilteredOrders(allOrders);
 
@@ -441,20 +451,20 @@ const OrderHistory = () => {
   // Sync interaction status for completed orders
   const syncCompletedInteractions = async (allOrders) => {
     const completedOrders = allOrders.filter(order => order.status === 'completed');
-    
+
     for (const order of completedOrders) {
       try {
         if (order.interaction_id) {
           // Check if interaction is already marked as completed by checking review status
           const reviewStatus = await reviewsAPI.checkReviewStatus(order.interaction_id);
-          
+
           if (reviewStatus.success && reviewStatus.data.interaction_status !== 'completed') {
             // Interaction not yet marked as completed, so update it
             const updateResult = await reviewsAPI.markAsCompleted(
               order.interaction_id,
               'Order completed by food provider'
             );
-            
+
             if (updateResult.success) {
               console.log(`Interaction ${order.interaction_id} marked as completed`);
             } else {
@@ -514,7 +524,7 @@ const OrderHistory = () => {
     if (filters.dateRange !== 'all') {
       const now = new Date();
       const filterDate = new Date();
-      
+
       switch (filters.dateRange) {
         case 'week':
           filterDate.setDate(now.getDate() - 7);
@@ -526,7 +536,7 @@ const OrderHistory = () => {
           filterDate.setFullYear(now.getFullYear() - 1);
           break;
       }
-      
+
       filtered = filtered.filter(order => {
         const orderDate = new Date(order.scheduled_date || order.created_at);
         return orderDate >= filterDate;
@@ -565,6 +575,11 @@ const OrderHistory = () => {
     loadOrders(); // Refresh orders after status update
   };
 
+  // Show toast message
+  const showToast = (message, type = 'info') => {
+    setToast({ message, type });
+  };
+
   // Calculate impact summary
   const calculateImpact = () => {
     // Ensure filteredOrders is an array before using reduce
@@ -581,7 +596,7 @@ const OrderHistory = () => {
     return filteredOrders.reduce((acc, order) => {
       const isDonation = order.interaction_type === 'Donation';
       const quantity = isDonation ? (order.quantity || 1) : 1;
-      
+
       return {
         mealsSaved: acc.mealsSaved + quantity,
         co2Reduced: acc.co2Reduced + (quantity * 0.5),
@@ -622,7 +637,7 @@ const OrderHistory = () => {
           <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-md">
             <p className="font-medium">Error loading orders</p>
             <p className="text-sm">{error}</p>
-            <button 
+            <button
               onClick={loadOrders}
               className="mt-2 text-sm underline hover:no-underline"
             >
@@ -679,7 +694,7 @@ const OrderHistory = () => {
   // Get action button based on status and type
   const getActionButton = (order) => {
     const isDonation = order.interaction_type === 'Donation';
-    
+
     switch (order.status) {
       case 'completed':
         return (
@@ -709,32 +724,10 @@ const OrderHistory = () => {
             >
               View Details
             </button>
-            
+
             {((isDonation && order.status === 'ready') || (!isDonation && (order.can_cancel || order.status === 'scheduled'))) && (
               <button
-                onClick={async (e) => {
-                  e.stopPropagation();
-                  const actionType = isDonation ? 'donation' : 'pickup';
-                  if (confirm(`Are you sure you want to cancel this ${actionType}? This action cannot be undone.`)) {
-                    try {
-                      let response;
-                      if (isDonation) {
-                        response = await donationsAPI.cancelDonationRequest(order.id, 'Cancelled by customer');
-                      } else {
-                        response = await schedulingAPI.cancelPickup(order.id, 'Cancelled by customer', true);
-                      }
-                      
-                      if (response.success) {
-                        alert(response.data.message || `${actionType.charAt(0).toUpperCase() + actionType.slice(1)} cancelled successfully`);
-                        handleStatusUpdate();
-                      } else {
-                        alert(`Failed to cancel ${actionType}: ` + response.error);
-                      }
-                    } catch (error) {
-                      alert(`Failed to cancel ${actionType}. Please try again.`);
-                    }
-                  }
-                }}
+                onClick={(e) => handleCancelClick(order, e)}
                 className="px-4 py-2 border border-red-300 text-red-600 rounded-lg hover:bg-red-50 text-sm"
               >
                 Cancel {isDonation ? 'Donation' : 'Pickup'}
@@ -747,8 +740,8 @@ const OrderHistory = () => {
       case 'missed':
         return (
           <div className="px-4 py-2 text-gray-500 font-medium text-sm">
-            {order.status === 'cancelled' ? 'Cancelled' : 
-             order.status === 'rejected' ? 'Rejected' : 'Missed'}
+            {order.status === 'cancelled' ? 'Cancelled' :
+              order.status === 'rejected' ? 'Rejected' : 'Missed'}
           </div>
         );
       default:
@@ -766,10 +759,44 @@ const OrderHistory = () => {
     }
   };
 
+  // Add handleCancelClick function
+  const handleCancelClick = (order, e) => {
+    e.stopPropagation();
+    setOrderToCancel(order);
+    setShowConfirmCancel(true);
+  };
+
+  // Add handleConfirmCancel function
+  const handleConfirmCancel = async () => {
+    if (!orderToCancel) return;
+
+    const isDonation = orderToCancel.interaction_type === 'Donation';
+    try {
+      let response;
+      if (isDonation) {
+        response = await donationsAPI.cancelDonationRequest(orderToCancel.id, 'Cancelled by customer');
+      } else {
+        response = await schedulingAPI.cancelPickup(orderToCancel.id, 'Cancelled by customer', true);
+      }
+
+      if (response.success) {
+        showToast(`${isDonation ? 'Donation' : 'Pickup'} cancelled successfully`, 'success');
+        handleStatusUpdate();
+      } else {
+        showToast(`Failed to cancel ${isDonation ? 'donation' : 'pickup'}: ${response.error}`, 'error');
+      }
+    } catch (error) {
+      showToast(`Failed to cancel ${isDonation ? 'donation' : 'pickup'}. Please try again.`, 'error');
+    } finally {
+      setShowConfirmCancel(false);
+      setOrderToCancel(null);
+    }
+  };
+
   return (
     <div className="bg-gray-50 dark:bg-gray-900 min-h-screen w-full transition-colors duration-300">
       <CustomerNavBar />
-      
+
       <div className="max-w-6xl mx-auto px-4 py-8">
         <div className="flex items-center justify-between mb-8">
           <h1 className="text-2xl font-bold text-gray-800 dark:text-gray-100">Order History</h1>
@@ -855,9 +882,8 @@ const OrderHistory = () => {
                   return (
                     <div
                       key={order.id}
-                      className={`p-6 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors ${
-                        index !== filteredOrders.length - 1 ? 'border-b border-gray-100 dark:border-gray-700' : ''
-                      }`}
+                      className={`p-6 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors ${index !== filteredOrders.length - 1 ? 'border-b border-gray-100 dark:border-gray-700' : ''
+                        }`}
                       onClick={() => handleOrderClick(order)}
                     >
                       <div className="flex justify-between items-start mb-4">
@@ -870,7 +896,7 @@ const OrderHistory = () => {
                               <GiftIcon size={24} className="text-emerald-500" />
                             )}
                           </div>
-                          
+
                           <div className="flex-1">
                             <div className="flex items-center gap-2 mb-2">
                               <h3 className="font-semibold text-gray-800 dark:text-gray-100">
@@ -879,10 +905,9 @@ const OrderHistory = () => {
                               <span className={`text-xs px-2 py-1 rounded-full ${getStatusColor(order)}`}>
                                 {getStatusText(order)}
                               </span>
-                              <span className={`text-xs px-2 py-1 rounded-full ${
-                                isDonation ? 'bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-300' : 
-                                'bg-emerald-100 dark:bg-emerald-900 text-emerald-800 dark:text-emerald-300'
-                              }`}>
+                              <span className={`text-xs px-2 py-1 rounded-full ${isDonation ? 'bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-300' :
+                                  'bg-emerald-100 dark:bg-emerald-900 text-emerald-800 dark:text-emerald-300'
+                                }`}>
                                 {isDonation ? 'Donation' : 'Pickup'}
                               </span>
                               {!isDonation && order.is_upcoming && (
@@ -896,12 +921,12 @@ const OrderHistory = () => {
                                 </span>
                               )}
                             </div>
-                            
+
                             <p className="text-sm text-gray-600 dark:text-gray-300 mb-2 flex items-center">
                               <StoreIcon size={14} className="mr-1" />
                               {isDonation ? (order.order?.providerName || 'Provider') : order.business?.business_name}
                             </p>
-                            
+
                             <div className="flex items-center text-sm text-gray-500 dark:text-gray-400 gap-4 mb-2">
                               <span className="flex items-center">
                                 <ClockIcon size={16} className="mr-1" />
@@ -920,19 +945,19 @@ const OrderHistory = () => {
                                 </span>
                               )}
                             </div>
-                            
+
                             {!isDonation && (
                               <p className="text-xs text-gray-500 dark:text-gray-400">
                                 Pickup: {order.scheduled_start_time} - {order.scheduled_end_time}
                               </p>
                             )}
-                            
+
                             {isDonation && order.order?.pickupWindow && (
                               <p className="text-xs text-gray-500 dark:text-gray-400">
                                 Collection: {order.order.pickupWindow}
                               </p>
                             )}
-                            
+
                             {!isDonation && order.is_upcoming && (
                               <p className="text-xs text-emerald-600 dark:text-emerald-400 mt-1">
                                 {order.is_today ? 'Today' : 'Upcoming pickup'}
@@ -940,34 +965,31 @@ const OrderHistory = () => {
                             )}
                           </div>
                         </div>
-                        
+
                         <div className="text-right ml-4">
                           {getActionButton(order)}
                         </div>
                       </div>
-                      
+
                       {/* Code Preview */}
-                      {((isDonation && order.verification_code) || (!isDonation && order.confirmation_code)) && 
-                       (order.status === 'scheduled' || order.status === 'confirmed' || order.status === 'ready') && (
-                        <div className={`mt-4 p-3 rounded-lg ${
-                          isDonation ? 'bg-red-50 dark:bg-red-900' : 'bg-emerald-50 dark:bg-emerald-900'
-                        }`}>
-                          <p className={`text-sm flex items-center ${
-                            isDonation ? 'text-red-800 dark:text-red-200' : 'text-emerald-800 dark:text-emerald-200'
-                          }`}>
-                            <QrCodeIcon size={16} className="mr-2" />
-                            {isDonation ? 'Verification Code: ' : 'Confirmation Code: '}
-                            <span className="font-mono font-bold ml-1">
-                              {isDonation ? order.verification_code : order.confirmation_code}
-                            </span>
-                          </p>
-                          <p className={`text-xs mt-1 ${
-                            isDonation ? 'text-red-600 dark:text-red-300' : 'text-emerald-600 dark:text-emerald-300'
-                          }`}>
-                            Click to view QR code and full {isDonation ? 'collection' : 'pickup'} details
-                          </p>
-                        </div>
-                      )}
+                      {((isDonation && order.verification_code) || (!isDonation && order.confirmation_code)) &&
+                        (order.status === 'scheduled' || order.status === 'confirmed' || order.status === 'ready') && (
+                          <div className={`mt-4 p-3 rounded-lg ${isDonation ? 'bg-red-50 dark:bg-red-900' : 'bg-emerald-50 dark:bg-emerald-900'
+                            }`}>
+                            <p className={`text-sm flex items-center ${isDonation ? 'text-red-800 dark:text-red-200' : 'text-emerald-800 dark:text-emerald-200'
+                              }`}>
+                              <QrCodeIcon size={16} className="mr-2" />
+                              {isDonation ? 'Verification Code: ' : 'Confirmation Code: '}
+                              <span className="font-mono font-bold ml-1">
+                                {isDonation ? order.verification_code : order.confirmation_code}
+                              </span>
+                            </p>
+                            <p className={`text-xs mt-1 ${isDonation ? 'text-red-600 dark:text-red-300' : 'text-emerald-600 dark:text-emerald-300'
+                              }`}>
+                              Click to view QR code and full {isDonation ? 'collection' : 'pickup'} details
+                            </p>
+                          </div>
+                        )}
                     </div>
                   );
                 })}
@@ -987,6 +1009,29 @@ const OrderHistory = () => {
         }}
         onStatusUpdate={handleStatusUpdate}
       />
+
+      {/* Confirmation Dialog */}
+      <ConfirmDialog
+        isOpen={showConfirmCancel}
+        onClose={() => {
+          setShowConfirmCancel(false);
+          setOrderToCancel(null);
+        }}
+        onConfirm={handleConfirmCancel}
+        title="Cancel Order"
+        message={`Are you sure you want to cancel this ${orderToCancel?.interaction_type === 'Donation' ? 'donation' : 'pickup'}? This action cannot be undone.`}
+        confirmText="Yes, Cancel"
+        cancelText="No, Keep It"
+      />
+
+      {/* Toast Notification */}
+      {toast && (
+        <Toast
+          message={toast.message}
+          type={toast.type}
+          onClose={() => setToast(null)}
+        />
+      )}
     </div>
   );
 };
