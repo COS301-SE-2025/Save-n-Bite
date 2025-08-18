@@ -98,7 +98,7 @@ Key features:
 ---
 
 <details>
-<summary>## 📂 Repository Structure</summary>summary>
+<summary><strong>📂 Repository Structure</strong></summary>
 
 ```text
 save-n-bite/
@@ -146,6 +146,7 @@ save-n-bite/
 └── README.md               # Project overview
 ```
 </details>
+
 ---
 
 ---
@@ -162,7 +163,7 @@ save-n-bite/
 ---
 
 <details open>
-<summary>## ✅ Demo 3 Deliverables (20 August 2025)</summary>
+<summary><strong>✅ Demo 3 Deliverables (20 August 2025)</strong></summary>
 1. **SRS Document**:  
    - **📄 [Software Requirements Specification (SRS)](documentation/SRS.pdf)**  
    - Introduction
@@ -191,7 +192,7 @@ save-n-bite/
 ---
 
 <details>
-<summary>## ✅ Demo 2 Deliverables (27 June 2025)</summary>
+<summary><strong>✅ Demo 2 Deliverables (27 June 2025)</strong></summary>
 1. **Implemented Use Cases:**   
    - User registration/login (JWT/OAuth2).✅    
    - User themes and profile preferences (React + PostgreSQL).✅  
@@ -229,7 +230,7 @@ We follow a GitFlow-inspired branching strategy to maintain clean and organized 
 ---
 
 <details>
-<summary>## ✅ Demo 1 Deliverables (28 May 2025)</summary>
+<summary><strong>✅ Demo 1 Deliverables (28 May 2025)</strong></summary>
 1. **Implemented Use Cases:**
    - User registration/login (JWT/OAuth2).    
    - User themes and profile preferences (React + PostgreSQL).
@@ -267,6 +268,7 @@ We follow a GitFlow-inspired branching strategy to maintain clean and organized 
 
 ## 📫 Contact Us
  [![Email](https://img.shields.io/badge/Email-swmguild@gmail.com-D14836?logo=gmail)](mailto:swmguild@gmail.com)
+
 
 
 
