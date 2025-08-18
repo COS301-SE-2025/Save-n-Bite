@@ -1,6 +1,7 @@
 
 
 import React, { useState, useEffect, useRef } from 'react';
+import { Toast } from '../../components/ui/Toast';
 import { CalendarIcon, ImageIcon, ClockIcon, MapPinIcon, PhoneIcon, UserIcon } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import foodListingsAPI from '../../services/foodListingsAPI';
@@ -13,8 +14,10 @@ export function ListingForm() {
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [userData, setUserData] = useState(null);
+   const [toast, setToast] = useState(null);
 
-  // Scroll to top when errors.submit changes
+
+  
   useEffect(() => {
     if (errors.submit && formRef.current) {
       formRef.current.scrollIntoView({ 
@@ -68,6 +71,10 @@ export function ListingForm() {
       }));
     }
   }, []);
+
+ const showToast = (message, type = 'info') => {
+    setToast({ message, type });
+  };
 
   const [formData, setFormData] = useState({
     name: '',
@@ -164,178 +171,187 @@ export function ListingForm() {
     }
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    console.log('=== SUBMIT STARTED ===');
-    setIsSubmitting(true);
+const handleSubmit = async (e) => {
+  e.preventDefault();
+  console.log('=== SUBMIT STARTED ===');
+  setIsSubmitting(true);
 
-    try {
-      // Clear previous errors
-      setErrors({});
+  try {
+    // Clear previous errors
+    setErrors({});
 
-      // Check if user is a verified provider
-      if (!userData || userData.user_type !== 'provider') {
-        throw new Error('Only verified providers can create listings. Please contact support if you believe this is an error.');
+    // Check if user is a verified provider
+    if (!userData || userData.user_type !== 'provider') {
+      throw new Error('Only verified providers can create listings. Please contact support if you believe this is an error.');
+    }
+
+    // Check provider verification status
+    if (userData.verification_status === 'pending_verification') {
+      throw new Error('Your provider account is pending verification. You will be able to create listings once your account is verified.');
+    }
+
+    // Validate all required fields including new pickup location fields
+    const requiredFields = [
+      'name', 'description', 'quantity', 'expiry_date', 'pickup_start_time', 'pickup_end_time',
+      'pickup_address', 'pickup_contact_person', 'pickup_contact_phone'
+    ];
+
+    // If not donation, validate price fields
+    if (!isDonation) {
+      requiredFields.push('original_price', 'discounted_price');
+    }
+
+    const validationErrors = {};
+    requiredFields.forEach(field => {
+      if (!formData[field] || formData[field].toString().trim() === '') {
+        validationErrors[field] = 'This field is required';
       }
+    });
 
-      // Check provider verification status
-      if (userData.verification_status === 'pending_verification') {
-        throw new Error('Your provider account is pending verification. You will be able to create listings once your account is verified.');
-      }
+    if (Object.keys(validationErrors).length > 0) {
+      setErrors(validationErrors);
+      throw new Error('Please fill in all required fields');
+    }
 
-      // Validate all required fields including new pickup location fields
-      const requiredFields = [
-        'name', 'description', 'quantity', 'expiry_date', 'pickup_start_time', 'pickup_end_time',
-        'pickup_address', 'pickup_contact_person', 'pickup_contact_phone'
-      ];
-
-      // If not donation, validate price fields
-      if (!isDonation) {
-        requiredFields.push('original_price', 'discounted_price');
-      }
-
-      const validationErrors = {};
-      requiredFields.forEach(field => {
-        if (!formData[field] || formData[field].toString().trim() === '') {
-          validationErrors[field] = 'This field is required';
-        }
-      });
-
-      if (Object.keys(validationErrors).length > 0) {
-        setErrors(validationErrors);
-        throw new Error('Please fill in all required fields');
-      }
-
-      // Validate pickup time range
-      if (formData.pickup_start_time >= formData.pickup_end_time) {
-        setErrors(prev => ({
-          ...prev,
-          pickup_end_time: 'End time must be after start time'
-        }));
-        throw new Error('Invalid pickup time range');
-      }
-
-      console.log('=== VALIDATION PASSED ===');
-
-      // Create pickup_window from start and end times
-      const pickup_window = `${formData.pickup_start_time}-${formData.pickup_end_time}`;
-
-      // Format the date to YYYY-MM-DD
-      const expiryDate = new Date(formData.expiry_date);
-      const formattedDate = expiryDate.toISOString().split('T')[0];
-
-      // Format the data according to the API's expected structure
-      const listingData = {
-        name: formData.name,
-        description: formData.description,
-        food_type: 'ready_to_eat',
-        original_price: isDonation ? 0 : parseFloat(formData.original_price) || 0,
-        discounted_price: isDonation ? 0 : parseFloat(formData.discounted_price) || 0,
-        quantity: parseInt(formData.quantity),
-        expiry_date: formattedDate,
-        pickup_window: pickup_window,
-        allergens: [],
-        dietary_info: [],
-        is_available: true,
-        status: 'active'
-      };
-
-      console.log('=== CREATING LISTING ===', listingData);
-
-      // Process the listing creation
-      let finalListingData = { ...listingData };
-
-      // If there's an image, convert it to base64
-      if (formData.image) {
-        try {
-          const base64data = await new Promise((resolve, reject) => {
-            const reader = new FileReader();
-            reader.onloadend = () => resolve(reader.result);
-            reader.onerror = reject;
-            reader.readAsDataURL(formData.image);
-          });
-          finalListingData.imageUrl = base64data;
-        } catch (imageError) {
-          console.error('Error processing image:', imageError);
-          // Continue without image if image processing fails
-        }
-      }
-
-      // Create the listing
-      const response = await foodListingsAPI.createListing(finalListingData);
-      console.log('=== LISTING API RESPONSE ===', response);
-      
-      if (!response.success) {
-        throw new Error(response.error || 'Failed to create listing');
-      }
-
-      // Get the created listing ID
-      const createdListingId = response.data?.listing?.id || response.data?.id;
-      
-      if (!createdListingId) {
-        console.warn('No listing ID returned, proceeding without scheduling');
-        alert('Listing created successfully!');
-        navigate('/listings-overview');
-        return;
-      }
-
-      console.log('=== LISTING CREATED WITH ID ===', createdListingId);
-
-      // Try to create pickup location and schedule (optional - don't fail if these don't work)
-      try {
-        const locationData = {
-          name: `${formData.name} Pickup Location`,
-          address: formData.pickup_address,
-          instructions: formData.pickup_instructions,
-          contact_person: formData.pickup_contact_person,
-          contact_phone: formData.pickup_contact_phone,
-          latitude: formData.pickup_latitude || '-26.2041', // Default if not provided
-          longitude: formData.pickup_longitude || '28.0473' // Default if not provided
-        };
-
-        console.log('=== CREATING PICKUP LOCATION ===', locationData);
-        const locationResponse = await schedulingAPI.createPickupLocation(locationData);
-        
-        if (locationResponse.success) {
-          const createdLocationId = locationResponse.data?.location?.id;
-          
-          if (createdLocationId) {
-            const scheduleData = {
-              food_listing_id: createdListingId,
-              location_id: createdLocationId,
-              pickup_window: pickup_window,
-              total_slots: parseInt(formData.total_slots),
-              max_orders_per_slot: parseInt(formData.max_orders_per_slot),
-              slot_buffer_minutes: parseInt(formData.slot_buffer_minutes)
-            };
-
-            console.log('=== CREATING PICKUP SCHEDULE ===', scheduleData);
-            await schedulingAPI.createPickupSchedule(scheduleData);
-            console.log('=== SCHEDULE CREATED SUCCESSFULLY ===');
-          }
-        }
-      } catch (schedulingError) {
-        console.error('Scheduling failed (non-critical):', schedulingError);
-        // Don't fail the entire process for scheduling errors
-      }
-
-      // Success - redirect to listings overview
-      alert('Listing created successfully!');
-      navigate('/listings-overview');
-
-    } catch (error) {
-      console.error('=== SUBMIT ERROR ===', error);
+    // Validate pickup time range
+    if (formData.pickup_start_time >= formData.pickup_end_time) {
       setErrors(prev => ({
         ...prev,
-        submit: error.message || 'Failed to create listing. Please try again.'
+        pickup_end_time: 'End time must be after start time'
       }));
-    } finally {
-      console.log('=== SUBMIT FINISHED ===');
-      setIsSubmitting(false);
+      throw new Error('Invalid pickup time range');
     }
-  };
+
+    console.log('=== VALIDATION PASSED ===');
+
+    // Create pickup_window from start and end times
+    const pickup_window = `${formData.pickup_start_time}-${formData.pickup_end_time}`;
+
+    // Format the date to YYYY-MM-DD
+    const expiryDate = new Date(formData.expiry_date);
+    const formattedDate = expiryDate.toISOString().split('T')[0];
+
+    // Format the data according to the API's expected structure
+    const listingData = {
+      name: formData.name,
+      description: formData.description,
+      food_type: 'ready_to_eat',
+      original_price: isDonation ? 0 : parseFloat(formData.original_price) || 0,
+      discounted_price: isDonation ? 0 : parseFloat(formData.discounted_price) || 0,
+      quantity: parseInt(formData.quantity),
+      expiry_date: formattedDate,
+      pickup_window: pickup_window,
+      allergens: [],
+      dietary_info: [],
+      is_available: true,
+      status: 'active'
+    };
+
+    console.log('=== CREATING LISTING ===', listingData);
+
+    // Process the listing creation
+    let finalListingData = { ...listingData };
+
+    // If there's an image, convert it to base64
+    if (formData.image) {
+      try {
+        const base64data = await new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onloadend = () => resolve(reader.result);
+          reader.onerror = reject;
+          reader.readAsDataURL(formData.image);
+        });
+        finalListingData.imageUrl = base64data;
+      } catch (imageError) {
+        console.error('Error processing image:', imageError);
+        // Continue without image if image processing fails
+        showToast('Image upload failed, but listing will be created without image', 'warning');
+      }
+    }
+
+    // Create the listing
+    const response = await foodListingsAPI.createListing(finalListingData);
+    console.log('=== LISTING API RESPONSE ===', response);
+    
+    if (!response.success) {
+      throw new Error(response.error || 'Failed to create listing');
+    }
+
+    // Get the created listing ID
+    const createdListingId = response.data?.listing?.id || response.data?.id;
+    
+    if (!createdListingId) {
+      console.warn('No listing ID returned, proceeding without scheduling');
+      showToast('Listing created successfully!', 'success');
+      setTimeout(() => {
+  navigate('/listings-overview');
+}, 3000);
+      return;
+    }
+
+    console.log('=== LISTING CREATED WITH ID ===', createdListingId);
+
+    // Try to create pickup location and schedule (optional - don't fail if these don't work)
+    try {
+      const locationData = {
+        name: `${formData.name} Pickup Location`,
+        address: formData.pickup_address,
+        instructions: formData.pickup_instructions,
+        contact_person: formData.pickup_contact_person,
+        contact_phone: formData.pickup_contact_phone,
+        latitude: formData.pickup_latitude || '-26.2041', // Default if not provided
+        longitude: formData.pickup_longitude || '28.0473' // Default if not provided
+      };
+
+      console.log('=== CREATING PICKUP LOCATION ===', locationData);
+      const locationResponse = await schedulingAPI.createPickupLocation(locationData);
+      
+      if (locationResponse.success) {
+        const createdLocationId = locationResponse.data?.location?.id;
+        
+        if (createdLocationId) {
+          const scheduleData = {
+            food_listing_id: createdListingId,
+            location_id: createdLocationId,
+            pickup_window: pickup_window,
+            total_slots: parseInt(formData.total_slots),
+            max_orders_per_slot: parseInt(formData.max_orders_per_slot),
+            slot_buffer_minutes: parseInt(formData.slot_buffer_minutes)
+          };
+
+          console.log('=== CREATING PICKUP SCHEDULE ===', scheduleData);
+          await schedulingAPI.createPickupSchedule(scheduleData);
+          console.log('=== SCHEDULE CREATED SUCCESSFULLY ===');
+        }
+      }
+    } catch (schedulingError) {
+      console.error('Scheduling failed (non-critical):', schedulingError);
+      // Don't fail the entire process for scheduling errors
+      showToast('Listing created, but there was an issue setting up pickup scheduling', 'warning');
+    }
+
+    // Success - redirect to listings overview
+    showToast('Listing created successfully!', 'success');
+    setTimeout(() => {
+  navigate('/listings-overview');
+}, 3000);
+
+  } catch (error) {
+    console.error('=== SUBMIT ERROR ===', error);
+    showToast(error.message || 'Failed to create listing. Please try again.', 'error');
+    setErrors(prev => ({
+      ...prev,
+      submit: error.message || 'Failed to create listing. Please try again.'
+    }));
+  } finally {
+    console.log('=== SUBMIT FINISHED ===');
+    setIsSubmitting(false);
+  }
+};
 
   return (
+  
+    <div className="relative">
     <form ref={formRef} onSubmit={handleSubmit} className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6 max-w-3xl transition-colors duration-300">
       {errors.submit && (
         <div className="mb-4 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
@@ -726,5 +742,15 @@ export function ListingForm() {
         </div>
       </div>
     </form>
-  );
+              {toast && (
+               <Toast
+                 message={toast.message}
+                 type={toast.type}
+                 onClose={() => setToast(null)}
+               />
+             )}
+   
+    </div>
+
+);
 }

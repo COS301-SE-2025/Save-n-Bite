@@ -81,7 +81,7 @@ export default function ListingsOverview() {
   return (
     <div className="flex h-screen bg-gray-100 dark:bg-gray-900 transition-colors duration-300">
       {/* Sidebar */}
-      <SideBar isMobileOpen={isMobileSidebarOpen} onClose={() => setIsMobileSidebarOpen(false)} />
+      <SideBar isMobileOpen={isMobileSidebarOpen} onClose={() => setIsMobileSidebarOpen(false)} currentPage="ListingOverview" />
 
       {/* Main Content */}
       <div className="flex-1 flex flex-col overflow-hidden">
@@ -180,6 +180,7 @@ export default function ListingsOverview() {
                           <td className="px-6 py-4 whitespace-nowrap">
                             <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${listing.type === 'donation' ? 'bg-green-100 text-green-800' : 'bg-blue-100 text-blue-800'
                               }`}>
+                               
                               {listing.type === 'donation' ? 'Donation' : 'Sale'}
                             </span>
                           </td>
