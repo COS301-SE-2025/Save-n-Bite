@@ -3,7 +3,7 @@ import { SearchIcon, FilterIcon, XIcon } from 'lucide-react';
 
 const SearchBar = ({ searchQuery, setSearchQuery, showFilters, setShowFilters }) => {
   return (
-    <div className="sticky top-0 z-10 bg-white dark:bg-gray-900 shadow-sm p-4 transition-colors">
+    <div className="bg-white dark:bg-gray-900 shadow-sm p-4 transition-colors">
       <div className="max-w-6xl mx-auto flex items-center">
         <div className="relative flex-grow">
           <input 
