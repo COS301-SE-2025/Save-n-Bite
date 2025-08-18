@@ -471,7 +471,13 @@ function PickupCoordination() {
                     type="date"
                     value={selectedDate}
                     onChange={(e) => handleDateChange(e.target.value)}
-                    className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                    onKeyDown={(e) => {
+                     
+                      if (e.key !== 'Tab') {
+                        e.preventDefault();
+                      }
+                    }}
+                    className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white cursor-pointer"
                   />
                   
                   {/* Quick date buttons */}
