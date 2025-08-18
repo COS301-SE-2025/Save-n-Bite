@@ -65,4 +65,5 @@ urlpatterns = [
     path('auth/business/tags/manage/', views.manage_business_tags, name='manage_business_tags'),
     path('auth/business/tags/popular/', views.get_popular_business_tags, name='get_popular_business_tags'),
     path('auth/providers/search/tags/', views.search_providers_by_tags, name='search_providers_by_tags'),
+    path('auth/delete-account/', views.delete_account, name='delete_account'),
 ]
