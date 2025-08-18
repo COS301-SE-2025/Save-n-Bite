@@ -5843,3 +5843,23 @@ INFO 2025-08-18 11:05:20,593 basehttp 860 2728 "POST /auth/login/ HTTP/1.1" 200 
 INFO 2025-08-18 11:05:20,761 basehttp 860 2728 "GET /api/notifications/unread-count/ HTTP/1.1" 200 19
 INFO 2025-08-18 11:05:20,841 basehttp 860 7912 "GET /api/business/ HTTP/1.1" 200 866
 INFO 2025-08-18 11:05:21,027 basehttp 860 7912 "GET /api/business/ HTTP/1.1" 200 866
+INFO 2025-08-18 11:06:21,550 autoreload 860 11344 C:\Users\Capleton\Desktop\COS214\practical\Save-n-Bite\save-n-bite-backend\backend\settings.py changed, reloading.
+INFO 2025-08-18 11:06:27,254 blob_storage 20708 1892 Updated existing container to public access: customer-profiles
+INFO 2025-08-18 11:06:27,281 blob_storage 20708 1892 Updated existing container to public access: ngo-documents
+INFO 2025-08-18 11:06:27,305 blob_storage 20708 1892 Updated existing container to public access: ngo-logos
+INFO 2025-08-18 11:06:27,333 blob_storage 20708 1892 Updated existing container to public access: provider-documents
+INFO 2025-08-18 11:06:27,357 blob_storage 20708 1892 Updated existing container to public access: provider-logos
+INFO 2025-08-18 11:06:27,404 blob_storage 20708 1892 Updated existing container to public access: provider-banners
+INFO 2025-08-18 11:06:27,654 autoreload 20708 1892 Watching for file changes with StatReloader
+INFO 2025-08-18 11:06:28,419 blob_storage 20708 15416 Updated existing container to public access: customer-profiles
+INFO 2025-08-18 11:06:28,448 blob_storage 20708 15416 Updated existing container to public access: provider-banners
+INFO 2025-08-18 11:06:28,476 blob_storage 20708 15416 Updated existing container to public access: provider-documents
+INFO 2025-08-18 11:06:28,500 blob_storage 20708 15416 Updated existing container to public access: provider-logos
+INFO 2025-08-18 11:06:28,527 blob_storage 20708 15416 Updated existing container to public access: ngo-documents
+INFO 2025-08-18 11:06:28,554 blob_storage 20708 15416 Updated existing container to public access: ngo-logos
+INFO 2025-08-18 11:06:32,549 basehttp 20708 6892 "GET /api/notifications/preferences/ HTTP/1.1" 200 132
+INFO 2025-08-18 11:06:32,549 basehttp 20708 8672 "GET /api/notifications/unread-count/ HTTP/1.1" 200 19
+INFO 2025-08-18 11:06:32,637 basehttp 20708 8788 "GET /api/business/ HTTP/1.1" 200 866
+INFO 2025-08-18 11:06:32,687 basehttp 20708 6892 "GET /api/notifications/preferences/ HTTP/1.1" 200 132
+INFO 2025-08-18 11:06:32,687 basehttp 20708 8672 "GET /api/notifications/unread-count/ HTTP/1.1" 200 19
+INFO 2025-08-18 11:06:32,814 basehttp 20708 8788 "GET /api/business/ HTTP/1.1" 200 866
