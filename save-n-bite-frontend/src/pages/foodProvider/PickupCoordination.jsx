@@ -420,7 +420,7 @@ function PickupCoordination() {
           <div className="fixed left-0 top-0 h-full w-64 z-50">
             <SideBar 
               onNavigate={() => setIsMobileSidebarOpen(false)} 
-              currentPage="dashboard"
+              currentPage="pickup-coordination"
               onClose={() => setIsMobileSidebarOpen(false)}
             />
           </div>

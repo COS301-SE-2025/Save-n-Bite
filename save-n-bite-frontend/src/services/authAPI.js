@@ -1,8 +1,8 @@
 import axios from 'axios';
 
-// const API_BASE_URL = process.env.REACT_APP_API_URL || 'https://savenbiteservice-hzghg8gcgddtcfg7.southafricanorth-01.azurewebsites.net';
+const API_BASE_URL = process.env.REACT_APP_API_URL || 'https://savenbiteservice-hzghg8gcgddtcfg7.southafricanorth-01.azurewebsites.net';
 
-const API_BASE_URL = 'http://localhost:8000' ;
+// const API_BASE_URL = 'http://localhost:8000' ;
 
 const apiClient = axios.create({
     baseURL: API_BASE_URL,
@@ -140,6 +140,8 @@ export const authAPI = {
                             throw new Error('This email address is already registered. Please use a different email or try logging in.');
                         } else if (firstDetail.message.includes('email')) {
                             throw new Error('This email address is already registered. Please use a different email or try logging in.');
+                        } else if (firstDetail.message.includes('This password is too common')) {
+                            throw new Error('This password is too common. Please choose a stronger password.');
                         }
                     }
                 }

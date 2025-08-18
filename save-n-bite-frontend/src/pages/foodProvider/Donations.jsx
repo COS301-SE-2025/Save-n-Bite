@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { Search as SearchIcon, Calendar as CalendarIcon, CheckCircle, XCircle, Clock, Package, Menu } from 'lucide-react'
 import { Button } from '../../components/foodProvider/Button'
 import SideBar from '../../components/foodProvider/SideBar'
-import donationsAPI from '../../services/donationsAPI'
+import donationsAPI from '../../services/DonationsAPI'
 
 function ManageDonations() {
   const [searchQuery, setSearchQuery] = useState('')

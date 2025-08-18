@@ -17,7 +17,7 @@ const CreateListing = () => {
       <div className="flex h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
       {/* Desktop Sidebar - Hidden on mobile (md:flex = show on medium screens and up) */}
       <div className="hidden md:flex">
-        <SideBar onNavigate={() => {}} currentPage="create-listing" />
+        <SideBar onNavigate={() => {}} currentPage="CreateListing" />
       </div>
 
       {/* Mobile Sidebar Overlay */}
@@ -30,23 +30,24 @@ const CreateListing = () => {
           />
           {/* Sidebar */}
           <div className="fixed left-0 top-0 h-full w-64 z-50">
-            <SideBar onNavigate={() => setIsMobileSidebarOpen(false)} currentPage="create-listing" />
+            <SideBar onNavigate={() => setIsMobileSidebarOpen(false)} currentPage="CreateListing" />
           </div>
         </div>
       )}
       <div className="flex-1 overflow-auto">
         {/* Mobile Header with Menu Button */}
-        <div className="md:hidden bg-white border-b border-gray-200 px-4 py-3 flex items-center justify-between">
-          <button
-            onClick={toggleMobileSidebar}
-            className="p-2 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-lg"
-            aria-label="Open menu"
-          >
-            <Menu size={24} />
-          </button>
-          <h1 className="text-lg font-semibold text-gray-900">Create Listing</h1>
-          <div className="w-10" /> {/* Spacer for centering */}
-        </div>
+        <div className="md:hidden bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-4 py-3 flex items-center justify-between transition-colors duration-300">
+  <button
+    onClick={toggleMobileSidebar}
+    className="p-2 text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg"
+    aria-label="Open menu"
+  >
+    <Menu size={24} />
+  </button>
+  <h1 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Create Listing</h1>
+  <div className="w-10" /> {/* Spacer for centering */}
+</div>
+
 
         {/* Content */}
         <div className="max-w-4xl mx-auto p-4 md:p-8 w-full">

@@ -69,9 +69,8 @@ class VerificationRequestSerializer(serializers.Serializer):
     documents = serializers.DictField()
 
 class VerificationUpdateSerializer(serializers.Serializer):
-    """Serializer for updating verification status"""
     profile_type = serializers.ChoiceField(choices=['ngo', 'provider'])
-    profile_id = serializers.UUIDField()
+    profile_id = serializers.CharField() 
     new_status = serializers.ChoiceField(choices=['verified', 'rejected'])
     reason = serializers.CharField(required=False, allow_blank=True)
 
@@ -177,7 +176,14 @@ class SimpleAnalyticsSerializer(serializers.Serializer):
 
 class DataExportSerializer(serializers.Serializer):
     """Serializer for data export requests"""
-    export_type = serializers.ChoiceField(choices=['users', 'transactions', 'listings', 'analytics'])
+    export_type = serializers.ChoiceField(choices=[
+        'users',           # Keep - essential for user management
+        'analytics',       # Keep - dashboard data
+        'audit_logs',      # ADD - important for compliance/security
+        'system_logs',     # ADD - important for troubleshooting
+        'transactions',    # Keep if you have interaction/payment data
+        'listings',        # Keep - food listing data
+    ])
     date_from = serializers.DateField(required=False)
     date_to = serializers.DateField(required=False)
     format = serializers.ChoiceField(choices=['csv', 'excel'], default='csv')

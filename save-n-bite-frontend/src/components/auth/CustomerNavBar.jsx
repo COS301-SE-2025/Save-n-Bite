@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import {
   MenuIcon,
   XIcon,
@@ -14,6 +14,12 @@ const CustomerNavBar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isHelpOpen, setIsHelpOpen] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation(); // Add this hook
+
+  // Add this helper function to determine if a link is active
+  const isActive = (path) => {
+    return location.pathname === path;
+  };
 
   const handleLogout = () => {
     localStorage.removeItem('authToken');
@@ -22,7 +28,7 @@ const CustomerNavBar = () => {
   };
 
   return (
-    <nav className="bg-white dark:bg-gray-800 shadow-sm py-3 sm:py-4 px-4 sm:px-6 md:px-12 transition-colors duration-200">
+    <nav className="fixed top-0 left-0 right-0 z-50 bg-white dark:bg-gray-800 shadow-sm py-3 sm:py-4 px-4 sm:px-6 md:px-12 transition-colors duration-200">
       <div className="max-w-7xl mx-auto flex justify-between items-center">
         {/* Logo */}
         <Link to="/dashboard" className="flex items-center gap-2">
@@ -46,38 +52,55 @@ const CustomerNavBar = () => {
         <div className="hidden md:flex items-center space-x-6 lg:space-x-8">
           <Link
             to="/food-listing"
-            className="nav-link text-sm lg:text-base text-gray-600 dark:text-gray-300 hover:text-emerald-600 dark:hover:text-emerald-500"
+            className={`nav-link text-sm lg:text-base ${isActive('/food-listing')
+                ? 'text-emerald-600 dark:text-emerald-500 font-medium'
+                : 'text-gray-600 dark:text-gray-300 hover:text-emerald-600 dark:hover:text-emerald-500'
+              }`}
           >
             Browse Food
           </Link>
           <Link
             to="/providers"
-            className="nav-link text-sm lg:text-base text-gray-600 dark:text-gray-300 hover:text-emerald-600 dark:hover:text-emerald-500"
+            className={`nav-link text-sm lg:text-base ${isActive('/providers')
+                ? 'text-emerald-600 dark:text-emerald-500 font-medium'
+                : 'text-gray-600 dark:text-gray-300 hover:text-emerald-600 dark:hover:text-emerald-500'
+              }`}
           >
             Browse Food Providers
           </Link>
           <Link
             to="/cart"
-            className="nav-link text-sm lg:text-base text-gray-600 dark:text-gray-300 hover:text-emerald-600 dark:hover:text-emerald-500"
+            className={`nav-link text-sm lg:text-base ${isActive('/cart')
+                ? 'text-emerald-600 dark:text-emerald-500 font-medium'
+                : 'text-gray-600 dark:text-gray-300 hover:text-emerald-600 dark:hover:text-emerald-500'
+              }`}
           >
             My Cart
           </Link>
           <Link
             to="/orders"
-            className="nav-link text-sm lg:text-base text-gray-600 dark:text-gray-300 hover:text-emerald-600 dark:hover:text-emerald-500"
+            className={`nav-link text-sm lg:text-base ${isActive('/orders')
+                ? 'text-emerald-600 dark:text-emerald-500 font-medium'
+                : 'text-gray-600 dark:text-gray-300 hover:text-emerald-600 dark:hover:text-emerald-500'
+              }`}
           >
             Order History
           </Link>
           <Link
             to="/profile"
-            className="nav-link text-sm lg:text-base text-gray-600 dark:text-gray-300 hover:text-emerald-600 dark:hover:text-emerald-500"
+            className={`nav-link text-sm lg:text-base ${isActive('/profile')
+                ? 'text-emerald-600 dark:text-emerald-500 font-medium'
+                : 'text-gray-600 dark:text-gray-300 hover:text-emerald-600 dark:hover:text-emerald-500'
+              }`}
           >
             My Profile
           </Link>
-
           <Link
             to="/customer-settings"
-            className="nav-link text-gray-600 dark:text-gray-300 hover:text-emerald-600 dark:hover:text-emerald-500"
+            className={`nav-link text-sm lg:text-base ${isActive('/customer-settings')
+                ? 'text-emerald-600 dark:text-emerald-500 font-medium'
+                : 'text-gray-600 dark:text-gray-300 hover:text-emerald-600 dark:hover:text-emerald-500'
+              }`}
           >
             Settings
           </Link>
@@ -126,13 +149,61 @@ const CustomerNavBar = () => {
       {isMenuOpen && (
         <div className="md:hidden mt-3 pb-4 px-4 border-t border-gray-200 bg-white dark:bg-gray-800">
           <div className="flex flex-col space-y-2 pt-4">
-            <Link to="/food-listing" className="mobile-nav-link dark:text-gray-300 dark:hover:text-emerald-500">Browse Food</Link>
-            <Link to="/providers" className="mobile-nav-link dark:text-gray-300 dark:hover:text-emerald-500">Browse Food Providers</Link>
-            <Link to="/cart" className="mobile-nav-link dark:text-gray-300 dark:hover:text-emerald-500">My Cart</Link>
-            <Link to="/orders" className="mobile-nav-link dark:text-gray-300 dark:hover:text-emerald-500">Order History</Link>
-            <Link to="/profile" className="mobile-nav-link dark:text-gray-300 dark:hover:text-emerald-500">My Profile</Link>
-            <Link to="/customer-settings" className="mobile-nav-link dark:text-gray-300 dark:hover:text-emerald-500">Settings</Link>
-            
+            <Link
+              to="/food-listing"
+              className={`mobile-nav-link ${isActive('/food-listing')
+                  ? 'text-emerald-600 dark:text-emerald-500 font-medium'
+                  : 'dark:text-gray-300 dark:hover:text-emerald-500'
+                }`}
+            >
+              Browse Food
+            </Link>
+            <Link
+              to="/providers"
+              className={`mobile-nav-link ${isActive('/providers')
+                  ? 'text-emerald-600 dark:text-emerald-500 font-medium'
+                  : 'dark:text-gray-300 dark:hover:text-emerald-500'
+                }`}
+            >
+              Browse Food Providers
+            </Link>
+            <Link
+              to="/cart"
+              className={`mobile-nav-link ${isActive('/cart')
+                  ? 'text-emerald-600 dark:text-emerald-500 font-medium'
+                  : 'dark:text-gray-300 dark:hover:text-emerald-500'
+                }`}
+            >
+              My Cart
+            </Link>
+            <Link
+              to="/orders"
+              className={`mobile-nav-link ${isActive('/orders')
+                  ? 'text-emerald-600 dark:text-emerald-500 font-medium'
+                  : 'dark:text-gray-300 dark:hover:text-emerald-500'
+                }`}
+            >
+              Order History
+            </Link>
+            <Link
+              to="/profile"
+              className={`mobile-nav-link ${isActive('/profile')
+                  ? 'text-emerald-600 dark:text-emerald-500 font-medium'
+                  : 'dark:text-gray-300 dark:hover:text-emerald-500'
+                }`}
+            >
+              My Profile
+            </Link>
+            <Link
+              to="/customer-settings"
+              className={`mobile-nav-link ${isActive('/customer-settings')
+                  ? 'text-emerald-600 dark:text-emerald-500 font-medium'
+                  : 'dark:text-gray-300 dark:hover:text-emerald-500'
+                }`}
+            >
+              Settings
+            </Link>
+
             <div className="pt-2 border-t border-gray-200 dark:border-gray-700">
               <button
                 onClick={handleLogout}

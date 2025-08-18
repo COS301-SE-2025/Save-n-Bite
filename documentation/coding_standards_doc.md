@@ -2,8 +2,8 @@
 
 **Project:** Save n Bite  
 **Team:** Secure Web & Mobile Guild (SWMG)  
-**Version:** 2.0  
-**Date:** June 26, 2025  
+**Version:** 3.0  
+**Date:** August 15, 2025  
 
 ## Table of Contents
 
@@ -59,7 +59,7 @@ This document establishes coding conventions and styles for the Save n Bite proj
 
 ```
 save-n-bite/
-├── backend/                    # Django backend application
+├── save-n-bite-backend/       # Django backend application
 │   ├── backend/               # Main Django project
 │   │   ├── __init__.py
 │   │   ├── settings.py        # Configuration settings
@@ -67,6 +67,7 @@ save-n-bite/
 │   │   ├── wsgi.py           # WSGI configuration
 │   │   └── asgi.py           # ASGI configuration
 │   ├── authentication/        # User authentication app
+│   ├── admin_system/          # Administration app
 │   ├── food_listings/         # Food listing management
 │   ├── interactions/          # User interactions (cart, orders)
 │   ├── notifications/         # Notification system
@@ -75,10 +76,13 @@ save-n-bite/
 │   ├── reviews/              # Review and rating system
 │   ├── static/               # Static files
 │   ├── media/                # User-uploaded media
-│   ├── requirements/         # Environment requirements
+│   ├── logs/                 # System logs
+│   ├── requirements.txt      # Environment requirements
 │   ├── manage.py             # Django management script
+│   ├── blop_storage.py       # BLOB srorage config
 │   └── pyproject.toml        # Poetry configuration
-├── frontend/                  # React frontend application
+├── save-n-bite-frontend/     # React frontend application
+│   ├── dist/                 # containing assets
 │   ├── public/               # Public assets
 │   ├── src/                  # Source code
 │   │   ├── components/       # React components
@@ -484,7 +488,7 @@ describe('FoodCard Component', () => {
 
 ### Test Coverage Requirements
 - **Minimum Coverage:** 70% for all components and functions
-- **Critical Paths:** 90% coverage for authentication and payment flows
+- **Critical Paths:** 90% coverage for authentication and critical flows
 - **Unit Tests:** All utility functions and business logic
 - **Integration Tests:** API endpoints and database operations
 - **End-to-End Tests:** Critical user journeys
@@ -502,11 +506,7 @@ describe('FoodCard Component', () => {
 
 ### Commit Message Format
 ```
-<type>(<scope>): <subject>
-
-<body>
-
-<footer>
+" <meaningful description> "
 ```
 
 **Types:**
@@ -542,6 +542,7 @@ Closes #123
 
 ### Environment Variables
 ```bash
+Note the following is not a true reflection on what is actually contained in .env
 # .env (not committed to git)
 SECRET_KEY=your_secret_key_here
 DEBUG=True
@@ -581,7 +582,6 @@ DATABASES = {
 - **isort:** Import sorting
 - **flake8:** Linting
 - **mypy:** Type checking
-- **bandit:** Security scanning
 
 ### Frontend Tools
 - **ESLint:** JavaScript linting
@@ -608,6 +608,8 @@ module.exports = {
 
 #### pyproject.toml (Poetry)
 ```toml
+# This is not a full version of the toml
+
 [tool.poetry]
 name = "save-n-bite-backend"
 version = "0.1.0"
@@ -684,4 +686,4 @@ Regular code reviews and automated quality checks ensure adherence to these stan
 - Sabrina-Gabriel Freeman (Team Lead)
 - Marco Geral (Backend Lead)
 
-**Last Updated:** June 26, 2025 
+**Last Updated:** August 15, 2025 
