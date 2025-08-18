@@ -710,3 +710,13 @@ class PopularTagsSerializer(serializers.Serializer):
 class LoginSerializer(serializers.Serializer):
     # ... (keep existing LoginSerializer unchanged)
     pass
+
+class DeleteAccountSerializer(serializers.Serializer):
+    """Serializer for deleting account (requires password confirmation)"""
+    password = serializers.CharField(write_only=True)
+
+    def validate_password(self, value):
+        user = self.context['request'].user
+        if not user.check_password(value):
+            raise serializers.ValidationError("Password is incorrect")
+        return value
