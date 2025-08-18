@@ -320,10 +320,11 @@ const handleTagsChange = (e) => {
             onSuccess(response);
         } catch (error) {
             const errorMessage = error?.message || 'Registration failed. Please try again.';
-            setServerError(errorMessage);
+            // setServerError(errorMessage);
             onError(errorMessage);
         } finally {
             setIsLoading(false);
+            window.scrollTo({ top: 0, behavior: 'smooth' });
         }
     };
 
@@ -547,7 +548,9 @@ const handleTagsChange = (e) => {
                             name="profileImage"
                             onChange={handleFileChange}
                             accept=".jpg,.jpeg,.png"
-                            className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-emerald-500 focus:border-emerald-500"
+                            className="w-full px-4 py-2 border border-gray-300 rounded-md 
+               focus:ring-emerald-500 focus:border-emerald-500
+               text-black dark:text-white"
                         />
                         {errors.profileImage && (
                             <p className="mt-1 text-sm text-red-600">{errors.profileImage}</p>
@@ -706,7 +709,9 @@ const handleTagsChange = (e) => {
                             name="cipcDocument"
                             onChange={handleFileChange}
                             accept=".pdf,.jpg,.jpeg,.png"
-                            className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-emerald-500 focus:border-emerald-500"
+                            className="w-full px-4 py-2 border border-gray-300 rounded-md 
+               focus:ring-emerald-500 focus:border-emerald-500
+               text-black dark:text-white"
                         />
                         {errors.cipcDocument && (
                             <p className="mt-1 text-sm text-red-600">{errors.cipcDocument}</p>
@@ -724,14 +729,16 @@ const handleTagsChange = (e) => {
                             name="logo"
                             onChange={handleFileChange}
                             accept=".jpg,.jpeg,.png"
-                            className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-emerald-500 focus:border-emerald-500"
+                           className="w-full px-4 py-2 border border-gray-300 rounded-md 
+               focus:ring-emerald-500 focus:border-emerald-500
+               text-black dark:text-white"
                         />
                         {errors.logo && (
                             <p className="mt-1 text-sm text-red-600">{errors.logo}</p>
                         )}
                     </div>
                     <div>
-    <label htmlFor="banner" className="block text-sm font-medium text-gray-700 mb-1">
+    <label htmlFor="banner"  className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
         Business Banner (Optional)
         {renderTooltip('Upload JPG, PNG image for business banner (max 5MB)')}
     </label>
@@ -741,7 +748,9 @@ const handleTagsChange = (e) => {
         name="banner"
         onChange={handleFileChange}
         accept=".jpg,.jpeg,.png"
-        className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-emerald-500 focus:border-emerald-500"
+       className="w-full px-4 py-2 border border-gray-300 rounded-md 
+               focus:ring-emerald-500 focus:border-emerald-500
+               text-black dark:text-white"
     />
     {errors.banner && (
         <p className="mt-1 text-sm text-red-600">{errors.banner}</p>
@@ -749,7 +758,7 @@ const handleTagsChange = (e) => {
 </div>
 
 <div className="relative">
-    <label htmlFor="businessDescription" className="block text-sm font-medium text-gray-700 mb-1">
+    <label htmlFor="businessDescription"  className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
         Business Description (Optional)
         {renderTooltip('Describe your business, specialties, and what makes you unique (max 1000 characters)')}
     </label>
@@ -774,7 +783,7 @@ const handleTagsChange = (e) => {
 </div>
 
 <div className="relative">
-    <label htmlFor="businessTags" className="block text-sm font-medium text-gray-700 mb-1">
+    <label htmlFor="businessTags"  className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
         Business Tags (Optional)
         {renderTooltip('Add tags to help customers find you (e.g., Bakery, Artisan, Local). Separate with commas.')}
     </label>
@@ -979,7 +988,7 @@ const handleTagsChange = (e) => {
 
                     <div>
                         <label htmlFor="npoDocument" className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
-                            NPO Document
+                            NGO Document
                             {renderTooltip('Upload PDF or image file (max 5MB)')}
                         </label>
                         <input
@@ -988,7 +997,9 @@ const handleTagsChange = (e) => {
                             name="npoDocument"
                             onChange={handleFileChange}
                             accept=".pdf,.jpg,.jpeg,.png"
-                            className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-emerald-500 focus:border-emerald-500"
+                            className="w-full px-4 py-2 border border-gray-300 rounded-md 
+               focus:ring-emerald-500 focus:border-emerald-500
+               text-black dark:text-white"
                         />
                         {errors.npoDocument && (
                             <p className="mt-1 text-sm text-red-600">{errors.npoDocument}</p>
@@ -1006,7 +1017,9 @@ const handleTagsChange = (e) => {
                             name="logo"
                             onChange={handleFileChange}
                             accept=".jpg,.jpeg,.png"
-                            className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-emerald-500 focus:border-emerald-500"
+                            className="w-full px-4 py-2 border border-gray-300 rounded-md 
+               focus:ring-emerald-500 focus:border-emerald-500
+               text-black dark:text-white"
                         />
                         {errors.logo && (
                             <p className="mt-1 text-sm text-red-600">{errors.logo}</p>

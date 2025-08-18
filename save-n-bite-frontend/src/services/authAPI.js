@@ -140,6 +140,8 @@ export const authAPI = {
                             throw new Error('This email address is already registered. Please use a different email or try logging in.');
                         } else if (firstDetail.message.includes('email')) {
                             throw new Error('This email address is already registered. Please use a different email or try logging in.');
+                        } else if (firstDetail.message.includes('This password is too common')) {
+                            throw new Error('This password is too common. Please choose a stronger password.');
                         }
                     }
                 }
