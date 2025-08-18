@@ -81,14 +81,6 @@ Key features:
         <img src="https://img.shields.io/badge/GitHub%20Actions-2088FF?style=for-the-badge&logo=githubactions&logoColor=white" />
       </td>
     </tr>
-    <tr>
-      <td style="text-align: center;"><strong>AI/ML</strong></td>
-      <td style="text-align: center;">
-        <img src="https://img.shields.io/badge/Python-3776AB?style=for-the-badge&logo=python&logoColor=white" />
-        <img src="https://img.shields.io/badge/Scikit--learn-F7931E?style=for-the-badge&logo=scikit-learn&logoColor=white" />
-        <img src="https://img.shields.io/badge/Pandas-150458?style=for-the-badge&logo=pandas&logoColor=white" />
-      </td>
-    </tr>
   </tbody>
 </table>
 
@@ -200,4 +192,5 @@ We follow a GitFlow-inspired branching strategy to maintain clean and organized 
 
 ## 📫 Contact Us
  [![Email](https://img.shields.io/badge/Email-swmguild@gmail.com-D14836?logo=gmail)](mailto:swmguild@gmail.com)
+
 
