@@ -1308,3 +1308,75 @@ INFO 2025-08-13 17:46:44,457 basehttp 16272 16360 "GET /api/business/reviews/ HT
 INFO 2025-08-13 17:46:44,540 basehttp 16272 16360 "GET /api/business/reviews/stats/ HTTP/1.1" 200 303
 INFO 2025-08-13 17:47:14,266 basehttp 16272 16360 "GET /api/notifications/unread-count/ HTTP/1.1" 200 19
 INFO 2025-08-13 17:47:44,325 basehttp 16272 16360 "GET /api/notifications/unread-count/ HTTP/1.1" 200 19
+WARNING 2025-08-18 12:15:51,181 blob_storage 96863 139979802456192 Container creation issue: <urllib3.connection.HTTPConnection object at 0x7f4f91bf42c0>: Failed to establish a new connection: [Errno 111] Connection refused
+INFO 2025-08-18 12:16:18,937 blob_storage 97291 140191939399808 Updated existing container to public access: customer-profiles
+INFO 2025-08-18 12:16:18,950 blob_storage 97291 140191939399808 Updated existing container to public access: ngo-documents
+INFO 2025-08-18 12:16:18,965 blob_storage 97291 140191939399808 Updated existing container to public access: ngo-logos
+INFO 2025-08-18 12:16:18,979 blob_storage 97291 140191939399808 Updated existing container to public access: provider-documents
+INFO 2025-08-18 12:16:18,992 blob_storage 97291 140191939399808 Updated existing container to public access: provider-logos
+INFO 2025-08-18 12:16:19,006 blob_storage 97291 140191939399808 Updated existing container to public access: provider-banners
+INFO 2025-08-18 12:16:19,448 blob_storage 97307 140614123421824 Updated existing container to public access: customer-profiles
+INFO 2025-08-18 12:16:19,521 blob_storage 97307 140614123421824 Updated existing container to public access: ngo-documents
+INFO 2025-08-18 12:16:19,532 blob_storage 97307 140614123421824 Updated existing container to public access: ngo-logos
+INFO 2025-08-18 12:16:19,545 blob_storage 97307 140614123421824 Updated existing container to public access: provider-documents
+INFO 2025-08-18 12:16:19,554 blob_storage 97307 140614123421824 Updated existing container to public access: provider-logos
+INFO 2025-08-18 12:16:19,564 blob_storage 97307 140614123421824 Updated existing container to public access: provider-banners
+INFO 2025-08-18 12:16:19,603 autoreload 97307 140614123421824 Watching for file changes with StatReloader
+INFO 2025-08-18 12:16:19,890 blob_storage 97307 140614041564864 Updated existing container to public access: customer-profiles
+INFO 2025-08-18 12:16:19,904 blob_storage 97307 140614041564864 Updated existing container to public access: provider-banners
+INFO 2025-08-18 12:16:19,931 blob_storage 97307 140614041564864 Updated existing container to public access: provider-documents
+INFO 2025-08-18 12:16:19,944 blob_storage 97307 140614041564864 Updated existing container to public access: provider-logos
+INFO 2025-08-18 12:16:19,958 blob_storage 97307 140614041564864 Updated existing container to public access: ngo-documents
+INFO 2025-08-18 12:16:19,971 blob_storage 97307 140614041564864 Updated existing container to public access: ngo-logos
+INFO 2025-08-18 12:29:59,886 basehttp 97307 140613940934336 "GET /admin/interactions/interaction/?o=-7 HTTP/1.1" 200 37957
+INFO 2025-08-18 12:30:03,734 basehttp 97307 140613940934336 "GET /admin/authentication/ngoprofile/ HTTP/1.1" 200 26689
+INFO 2025-08-18 12:30:03,772 basehttp 97307 140613940934336 "GET /static/admin/css/changelists.css HTTP/1.1" 304 0
+INFO 2025-08-18 12:30:03,773 basehttp 97307 140613932541632 "GET /static/admin/js/vendor/jquery/jquery.js HTTP/1.1" 304 0
+INFO 2025-08-18 12:30:03,774 basehttp 97307 140613915756224 "GET /static/admin/js/core.js HTTP/1.1" 304 0
+INFO 2025-08-18 12:30:03,775 basehttp 97307 140613924148928 "GET /static/admin/js/jquery.init.js HTTP/1.1" 304 0
+INFO 2025-08-18 12:30:03,775 basehttp 97307 140613907363520 "GET /static/admin/js/admin/RelatedObjectLookups.js HTTP/1.1" 304 0
+INFO 2025-08-18 12:30:03,780 basehttp 97307 140613932541632 "GET /static/admin/js/urlify.js HTTP/1.1" 304 0
+INFO 2025-08-18 12:30:03,781 basehttp 97307 140613915756224 "GET /static/admin/js/actions.js HTTP/1.1" 304 0
+INFO 2025-08-18 12:30:03,781 basehttp 97307 140613924148928 "GET /static/admin/js/prepopulate.js HTTP/1.1" 304 0
+INFO 2025-08-18 12:30:03,782 basehttp 97307 140613907363520 "GET /static/admin/js/vendor/xregexp/xregexp.js HTTP/1.1" 304 0
+INFO 2025-08-18 12:30:03,789 basehttp 97307 140614021674688 "GET /admin/jsi18n/ HTTP/1.1" 200 3342
+INFO 2025-08-18 12:30:03,793 basehttp 97307 140614021674688 "GET /static/admin/img/search.svg HTTP/1.1" 304 0
+INFO 2025-08-18 12:30:03,846 basehttp 97307 140613924148928 "GET /static/admin/js/filters.js HTTP/1.1" 304 0
+INFO 2025-08-18 12:30:05,577 basehttp 97307 140613924148928 "GET /admin/authentication/foodproviderprofile/ HTTP/1.1" 200 31233
+INFO 2025-08-18 12:30:05,628 basehttp 97307 140614021674688 "GET /static/admin/img/icon-no.svg HTTP/1.1" 200 560
+INFO 2025-08-18 12:30:05,631 basehttp 97307 140613924148928 "GET /admin/jsi18n/ HTTP/1.1" 200 3342
+INFO 2025-08-18 12:30:07,499 basehttp 97307 140613924148928 "GET /admin/authentication/customerprofile/ HTTP/1.1" 200 25859
+INFO 2025-08-18 12:30:07,547 basehttp 97307 140613924148928 "GET /admin/jsi18n/ HTTP/1.1" 200 3342
+ERROR 2025-08-18 12:31:48,854 serializers 97307 140613898970816 Failed to upload profile image for customer tommy@exampl.com: Incorrect padding
+INFO 2025-08-18 12:31:48,895 basehttp 97307 140613898970816 "POST /auth/register/customer/ HTTP/1.1" 201 1082
+INFO 2025-08-18 12:32:30,384 basehttp 97307 140613924148928 "GET /admin/authentication/customerprofile/ HTTP/1.1" 200 26214
+INFO 2025-08-18 12:32:30,435 basehttp 97307 140613924148928 "GET /admin/jsi18n/ HTTP/1.1" 200 3342
+INFO 2025-08-18 12:32:30,501 basehttp 97307 140613924148928 "GET /static/admin/img/tooltag-add.svg HTTP/1.1" 304 0
+INFO 2025-08-18 12:32:33,853 basehttp 97307 140613924148928 "GET /admin/authentication/customerprofile/3/change/ HTTP/1.1" 200 27805
+INFO 2025-08-18 12:32:33,893 basehttp 97307 140613924148928 "GET /static/admin/css/forms.css HTTP/1.1" 200 8525
+INFO 2025-08-18 12:32:33,898 basehttp 97307 140614021674688 "GET /static/admin/js/prepopulate_init.js HTTP/1.1" 200 586
+INFO 2025-08-18 12:32:33,900 basehttp 97307 140613924148928 "GET /static/admin/css/widgets.css HTTP/1.1" 200 11991
+INFO 2025-08-18 12:32:33,909 basehttp 97307 140613907363520 "GET /admin/jsi18n/ HTTP/1.1" 200 3342
+INFO 2025-08-18 12:32:33,914 basehttp 97307 140613907363520 "GET /static/admin/img/icon-viewlink.svg HTTP/1.1" 304 0
+INFO 2025-08-18 12:32:33,955 basehttp 97307 140613924148928 "GET /static/admin/js/change_form.js HTTP/1.1" 200 606
+WARNING 2025-08-18 12:33:16,286 log 97307 140613886555840 Not Found: /auth/delete-account/
+WARNING 2025-08-18 12:33:16,286 basehttp 97307 140613886555840 "POST /auth/delete-account/ HTTP/1.1" 404 11780
+INFO 2025-08-18 12:33:34,688 autoreload 97307 140614123421824 /home/somworld/COS301/Capstone/Save-n-Bite/save-n-bite-backend/authentication/urls.py changed, reloading.
+INFO 2025-08-18 12:33:35,953 blob_storage 98092 139785880203392 Updated existing container to public access: customer-profiles
+INFO 2025-08-18 12:33:35,961 blob_storage 98092 139785880203392 Updated existing container to public access: ngo-documents
+INFO 2025-08-18 12:33:35,971 blob_storage 98092 139785880203392 Updated existing container to public access: ngo-logos
+INFO 2025-08-18 12:33:35,983 blob_storage 98092 139785880203392 Updated existing container to public access: provider-documents
+INFO 2025-08-18 12:33:36,025 blob_storage 98092 139785880203392 Updated existing container to public access: provider-logos
+INFO 2025-08-18 12:33:36,036 blob_storage 98092 139785880203392 Updated existing container to public access: provider-banners
+INFO 2025-08-18 12:33:36,108 autoreload 98092 139785880203392 Watching for file changes with StatReloader
+INFO 2025-08-18 12:33:36,355 blob_storage 98092 139785798645440 Updated existing container to public access: customer-profiles
+INFO 2025-08-18 12:33:36,365 blob_storage 98092 139785798645440 Updated existing container to public access: provider-banners
+INFO 2025-08-18 12:33:36,377 blob_storage 98092 139785798645440 Updated existing container to public access: provider-documents
+INFO 2025-08-18 12:33:36,388 blob_storage 98092 139785798645440 Updated existing container to public access: provider-logos
+INFO 2025-08-18 12:33:36,434 blob_storage 98092 139785798645440 Updated existing container to public access: ngo-documents
+INFO 2025-08-18 12:33:36,448 blob_storage 98092 139785798645440 Updated existing container to public access: ngo-logos
+WARNING 2025-08-18 12:33:40,959 log 98092 139785777706688 Method Not Allowed: /auth/delete-account/
+WARNING 2025-08-18 12:33:40,960 basehttp 98092 139785777706688 "POST /auth/delete-account/ HTTP/1.1" 405 41
+INFO 2025-08-18 12:33:48,441 basehttp 98092 139785777706688 "DELETE /auth/delete-account/ HTTP/1.1" 200 64
+INFO 2025-08-18 12:37:21,546 basehttp 98092 139785766340288 "GET /admin/authentication/customerprofile/ HTTP/1.1" 200 25859
+INFO 2025-08-18 12:37:21,600 basehttp 98092 139785766340288 "GET /admin/jsi18n/ HTTP/1.1" 200 3342
