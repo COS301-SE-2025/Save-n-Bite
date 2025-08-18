@@ -20,6 +20,10 @@ export default function ListingsOverview() {
     fetchListings();
   }, []);
 
+  const getListingType = (listing) => {
+    return parseFloat(listing.originalPrice) === 0 ? 'donation' : 'sale';
+  };
+
   const fetchListings = async () => {
     try {
       setIsLoading(true);
@@ -133,6 +137,7 @@ export default function ListingsOverview() {
               <>
                 {/* Desktop Table View - Hidden on mobile */}
                 <div className="hidden md:block bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden transition-colors duration-300">
+                  
                   <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
                     <thead className="bg-gray-50 dark:bg-gray-800">
                       <tr>
@@ -161,9 +166,12 @@ export default function ListingsOverview() {
                     </thead>
                     <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                       {listings.map((listing) => (
+                        console.log('Rendering listing:', listing), // Debug log
+                        
                         <tr key={listing.id}>
                           <td className="px-6 py-4 whitespace-nowrap">
                             <div className="flex items-center">
+                              
                               {listing.image && (
                                 <img
                                   src={listing.image}
@@ -178,14 +186,15 @@ export default function ListingsOverview() {
                             </div>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">
-                            <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${listing.type === 'donation' ? 'bg-green-100 text-green-800' : 'bg-blue-100 text-blue-800'
+                            
+                            <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${listing.originalPrice === 0 ? 'bg-green-100 text-green-800' : 'bg-blue-100 text-blue-800'
                               }`}>
                                
-                              {listing.type === 'donation' ? 'Donation' : 'Sale'}
+                              {listing.originalPrice === 0 ? 'Donation' : 'Sale'}
                             </span>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            {listing.type === 'donation' ? 'Free' : `R${listing.discountedPrice}`}
+                            {listing.originalPrice === 0 ? 'Free' : `R${listing.discountedPrice}`}
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                             {listing.quantity}
@@ -242,15 +251,15 @@ export default function ListingsOverview() {
                       <div className="grid grid-cols-2 gap-3 mb-4">
                         <div>
                           <span className="text-xs text-gray-500 block">Type</span>
-                          <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${listing.type === 'donation' ? 'bg-green-100 text-green-800' : 'bg-blue-100 text-blue-800'
+                          <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${listing.originalPrice === 0 ? 'bg-green-100 text-green-800' : 'bg-blue-100 text-blue-800'
                             }`}>
-                            {listing.type === 'donation' ? 'Donation' : 'Sale'}
+                            {listing.originalPrice === 0 ? 'Donation' : 'Sale'}
                           </span>
                         </div>
                         <div>
                           <span className="text-xs text-gray-500 block">Price</span>
                           <span className="text-sm font-medium text-gray-900">
-                            {listing.type === 'donation' ? 'Free' : `R${listing.discountedPrice}`}
+                            {listing.originalPrice === 0 ? 'Free' : `R${listing.discountedPrice}`}
                           </span>
                         </div>
                         <div>
