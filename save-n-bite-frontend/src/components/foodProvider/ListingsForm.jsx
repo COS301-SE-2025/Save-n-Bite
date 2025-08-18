@@ -1,4 +1,6 @@
-import React, { useState, useEffect } from 'react';
+
+
+import React, { useState, useEffect, useRef } from 'react';
 import { CalendarIcon, ImageIcon, ClockIcon, MapPinIcon, PhoneIcon, UserIcon } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import foodListingsAPI from '../../services/foodListingsAPI';
@@ -6,10 +8,21 @@ import schedulingAPI from '../../services/schedulingAPI';
 
 export function ListingForm() {
   const navigate = useNavigate();
+  const formRef = useRef(null);
   const [isDonation, setIsDonation] = useState(false);
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [userData, setUserData] = useState(null);
+
+  // Scroll to top when errors.submit changes
+  useEffect(() => {
+    if (errors.submit && formRef.current) {
+      formRef.current.scrollIntoView({ 
+        behavior: 'smooth', 
+        block: 'start' 
+      });
+    }
+  }, [errors.submit]);
 
   useEffect(() => {
     // Check if user is a verified provider
@@ -166,7 +179,7 @@ export function ListingForm() {
       }
 
       // Check provider verification status
-      if (userData.profile?.status === 'pending_verification') {
+      if (userData.verification_status === 'pending_verification') {
         throw new Error('Your provider account is pending verification. You will be able to create listings once your account is verified.');
       }
 
@@ -323,7 +336,7 @@ export function ListingForm() {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6 max-w-3xl transition-colors duration-300">
+    <form ref={formRef} onSubmit={handleSubmit} className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6 max-w-3xl transition-colors duration-300">
       {errors.submit && (
         <div className="mb-4 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
           <p className="text-red-600 dark:text-red-400">{errors.submit}</p>
