@@ -81,38 +81,72 @@ Key features:
         <img src="https://img.shields.io/badge/GitHub%20Actions-2088FF?style=for-the-badge&logo=githubactions&logoColor=white" />
       </td>
     </tr>
-    <tr>
-      <td style="text-align: center;"><strong>AI/ML</strong></td>
-      <td style="text-align: center;">
-        <img src="https://img.shields.io/badge/Python-3776AB?style=for-the-badge&logo=python&logoColor=white" />
-        <img src="https://img.shields.io/badge/Scikit--learn-F7931E?style=for-the-badge&logo=scikit-learn&logoColor=white" />
-        <img src="https://img.shields.io/badge/Pandas-150458?style=for-the-badge&logo=pandas&logoColor=white" />
-      </td>
-    </tr>
   </tbody>
 </table>
 
 </div>
 
-
-
-<img src="assets/TechStack.png"/>
+<div align="center">
+	<code><img width="70" src="https://raw.githubusercontent.com/marwin1991/profile-technology-icons/refs/heads/main/icons/github.png" alt="GitHub" title="GitHub"/></code>
+	<code><img width="70" src="https://raw.githubusercontent.com/marwin1991/profile-technology-icons/refs/heads/main/icons/python.png" alt="Python" title="Python"/></code>
+	<code><img width="70" src="https://raw.githubusercontent.com/marwin1991/profile-technology-icons/refs/heads/main/icons/django.png" alt="Django" title="Django"/></code>
+	<code><img width="70" src="https://raw.githubusercontent.com/marwin1991/profile-technology-icons/refs/heads/main/icons/react.png" alt="React" title="React"/></code>
+	<code><img width="70" src="https://raw.githubusercontent.com/marwin1991/profile-technology-icons/refs/heads/main/icons/postgresql.png" alt="PostgreSQL" title="PostgreSQL"/></code>
+	<code><img width="70" src="https://raw.githubusercontent.com/marwin1991/profile-technology-icons/refs/heads/main/icons/docker.png" alt="Docker" title="Docker"/></code>
+</div>
 
 ---
 
-## 📂 Repository Structure
+<details>
+<summary><strong>📂 Repository Structure</strong></summary>
 
 ```text
-main
-│
-├── dev
-│   ├── backend
-│   │   ├── feature/...
-│   │   └── hotfix/...
-│   └── frontend
-│       ├── feature/...
-│       └── hotfix/...
+save-n-bite/
+├── save-n-bite-backend/       # Django backend application
+│   ├── backend/               # Main Django project
+│   │   ├── __init__.py
+│   │   ├── settings.py        # Configuration settings
+│   │   ├── urls.py           # Main URL routing
+│   │   ├── wsgi.py           # WSGI configuration
+│   │   └── asgi.py           # ASGI configuration
+│   ├── authentication/        # User authentication app
+│   ├── admin_system/          # Administration app
+│   ├── food_listings/         # Food listing management
+│   ├── interactions/          # User interactions (cart, orders)
+│   ├── notifications/         # Notification system
+│   ├── analytics/            # AI/ML analytics
+│   ├── scheduling/           # Pickup/delivery scheduling
+│   ├── reviews/              # Review and rating system
+│   ├── static/               # Static files
+│   ├── media/                # User-uploaded media
+│   ├── logs/                 # System logs
+│   ├── requirements.txt      # Environment requirements
+│   ├── manage.py             # Django management script
+│   ├── blop_storage.py       # BLOB srorage config
+│   └── pyproject.toml        # Poetry configuration
+├── save-n-bite-frontend/     # React frontend application
+│   ├── dist/                 # containing assets
+│   ├── public/               # Public assets
+│   ├── src/                  # Source code
+│   │   ├── components/       # React components
+│   │   │   ├── auth/         # Authentication components
+│   │   │   ├── common/       # Shared components
+│   │   │   └── pages/        # Page components
+│   │   ├── hooks/            # Custom React hooks
+│   │   ├── services/         # API service layer
+│   │   ├── utils/            # Utility functions
+│   │   ├── styles/           # CSS/styling files
+│   │   ├── __mocks__/        # Test mocks
+│   │   └── setupTests.js     # Test configuration
+│   ├── package.json          # Dependencies and scripts
+│   ├── vite.config.js        # Vite configuration
+│   ├── tailwind.config.js    # Tailwind CSS configuration
+│   └── jest.config.js        # Jest testing configuration
+├── documentation/            # Project documentation
+└── README.md               # Project overview
 ```
+</details>
+
 ---
 
 ---
@@ -128,8 +162,40 @@ main
 
 ---
 
-## ✅ Demo 2 Deliverables (27 June 2025)
-1. **Implemented Use Cases:**   
+<details open>
+<summary><strong>✅ Demo 3 Deliverables (20 August 2025)</strong></summary>
+
+1. **SRS Document**:  
+   - **📄 [Software Requirements Specification (SRS)](documentation/SRS.pdf)**  
+   - Introduction  
+   - User stories  
+   - Use Case Diagrams  
+   - Functional Requirements  
+   - Service Contracts  
+   - Domain Model  
+   - Architectural Requirements  
+   - Technology Requirements  
+
+2. **User Manual**:  
+   - **[User Manual](documentation/User_Manual.pdf)**  
+
+3. **Technical Installation Manual**:  
+   - **[Technical Installation Manual](documentation/Technical_Installation_Manual.pdf)**  
+
+4. **Coding Standards Document**:  
+   - **[Coding Standards Document](documentation/coding_standards_doc.pdf)**  
+
+5. **Demo 3 Video**  
+   [Click here!](https://www.canva.com/design/DAGowUskyDY/E8nYEYzEWrMe1D13DkMVFw/watch?utm_content=DAGowUskyDY&utm_campaign=designshare&utm_medium=link2&utm_source=uniquelinks&utlId=h3390ca1771)
+
+</details>
+
+---
+
+<details>
+<summary><strong>✅ Demo 2 Deliverables (27 June 2025)</strong></summary>
+
+1. **Implemented Use Cases:**  
    - User registration/login (JWT/OAuth2).✅    
    - User themes and profile preferences (React + PostgreSQL).✅  
    - Validation of user input (React + Django validators).✅  
@@ -138,66 +204,75 @@ main
    - Purchase/Request food (React + Django REST, PostgreSQL).✅  
    - Notifications system (Django + WebSocket, Redis for real-time pub/sub).✅  
    - Scheduling and Pickup system (React + Django REST, PostgreSQL + Redis caching).✅  
-   - Feedback and Revies system (React + Django REST, PostgreSQL + moderation).✅  
+   - Feedback and Reviews system (React + Django REST, PostgreSQL + moderation).✅  
    - Business Analytics system (Django + Pandas, Scikit-learn for ML predictions, PostgreSQL + Redis).✅  
 
-3. **SRS Document**:  
+2. **SRS Document**:  
    - **📄 [Software Requirements Specification (SRS)](documentation/SRS-V2.md)**  
-   - Introduction
-   - User stories
-   - Use Case Diagrams
-   - Functional Requirements
-   - Service Contracts
-   - Domain Model
-   - Architectural Requirements
-   - Technology Requirements
+   - Introduction  
+   - User stories  
+   - Use Case Diagrams  
+   - Functional Requirements  
+   - Service Contracts  
+   - Domain Model  
+   - Architectural Requirements  
+   - Technology Requirements  
 
+3. **GitHub Hygiene**:  
+   We follow a GitFlow-inspired branching strategy to maintain clean and organized version control. The *main* branch holds production-ready code, while all active development takes place in the *dev* branch. From dev, we maintain separate long-lived backend and frontend branches to isolate concerns. Features are developed in *feature/* branches branched off their respective areas, and urgent fixes are handled in *hotfix/* branches. All changes are merged via pull requests with code reviews to ensure stability, consistency, and collaboration across the team.
 
-4. **GitHub Hygiene**:  
-We follow a GitFlow-inspired branching strategy to maintain clean and organized version control. The *main* branch holds production-ready code, while all active development takes place in the *dev* branch. From dev, we maintain separate long-lived backend and frontend branches to isolate concerns. Features are developed in *feature/* branches branched off their respective areas, and urgent fixes are handled in *hotfix/* branches. All changes are merged via pull requests with code reviews to ensure stability, consistency, and collaboration across the team.
-
-5. **GitHub Project Board**:
+4. **GitHub Project Board**:  
    - **📊 [GitHub Project Board](https://github.com/orgs/COS301-SE-2025/projects/177/views/2)**  
 
-6. **Demo 2 Video**
+5. **Demo 2 Video**  
    [Click here!](https://www.canva.com/design/DAGowUskyDY/E8nYEYzEWrMe1D13DkMVFw/watch?utm_content=DAGowUskyDY&utm_campaign=designshare&utm_medium=link2&utm_source=uniquelinks&utlId=h3390ca1771)
+
+</details>
 
 ---
 
-## ✅ Demo 1 Deliverables (28 May 2025)
-1. **Implemented Use Cases:**
+<details>
+<summary><strong>✅ Demo 1 Deliverables (28 May 2025)</strong></summary>
+
+1. **Implemented Use Cases:**  
    - User registration/login (JWT/OAuth2).    
-   - User themes and profile preferences (React + PostgreSQL).
-   - Validation of user input (React + Django validators).
-   - Food listing by businesses (React, Django + Redis).
-   - Browsing food listings (React + Django API, Redis).
-   - Purchase/Request food (React + Django REST, PostgreSQL).
+   - User themes and profile preferences (React + PostgreSQL).  
+   - Validation of user input (React + Django validators).  
+   - Food listing by businesses (React, Django + Redis).  
+   - Browsing food listings (React + Django API, Redis).  
+   - Purchase/Request food (React + Django REST, PostgreSQL).  
 
 2. **SRS Document**:  
    - **📄 [Software Requirements Specification (SRS)](documentation/SRS.md)**  
-   - Introduction
-   - User stories
-   - Use Case Diagrams
-   - Functional Requirements
-   - Service Contracts
-   - Domain Model
-   - Architectural Requirements
-   - Technology Requirements
+   - Introduction  
+   - User stories  
+   - Use Case Diagrams  
+   - Functional Requirements  
+   - Service Contracts  
+   - Domain Model  
+   - Architectural Requirements  
+   - Technology Requirements  
 
+3. **GitHub Hygiene**:  
+   We follow a GitFlow-inspired branching strategy to maintain clean and organized version control. The *main* branch holds production-ready code, while all active development takes place in the *dev* branch. From dev, we maintain separate long-lived backend and frontend branches to isolate concerns. Features are developed in *feature/* branches branched off their respective areas, and urgent fixes are handled in *hotfix/* branches. All changes are merged via pull requests with code reviews to ensure stability, consistency, and collaboration across the team.
 
-4. **GitHub Hygiene**:  
-We follow a GitFlow-inspired branching strategy to maintain clean and organized version control. The *main* branch holds production-ready code, while all active development takes place in the *dev* branch. From dev, we maintain separate long-lived backend and frontend branches to isolate concerns. Features are developed in *feature/* branches branched off their respective areas, and urgent fixes are handled in *hotfix/* branches. All changes are merged via pull requests with code reviews to ensure stability, consistency, and collaboration across the team.
-
-
-5. **GitHub Project Board**:
+4. **GitHub Project Board**:  
    - **📊 [GitHub Project Board](https://github.com/orgs/COS301-SE-2025/projects/177/views/2)**  
 
-6. **Demo 1 Video**
-
+5. **Demo 1 Video**  
    [Click here!](https://www.canva.com/design/DAGowUskyDY/E8nYEYzEWrMe1D13DkMVFw/watch?utm_content=DAGowUskyDY&utm_campaign=designshare&utm_medium=link2&utm_source=uniquelinks&utlId=h3390ca1771)
+
+</details>
+
 
 ---
 
 ## 📫 Contact Us
  [![Email](https://img.shields.io/badge/Email-swmguild@gmail.com-D14836?logo=gmail)](mailto:swmguild@gmail.com)
+
+
+
+
+
+
 

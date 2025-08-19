@@ -284,7 +284,7 @@ function OrdersAndFeedback() {
 
   if (loading) {
     return (
-      <div className="w-full flex min-h-screen">
+      <div className="flex h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
         {/* Desktop Sidebar */}
         <div className="hidden md:flex">
           <SideBar onNavigate={() => {}} currentPage="orders-and-feedback" />
@@ -302,7 +302,7 @@ function OrdersAndFeedback() {
   }
 
   return (
-    <div className="w-full flex min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
+    <div className="flex h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
       {/* Desktop Sidebar - Hidden on mobile */}
       <div className="hidden md:flex">
         <SideBar onNavigate={() => {}} currentPage="orders-and-feedback" />
@@ -329,7 +329,7 @@ function OrdersAndFeedback() {
 
       <div className="flex-1 overflow-auto">
         {/* Mobile Header */}
-        <div className="md:hidden bg-white border-b border-gray-200 px-4 py-3 flex items-center justify-between">
+        <div className="md:hidden bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-4 py-3 flex items-center justify-between transition-colors duration-300">
           <button
             onClick={toggleMobileSidebar}
             className="p-2 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-lg"
@@ -337,7 +337,7 @@ function OrdersAndFeedback() {
           >
             <Menu size={24} />
           </button>
-          <h1 className="text-lg font-semibold text-gray-900">Orders & Reviews</h1>
+          <h1 className="text-lg font-semibold text-gray-900 dark:text-white">Orders & Reviews</h1>
           <button
             onClick={() => {
               loadOrdersData();
@@ -353,7 +353,8 @@ function OrdersAndFeedback() {
           <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 sm:gap-0 mb-6">
             <div>
               <h1 className="hidden md:block text-xl sm:text-2xl font-bold">Orders & Feedback</h1>
-              <h2 className="md:hidden text-xl font-bold">Orders & Reviews</h2>
+              <h2 className="md:hidden text-xl font-bold text-black dark:text-white">Orders & Reviews</h2>
+
               <p className="text-gray-600 dark:text-gray-300 mt-1 text-sm sm:text-base">
                 Manage your orders and customer reviews
                 {currentProvider && (

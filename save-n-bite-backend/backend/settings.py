@@ -35,7 +35,7 @@ DEBUG = os.getenv("DEBUG") == "false"
 #DEBUG = os.getenv("DEBUG", "True").lower() == "true"
 
 
-ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", "localhost,127.0.0.1,savenbiteservice-hzghg8gcgddtcfg7.southafricanorth-01.azurewebsites.net").split(",")
+ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", "localhost,127.0.0.1,169.254.134.3,savenbiteservice-hzghg8gcgddtcfg7.southafricanorth-01.azurewebsites.net").split(",")
 
 
 CSRF_TRUSTED_ORIGINS = [

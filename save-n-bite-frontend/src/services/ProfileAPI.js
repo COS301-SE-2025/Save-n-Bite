@@ -44,28 +44,27 @@ class ProfileAPI {
   }
 
   // Update user profile
-  async updateProfile(profileData) {
+  async updateProfile(userData) {
     try {
-      // If profileData is FormData (for file uploads), don't set content-type
-      const config = profileData instanceof FormData ? {
-        headers: {
-          'Content-Type': 'multipart/form-data'
-        }
-      } : {};
+      // Format the data according to the API requirements
+      const formData = {
+        email: userData.email,
+        full_name: userData.full_name,
+        profile_image: userData.profile_image || null
+      };
 
-      const response = await apiClient.put('/auth/profile/me/', profileData, config);
+      const response = await apiClient.put('/auth/profile/me/update/', formData);
 
       return {
         success: true,
         data: response.data,
-        error: null
+        message: response.data.message || 'Profile updated successfully'
       };
     } catch (error) {
-      console.error('Failed to update profile:', error);
+      console.error('Failed to update profile:', error.response?.data || error);
       return {
         success: false,
-        data: null,
-        error: this.getErrorMessage(error)
+        error: error.response?.data?.error?.message || 'Failed to update profile'
       };
     }
   }

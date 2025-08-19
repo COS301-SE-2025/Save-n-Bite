@@ -27,7 +27,8 @@ from .serializers import (
     FoodProviderProfileUpdateSerializer,
     BusinessPublicProfileSerializer,
     BusinessTagSerializer,
-    PopularTagsSerializer
+    PopularTagsSerializer,
+    DeleteAccountSerializer
 )
 from .models import User, FoodProviderProfile, CustomerProfile, NGOProfile
 from interactions.models import Interaction, Order
@@ -2543,3 +2544,30 @@ def search_providers_by_tags(request):
                 'details': str(e)
             }
         }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    
+@api_view(['DELETE'])
+@permission_classes([IsAuthenticated])
+def delete_account(request):
+    """Delete the authenticated user's account permanently"""
+    serializer = DeleteAccountSerializer(data=request.data, context={'request': request})
+    if not serializer.is_valid():
+        return Response(
+            {"error": {"code": "VALIDATION_ERROR", "message": serializer.errors}},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+
+    user = request.user
+    email = user.email  
+
+    try:
+        user.delete()
+        return Response(
+            {"message": f"Account for {email} deleted successfully."},
+            status=status.HTTP_200_OK
+        )
+    except Exception as e:
+        logger.error(f"Failed to delete account {email}: {str(e)}")
+        return Response(
+            {"error": {"code": "DELETE_ERROR", "message": "Account deletion failed."}},
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR
+        )
