@@ -1030,3 +1030,17 @@ INFO 2025-08-19 14:39:29,363 blob_storage 7792 21836 Updated existing container 
 INFO 2025-08-19 14:39:29,512 blob_storage 7792 21836 Updated existing container to public access: provider-logos
 INFO 2025-08-19 14:39:29,596 blob_storage 7792 21836 Updated existing container to public access: ngo-documents
 INFO 2025-08-19 14:39:29,691 blob_storage 7792 21836 Updated existing container to public access: ngo-logos
+INFO 2025-08-19 14:40:40,231 autoreload 7792 7548 C:\Users\Capleton\Desktop\COS214\practical\Save-n-Bite\save-n-bite-backend\backend\settings.py changed, reloading.
+INFO 2025-08-19 14:40:45,360 blob_storage 7276 420 Updated existing container to public access: customer-profiles
+INFO 2025-08-19 14:40:45,395 blob_storage 7276 420 Updated existing container to public access: ngo-documents
+INFO 2025-08-19 14:40:45,417 blob_storage 7276 420 Updated existing container to public access: ngo-logos
+INFO 2025-08-19 14:40:45,444 blob_storage 7276 420 Updated existing container to public access: provider-documents
+INFO 2025-08-19 14:40:45,480 blob_storage 7276 420 Updated existing container to public access: provider-logos
+INFO 2025-08-19 14:40:45,515 blob_storage 7276 420 Updated existing container to public access: provider-banners
+INFO 2025-08-19 14:40:45,721 autoreload 7276 420 Watching for file changes with StatReloader
+INFO 2025-08-19 14:40:46,337 blob_storage 7276 22232 Updated existing container to public access: customer-profiles
+INFO 2025-08-19 14:40:46,360 blob_storage 7276 22232 Updated existing container to public access: provider-banners
+INFO 2025-08-19 14:40:46,383 blob_storage 7276 22232 Updated existing container to public access: provider-documents
+INFO 2025-08-19 14:40:46,404 blob_storage 7276 22232 Updated existing container to public access: provider-logos
+INFO 2025-08-19 14:40:46,443 blob_storage 7276 22232 Updated existing container to public access: ngo-documents
+INFO 2025-08-19 14:40:46,471 blob_storage 7276 22232 Updated existing container to public access: ngo-logos
