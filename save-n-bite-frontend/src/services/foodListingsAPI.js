@@ -1,7 +1,7 @@
 import axios from 'axios';
 
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'https://savenbiteservice-hzghg8gcgddtcfg7.southafricanorth-01.azurewebsites.net';
-// const API_BASE_URL = 'http://localhost:8000' ;
+//const API_BASE_URL = process.env.REACT_APP_API_URL || 'https://savenbiteservice-hzghg8gcgddtcfg7.southafricanorth-01.azurewebsites.net';
+const API_BASE_URL = 'http://localhost:8000' ;
 
 const apiClient = axios.create({
     baseURL: API_BASE_URL,
@@ -298,6 +298,7 @@ const foodListingsAPI = {
             let listings = [];
             if (response.data.listings) {
                 listings = response.data.listings;
+                console.log('Listings from response.data.listings:', listings); // Debug log
             } else if (Array.isArray(response.data)) {
                 listings = response.data;
             } else if (response.data.results) {

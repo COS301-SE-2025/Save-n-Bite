@@ -144,7 +144,7 @@ const darkMode = theme === 'dark'
   
 
   return (
-    <div className={`w-full flex min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-300`}>
+    <div className={`flex h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-300`}>
       {/* Desktop Sidebar - Hidden on mobile */}
       <div className="hidden md:flex">
         <SideBar onNavigate={() => {}} currentPage="settings" />
