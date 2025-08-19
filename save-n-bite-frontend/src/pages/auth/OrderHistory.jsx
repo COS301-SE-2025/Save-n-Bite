@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import CustomerNavBar from '../../components/auth/CustomerNavBar';
@@ -618,33 +619,41 @@ const OrderHistory = () => {
 
   const impactData = calculateImpact();
 
-  if (loading) {
+  // Loading state - matches FoodProvidersPage pattern
+  if (loading && filteredOrders.length === 0) {
     return (
-      <div className="bg-gray-50 min-h-screen w-full">
+      <div className="bg-gray-50 dark:bg-gray-900 min-h-screen w-full transition-colors duration-300">
         <CustomerNavBar />
         <div className="flex items-center justify-center min-h-[60vh]">
           <div className="text-center">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-600 mx-auto mb-4"></div>
-            <p className="text-gray-600">Loading order history...</p>
+            <p className="text-gray-600 dark:text-gray-200">Loading order history...</p>
           </div>
         </div>
       </div>
     );
   }
 
+  // Error state
   if (error) {
     return (
-      <div className="bg-gray-50 min-h-screen w-full">
+      <div className="bg-gray-50 dark:bg-gray-900 min-h-screen w-full transition-colors duration-300">
         <CustomerNavBar />
-        <div className="max-w-4xl mx-auto px-4 py-8">
-          <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-md">
-            <p className="font-medium">Error loading orders</p>
-            <p className="text-sm">{error}</p>
-            <button
-              onClick={loadOrders}
-              className="mt-2 text-sm underline hover:no-underline"
+        <div className="max-w-6xl mx-auto px-4 py-8">
+          <div className="mb-8">
+            <h1 className="text-2xl font-bold text-gray-800 dark:text-gray-100 mb-2">
+              Order History
+            </h1>
+            <p className="text-red-600 dark:text-red-400">{error}</p>
+          </div>
+          
+          <div className="text-center py-12">
+            <p className="text-xl text-gray-600 dark:text-gray-300 mb-4">Unable to load order history</p>
+            <button 
+              onClick={loadOrders} 
+              className="px-4 py-2 bg-emerald-600 text-white rounded-md hover:bg-emerald-700 transition-colors"
             >
-              Try again
+              Try Again
             </button>
           </div>
         </div>
@@ -834,6 +843,16 @@ const OrderHistory = () => {
           </div>
         </div>
 
+        {/* Show loading indicator while orders are being updated (similar to FoodProvidersPage) */}
+        {loading && filteredOrders.length > 0 && (
+          <div className="mb-4 text-center">
+            <div className="inline-flex items-center px-3 py-2 sm:px-4 sm:py-2 bg-emerald-50 dark:bg-emerald-900 text-emerald-600 dark:text-emerald-200 rounded-md text-sm transition-colors duration-300">
+              <div className="animate-spin rounded-full h-3 w-3 sm:h-4 sm:w-4 border-b-2 border-emerald-600 mr-2"></div>
+              Updating orders...
+            </div>
+          </div>
+        )}
+
         <div className="flex flex-col lg:flex-row gap-6">
           {/* Filters Sidebar */}
           <div className="lg:w-64">
@@ -855,7 +874,7 @@ const OrderHistory = () => {
             </div>
 
             {!Array.isArray(filteredOrders) || filteredOrders.length === 0 ? (
-              <div className="text-center py-12">
+              <div className="text-center py-12 bg-white dark:bg-gray-800 rounded-lg shadow-sm transition-colors duration-300">
                 <div className="text-gray-500 dark:text-gray-400 mb-4">
                   <svg className="mx-auto h-12 w-12" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
@@ -908,21 +927,6 @@ const OrderHistory = () => {
                               <span className={`text-xs px-2 py-1 rounded-full ${getStatusColor(order)}`}>
                                 {getStatusText(order)}
                               </span>
-                              {/* <span className={`text-xs px-2 py-1 rounded-full ${isDonation ? 'bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-300' :
-                                  'bg-emerald-100 dark:bg-emerald-900 text-emerald-800 dark:text-emerald-300'
-                                }`}>
-                                {isDonation ? 'Donation' : 'Pickup'}
-                              </span> */}
-                              {/* {!isDonation && order.is_upcoming && (
-                                <span className="text-xs px-2 py-1 rounded-full bg-purple-100 dark:bg-purple-900 text-purple-800 dark:text-purple-300">
-                                  Upcoming
-                                </span>
-                              )} */}
-                              {/* {!isDonation && order.is_today && (
-                                <span className="text-xs px-2 py-1 rounded-full bg-yellow-100 dark:bg-yellow-900 text-yellow-800 dark:text-yellow-300">
-                                  Today
-                                </span>
-                              )} */}
                             </div>
 
                             <p className="text-sm text-gray-600 dark:text-gray-300 mb-2 flex items-center">
