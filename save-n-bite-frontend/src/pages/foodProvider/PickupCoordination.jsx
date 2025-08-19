@@ -381,7 +381,9 @@ function PickupCoordination() {
       <div className="w-full flex min-h-screen bg-gray-50 dark:bg-gray-900">
         {/* Desktop Sidebar */}
         <div className="hidden md:flex">
-          <SideBar onNavigate={() => { }} currentPage="dashboard" />
+
+          <SideBar onNavigate={() => {}} currentPage="pickup-coordination" />
+
         </div>
         <div className="flex-1 p-4 sm:p-6 overflow-auto">
           <div className="flex items-center justify-center min-h-[60vh]">
@@ -400,7 +402,9 @@ function PickupCoordination() {
       <div className="w-full flex min-h-screen bg-gray-50 dark:bg-gray-900">
         {/* Desktop Sidebar */}
         <div className="hidden md:flex">
-          <SideBar onNavigate={() => { }} currentPage="dashboard" />
+
+          <SideBar onNavigate={() => {}} currentPage="pickup-coordination" />
+  
         </div>
         <div className="flex-1 p-4 sm:p-6 overflow-auto">
           <div className="max-w-4xl mx-auto">
@@ -424,7 +428,9 @@ function PickupCoordination() {
     <div className="w-full flex min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
       {/* Desktop Sidebar - Hidden on mobile */}
       <div className="hidden md:flex">
-        <SideBar onNavigate={() => { }} currentPage="dashboard" />
+
+        <SideBar onNavigate={() => {}} currentPage="pickup-coordination" />
+
       </div>
 
       {/* Mobile Sidebar Overlay */}
