@@ -782,14 +782,15 @@ class AcceptDonationView(APIView):
             food_listing.quantity_available -= requested_quantity
             food_listing.save()
 
-            # Update interaction and order status
-            interaction.status = Interaction.Status.READY_FOR_PICKUP
+            # Update interaction status to completed
+            interaction.status = Interaction.Status.COMPLETED
             interaction.save()
 
         return Response(
-            {'message': 'Donation accepted and marked as ready for pickup'}, 
+            {'message': 'Donation accepted and marked as completed'}, 
             status=200
         )
+
     
 class RejectDonationView(APIView):
     permission_classes = [IsAuthenticated]

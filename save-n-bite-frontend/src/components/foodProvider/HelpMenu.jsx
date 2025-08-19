@@ -58,7 +58,7 @@ export function HelpMenu({ onClose }) {
         </div>
         <div className="flex-1 overflow-y-auto">
           <div className="p-4">
-            <p className="text-gray-600 dark:text-gray-300 mb-4">
+            <p className="text-gray-600 dark:text-gray-300 dark:text-gray-300 mb-4">
               Welcome to the Save n Bite Help Center. Find answers to common
               questions and learn how to make the most of our platform.
             </p>
@@ -72,7 +72,7 @@ export function HelpMenu({ onClose }) {
               </button>
             </div>
 
-            <div className="mb-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
+            <div className="mb-4 bg-gray-50 dark:bg-gray-800 rounded-lg dark:text-white">
               <AccordionItem
                 title="General Help"
                 isOpen={openSections.general}
@@ -83,7 +83,7 @@ export function HelpMenu({ onClose }) {
                     <h3 className="font-medium text-blue-800 mb-2">
                       What is Save n Bite?
                     </h3>
-                    <p className="text-gray-600">
+                    <p className="text-gray-600 dark:text-gray-300 dark:text-gray-300">
                       Save n Bite is a platform that connects food businesses with consumers to reduce food waste. Businesses can list surplus food items at discounted prices or as donations, helping to save perfectly good food from going to waste while offering great deals to consumers.
                     </p>
                   </div>
@@ -91,7 +91,7 @@ export function HelpMenu({ onClose }) {
                     <h3 className="font-medium text-blue-800 mb-2">
                       How to update your profile
                     </h3>
-                    <p className="text-gray-600">
+                    <p className="text-gray-600 dark:text-gray-300 dark:text-gray-300">
                       Navigate to the Settings page using the sidebar menu. From there, you can update your business information, contact details, and notification preferences. Don't forget to save your changes before leaving the page.
                     </p>
                   </div>
@@ -99,7 +99,7 @@ export function HelpMenu({ onClose }) {
                     <h3 className="font-medium text-blue-800 mb-2">
                       Understanding user roles
                     </h3>
-                    <p className="text-gray-600">
+                    <p className="text-gray-600 dark:text-gray-300 dark:text-gray-300">
                       Save n Bite has two main user roles: Food Providers and Consumers. Food Providers can list food items, manage pickups, and track sustainability metrics. Consumers can browse listings, place orders, and provide feedback.
                     </p>
                   </div>
@@ -107,7 +107,7 @@ export function HelpMenu({ onClose }) {
                     <h3 className="font-medium text-blue-800 mb-2">
                       Notifications and alerts
                     </h3>
-                    <p className="text-gray-600">
+                    <p className="text-gray-600 dark:text-gray-300">
                       You'll receive notifications for new orders, pickup confirmations, and customer feedback. Manage your notification preferences in the Settings page to control which alerts you receive and how (email, in-app, or both).
                     </p>
                   </div>
@@ -115,7 +115,7 @@ export function HelpMenu({ onClose }) {
                     <h3 className="font-medium text-blue-800 mb-2">
                       Contacting support
                     </h3>
-                    <p className="text-gray-600">
+                    <p className="text-gray-600 dark:text-gray-300 dark:text-gray-300">
                       Need additional help? Contact our support team at <a href="mailto:support@savenbite.com" className="text-blue-600 underline">support@savenbite.com</a> or use the "Contact Support" button in the Settings page. Our team typically responds within 24 hours during business days.
                     </p>
                   </div>
@@ -123,7 +123,7 @@ export function HelpMenu({ onClose }) {
               </AccordionItem>
             </div>
 
-            <div className="mb-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
+            <div className="mb-4 bg-gray-50 dark:bg-gray-800 rounded-lg dark:text-white">
               <AccordionItem
                 title="Help for Food Providers"
                 isOpen={openSections.provider}
@@ -135,7 +135,7 @@ export function HelpMenu({ onClose }) {
                     <h3 className="font-medium text-blue-800 mb-2">
                       Creating and managing listings
                     </h3>
-                    <p className="text-gray-600">
+                    <p className="text-gray-600 dark:text-gray-300">
                       Click on "Create Listing" in the sidebar to add new food items. Fill in all required details including food name, description, quantity, and expiration date. You can save drafts or publish immediately. Manage all your listings from the "My Listings" page.
                     </p>
                   </div>
@@ -143,7 +143,7 @@ export function HelpMenu({ onClose }) {
                     <h3 className="font-medium text-blue-800 mb-2">
                       Marking food as donation or discounted
                     </h3>
-                    <p className="text-gray-600">
+                    <p className="text-gray-600 dark:text-gray-300">
                       When creating a listing, you can choose to mark an item as a donation by checking the "Mark as Donation" box. For discounted items, leave this unchecked and specify the discounted price. You can highlight the original price in the description to show the savings.
                     </p>
                   </div>
@@ -151,7 +151,7 @@ export function HelpMenu({ onClose }) {
                     <h3 className="font-medium text-blue-800 mb-2">
                       Managing pickup schedules
                     </h3>
-                    <p className="text-gray-600">
+                    <p className="text-gray-600 dark:text-gray-300">
                       Set pickup time ranges when creating listings. View and manage all scheduled pickups from the "Pickups" page. You can sort by date, mark pickups as completed, and communicate with customers directly through the platform if they're running late.
                     </p>
                   </div>
@@ -159,7 +159,7 @@ export function HelpMenu({ onClose }) {
                     <h3 className="font-medium text-blue-800 mb-2">
                       Viewing orders and sustainability metrics
                     </h3>
-                    <p className="text-gray-600">
+                    <p className="text-gray-600 dark:text-gray-300">
                       Track your impact on the "Dashboard" page, which shows key metrics like meals saved, CO2 emissions reduced, and customer satisfaction. The "Orders/Feedback" page provides detailed information about each transaction and customer reviews.
                     </p>
                   </div>
@@ -167,7 +167,7 @@ export function HelpMenu({ onClose }) {
               </AccordionItem>
             </div>
 
-            <div className="mb-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
+            <div className="mb-4 bg-gray-50 dark:bg-gray-800 rounded-lg dark:text-white">
               <AccordionItem
                 title="Frequently Asked Questions"
                 isOpen={openSections.faq}
@@ -178,7 +178,7 @@ export function HelpMenu({ onClose }) {
                     <h3 className="font-medium text-blue-800 mb-2">
                       How do I receive payment for sold items?
                     </h3>
-                    <p className="text-gray-600">
+                    <p className="text-gray-600 dark:text-gray-300">
                       Payments are processed through our secure payment system. Funds are transferred to your registered bank account within 3–5 business days after the customer picks up the order.
                     </p>
                   </div>
@@ -186,7 +186,7 @@ export function HelpMenu({ onClose }) {
                     <h3 className="font-medium text-blue-800 mb-2">
                       What happens if a customer doesn't pick up their order?
                     </h3>
-                    <p className="text-gray-600">
+                    <p className="text-gray-600 dark:text-gray-300">
                       If a customer doesn't pick up their order during the specified time window, you can mark it as "No Show" in the Pickups page. The system will automatically notify the customer and you can choose to relist the item if it's still viable.
                     </p>
                   </div>
@@ -194,7 +194,7 @@ export function HelpMenu({ onClose }) {
                     <h3 className="font-medium text-blue-800 mb-2">
                       Can I edit a listing after publishing it?
                     </h3>
-                    <p className="text-gray-600">
+                    <p className="text-gray-600 dark:text-gray-300">
                       Yes, you can edit listings that haven't been ordered yet. Navigate to "My Listings," find the item you want to modify, and click the "Edit" button. Once an item has been ordered, you can only edit certain fields like pickup instructions.
                     </p>
                   </div>
@@ -202,7 +202,7 @@ export function HelpMenu({ onClose }) {
                     <h3 className="font-medium text-blue-800 mb-2">
                       How are the sustainability metrics calculated?
                     </h3>
-                    <p className="text-gray-600">
+                    <p className="text-gray-600 dark:text-gray-300">
                       Our sustainability metrics are calculated based on industry standards for food waste impact. Each completed order contributes to your total meals saved count, and CO₂ emissions are estimated based on the food type and quantity saved from landfill.
                     </p>
                   </div>
@@ -210,7 +210,7 @@ export function HelpMenu({ onClose }) {
                     <h3 className="font-medium text-blue-800 mb-2">
                       What should I do if I have a dispute with a customer?
                     </h3>
-                    <p className="text-gray-600">
+                    <p className="text-gray-600 dark:text-gray-300">
                       If you encounter an issue with a customer, first try to resolve it through direct communication. For unresolved disputes, contact our support team with the order details and description of the issue. We'll mediate and help find a fair resolution.
                     </p>
                   </div>

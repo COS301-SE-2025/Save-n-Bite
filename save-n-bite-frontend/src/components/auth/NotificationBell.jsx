@@ -12,18 +12,18 @@ const NotificationBell = () => {
     fetchRecentNotifications,
     markAsRead,
     markAllAsRead,
-    deleteNotification 
+    deleteNotification
   } = useNotifications();
-  
+
   const dropdownRef = useRef(null);
   const bellRef = useRef(null);
   const [showPopup, setShowPopup] = useState(false);
-  
-  // Close dropdown when clicking outside
+
+  // Separate useEffect for click outside handler
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (
-        dropdownRef.current && 
+        dropdownRef.current &&
         !dropdownRef.current.contains(event.target) &&
         bellRef.current &&
         !bellRef.current.contains(event.target)
@@ -33,42 +33,30 @@ const NotificationBell = () => {
     };
 
     document.addEventListener('mousedown', handleClickOutside);
-    // Listen for custom event to show popup
-    const handleShowUnreadPopup = (e) => {
-      if (unreadCount > 0) {
-        setShowPopup(true);
-        setTimeout(() => setShowPopup(false), 4000);
-      }
-    };
-    window.addEventListener('show-unread-popup', handleShowUnreadPopup);
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
-      window.removeEventListener('show-unread-popup', handleShowUnreadPopup);
     };
-  }, [unreadCount]);
+  }, []);
 
-  // Fetch notifications when opening dropdown
+  // Separate useEffect for fetching notifications
   useEffect(() => {
     if (isOpen) {
       fetchRecentNotifications();
-      if (unreadCount > 0) {
-        setShowPopup(true);
-        setTimeout(() => {
-          setShowPopup(false);
-        }, 4000); // Hide popup after 4 seconds
-      }
     }
-  }, [isOpen, fetchRecentNotifications]);
+  }, [isOpen]); // Only depend on isOpen
 
   const handleBellClick = () => {
     setIsOpen(!isOpen);
+    if (!isOpen) {
+      fetchRecentNotifications(); // Only fetch when opening the dropdown
+    }
   };
 
   const handleNotificationClick = async (notification) => {
     if (!notification.isRead) {
       await markAsRead(notification.id);
     }
-    
+
     // Navigate to action URL if available
     if (notification.actionUrl) {
       window.location.href = notification.actionUrl;
@@ -103,7 +91,7 @@ const NotificationBell = () => {
     const now = new Date();
     const notificationTime = new Date(timestamp);
     const diffInMinutes = Math.floor((now - notificationTime) / (1000 * 60));
-    
+
     if (diffInMinutes < 1) return 'Just now';
     if (diffInMinutes < 60) return `${diffInMinutes}m ago`;
     if (diffInMinutes < 1440) return `${Math.floor(diffInMinutes / 60)}h ago`;
@@ -114,7 +102,7 @@ const NotificationBell = () => {
     <div className="relative">
       <button
         ref={bellRef}
-        onClick={handleBellClick}
+        onClick={() => setIsOpen(!isOpen)}
         className="relative p-2 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-full transition-colors duration-200"
         aria-label="Notifications"
       >
@@ -181,15 +169,13 @@ const NotificationBell = () => {
                   <div
                     key={notification.id || notification.createdAt || Math.random()}
                     onClick={() => handleNotificationClick(notification)}
-                    className={`px-3 py-2 cursor-pointer hover:bg-gray-100 transition-colors duration-150 border-b last:border-b-0 ${
-                      !notification.isRead ? 'bg-blue-50 border-l-2 border-l-blue-500' : ''
-                    } flex items-start gap-2`}
+                    className={`px-3 py-2 cursor-pointer hover:bg-gray-100 transition-colors duration-150 border-b last:border-b-0 ${!notification.isRead ? 'bg-blue-50 border-l-2 border-l-blue-500' : ''
+                      } flex items-start gap-2`}
                   >
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center justify-between">
-                        <p className={`text-xs font-semibold truncate ${
-                          !notification.isRead ? 'text-gray-900' : 'text-gray-700'
-                        }`}>
+                        <p className={`text-xs font-semibold truncate ${!notification.isRead ? 'text-gray-900' : 'text-gray-700'
+                          }`}>
                           {notification.title}
                         </p>
                         <div className="flex items-center space-x-1">

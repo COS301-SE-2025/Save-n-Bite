@@ -58,7 +58,10 @@ const Login = () => {
         const user = response.user || response.data?.user;
         if (user?.user_type === 'provider') {
           navigate('/dashboard'); 
-        } else if (user?.user_type === 'ngo') {
+        } else if (user?.user_type === 'admin'){
+          navigate('/admin-dashboard')
+        }
+         else if (user?.user_type === 'ngo') {
           navigate('/food-listing');
         } else {
           navigate('/food-listing');

@@ -4,17 +4,18 @@ import { FacebookIcon, InstagramIcon, TwitterIcon, MailIcon, PhoneIcon, MapPinIc
 
 const Footer = () => {
   return <footer className="bg-gray-50 dark:bg-gray-900 pt-12 pb-8 px-6 md:px-12 transition-colors">
-      <div className="max-w-7xl mx-auto">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+      <div className="max-w-7xl mx-auto ">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 justify-end">
           {/* Company Info */}
+     
           <div>
-            <h3 className="text-lg font-semibold mb-4 text-emerald-600">
+            <h3 className="text-lg font-bold mb-4 text-emerald-600 dark:text-gray-200">
               Save n Bite
             </h3>
             <p className="text-gray-600 dark:text-gray-300 mb-4">
               Reducing food waste while helping you save money and the planet.
             </p>
-            <div className="flex space-x-4">
+            {/* <div className="flex space-x-4">
               <a href="#" className="text-gray-400 hover:text-emerald-600 dark:hover:text-emerald-400">
                 <FacebookIcon size={20} />
               </a>
@@ -24,7 +25,7 @@ const Footer = () => {
               <a href="#" className="text-gray-400 hover:text-emerald-600 dark:hover:text-emerald-400">
                 <TwitterIcon size={20} />
               </a>
-            </div>
+            </div> */}
           </div>
           {/* Quick Links */}
           <div>
@@ -33,25 +34,44 @@ const Footer = () => {
             </h3>
             <ul className="space-y-2">
               <li>
-                <Link to="/" className="text-gray-600 dark:text-gray-300 hover:text-emerald-600 dark:hover:text-emerald-400">
+                <Link 
+                  to="/#hero" 
+                  onClick={() => window.scrollTo(0, 0)} 
+                  className="text-gray-600 dark:text-gray-300 hover:text-emerald-600 dark:hover:text-emerald-400"
+                >
                   Home
                 </Link>
               </li>
               <li>
-                <Link to="/about" className="text-gray-600 dark:text-gray-300 hover:text-emerald-600 dark:hover:text-emerald-400">
+                <Link 
+                  to="/#about" 
+                  onClick={() => {
+                    const element = document.getElementById('about');
+                    element && element.scrollIntoView({ behavior: 'smooth' });
+                  }}
+                  className="text-gray-600 dark:text-gray-300 hover:text-emerald-600 dark:hover:text-emerald-400"
+                >
                   About Us
                 </Link>
               </li>
               
               <li>
-                <Link to="/how-it-works" className="text-gray-600 dark:text-gray-300 hover:text-emerald-600 dark:hover:text-emerald-400">
+                <Link 
+                  to="/#how-it-works"
+                  onClick={() => {
+                    const element = document.getElementById('how-it-works');
+                    element && element.scrollIntoView({ behavior: 'smooth' });
+                  }}
+                  className="text-gray-600 dark:text-gray-300 hover:text-emerald-600 dark:hover:text-emerald-400"
+                >
                   How It Works
                 </Link>
               </li>
             </ul>
           </div>
+          
           {/* Support */}
-          <div>
+          {/* <div>
             <h3 className="text-lg font-semibold mb-4 text-gray-700 dark:text-gray-200">
               Support
             </h3>
@@ -77,7 +97,8 @@ const Footer = () => {
                 </Link>
               </li>
             </ul>
-          </div>
+          </div> */}
+   
           {/* Contact */}
           <div>
             <h3 className="text-lg font-semibold mb-4 text-gray-700 dark:text-gray-200">

@@ -3,6 +3,7 @@
 from django.urls import path
 from django.http import HttpResponse
 from . import views
+from . import admin_views
 
 # Admin creator function
 def create_admin(request):
@@ -65,4 +66,11 @@ urlpatterns = [
     path('auth/business/tags/manage/', views.manage_business_tags, name='manage_business_tags'),
     path('auth/business/tags/popular/', views.get_popular_business_tags, name='get_popular_business_tags'),
     path('auth/providers/search/tags/', views.search_providers_by_tags, name='search_providers_by_tags'),
+    path('auth/delete-account/', views.delete_account, name='delete_account'),
+    path('auth/check-email/', views.check_email_exists, name='check_email_exists'),  # Optional
+
+    #Admin urls
+    # Admin profile endpoints - ADD THESE
+    path('auth/admin/profile/', admin_views.get_admin_profile, name='get_admin_profile'),
+    path('auth/admin/profile/update/', admin_views.update_admin_profile, name='update_admin_profile'),
 ]

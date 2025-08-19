@@ -1,0 +1,13 @@
+INFO 2025-08-19 20:56:12,952 blob_storage 72088 139780874924160 Updated existing container to public access: customer-profiles
+INFO 2025-08-19 20:56:12,972 blob_storage 72088 139780874924160 Updated existing container to public access: ngo-documents
+INFO 2025-08-19 20:56:12,991 blob_storage 72088 139780874924160 Updated existing container to public access: ngo-logos
+INFO 2025-08-19 20:56:13,008 blob_storage 72088 139780874924160 Updated existing container to public access: provider-documents
+INFO 2025-08-19 20:56:13,027 blob_storage 72088 139780874924160 Updated existing container to public access: provider-logos
+INFO 2025-08-19 20:56:13,046 blob_storage 72088 139780874924160 Updated existing container to public access: provider-banners
+INFO 2025-08-19 20:56:13,118 autoreload 72088 139780874924160 Watching for file changes with StatReloader
+INFO 2025-08-19 20:56:13,467 blob_storage 72088 139780793792192 Updated existing container to public access: customer-profiles
+INFO 2025-08-19 20:56:13,493 blob_storage 72088 139780793792192 Updated existing container to public access: provider-banners
+INFO 2025-08-19 20:56:13,524 blob_storage 72088 139780793792192 Updated existing container to public access: provider-documents
+INFO 2025-08-19 20:56:13,542 blob_storage 72088 139780793792192 Updated existing container to public access: provider-logos
+INFO 2025-08-19 20:56:13,569 blob_storage 72088 139780793792192 Updated existing container to public access: ngo-documents
+INFO 2025-08-19 20:56:13,611 blob_storage 72088 139780793792192 Updated existing container to public access: ngo-logos
