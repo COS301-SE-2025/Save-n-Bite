@@ -166,7 +166,7 @@ save-n-bite/
 <summary><strong>✅ Demo 3 Deliverables (20 August 2025)</strong></summary>
 
 1. **SRS Document**:  
-   - **📄 [Software Requirements Specification (SRS)](documentation/SRS.pdf)**  
+   - **📄 [Software Requirements Specification (SRS)](documentation/SRS-V3.pdf)**  
    - Introduction  
    - User stories  
    - Use Case Diagrams  
@@ -183,7 +183,7 @@ save-n-bite/
    - **[Technical Installation Manual](documentation/Technical_Installation_Manual.pdf)**  
 
 4. **Coding Standards Document**:  
-   - **[Coding Standards Document](documentation/coding_standards_doc.pdf)**  
+   - **[Coding Standards Document](documentation/Coding_Standards_Document.pdf)**  
 
 5. **Demo 3 Video**  
    [Click here!](https://www.canva.com/design/DAGowUskyDY/E8nYEYzEWrMe1D13DkMVFw/watch?utm_content=DAGowUskyDY&utm_campaign=designshare&utm_medium=link2&utm_source=uniquelinks&utlId=h3390ca1771)
@@ -269,6 +269,7 @@ save-n-bite/
 
 ## 📫 Contact Us
  [![Email](https://img.shields.io/badge/Email-swmguild@gmail.com-D14836?logo=gmail)](mailto:swmguild@gmail.com)
+
 
 
 
