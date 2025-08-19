@@ -1615,3 +1615,250 @@ INFO 2025-08-19 21:26:25,171 basehttp 83967 139864091653824 "GET /auth/providers
 INFO 2025-08-19 21:26:25,206 basehttp 83967 139864091653824 "GET /auth/providers/?complete_profiles_only=true HTTP/1.1" 200 1459
 INFO 2025-08-19 21:26:25,210 basehttp 83967 139863865161408 "GET /api/reviews/provider/0a7edef6-f708-4472-86e1-c463a31172a1/?page=1&page_size=1 HTTP/1.1" 200 729
 INFO 2025-08-19 21:26:25,308 basehttp 83967 139864091653824 "GET /api/reviews/provider/0a7edef6-f708-4472-86e1-c463a31172a1/?page=1&page_size=1 HTTP/1.1" 200 729
+INFO 2025-08-19 21:37:36,758 basehttp 83967 139863865161408 "OPTIONS /api/scheduling/my-pickups/ HTTP/1.1" 200 0
+INFO 2025-08-19 21:37:36,758 basehttp 83967 139864091653824 "OPTIONS /cart/ngo/history/ HTTP/1.1" 200 0
+INFO 2025-08-19 21:37:36,759 basehttp 83967 139864083261120 "OPTIONS /api/scheduling/my-pickups/ HTTP/1.1" 200 0
+INFO 2025-08-19 21:37:36,765 basehttp 83967 139863839983296 "OPTIONS /cart/ngo/history/ HTTP/1.1" 200 0
+INFO 2025-08-19 21:37:36,804 basehttp 83967 139863865161408 "GET /api/scheduling/my-pickups/ HTTP/1.1" 200 64
+INFO 2025-08-19 21:37:36,821 basehttp 83967 139863839983296 "GET /cart/ngo/history/ HTTP/1.1" 200 3204
+INFO 2025-08-19 21:37:36,868 basehttp 83967 139863865161408 "GET /api/scheduling/my-pickups/ HTTP/1.1" 200 64
+INFO 2025-08-19 21:37:36,922 basehttp 83967 139863839983296 "GET /cart/ngo/history/ HTTP/1.1" 200 3204
+INFO 2025-08-19 21:57:59,110 autoreload 83967 139864194490496 /home/somworld/COS301/Capstone/Save-n-Bite/save-n-bite-backend/interactions/views.py changed, reloading.
+INFO 2025-08-19 21:58:00,356 blob_storage 88472 140468986388608 Updated existing container to public access: customer-profiles
+INFO 2025-08-19 21:58:00,368 blob_storage 88472 140468986388608 Updated existing container to public access: ngo-documents
+INFO 2025-08-19 21:58:00,379 blob_storage 88472 140468986388608 Updated existing container to public access: ngo-logos
+INFO 2025-08-19 21:58:00,393 blob_storage 88472 140468986388608 Updated existing container to public access: provider-documents
+INFO 2025-08-19 21:58:00,406 blob_storage 88472 140468986388608 Updated existing container to public access: provider-logos
+INFO 2025-08-19 21:58:00,421 blob_storage 88472 140468986388608 Updated existing container to public access: provider-banners
+INFO 2025-08-19 21:58:00,495 autoreload 88472 140468986388608 Watching for file changes with StatReloader
+INFO 2025-08-19 21:58:00,773 blob_storage 88472 140468905014976 Updated existing container to public access: customer-profiles
+INFO 2025-08-19 21:58:00,782 blob_storage 88472 140468905014976 Updated existing container to public access: provider-banners
+INFO 2025-08-19 21:58:00,791 blob_storage 88472 140468905014976 Updated existing container to public access: provider-documents
+INFO 2025-08-19 21:58:00,801 blob_storage 88472 140468905014976 Updated existing container to public access: provider-logos
+INFO 2025-08-19 21:58:00,813 blob_storage 88472 140468905014976 Updated existing container to public access: ngo-documents
+INFO 2025-08-19 21:58:00,825 blob_storage 88472 140468905014976 Updated existing container to public access: ngo-logos
+INFO 2025-08-19 21:58:12,040 autoreload 88472 140468986388608 /home/somworld/COS301/Capstone/Save-n-Bite/save-n-bite-backend/interactions/views.py changed, reloading.
+INFO 2025-08-19 21:58:12,699 blob_storage 88560 140232039555200 Updated existing container to public access: customer-profiles
+INFO 2025-08-19 21:58:12,710 blob_storage 88560 140232039555200 Updated existing container to public access: ngo-documents
+INFO 2025-08-19 21:58:12,721 blob_storage 88560 140232039555200 Updated existing container to public access: ngo-logos
+INFO 2025-08-19 21:58:12,731 blob_storage 88560 140232039555200 Updated existing container to public access: provider-documents
+INFO 2025-08-19 21:58:12,739 blob_storage 88560 140232039555200 Updated existing container to public access: provider-logos
+INFO 2025-08-19 21:58:12,749 blob_storage 88560 140232039555200 Updated existing container to public access: provider-banners
+INFO 2025-08-19 21:58:12,788 autoreload 88560 140232039555200 Watching for file changes with StatReloader
+INFO 2025-08-19 21:58:12,913 blob_storage 88560 140231958296256 Updated existing container to public access: customer-profiles
+INFO 2025-08-19 21:58:12,922 blob_storage 88560 140231958296256 Updated existing container to public access: provider-banners
+INFO 2025-08-19 21:58:12,936 blob_storage 88560 140231958296256 Updated existing container to public access: provider-documents
+INFO 2025-08-19 21:58:12,948 blob_storage 88560 140231958296256 Updated existing container to public access: provider-logos
+INFO 2025-08-19 21:58:12,959 blob_storage 88560 140231958296256 Updated existing container to public access: ngo-documents
+INFO 2025-08-19 21:58:12,968 blob_storage 88560 140231958296256 Updated existing container to public access: ngo-logos
+INFO 2025-08-19 21:58:29,697 basehttp 88560 140231920572096 "GET /api/scheduling/my-pickups/ HTTP/1.1" 200 64
+INFO 2025-08-19 21:58:29,698 basehttp 88560 140231937357504 "GET /api/notifications/unread-count/ HTTP/1.1" 200 18
+INFO 2025-08-19 21:58:29,698 basehttp 88560 140231928964800 "GET /api/notifications/preferences/ HTTP/1.1" 200 132
+INFO 2025-08-19 21:58:29,740 basehttp 88560 140231920572096 "GET /api/scheduling/my-pickups/ HTTP/1.1" 200 64
+INFO 2025-08-19 21:58:29,744 basehttp 88560 140231928964800 "GET /api/notifications/preferences/ HTTP/1.1" 200 132
+INFO 2025-08-19 21:58:29,750 basehttp 88560 140231937357504 "GET /api/notifications/unread-count/ HTTP/1.1" 200 18
+INFO 2025-08-19 21:58:29,768 basehttp 88560 140231912179392 "GET /cart/ngo/history/ HTTP/1.1" 200 3204
+INFO 2025-08-19 21:58:29,824 basehttp 88560 140231912179392 "GET /cart/ngo/history/ HTTP/1.1" 200 3204
+INFO 2025-08-19 21:58:39,556 basehttp 88560 140231912179392 "GET /api/notifications/?limit=5&ordering=-created_at HTTP/1.1" 200 3482
+INFO 2025-08-19 21:58:51,306 basehttp 88560 140231912179392 "OPTIONS /auth/profile/me/ HTTP/1.1" 200 0
+INFO 2025-08-19 21:58:51,306 basehttp 88560 140231937357504 "OPTIONS /auth/profile/me/ HTTP/1.1" 200 0
+INFO 2025-08-19 21:58:51,349 basehttp 88560 140231937357504 "GET /auth/profile/me/ HTTP/1.1" 200 955
+INFO 2025-08-19 21:58:51,423 basehttp 88560 140231937357504 "GET /auth/profile/me/ HTTP/1.1" 200 955
+INFO 2025-08-19 21:58:54,065 basehttp 88560 140231937357504 "GET /auth/profile/me/ HTTP/1.1" 200 955
+INFO 2025-08-19 21:58:54,099 basehttp 88560 140231937357504 "GET /auth/profile/me/ HTTP/1.1" 200 955
+INFO 2025-08-19 21:59:06,099 basehttp 88560 140231937357504 "GET /auth/profile/me/ HTTP/1.1" 200 955
+INFO 2025-08-19 21:59:06,132 basehttp 88560 140231937357504 "GET /auth/profile/me/ HTTP/1.1" 200 955
+INFO 2025-08-19 21:59:57,655 basehttp 88560 140231937357504 "GET /api/food-listings/ HTTP/1.1" 200 2932
+INFO 2025-08-19 21:59:57,703 basehttp 88560 140231937357504 "GET /api/food-listings/ HTTP/1.1" 200 2932
+INFO 2025-08-19 21:59:57,729 basehttp 88560 140231912179392 "GET /auth/providers/?complete_profiles_only=true HTTP/1.1" 200 1459
+INFO 2025-08-19 21:59:57,762 basehttp 88560 140231912179392 "GET /auth/providers/?complete_profiles_only=true HTTP/1.1" 200 1459
+INFO 2025-08-19 21:59:57,767 basehttp 88560 140231928964800 "GET /api/reviews/provider/0a7edef6-f708-4472-86e1-c463a31172a1/?page=1&page_size=1 HTTP/1.1" 200 729
+INFO 2025-08-19 21:59:57,848 basehttp 88560 140231912179392 "GET /api/reviews/provider/0a7edef6-f708-4472-86e1-c463a31172a1/?page=1&page_size=1 HTTP/1.1" 200 729
+INFO 2025-08-19 21:59:59,638 basehttp 88560 140231928964800 "OPTIONS /auth/providers/ HTTP/1.1" 200 0
+INFO 2025-08-19 21:59:59,638 basehttp 88560 140231912179392 "OPTIONS /auth/providers/ HTTP/1.1" 200 0
+INFO 2025-08-19 21:59:59,673 basehttp 88560 140231912179392 "GET /auth/providers/ HTTP/1.1" 200 1459
+INFO 2025-08-19 21:59:59,767 basehttp 88560 140231912179392 "GET /auth/providers/ HTTP/1.1" 200 1459
+INFO 2025-08-19 21:59:59,768 basehttp 88560 140231928964800 "GET /api/reviews/provider/0a7edef6-f708-4472-86e1-c463a31172a1/?page=1&page_size=1 HTTP/1.1" 200 729
+INFO 2025-08-19 21:59:59,854 basehttp 88560 140231912179392 "GET /api/reviews/provider/0a7edef6-f708-4472-86e1-c463a31172a1/?page=1&page_size=1 HTTP/1.1" 200 729
+INFO 2025-08-19 22:00:02,305 basehttp 88560 140231928964800 "OPTIONS /cart/ HTTP/1.1" 200 0
+INFO 2025-08-19 22:00:02,305 basehttp 88560 140231912179392 "OPTIONS /cart/ HTTP/1.1" 200 0
+INFO 2025-08-19 22:00:02,350 basehttp 88560 140231912179392 "GET /cart/ HTTP/1.1" 200 102
+INFO 2025-08-19 22:00:02,427 basehttp 88560 140231912179392 "GET /cart/ HTTP/1.1" 200 102
+INFO 2025-08-19 22:00:03,818 basehttp 88560 140231912179392 "GET /api/scheduling/my-pickups/ HTTP/1.1" 200 64
+INFO 2025-08-19 22:00:03,846 basehttp 88560 140231912179392 "GET /api/scheduling/my-pickups/ HTTP/1.1" 200 64
+INFO 2025-08-19 22:00:03,851 basehttp 88560 140231928964800 "GET /cart/ngo/history/ HTTP/1.1" 200 3204
+INFO 2025-08-19 22:00:03,895 basehttp 88560 140231928964800 "GET /cart/ngo/history/ HTTP/1.1" 200 3204
+WARNING 2025-08-19 22:00:40,564 log 88560 140231900812992 Unauthorized: /api/notifications/unread-count/
+WARNING 2025-08-19 22:00:40,565 log 88560 140231554627264 Unauthorized: /api/notifications/preferences/
+WARNING 2025-08-19 22:00:40,565 basehttp 88560 140231900812992 "GET /api/notifications/unread-count/ HTTP/1.1" 401 58
+WARNING 2025-08-19 22:00:40,566 basehttp 88560 140231554627264 "GET /api/notifications/preferences/ HTTP/1.1" 401 58
+WARNING 2025-08-19 22:00:40,568 log 88560 140231554627264 Unauthorized: /api/notifications/preferences/
+WARNING 2025-08-19 22:00:40,569 log 88560 140231900812992 Unauthorized: /api/notifications/unread-count/
+WARNING 2025-08-19 22:00:40,570 basehttp 88560 140231554627264 "GET /api/notifications/preferences/ HTTP/1.1" 401 58
+WARNING 2025-08-19 22:00:40,570 basehttp 88560 140231900812992 "GET /api/notifications/unread-count/ HTTP/1.1" 401 58
+INFO 2025-08-19 22:00:42,217 basehttp 88560 140231554627264 "OPTIONS /auth/login/ HTTP/1.1" 200 0
+INFO 2025-08-19 22:00:42,506 basehttp 88560 140231554627264 "POST /auth/login/ HTTP/1.1" 200 1203
+INFO 2025-08-19 22:00:42,575 basehttp 88560 140231554627264 "OPTIONS /api/notifications/unread-count/ HTTP/1.1" 200 0
+INFO 2025-08-19 22:00:42,585 basehttp 88560 140231546234560 "OPTIONS /api/food-listings/ HTTP/1.1" 200 0
+INFO 2025-08-19 22:00:42,586 basehttp 88560 140231900812992 "OPTIONS /api/food-listings/ HTTP/1.1" 200 0
+INFO 2025-08-19 22:00:42,619 basehttp 88560 140231900812992 "GET /api/food-listings/ HTTP/1.1" 200 2929
+INFO 2025-08-19 22:00:42,646 basehttp 88560 140231554627264 "GET /api/notifications/unread-count/ HTTP/1.1" 200 18
+INFO 2025-08-19 22:00:42,703 basehttp 88560 140231546234560 "OPTIONS /auth/providers/?complete_profiles_only=true HTTP/1.1" 200 0
+INFO 2025-08-19 22:00:42,703 basehttp 88560 140231554627264 "OPTIONS /auth/providers/?complete_profiles_only=true HTTP/1.1" 200 0
+INFO 2025-08-19 22:00:42,709 basehttp 88560 140231900812992 "GET /api/food-listings/ HTTP/1.1" 200 2929
+INFO 2025-08-19 22:00:42,735 basehttp 88560 140231546234560 "GET /auth/providers/?complete_profiles_only=true HTTP/1.1" 200 1458
+INFO 2025-08-19 22:00:42,786 basehttp 88560 140231900812992 "OPTIONS /api/reviews/provider/0a7edef6-f708-4472-86e1-c463a31172a1/?page=1&page_size=1 HTTP/1.1" 200 0
+INFO 2025-08-19 22:00:42,811 basehttp 88560 140231546234560 "GET /auth/providers/?complete_profiles_only=true HTTP/1.1" 200 1458
+INFO 2025-08-19 22:00:42,857 basehttp 88560 140231900812992 "GET /api/reviews/provider/0a7edef6-f708-4472-86e1-c463a31172a1/?page=1&page_size=1 HTTP/1.1" 200 729
+INFO 2025-08-19 22:00:42,932 basehttp 88560 140231900812992 "GET /api/reviews/provider/0a7edef6-f708-4472-86e1-c463a31172a1/?page=1&page_size=1 HTTP/1.1" 200 729
+INFO 2025-08-19 22:00:45,712 basehttp 88560 140231900812992 "OPTIONS /api/food-listings/ba3c59c8-5e88-45d0-9076-846187a8115f/ HTTP/1.1" 200 0
+INFO 2025-08-19 22:00:45,733 basehttp 88560 140231900812992 "GET /api/food-listings/ba3c59c8-5e88-45d0-9076-846187a8115f/ HTTP/1.1" 200 1048
+INFO 2025-08-19 22:00:45,805 basehttp 88560 140231900812992 "GET /api/food-listings/ba3c59c8-5e88-45d0-9076-846187a8115f/ HTTP/1.1" 200 1048
+INFO 2025-08-19 22:00:53,256 basehttp 88560 140231546234560 "OPTIONS /cart/ngo/history/ HTTP/1.1" 200 0
+INFO 2025-08-19 22:00:53,257 basehttp 88560 140231554627264 "OPTIONS /api/scheduling/my-pickups/ HTTP/1.1" 200 0
+INFO 2025-08-19 22:00:53,257 basehttp 88560 140231537841856 "OPTIONS /cart/ngo/history/ HTTP/1.1" 200 0
+INFO 2025-08-19 22:00:53,258 basehttp 88560 140231900812992 "OPTIONS /api/scheduling/my-pickups/ HTTP/1.1" 200 0
+INFO 2025-08-19 22:00:53,277 basehttp 88560 140231537841856 "GET /cart/ngo/history/ HTTP/1.1" 200 52
+INFO 2025-08-19 22:00:53,286 basehttp 88560 140231554627264 "GET /api/scheduling/my-pickups/ HTTP/1.1" 200 1721
+INFO 2025-08-19 22:00:53,338 basehttp 88560 140231900812992 "OPTIONS /cart/interactions/63464f79-1501-4488-a4d1-3aa80ca2ea7b/review-status/ HTTP/1.1" 200 0
+INFO 2025-08-19 22:00:53,352 basehttp 88560 140231537841856 "GET /cart/ngo/history/ HTTP/1.1" 200 52
+INFO 2025-08-19 22:00:53,358 basehttp 88560 140231554627264 "GET /api/scheduling/my-pickups/ HTTP/1.1" 200 1721
+INFO 2025-08-19 22:00:53,359 basehttp 88560 140231900812992 "GET /cart/interactions/63464f79-1501-4488-a4d1-3aa80ca2ea7b/review-status/ HTTP/1.1" 200 227
+INFO 2025-08-19 22:00:53,423 basehttp 88560 140231900812992 "GET /cart/interactions/63464f79-1501-4488-a4d1-3aa80ca2ea7b/review-status/ HTTP/1.1" 200 227
+INFO 2025-08-19 22:01:09,354 basehttp 88560 140231900812992 "OPTIONS /auth/providers/ HTTP/1.1" 200 0
+INFO 2025-08-19 22:01:09,354 basehttp 88560 140231554627264 "OPTIONS /auth/providers/ HTTP/1.1" 200 0
+INFO 2025-08-19 22:01:09,387 basehttp 88560 140231554627264 "GET /auth/providers/ HTTP/1.1" 200 1458
+INFO 2025-08-19 22:01:09,465 basehttp 88560 140231554627264 "GET /auth/providers/ HTTP/1.1" 200 1458
+INFO 2025-08-19 22:01:09,467 basehttp 88560 140231900812992 "GET /api/reviews/provider/0a7edef6-f708-4472-86e1-c463a31172a1/?page=1&page_size=1 HTTP/1.1" 200 729
+INFO 2025-08-19 22:01:09,547 basehttp 88560 140231554627264 "GET /api/reviews/provider/0a7edef6-f708-4472-86e1-c463a31172a1/?page=1&page_size=1 HTTP/1.1" 200 729
+INFO 2025-08-19 22:01:14,627 basehttp 88560 140231554627264 "OPTIONS /auth/providers/0a7edef6-f708-4472-86e1-c463a31172a1/ HTTP/1.1" 200 0
+INFO 2025-08-19 22:01:14,649 basehttp 88560 140231554627264 "GET /auth/providers/0a7edef6-f708-4472-86e1-c463a31172a1/ HTTP/1.1" 200 1274
+INFO 2025-08-19 22:01:14,696 basehttp 88560 140231900812992 "OPTIONS /api/reviews/provider/0a7edef6-f708-4472-86e1-c463a31172a1/?page=1&page_size=20&sort=newest HTTP/1.1" 200 0
+INFO 2025-08-19 22:01:14,728 basehttp 88560 140231554627264 "GET /auth/providers/0a7edef6-f708-4472-86e1-c463a31172a1/ HTTP/1.1" 200 1274
+INFO 2025-08-19 22:01:14,743 basehttp 88560 140231537841856 "GET /api/food-listings/ HTTP/1.1" 200 2929
+INFO 2025-08-19 22:01:14,744 basehttp 88560 140231900812992 "GET /api/reviews/provider/0a7edef6-f708-4472-86e1-c463a31172a1/?page=1&page_size=20&sort=newest HTTP/1.1" 200 729
+INFO 2025-08-19 22:01:14,824 basehttp 88560 140231554627264 "GET /api/food-listings/ HTTP/1.1" 200 2929
+INFO 2025-08-19 22:01:14,835 basehttp 88560 140231900812992 "GET /api/reviews/provider/0a7edef6-f708-4472-86e1-c463a31172a1/?page=1&page_size=20&sort=newest HTTP/1.1" 200 729
+INFO 2025-08-19 22:01:14,902 basehttp 88560 140231554627264 "GET /api/food-listings/ HTTP/1.1" 200 2929
+INFO 2025-08-19 22:01:14,983 basehttp 88560 140231554627264 "GET /api/food-listings/ HTTP/1.1" 200 2929
+INFO 2025-08-19 22:01:18,784 basehttp 88560 140231554627264 "GET /api/food-listings/ba3c59c8-5e88-45d0-9076-846187a8115f/ HTTP/1.1" 200 1048
+INFO 2025-08-19 22:01:18,806 basehttp 88560 140231554627264 "GET /api/food-listings/ba3c59c8-5e88-45d0-9076-846187a8115f/ HTTP/1.1" 200 1048
+INFO 2025-08-19 22:01:20,282 basehttp 88560 140231554627264 "OPTIONS /cart/add/ HTTP/1.1" 200 0
+INFO 2025-08-19 22:01:20,326 basehttp 88560 140231554627264 "POST /cart/add/ HTTP/1.1" 201 299
+INFO 2025-08-19 22:01:21,896 basehttp 88560 140231554627264 "OPTIONS /cart/ HTTP/1.1" 200 0
+INFO 2025-08-19 22:01:21,921 basehttp 88560 140231554627264 "GET /cart/ HTTP/1.1" 200 734
+INFO 2025-08-19 22:01:21,987 basehttp 88560 140231900812992 "OPTIONS /api/scheduling/available-slots/?food_listing_id=ba3c59c8-5e88-45d0-9076-846187a8115f HTTP/1.1" 200 0
+INFO 2025-08-19 22:01:22,002 basehttp 88560 140231554627264 "GET /cart/ HTTP/1.1" 200 734
+INFO 2025-08-19 22:01:22,018 basehttp 88560 140231900812992 "GET /api/scheduling/available-slots/?food_listing_id=ba3c59c8-5e88-45d0-9076-846187a8115f HTTP/1.1" 200 3339
+INFO 2025-08-19 22:01:22,099 basehttp 88560 140231900812992 "GET /api/scheduling/available-slots/?food_listing_id=ba3c59c8-5e88-45d0-9076-846187a8115f HTTP/1.1" 200 3339
+INFO 2025-08-19 22:02:12,729 basehttp 88560 140231900812992 "OPTIONS /cart/checkout/ HTTP/1.1" 200 0
+INFO 2025-08-19 22:02:12,789 basehttp 88560 140231900812992 "POST /cart/checkout/ HTTP/1.1" 201 639
+INFO 2025-08-19 22:02:12,865 basehttp 88560 140231900812992 "GET /api/scheduling/available-slots/?food_listing_id=ba3c59c8-5e88-45d0-9076-846187a8115f HTTP/1.1" 200 3339
+INFO 2025-08-19 22:02:12,916 basehttp 88560 140231900812992 "OPTIONS /api/scheduling/schedule/ HTTP/1.1" 200 0
+WARNING 2025-08-19 22:02:15,632 log 88560 140231554627264 Bad Request: /cart/checkout/
+WARNING 2025-08-19 22:02:15,633 basehttp 88560 140231554627264 "POST /cart/checkout/ HTTP/1.1" 400 25
+INFO 2025-08-19 22:02:16,170 basehttp 88560 140231900812992 "POST /api/scheduling/schedule/ HTTP/1.1" 201 3302
+INFO 2025-08-19 22:09:40,161 basehttp 88560 140231937357504 "GET /api/food-listings/ HTTP/1.1" 200 2932
+INFO 2025-08-19 22:09:40,203 basehttp 88560 140231937357504 "GET /api/food-listings/ HTTP/1.1" 200 2932
+INFO 2025-08-19 22:09:40,278 basehttp 88560 140231937357504 "GET /auth/providers/?complete_profiles_only=true HTTP/1.1" 200 1459
+INFO 2025-08-19 22:09:40,367 basehttp 88560 140231937357504 "GET /auth/providers/?complete_profiles_only=true HTTP/1.1" 200 1459
+INFO 2025-08-19 22:09:40,373 basehttp 88560 140231912179392 "GET /api/reviews/provider/0a7edef6-f708-4472-86e1-c463a31172a1/?page=1&page_size=1 HTTP/1.1" 200 729
+INFO 2025-08-19 22:09:40,456 basehttp 88560 140231937357504 "GET /api/reviews/provider/0a7edef6-f708-4472-86e1-c463a31172a1/?page=1&page_size=1 HTTP/1.1" 200 729
+INFO 2025-08-19 22:09:42,621 basehttp 88560 140231937357504 "OPTIONS /api/food-listings/f9605b62-d643-4b93-acc4-36ba9ffa7cce/ HTTP/1.1" 200 0
+INFO 2025-08-19 22:09:42,621 basehttp 88560 140231912179392 "OPTIONS /api/food-listings/f9605b62-d643-4b93-acc4-36ba9ffa7cce/ HTTP/1.1" 200 0
+INFO 2025-08-19 22:09:42,657 basehttp 88560 140231912179392 "GET /api/food-listings/f9605b62-d643-4b93-acc4-36ba9ffa7cce/ HTTP/1.1" 200 1040
+INFO 2025-08-19 22:09:42,725 basehttp 88560 140231912179392 "GET /api/food-listings/f9605b62-d643-4b93-acc4-36ba9ffa7cce/ HTTP/1.1" 200 1040
+INFO 2025-08-19 22:09:48,528 basehttp 88560 140231912179392 "OPTIONS /cart/donation/request/ HTTP/1.1" 200 0
+INFO 2025-08-19 22:09:48,603 basehttp 88560 140231912179392 "POST /cart/donation/request/ HTTP/1.1" 201 236
+ERROR 2025-08-19 22:09:58,831 jwt_auth 88560 140231920572096 Token validation failed: Token is expired
+ERROR 2025-08-19 22:09:58,831 jwt_auth 88560 140231920572096 Authentication failed: {'detail': ErrorDetail(string='Given token not valid for any token type', code='token_not_valid'), 'code': ErrorDetail(string='token_not_valid', code='token_not_valid'), 'messages': [{'token_class': ErrorDetail(string='UntypedToken', code='token_not_valid'), 'token_type': ErrorDetail(string='untyped', code='token_not_valid'), 'message': ErrorDetail(string='Token is expired', code='token_not_valid')}]}
+WARNING 2025-08-19 22:09:58,832 log 88560 140231920572096 Unauthorized: /cart/business/history/
+WARNING 2025-08-19 22:09:58,832 basehttp 88560 140231920572096 "GET /cart/business/history/ HTTP/1.1" 401 58
+ERROR 2025-08-19 22:10:02,789 jwt_auth 88560 140231920572096 Token validation failed: Token is expired
+ERROR 2025-08-19 22:10:02,790 jwt_auth 88560 140231920572096 Authentication failed: {'detail': ErrorDetail(string='Given token not valid for any token type', code='token_not_valid'), 'code': ErrorDetail(string='token_not_valid', code='token_not_valid'), 'messages': [{'token_class': ErrorDetail(string='UntypedToken', code='token_not_valid'), 'token_type': ErrorDetail(string='untyped', code='token_not_valid'), 'message': ErrorDetail(string='Token is expired', code='token_not_valid')}]}
+WARNING 2025-08-19 22:10:02,790 log 88560 140231920572096 Unauthorized: /cart/business/history/
+WARNING 2025-08-19 22:10:02,791 basehttp 88560 140231920572096 "GET /cart/business/history/ HTTP/1.1" 401 58
+WARNING 2025-08-19 22:10:20,462 log 88560 140231920572096 Unauthorized: /api/notifications/unread-count/
+WARNING 2025-08-19 22:10:20,464 log 88560 140231900812992 Unauthorized: /api/notifications/preferences/
+WARNING 2025-08-19 22:10:20,464 basehttp 88560 140231920572096 "GET /api/notifications/unread-count/ HTTP/1.1" 401 58
+WARNING 2025-08-19 22:10:20,465 basehttp 88560 140231900812992 "GET /api/notifications/preferences/ HTTP/1.1" 401 58
+WARNING 2025-08-19 22:10:20,467 log 88560 140231920572096 Unauthorized: /api/notifications/unread-count/
+WARNING 2025-08-19 22:10:20,468 log 88560 140231900812992 Unauthorized: /api/notifications/preferences/
+WARNING 2025-08-19 22:10:20,468 basehttp 88560 140231920572096 "GET /api/notifications/unread-count/ HTTP/1.1" 401 58
+WARNING 2025-08-19 22:10:20,468 basehttp 88560 140231900812992 "GET /api/notifications/preferences/ HTTP/1.1" 401 58
+INFO 2025-08-19 22:10:22,998 basehttp 88560 140231900812992 "POST /auth/login/ HTTP/1.1" 200 1634
+INFO 2025-08-19 22:10:23,023 basehttp 88560 140231900812992 "GET /api/notifications/unread-count/ HTTP/1.1" 200 18
+INFO 2025-08-19 22:10:23,064 basehttp 88560 140231920572096 "GET /api/business/ HTTP/1.1" 200 866
+INFO 2025-08-19 22:10:23,106 basehttp 88560 140231920572096 "GET /api/business/ HTTP/1.1" 200 866
+INFO 2025-08-19 22:10:26,174 basehttp 88560 140231920572096 "GET /cart/business/history/ HTTP/1.1" 200 2962
+INFO 2025-08-19 22:10:26,221 basehttp 88560 140231920572096 "GET /cart/business/history/ HTTP/1.1" 200 2962
+INFO 2025-08-19 22:10:36,284 basehttp 88560 140231920572096 "OPTIONS /cart/donation/100ebb63-6b2e-487a-9cc3-8869ae87ba79/accept/ HTTP/1.1" 200 0
+ERROR 2025-08-19 22:10:36,314 log 88560 140231920572096 Internal Server Error: /cart/donation/100ebb63-6b2e-487a-9cc3-8869ae87ba79/accept/
+Traceback (most recent call last):
+  File "/home/somworld/COS301/Capstone/Save-n-Bite/save-n-bite-backend/venv/lib/python3.12/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "/home/somworld/COS301/Capstone/Save-n-Bite/save-n-bite-backend/venv/lib/python3.12/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/somworld/COS301/Capstone/Save-n-Bite/save-n-bite-backend/venv/lib/python3.12/site-packages/django/views/decorators/csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/somworld/COS301/Capstone/Save-n-Bite/save-n-bite-backend/venv/lib/python3.12/site-packages/django/views/generic/base.py", line 105, in view
+    return self.dispatch(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/somworld/COS301/Capstone/Save-n-Bite/save-n-bite-backend/venv/lib/python3.12/site-packages/rest_framework/views.py", line 515, in dispatch
+    response = self.handle_exception(exc)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/somworld/COS301/Capstone/Save-n-Bite/save-n-bite-backend/venv/lib/python3.12/site-packages/rest_framework/views.py", line 475, in handle_exception
+    self.raise_uncaught_exception(exc)
+  File "/home/somworld/COS301/Capstone/Save-n-Bite/save-n-bite-backend/venv/lib/python3.12/site-packages/rest_framework/views.py", line 486, in raise_uncaught_exception
+    raise exc
+  File "/home/somworld/COS301/Capstone/Save-n-Bite/save-n-bite-backend/venv/lib/python3.12/site-packages/rest_framework/views.py", line 512, in dispatch
+    response = handler(request, *args, **kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/somworld/COS301/Capstone/Save-n-Bite/save-n-bite-backend/interactions/views.py", line 1211, in post
+    interaction.save()
+  File "/home/somworld/COS301/Capstone/Save-n-Bite/save-n-bite-backend/interactions/models.py", line 70, in save
+    self.full_clean()
+  File "/home/somworld/COS301/Capstone/Save-n-Bite/save-n-bite-backend/venv/lib/python3.12/site-packages/django/db/models/base.py", line 1679, in full_clean
+    raise ValidationError(errors)
+django.core.exceptions.ValidationError: {'status': ['["Invalid status transition for Interaction: Cannot change from pending to completed. Valid transitions are: [\'confirmed\', \'cancelled\', \'failed\', \'ready\', \'rejected\']"]']}
+ERROR 2025-08-19 22:10:36,323 basehttp 88560 140231920572096 "POST /cart/donation/100ebb63-6b2e-487a-9cc3-8869ae87ba79/accept/ HTTP/1.1" 500 145
+INFO 2025-08-19 22:12:09,149 autoreload 88560 140232039555200 /home/somworld/COS301/Capstone/Save-n-Bite/save-n-bite-backend/interactions/utils.py changed, reloading.
+INFO 2025-08-19 22:12:10,278 blob_storage 89618 140616077979776 Updated existing container to public access: customer-profiles
+INFO 2025-08-19 22:12:10,294 blob_storage 89618 140616077979776 Updated existing container to public access: ngo-documents
+INFO 2025-08-19 22:12:10,311 blob_storage 89618 140616077979776 Updated existing container to public access: ngo-logos
+INFO 2025-08-19 22:12:10,325 blob_storage 89618 140616077979776 Updated existing container to public access: provider-documents
+INFO 2025-08-19 22:12:10,338 blob_storage 89618 140616077979776 Updated existing container to public access: provider-logos
+INFO 2025-08-19 22:12:10,350 blob_storage 89618 140616077979776 Updated existing container to public access: provider-banners
+INFO 2025-08-19 22:12:10,425 autoreload 89618 140616077979776 Watching for file changes with StatReloader
+INFO 2025-08-19 22:12:10,662 blob_storage 89618 140615996110528 Updated existing container to public access: customer-profiles
+INFO 2025-08-19 22:12:10,674 blob_storage 89618 140615996110528 Updated existing container to public access: provider-banners
+INFO 2025-08-19 22:12:10,693 blob_storage 89618 140615996110528 Updated existing container to public access: provider-documents
+INFO 2025-08-19 22:12:10,713 blob_storage 89618 140615996110528 Updated existing container to public access: provider-logos
+INFO 2025-08-19 22:12:10,726 blob_storage 89618 140615996110528 Updated existing container to public access: ngo-documents
+INFO 2025-08-19 22:12:10,769 blob_storage 89618 140615996110528 Updated existing container to public access: ngo-logos
+INFO 2025-08-19 22:12:24,656 basehttp 89618 140615975171776 "POST /cart/donation/100ebb63-6b2e-487a-9cc3-8869ae87ba79/accept/ HTTP/1.1" 200 262
+INFO 2025-08-19 22:13:26,339 basehttp 89618 140615975171776 "OPTIONS /api/business/reviews/ HTTP/1.1" 200 0
+INFO 2025-08-19 22:13:26,342 basehttp 89618 140615975171776 "OPTIONS /api/business/reviews/ HTTP/1.1" 200 0
+INFO 2025-08-19 22:13:26,437 basehttp 89618 140615975171776 "GET /api/business/reviews/ HTTP/1.1" 200 585
+INFO 2025-08-19 22:13:26,514 basehttp 89618 140615975171776 "GET /api/business/reviews/ HTTP/1.1" 200 585
+INFO 2025-08-19 22:13:26,586 basehttp 89618 140615975171776 "GET /api/business/reviews/ HTTP/1.1" 200 585
+INFO 2025-08-19 22:13:26,650 basehttp 89618 140615752873664 "OPTIONS /api/business/reviews/stats/ HTTP/1.1" 200 0
+INFO 2025-08-19 22:13:26,663 basehttp 89618 140615975171776 "GET /api/business/reviews/ HTTP/1.1" 200 585
+INFO 2025-08-19 22:13:26,686 basehttp 89618 140615752873664 "GET /api/business/reviews/stats/ HTTP/1.1" 200 302
+INFO 2025-08-19 22:13:26,772 basehttp 89618 140615752873664 "GET /api/business/reviews/stats/ HTTP/1.1" 200 302
+INFO 2025-08-19 22:13:39,881 basehttp 89618 140615752873664 "GET /cart/business/history/ HTTP/1.1" 200 2964
+INFO 2025-08-19 22:13:39,921 basehttp 89618 140615752873664 "GET /cart/business/history/ HTTP/1.1" 200 2964
+INFO 2025-08-19 22:13:51,177 basehttp 89618 140615975171776 "OPTIONS /api/scheduling/schedule-overview/?date=2025-08-19 HTTP/1.1" 200 0
+INFO 2025-08-19 22:13:51,177 basehttp 89618 140615752873664 "OPTIONS /api/scheduling/schedule-overview/?date=2025-08-19 HTTP/1.1" 200 0
+INFO 2025-08-19 22:13:51,211 basehttp 89618 140615975171776 "GET /api/scheduling/schedule-overview/?date=2025-08-19 HTTP/1.1" 200 811
+INFO 2025-08-19 22:13:51,293 basehttp 89618 140615975171776 "GET /api/scheduling/schedule-overview/?date=2025-08-19 HTTP/1.1" 200 811
+INFO 2025-08-19 22:14:11,898 basehttp 89618 140615736088256 "GET /api/notifications/?limit=5&ordering=-created_at HTTP/1.1" 200 4634
+INFO 2025-08-19 22:14:13,936 basehttp 89618 140615736088256 "POST /api/notifications/mark-read/ HTTP/1.1" 200 78
+INFO 2025-08-19 22:14:15,258 basehttp 89618 140615736088256 "POST /api/notifications/mark-read/ HTTP/1.1" 200 78
+INFO 2025-08-19 22:14:17,477 basehttp 89618 140615736088256 "GET /api/scheduling/my-pickups/ HTTP/1.1" 200 64
+INFO 2025-08-19 22:14:17,498 basehttp 89618 140615736088256 "GET /api/scheduling/my-pickups/ HTTP/1.1" 200 64
+INFO 2025-08-19 22:14:17,512 basehttp 89618 140615727695552 "GET /cart/ngo/history/ HTTP/1.1" 200 4252
+INFO 2025-08-19 22:14:17,554 basehttp 89618 140615727695552 "GET /cart/ngo/history/ HTTP/1.1" 200 4252

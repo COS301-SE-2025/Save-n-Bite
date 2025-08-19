@@ -4,7 +4,7 @@ from django.core.exceptions import ValidationError
 class StatusTransition:
     VALID_TRANSITIONS = {
         'Interaction': {
-            'pending': ['confirmed', 'cancelled', 'failed', 'ready', 'rejected'],
+            'pending': ['confirmed', 'cancelled', 'failed', 'ready', 'rejected', 'completed'],
             'confirmed': ['completed', 'cancelled'],
             'completed': [],
             'cancelled': [],
