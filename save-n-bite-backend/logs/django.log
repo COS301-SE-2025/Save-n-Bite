@@ -1842,3 +1842,25 @@ INFO 2025-08-20 00:01:24,561 basehttp 28872 28212 "OPTIONS /api/scheduling/avail
 INFO 2025-08-20 00:01:24,577 basehttp 28872 14224 "GET /cart/ HTTP/1.1" 200 755
 INFO 2025-08-20 00:01:24,798 basehttp 28872 28212 "GET /api/scheduling/available-slots/?food_listing_id=e6f8ecb9-f02d-4253-ad15-db24315b8539 HTTP/1.1" 200 2212
 INFO 2025-08-20 00:01:24,880 basehttp 28872 14224 "GET /api/scheduling/available-slots/?food_listing_id=e6f8ecb9-f02d-4253-ad15-db24315b8539 HTTP/1.1" 200 2212
+INFO 2025-08-20 00:36:58,118 basehttp 28872 34492 "GET /api/notifications/preferences/ HTTP/1.1" 200 132
+INFO 2025-08-20 00:36:58,120 basehttp 28872 24204 "GET /api/notifications/unread-count/ HTTP/1.1" 200 18
+INFO 2025-08-20 00:36:58,309 basehttp 28872 3628 "GET /api/notifications/unread-count/ HTTP/1.1" 200 18
+INFO 2025-08-20 00:36:58,362 basehttp 28872 24204 "GET /api/notifications/preferences/ HTTP/1.1" 200 132
+INFO 2025-08-20 00:36:58,544 basehttp 28872 34492 "GET /api/notifications/unread-count/ HTTP/1.1" 200 18
+INFO 2025-08-20 00:36:58,595 basehttp 28872 3628 "GET /api/notifications/preferences/ HTTP/1.1" 200 132
+WARNING 2025-08-20 00:37:03,730 log 28872 22452 Unauthorized: /api/notifications/preferences/
+WARNING 2025-08-20 00:37:03,737 log 28872 5212 Unauthorized: /api/notifications/unread-count/
+WARNING 2025-08-20 00:37:03,844 basehttp 28872 22452 "GET /api/notifications/preferences/ HTTP/1.1" 401 58
+WARNING 2025-08-20 00:37:03,845 basehttp 28872 5212 "GET /api/notifications/unread-count/ HTTP/1.1" 401 58
+WARNING 2025-08-20 00:37:03,922 log 28872 5212 Unauthorized: /api/notifications/preferences/
+WARNING 2025-08-20 00:37:03,924 log 28872 22452 Unauthorized: /api/notifications/unread-count/
+WARNING 2025-08-20 00:37:03,932 basehttp 28872 5212 "GET /api/notifications/preferences/ HTTP/1.1" 401 58
+WARNING 2025-08-20 00:37:03,934 basehttp 28872 22452 "GET /api/notifications/unread-count/ HTTP/1.1" 401 58
+INFO 2025-08-20 00:37:03,989 basehttp 28872 34492 "GET /api/notifications/preferences/ HTTP/1.1" 200 132
+INFO 2025-08-20 00:37:04,094 basehttp 28872 3628 "GET /api/notifications/unread-count/ HTTP/1.1" 200 18
+INFO 2025-08-20 00:37:04,289 basehttp 28872 34492 "GET /api/notifications/unread-count/ HTTP/1.1" 200 18
+INFO 2025-08-20 00:37:04,292 basehttp 28872 9212 "GET /api/notifications/preferences/ HTTP/1.1" 200 132
+INFO 2025-08-20 00:37:04,847 basehttp 28872 24204 "GET /cart/ HTTP/1.1" 200 755
+INFO 2025-08-20 00:37:04,970 basehttp 28872 9212 "GET /cart/ HTTP/1.1" 200 755
+INFO 2025-08-20 00:37:05,110 basehttp 28872 9212 "GET /api/scheduling/available-slots/?food_listing_id=e6f8ecb9-f02d-4253-ad15-db24315b8539 HTTP/1.1" 200 2212
+INFO 2025-08-20 00:37:05,320 basehttp 28872 24204 "GET /api/scheduling/available-slots/?food_listing_id=e6f8ecb9-f02d-4253-ad15-db24315b8539 HTTP/1.1" 200 2212
