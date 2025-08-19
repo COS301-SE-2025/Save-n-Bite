@@ -427,50 +427,51 @@ const handleCheckout = async (paymentDetails) => {
       const qrCode = scheduleResponse.data.qr_code;
       
       // Navigate to pickup page with comprehensive data
-      navigate('/pickup', {
-        state: {
-          // Order information
-          orderId: order.id,
-          orderNumber: order.id,
-          
-          // Pickup confirmation details
-          confirmationCode: pickup.confirmation_code,
-          pickupId: pickup.id,
-          pickupStatus: pickup.status,
-          
-          // Food item details
-          itemName: detailedSlot.food_listing.name,
-          itemDescription: detailedSlot.food_listing.description,
-          pickupWindow: detailedSlot.food_listing.pickup_window,
-          
-          // Business/Provider information
-          businessName: detailedSlot.location.contact_person, // or use provider info if available
-          
-          // Location details
-          locationName: detailedSlot.location.name,
-          locationAddress: detailedSlot.location.address,
-          locationInstructions: detailedSlot.location.instructions,
-          contactPerson: detailedSlot.location.contact_person,
-          contactPhone: detailedSlot.location.contact_phone,
-          
-          // Timing information
-          pickupDate: pickup.scheduled_date,
-          pickupStartTime: pickup.scheduled_start_time,
-          pickupEndTime: pickup.scheduled_end_time,
-          formattedPickupTime: `${formatDate(pickup.scheduled_date)} ${formatTime(pickup.scheduled_start_time)} - ${formatTime(pickup.scheduled_end_time)}`,
-          
-          // QR Code data
-          qrCodeData: qrCode,
-          
-          // Additional slot details
-          slotNumber: detailedSlot.slot_number,
-          availableSpots: detailedSlot.available_spots,
-          
-          // Customer notes
-          customerNotes: pickup.customer_notes
-        }
-      });
-
+setTimeout(() => {
+  navigate('/pickup', {
+    state: {
+      // Order information
+      orderId: order.id,
+      orderNumber: order.id,
+      
+      // Pickup confirmation details
+      confirmationCode: pickup.confirmation_code,
+      pickupId: pickup.id,
+      pickupStatus: pickup.status,
+      
+      // Food item details
+      itemName: detailedSlot.food_listing.name,
+      itemDescription: detailedSlot.food_listing.description,
+      pickupWindow: detailedSlot.food_listing.pickup_window,
+      
+      // Business/Provider information
+      businessName: detailedSlot.location.contact_person, 
+      
+      // Location details
+      locationName: detailedSlot.location.name,
+      locationAddress: detailedSlot.location.address,
+      locationInstructions: detailedSlot.location.instructions,
+      contactPerson: detailedSlot.location.contact_person,
+      contactPhone: detailedSlot.location.contact_phone,
+      
+      // Timing information
+      pickupDate: pickup.scheduled_date,
+      pickupStartTime: pickup.scheduled_start_time,
+      pickupEndTime: pickup.scheduled_end_time,
+      formattedPickupTime: `${formatDate(pickup.scheduled_date)} ${formatTime(pickup.scheduled_start_time)} - ${formatTime(pickup.scheduled_end_time)}`,
+      
+      // QR Code data
+      qrCodeData: qrCode,
+      
+      // Additional slot details
+      slotNumber: detailedSlot.slot_number,
+      availableSpots: detailedSlot.available_spots,
+      
+      // Customer notes
+      customerNotes: pickup.customer_notes
+    }
+  });
+}, 500);
     } catch (err) {
       console.error('Checkout error:', err);
       setError(`Failed to process payment: ${err.message}`);

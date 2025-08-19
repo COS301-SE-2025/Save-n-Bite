@@ -359,12 +359,12 @@ const PickupPage = () => {
 
         {/* Action Buttons */}
         <div className="mt-6 flex gap-4 justify-center">
-          <button
+          {/* <button
             onClick={() => setShowFeedback(true)}
             className="px-6 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors"
           >
             Mark as Collected
-          </button>
+          </button> */}
           
           <button
             onClick={() => navigate('/food-listing')}
