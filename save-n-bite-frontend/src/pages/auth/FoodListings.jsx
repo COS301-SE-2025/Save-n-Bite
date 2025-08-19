@@ -313,6 +313,7 @@ const FoodListings = () => {
             providerOptions={uniqueProviders}
             typeOptions={getAvailableTypeFilters()}
             onResetFilters={handleResetFilters}
+             userType={userType}  
           />
 
           <div className="flex-grow">
