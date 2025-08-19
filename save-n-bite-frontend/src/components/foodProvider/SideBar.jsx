@@ -38,13 +38,13 @@ const navigationItems = [
     path: '/listings-overview'
   },
   {
-    name: 'Pickups',
+    name: 'Manage Orders & Pickups',
     icon: PackageIcon,
     route: 'pickup-coordination',
     path: '/pickup-coordination'
   },
   {
-    name: 'Orders/Feedback',
+    name: 'Order Reviews & Feedback',
     icon: ShoppingCartIcon,
     route: 'orders-and-feedback',
     path: '/orders-and-feedback'

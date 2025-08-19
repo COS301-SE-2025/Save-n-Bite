@@ -456,7 +456,7 @@ function PickupCoordination() {
           >
             <Menu size={24} />
           </button>
-          <h1 className="text-lg font-semibold text-gray-900 dark:text-white">Pickup Coordination</h1>
+          <h1 className="text-lg font-semibold text-gray-900 dark:text-white">Manage Orders & Pickups</h1>
           <button
             onClick={refreshPickupData}
             className="p-2 text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
@@ -471,9 +471,9 @@ function PickupCoordination() {
           <div className="mb-4 sm:mb-6">
             {/* Desktop Header - Hidden on mobile */}
             <div className="hidden md:block">
-              <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Pickup Coordination</h1>
+              <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Manage Orders & Pickups</h1>
               <p className="text-gray-600 dark:text-gray-300 mt-1">
-                Manage food pickups and coordinate with customers
+                Track orders, coordinate pickups, and stay on top of customers’ requests
               </p>
             </div>
 
