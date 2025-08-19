@@ -564,11 +564,14 @@ const OrderHistory = () => {
     });
   };
 
-  // Handle order click to show details
   const handleOrderClick = (order) => {
+ 
+  if (order.status === 'scheduled' || order.status === 'confirmed' || order.status === 'ready') {
     setSelectedOrder(order);
     setShowPickupModal(true);
-  };
+  }
+
+};
 
   // Handle status update
   const handleStatusUpdate = async () => {
@@ -905,21 +908,21 @@ const OrderHistory = () => {
                               <span className={`text-xs px-2 py-1 rounded-full ${getStatusColor(order)}`}>
                                 {getStatusText(order)}
                               </span>
-                              <span className={`text-xs px-2 py-1 rounded-full ${isDonation ? 'bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-300' :
+                              {/* <span className={`text-xs px-2 py-1 rounded-full ${isDonation ? 'bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-300' :
                                   'bg-emerald-100 dark:bg-emerald-900 text-emerald-800 dark:text-emerald-300'
                                 }`}>
                                 {isDonation ? 'Donation' : 'Pickup'}
-                              </span>
-                              {!isDonation && order.is_upcoming && (
+                              </span> */}
+                              {/* {!isDonation && order.is_upcoming && (
                                 <span className="text-xs px-2 py-1 rounded-full bg-purple-100 dark:bg-purple-900 text-purple-800 dark:text-purple-300">
                                   Upcoming
                                 </span>
-                              )}
-                              {!isDonation && order.is_today && (
+                              )} */}
+                              {/* {!isDonation && order.is_today && (
                                 <span className="text-xs px-2 py-1 rounded-full bg-yellow-100 dark:bg-yellow-900 text-yellow-800 dark:text-yellow-300">
                                   Today
                                 </span>
-                              )}
+                              )} */}
                             </div>
 
                             <p className="text-sm text-gray-600 dark:text-gray-300 mb-2 flex items-center">

@@ -89,12 +89,12 @@ const ReviewPage = () => {
           <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-md">
             <p className="font-medium">Error</p>
             <p className="text-sm">{error || 'Interaction not found'}</p>
-            <button 
+            {/* <button 
               onClick={() => navigate('/orders')}
               className="mt-2 text-sm underline hover:no-underline"
             >
               Back to Order History
-            </button>
+            </button> */}
           </div>
         </div>
       </div>
@@ -122,13 +122,13 @@ const ReviewPage = () => {
       
       <div className="max-w-2xl mx-auto px-4 py-8">
         <div className="mb-6">
-          <button
+          {/* <button
             onClick={() => navigate('/orders')}
             className="flex items-center text-gray-600 hover:text-gray-800 mb-4"
           >
             <ArrowLeftIcon size={20} className="mr-2" />
             Back to Order History
-          </button>
+          </button> */}
           <h1 className="text-2xl font-bold text-gray-800">
             Review Your Order
           </h1>
@@ -229,9 +229,12 @@ const ReviewPage = () => {
                 <p className="text-gray-600">
                   Your feedback helps us improve our service.
                 </p>
-                <p className="text-sm text-gray-500">
-                  Redirecting you back to order history...
-                </p>
+                 <button 
+              onClick={() => navigate('/orders')}
+              className="mt-2 text-sm underline hover:no-underline"
+            >
+              Back to Order History
+            </button>
               </motion.div>
             )}
           </AnimatePresence>

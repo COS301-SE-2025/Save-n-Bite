@@ -275,7 +275,7 @@ function OrdersAndFeedback() {
           rating: reviews[0]?.general_rating || 5
         }
       : {
-          comment: "No reviews yet. Complete your first order to get started!",
+          comment: "No reviews on any orders yet.",
           author: "System",
           date: new Date().toLocaleDateString(),
           rating: 0
@@ -337,7 +337,7 @@ function OrdersAndFeedback() {
           >
             <Menu size={24} />
           </button>
-          <h1 className="text-lg font-semibold text-gray-900 dark:text-white">Orders & Reviews</h1>
+          <h1 className="text-lg font-semibold text-gray-900 dark:text-white">Reviews</h1>
           <button
             onClick={() => {
               loadOrdersData();
@@ -352,11 +352,11 @@ function OrdersAndFeedback() {
         <div className="p-4 sm:p-6">
           <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 sm:gap-0 mb-6">
             <div>
-              <h1 className="hidden md:block text-xl sm:text-2xl font-bold">Orders & Feedback</h1>
-              <h2 className="md:hidden text-xl font-bold text-black dark:text-white">Orders & Reviews</h2>
+              <h1 className="hidden md:block text-xl sm:text-2xl font-bold">Order Reviews & Feedback</h1>
+              <h2 className="md:hidden text-xl font-bold text-black dark:text-white">Order Reviews & Feedback</h2>
 
               <p className="text-gray-600 dark:text-gray-300 mt-1 text-sm sm:text-base">
-                Manage your orders and customer reviews
+                See all customer reviews on your orders
                 {currentProvider && (
                   <span className="block sm:inline sm:ml-2 text-blue-600 dark:text-blue-400 font-medium">
                     • {currentProvider}
