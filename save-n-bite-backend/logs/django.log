@@ -1517,3 +1517,16 @@ INFO 2025-08-19 20:47:24,950 basehttp 7276 16872 "GET /cart/business/history/ HT
 INFO 2025-08-19 20:47:25,141 basehttp 7276 16872 "GET /cart/business/history/ HTTP/1.1" 200 20365
 INFO 2025-08-19 20:47:30,332 basehttp 7276 16872 "GET /api/scheduling/schedule-overview/?date=2025-08-19 HTTP/1.1" 200 1147
 INFO 2025-08-19 20:47:30,435 basehttp 7276 16872 "GET /api/scheduling/schedule-overview/?date=2025-08-19 HTTP/1.1" 200 1147
+INFO 2025-08-19 21:11:02,848 blob_storage 80417 140641671921792 Updated existing container to public access: customer-profiles
+INFO 2025-08-19 21:11:02,861 blob_storage 80417 140641671921792 Updated existing container to public access: ngo-documents
+INFO 2025-08-19 21:11:02,872 blob_storage 80417 140641671921792 Updated existing container to public access: ngo-logos
+INFO 2025-08-19 21:11:02,881 blob_storage 80417 140641671921792 Updated existing container to public access: provider-documents
+INFO 2025-08-19 21:11:02,892 blob_storage 80417 140641671921792 Updated existing container to public access: provider-logos
+INFO 2025-08-19 21:11:02,901 blob_storage 80417 140641671921792 Updated existing container to public access: provider-banners
+INFO 2025-08-19 21:11:02,938 autoreload 80417 140641671921792 Watching for file changes with StatReloader
+INFO 2025-08-19 21:11:03,073 blob_storage 80417 140641590802112 Updated existing container to public access: customer-profiles
+INFO 2025-08-19 21:11:03,084 blob_storage 80417 140641590802112 Updated existing container to public access: provider-banners
+INFO 2025-08-19 21:11:03,093 blob_storage 80417 140641590802112 Updated existing container to public access: provider-documents
+INFO 2025-08-19 21:11:03,103 blob_storage 80417 140641590802112 Updated existing container to public access: provider-logos
+INFO 2025-08-19 21:11:03,118 blob_storage 80417 140641590802112 Updated existing container to public access: ngo-documents
+INFO 2025-08-19 21:11:03,131 blob_storage 80417 140641590802112 Updated existing container to public access: ngo-logos
