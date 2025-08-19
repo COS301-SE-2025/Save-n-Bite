@@ -298,6 +298,7 @@ const foodListingsAPI = {
             let listings = [];
             if (response.data.listings) {
                 listings = response.data.listings;
+                console.log('Listings from response.data.listings:', listings); // Debug log
             } else if (Array.isArray(response.data)) {
                 listings = response.data;
             } else if (response.data.results) {

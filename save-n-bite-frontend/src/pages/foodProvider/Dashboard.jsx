@@ -100,7 +100,7 @@ function Dashboard() {
 
   if (error) {
     return (
-      <div className="w-full flex min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
+      <div className="flex h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
         {/* Desktop Sidebar */}
         <div className="hidden md:flex">
           <SideBar onNavigate={() => {}} currentPage="dashboard" />
@@ -139,7 +139,7 @@ function Dashboard() {
   const aiSuggestion = getAISuggestion(analyticsData)
 
   return (
-    <div className="w-full flex min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
+    <div className="flex h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
       {/* Desktop Sidebar - Hidden on mobile */}
       <div className="hidden md:flex">
         <SideBar onNavigate={() => {}} currentPage="dashboard" />
@@ -194,10 +194,10 @@ function Dashboard() {
                 </div>
               )}
             </div>
-            <Button variant="secondary" icon={<DownloadIcon className="h-4 w-4" />}>
+            {/* <Button variant="secondary" icon={<DownloadIcon className="h-4 w-4" />}>
               <span className="hidden sm:inline">Export Data</span>
               <span className="sm:hidden">Export</span>
-            </Button>
+            </Button> */}
           </div>
 
           {/* KPI Cards */}

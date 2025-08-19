@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+import { createPortal } from 'react-dom'
 import { XIcon, ChevronDownIcon, ChevronUpIcon } from 'lucide-react'
 
 const AccordionItem = ({ title, children, isOpen, toggleOpen }) => {
@@ -50,10 +51,17 @@ const HelpMenu = ({ isOpen, onClose }) => {
 
   if (!isOpen) return null
 
-  return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex justify-end">
-      <div className="bg-white dark:bg-gray-900 w-full max-w-md h-full overflow-y-auto animate-slide-in transition-colors duration-300">
-        <div className="sticky top-0 bg-emerald-600 dark:bg-emerald-700 text-white px-5 py-4 flex justify-between items-center">
+  // Use React Portal to render outside the component tree
+  return createPortal(
+    <div 
+      className="fixed inset-0 bg-black bg-opacity-50 flex justify-end"
+      style={{ zIndex: 999999 }}
+    >
+      <div 
+        className="bg-white dark:bg-gray-900 w-full max-w-md h-full overflow-y-auto animate-slide-in transition-colors duration-300 shadow-2xl"
+        style={{ zIndex: 999999 }}
+      >
+        <div className="sticky top-0 bg-emerald-600 dark:bg-emerald-700 text-white px-5 py-4 flex justify-between items-center shadow-lg">
           <h2 className="text-xl font-semibold">Help Center</h2>
           <button
             onClick={onClose}
@@ -235,7 +243,8 @@ const HelpMenu = ({ isOpen, onClose }) => {
           </AccordionItem>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   )
 }
 
