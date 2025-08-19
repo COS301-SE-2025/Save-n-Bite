@@ -1,10 +1,11 @@
 @import './styles/globals.css';
+@import './styles/utilities.css';
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 /* Import global responsive styles */
-
+@import './styles/utilities.css';
 
 /* Animation keyframes */
 @keyframes fadeInOut {
