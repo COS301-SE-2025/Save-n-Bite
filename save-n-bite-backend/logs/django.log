@@ -1,0 +1,1032 @@
+INFO 2025-08-18 11:13:53,035 autoreload 10388 11340 C:\Users\Capleton\Desktop\COS214\practical\Save-n-Bite\save-n-bite-backend\backend\settings.py changed, reloading.
+INFO 2025-08-18 11:13:58,231 blob_storage 12348 6616 Updated existing container to public access: customer-profiles
+INFO 2025-08-18 11:13:58,259 blob_storage 12348 6616 Updated existing container to public access: ngo-documents
+INFO 2025-08-18 11:13:58,299 blob_storage 12348 6616 Updated existing container to public access: ngo-logos
+INFO 2025-08-18 11:13:58,339 blob_storage 12348 6616 Updated existing container to public access: provider-documents
+INFO 2025-08-18 11:13:58,364 blob_storage 12348 6616 Updated existing container to public access: provider-logos
+INFO 2025-08-18 11:13:58,401 blob_storage 12348 6616 Updated existing container to public access: provider-banners
+INFO 2025-08-18 11:13:58,680 autoreload 12348 6616 Watching for file changes with StatReloader
+INFO 2025-08-18 11:13:59,492 blob_storage 12348 10828 Updated existing container to public access: customer-profiles
+INFO 2025-08-18 11:13:59,528 blob_storage 12348 10828 Updated existing container to public access: provider-banners
+INFO 2025-08-18 11:13:59,583 blob_storage 12348 10828 Updated existing container to public access: provider-documents
+INFO 2025-08-18 11:13:59,636 blob_storage 12348 10828 Updated existing container to public access: provider-logos
+INFO 2025-08-18 11:13:59,697 blob_storage 12348 10828 Updated existing container to public access: ngo-documents
+INFO 2025-08-18 11:13:59,732 blob_storage 12348 10828 Updated existing container to public access: ngo-logos
+INFO 2025-08-18 11:21:30,567 basehttp 12348 1868 "GET /api/notifications/preferences/ HTTP/1.1" 200 132
+INFO 2025-08-18 11:21:30,572 basehttp 12348 18536 "GET /api/notifications/unread-count/ HTTP/1.1" 200 19
+INFO 2025-08-18 11:21:30,691 basehttp 12348 18536 "GET /api/notifications/unread-count/ HTTP/1.1" 200 19
+INFO 2025-08-18 11:21:30,692 basehttp 12348 1868 "GET /api/notifications/preferences/ HTTP/1.1" 200 132
+INFO 2025-08-18 11:24:13,105 basehttp 12348 16232 "GET /api/notifications/unread-count/ HTTP/1.1" 200 19
+INFO 2025-08-18 11:24:13,116 basehttp 12348 19744 "GET /api/notifications/preferences/ HTTP/1.1" 200 132
+INFO 2025-08-18 11:24:13,254 basehttp 12348 16232 "GET /api/notifications/unread-count/ HTTP/1.1" 200 19
+INFO 2025-08-18 11:24:13,257 basehttp 12348 19744 "GET /api/notifications/preferences/ HTTP/1.1" 200 132
+INFO 2025-08-18 11:59:54,328 basehttp 12348 1576 "OPTIONS /api/provider/listings/ HTTP/1.1" 200 0
+INFO 2025-08-18 11:59:54,330 basehttp 12348 14408 "OPTIONS /api/provider/listings/ HTTP/1.1" 200 0
+INFO 2025-08-18 11:59:54,995 basehttp 12348 14408 "GET /api/provider/listings/ HTTP/1.1" 200 369076
+INFO 2025-08-18 11:59:55,331 basehttp 12348 1576 "GET /api/provider/listings/ HTTP/1.1" 200 369076
+INFO 2025-08-18 12:00:08,760 basehttp 12348 1576 "OPTIONS /api/provider/listings/eb86e8b9-6abd-40aa-87f7-b122eff8428b/delete/ HTTP/1.1" 200 0
+INFO 2025-08-18 12:00:09,035 blob_storage 12348 1576 Updated existing container to public access: food-listings
+ERROR 2025-08-18 12:00:09,048 blob_storage 12348 1576 Failed to delete blob 4147b57d-c8d0-4485-97b9-e1a1d8bb3dee.png: The specified blob does not exist.
+RequestId:40657cc1-9d8e-476c-b629-d39adf5a477d
+Time:2025-08-18T10:00:09.044Z
+ErrorCode:BlobNotFound
+Content: <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Error>
+  <Code>BlobNotFound</Code>
+  <Message>The specified blob does not exist.
+RequestId:40657cc1-9d8e-476c-b629-d39adf5a477d
+Time:2025-08-18T10:00:09.044Z</Message>
+</Error>
+INFO 2025-08-18 12:00:09,094 basehttp 12348 1576 "DELETE /api/provider/listings/eb86e8b9-6abd-40aa-87f7-b122eff8428b/delete/ HTTP/1.1" 200 291
+INFO 2025-08-18 12:05:35,668 basehttp 12348 19200 "OPTIONS /api/provider/listings/36769696-f4b9-4ad8-b1d4-ea0d748b58f7/delete/ HTTP/1.1" 200 0
+ERROR 2025-08-18 12:05:35,677 jwt_auth 12348 19200 Token validation failed: Token is expired
+ERROR 2025-08-18 12:05:35,679 jwt_auth 12348 19200 Authentication failed: {'detail': ErrorDetail(string='Given token not valid for any token type', code='token_not_valid'), 'code': ErrorDetail(string='token_not_valid', code='token_not_valid'), 'messages': [{'token_class': ErrorDetail(string='UntypedToken', code='token_not_valid'), 'token_type': ErrorDetail(string='untyped', code='token_not_valid'), 'message': ErrorDetail(string='Token is expired', code='token_not_valid')}]}
+WARNING 2025-08-18 12:05:35,689 log 12348 19200 Unauthorized: /api/provider/listings/36769696-f4b9-4ad8-b1d4-ea0d748b58f7/delete/
+WARNING 2025-08-18 12:05:35,690 basehttp 12348 19200 "DELETE /api/provider/listings/36769696-f4b9-4ad8-b1d4-ea0d748b58f7/delete/ HTTP/1.1" 401 58
+ERROR 2025-08-18 12:05:38,282 jwt_auth 12348 19200 Token validation failed: Token is expired
+ERROR 2025-08-18 12:05:38,284 jwt_auth 12348 19200 Authentication failed: {'detail': ErrorDetail(string='Given token not valid for any token type', code='token_not_valid'), 'code': ErrorDetail(string='token_not_valid', code='token_not_valid'), 'messages': [{'token_class': ErrorDetail(string='UntypedToken', code='token_not_valid'), 'token_type': ErrorDetail(string='untyped', code='token_not_valid'), 'message': ErrorDetail(string='Token is expired', code='token_not_valid')}]}
+WARNING 2025-08-18 12:05:38,287 log 12348 19200 Unauthorized: /api/provider/listings/
+WARNING 2025-08-18 12:05:38,289 basehttp 12348 19200 "GET /api/provider/listings/ HTTP/1.1" 401 58
+ERROR 2025-08-18 12:05:39,274 jwt_auth 12348 19200 Token validation failed: Token is expired
+ERROR 2025-08-18 12:05:39,276 jwt_auth 12348 19200 Authentication failed: {'detail': ErrorDetail(string='Given token not valid for any token type', code='token_not_valid'), 'code': ErrorDetail(string='token_not_valid', code='token_not_valid'), 'messages': [{'token_class': ErrorDetail(string='UntypedToken', code='token_not_valid'), 'token_type': ErrorDetail(string='untyped', code='token_not_valid'), 'message': ErrorDetail(string='Token is expired', code='token_not_valid')}]}
+WARNING 2025-08-18 12:05:39,280 log 12348 19200 Unauthorized: /api/provider/listings/
+WARNING 2025-08-18 12:05:39,284 basehttp 12348 19200 "GET /api/provider/listings/ HTTP/1.1" 401 58
+ERROR 2025-08-18 12:07:31,274 jwt_auth 12348 19200 Token validation failed: Token is expired
+ERROR 2025-08-18 12:07:31,277 jwt_auth 12348 19200 Authentication failed: {'detail': ErrorDetail(string='Given token not valid for any token type', code='token_not_valid'), 'code': ErrorDetail(string='token_not_valid', code='token_not_valid'), 'messages': [{'token_class': ErrorDetail(string='UntypedToken', code='token_not_valid'), 'token_type': ErrorDetail(string='untyped', code='token_not_valid'), 'message': ErrorDetail(string='Token is expired', code='token_not_valid')}]}
+WARNING 2025-08-18 12:07:31,281 log 12348 19200 Unauthorized: /api/provider/listings/
+WARNING 2025-08-18 12:07:31,283 basehttp 12348 19200 "GET /api/provider/listings/ HTTP/1.1" 401 58
+ERROR 2025-08-18 12:07:32,260 jwt_auth 12348 19200 Token validation failed: Token is expired
+ERROR 2025-08-18 12:07:32,262 jwt_auth 12348 19200 Authentication failed: {'detail': ErrorDetail(string='Given token not valid for any token type', code='token_not_valid'), 'code': ErrorDetail(string='token_not_valid', code='token_not_valid'), 'messages': [{'token_class': ErrorDetail(string='UntypedToken', code='token_not_valid'), 'token_type': ErrorDetail(string='untyped', code='token_not_valid'), 'message': ErrorDetail(string='Token is expired', code='token_not_valid')}]}
+WARNING 2025-08-18 12:07:32,265 log 12348 19200 Unauthorized: /api/provider/listings/
+WARNING 2025-08-18 12:07:32,267 basehttp 12348 19200 "GET /api/provider/listings/ HTTP/1.1" 401 58
+ERROR 2025-08-18 12:08:09,750 jwt_auth 12348 19200 Token validation failed: Token is expired
+ERROR 2025-08-18 12:08:09,752 jwt_auth 12348 19200 Authentication failed: {'detail': ErrorDetail(string='Given token not valid for any token type', code='token_not_valid'), 'code': ErrorDetail(string='token_not_valid', code='token_not_valid'), 'messages': [{'token_class': ErrorDetail(string='UntypedToken', code='token_not_valid'), 'token_type': ErrorDetail(string='untyped', code='token_not_valid'), 'message': ErrorDetail(string='Token is expired', code='token_not_valid')}]}
+WARNING 2025-08-18 12:08:09,755 log 12348 19200 Unauthorized: /api/provider/listings/
+WARNING 2025-08-18 12:08:09,757 basehttp 12348 19200 "GET /api/provider/listings/ HTTP/1.1" 401 58
+ERROR 2025-08-18 12:10:07,777 jwt_auth 12348 19200 Token validation failed: Token is expired
+ERROR 2025-08-18 12:10:07,778 jwt_auth 12348 19200 Authentication failed: {'detail': ErrorDetail(string='Given token not valid for any token type', code='token_not_valid'), 'code': ErrorDetail(string='token_not_valid', code='token_not_valid'), 'messages': [{'token_class': ErrorDetail(string='UntypedToken', code='token_not_valid'), 'token_type': ErrorDetail(string='untyped', code='token_not_valid'), 'message': ErrorDetail(string='Token is expired', code='token_not_valid')}]}
+WARNING 2025-08-18 12:10:07,781 log 12348 19200 Unauthorized: /api/provider/listings/
+WARNING 2025-08-18 12:10:07,782 basehttp 12348 19200 "GET /api/provider/listings/ HTTP/1.1" 401 58
+ERROR 2025-08-18 12:10:08,585 jwt_auth 12348 19200 Token validation failed: Token is expired
+ERROR 2025-08-18 12:10:08,587 jwt_auth 12348 19200 Authentication failed: {'detail': ErrorDetail(string='Given token not valid for any token type', code='token_not_valid'), 'code': ErrorDetail(string='token_not_valid', code='token_not_valid'), 'messages': [{'token_class': ErrorDetail(string='UntypedToken', code='token_not_valid'), 'token_type': ErrorDetail(string='untyped', code='token_not_valid'), 'message': ErrorDetail(string='Token is expired', code='token_not_valid')}]}
+WARNING 2025-08-18 12:10:08,589 log 12348 19200 Unauthorized: /api/provider/listings/
+WARNING 2025-08-18 12:10:08,591 basehttp 12348 19200 "GET /api/provider/listings/ HTTP/1.1" 401 58
+ERROR 2025-08-18 12:10:09,173 jwt_auth 12348 19200 Token validation failed: Token is expired
+ERROR 2025-08-18 12:10:09,175 jwt_auth 12348 19200 Authentication failed: {'detail': ErrorDetail(string='Given token not valid for any token type', code='token_not_valid'), 'code': ErrorDetail(string='token_not_valid', code='token_not_valid'), 'messages': [{'token_class': ErrorDetail(string='UntypedToken', code='token_not_valid'), 'token_type': ErrorDetail(string='untyped', code='token_not_valid'), 'message': ErrorDetail(string='Token is expired', code='token_not_valid')}]}
+WARNING 2025-08-18 12:10:09,179 log 12348 19200 Unauthorized: /api/provider/listings/
+WARNING 2025-08-18 12:10:09,185 basehttp 12348 19200 "GET /api/provider/listings/ HTTP/1.1" 401 58
+ERROR 2025-08-18 12:10:09,359 jwt_auth 12348 19200 Token validation failed: Token is expired
+ERROR 2025-08-18 12:10:09,361 jwt_auth 12348 19200 Authentication failed: {'detail': ErrorDetail(string='Given token not valid for any token type', code='token_not_valid'), 'code': ErrorDetail(string='token_not_valid', code='token_not_valid'), 'messages': [{'token_class': ErrorDetail(string='UntypedToken', code='token_not_valid'), 'token_type': ErrorDetail(string='untyped', code='token_not_valid'), 'message': ErrorDetail(string='Token is expired', code='token_not_valid')}]}
+WARNING 2025-08-18 12:10:09,365 log 12348 19200 Unauthorized: /api/provider/listings/
+WARNING 2025-08-18 12:10:09,367 basehttp 12348 19200 "GET /api/provider/listings/ HTTP/1.1" 401 58
+ERROR 2025-08-18 12:10:09,521 jwt_auth 12348 19200 Token validation failed: Token is expired
+ERROR 2025-08-18 12:10:09,523 jwt_auth 12348 19200 Authentication failed: {'detail': ErrorDetail(string='Given token not valid for any token type', code='token_not_valid'), 'code': ErrorDetail(string='token_not_valid', code='token_not_valid'), 'messages': [{'token_class': ErrorDetail(string='UntypedToken', code='token_not_valid'), 'token_type': ErrorDetail(string='untyped', code='token_not_valid'), 'message': ErrorDetail(string='Token is expired', code='token_not_valid')}]}
+WARNING 2025-08-18 12:10:09,527 log 12348 19200 Unauthorized: /api/provider/listings/
+WARNING 2025-08-18 12:10:09,530 basehttp 12348 19200 "GET /api/provider/listings/ HTTP/1.1" 401 58
+ERROR 2025-08-18 12:10:09,696 jwt_auth 12348 19200 Token validation failed: Token is expired
+ERROR 2025-08-18 12:10:09,698 jwt_auth 12348 19200 Authentication failed: {'detail': ErrorDetail(string='Given token not valid for any token type', code='token_not_valid'), 'code': ErrorDetail(string='token_not_valid', code='token_not_valid'), 'messages': [{'token_class': ErrorDetail(string='UntypedToken', code='token_not_valid'), 'token_type': ErrorDetail(string='untyped', code='token_not_valid'), 'message': ErrorDetail(string='Token is expired', code='token_not_valid')}]}
+WARNING 2025-08-18 12:10:09,701 log 12348 19200 Unauthorized: /api/provider/listings/
+WARNING 2025-08-18 12:10:09,704 basehttp 12348 19200 "GET /api/provider/listings/ HTTP/1.1" 401 58
+ERROR 2025-08-18 12:10:09,920 jwt_auth 12348 19200 Token validation failed: Token is expired
+ERROR 2025-08-18 12:10:09,921 jwt_auth 12348 19200 Authentication failed: {'detail': ErrorDetail(string='Given token not valid for any token type', code='token_not_valid'), 'code': ErrorDetail(string='token_not_valid', code='token_not_valid'), 'messages': [{'token_class': ErrorDetail(string='UntypedToken', code='token_not_valid'), 'token_type': ErrorDetail(string='untyped', code='token_not_valid'), 'message': ErrorDetail(string='Token is expired', code='token_not_valid')}]}
+WARNING 2025-08-18 12:10:09,924 log 12348 19200 Unauthorized: /api/provider/listings/
+WARNING 2025-08-18 12:10:09,928 basehttp 12348 19200 "GET /api/provider/listings/ HTTP/1.1" 401 58
+WARNING 2025-08-18 12:10:15,411 log 12348 19200 Unauthorized: /api/notifications/unread-count/
+WARNING 2025-08-18 12:10:15,418 basehttp 12348 19200 "GET /api/notifications/unread-count/ HTTP/1.1" 401 58
+WARNING 2025-08-18 12:10:15,455 log 12348 19200 Unauthorized: /api/notifications/preferences/
+WARNING 2025-08-18 12:10:15,466 basehttp 12348 19200 "GET /api/notifications/preferences/ HTTP/1.1" 401 58
+WARNING 2025-08-18 12:10:15,488 log 12348 19200 Unauthorized: /api/notifications/unread-count/
+WARNING 2025-08-18 12:10:15,493 basehttp 12348 19200 "GET /api/notifications/unread-count/ HTTP/1.1" 401 58
+WARNING 2025-08-18 12:10:15,499 log 12348 19200 Unauthorized: /api/notifications/preferences/
+WARNING 2025-08-18 12:10:15,501 basehttp 12348 19200 "GET /api/notifications/preferences/ HTTP/1.1" 401 58
+INFO 2025-08-18 12:10:32,676 basehttp 12348 19200 "OPTIONS /auth/login/ HTTP/1.1" 200 0
+INFO 2025-08-18 12:10:35,333 basehttp 12348 19200 "POST /auth/login/ HTTP/1.1" 200 1359
+INFO 2025-08-18 12:10:35,352 basehttp 12348 19200 "OPTIONS /api/notifications/unread-count/ HTTP/1.1" 200 0
+INFO 2025-08-18 12:10:35,411 basehttp 12348 13744 "OPTIONS /api/business/ HTTP/1.1" 200 0
+INFO 2025-08-18 12:10:35,413 basehttp 12348 11200 "OPTIONS /api/business/ HTTP/1.1" 200 0
+INFO 2025-08-18 12:10:35,772 basehttp 12348 19200 "GET /api/notifications/unread-count/ HTTP/1.1" 200 19
+INFO 2025-08-18 12:10:36,223 basehttp 12348 11200 "GET /api/business/ HTTP/1.1" 200 866
+INFO 2025-08-18 12:10:36,463 basehttp 12348 11200 "GET /api/business/ HTTP/1.1" 200 866
+INFO 2025-08-18 12:10:39,721 basehttp 12348 11200 "GET /api/provider/listings/ HTTP/1.1" 200 368972
+INFO 2025-08-18 12:10:40,180 basehttp 12348 19200 "GET /api/provider/listings/ HTTP/1.1" 200 368972
+INFO 2025-08-18 12:14:51,463 basehttp 12348 9692 "GET /api/provider/listings/ HTTP/1.1" 200 368972
+INFO 2025-08-18 12:14:51,779 basehttp 12348 17260 "GET /api/provider/listings/ HTTP/1.1" 200 368972
+INFO 2025-08-18 12:15:20,433 basehttp 12348 17260 "OPTIONS /api/provider/listings/18a44d37-9488-4b03-9753-cb7737874566/delete/ HTTP/1.1" 200 0
+INFO 2025-08-18 12:15:20,658 basehttp 12348 17260 "DELETE /api/provider/listings/18a44d37-9488-4b03-9753-cb7737874566/delete/ HTTP/1.1" 200 289
+INFO 2025-08-18 12:15:57,111 basehttp 12348 17260 "GET /api/provider/listings/ HTTP/1.1" 200 368974
+WARNING 2025-08-18 12:16:43,259 log 12348 17260 Not Found: /api/food-listings/eb86e8b9-6abd-40aa-87f7-b122eff8428b/
+WARNING 2025-08-18 12:16:43,260 basehttp 12348 17260 "GET /api/food-listings/eb86e8b9-6abd-40aa-87f7-b122eff8428b/ HTTP/1.1" 404 60
+WARNING 2025-08-18 12:16:43,387 log 12348 17260 Not Found: /api/food-listings/eb86e8b9-6abd-40aa-87f7-b122eff8428b/
+WARNING 2025-08-18 12:16:43,388 basehttp 12348 17260 "GET /api/food-listings/eb86e8b9-6abd-40aa-87f7-b122eff8428b/ HTTP/1.1" 404 60
+INFO 2025-08-18 12:16:46,136 basehttp 12348 17260 "GET /api/provider/listings/ HTTP/1.1" 200 368974
+INFO 2025-08-18 12:16:46,582 basehttp 12348 9692 "GET /api/provider/listings/ HTTP/1.1" 200 368974
+WARNING 2025-08-18 12:16:49,374 log 12348 9692 Not Found: /api/food-listings/eb86e8b9-6abd-40aa-87f7-b122eff8428b/
+WARNING 2025-08-18 12:16:49,377 basehttp 12348 9692 "GET /api/food-listings/eb86e8b9-6abd-40aa-87f7-b122eff8428b/ HTTP/1.1" 404 60
+WARNING 2025-08-18 12:16:49,585 log 12348 9692 Not Found: /api/food-listings/eb86e8b9-6abd-40aa-87f7-b122eff8428b/
+WARNING 2025-08-18 12:16:49,586 basehttp 12348 9692 "GET /api/food-listings/eb86e8b9-6abd-40aa-87f7-b122eff8428b/ HTTP/1.1" 404 60
+INFO 2025-08-18 12:16:59,969 basehttp 12348 9692 "GET /api/provider/listings/ HTTP/1.1" 200 368974
+INFO 2025-08-18 12:17:00,346 basehttp 12348 17260 "GET /api/provider/listings/ HTTP/1.1" 200 368974
+INFO 2025-08-18 12:17:07,267 basehttp 12348 17260 "GET /api/food-listings/36769696-f4b9-4ad8-b1d4-ea0d748b58f7/ HTTP/1.1" 200 1164
+INFO 2025-08-18 12:17:07,531 basehttp 12348 17260 "GET /api/food-listings/36769696-f4b9-4ad8-b1d4-ea0d748b58f7/ HTTP/1.1" 200 1164
+INFO 2025-08-18 12:17:16,107 basehttp 12348 17260 "GET /api/provider/listings/ HTTP/1.1" 200 368974
+INFO 2025-08-18 12:17:16,570 basehttp 12348 9692 "GET /api/provider/listings/ HTTP/1.1" 200 368974
+WARNING 2025-08-18 12:17:20,721 log 12348 9692 Not Found: /api/food-listings/eb86e8b9-6abd-40aa-87f7-b122eff8428b/
+WARNING 2025-08-18 12:17:20,723 basehttp 12348 9692 "GET /api/food-listings/eb86e8b9-6abd-40aa-87f7-b122eff8428b/ HTTP/1.1" 404 60
+WARNING 2025-08-18 12:17:20,849 log 12348 9692 Not Found: /api/food-listings/eb86e8b9-6abd-40aa-87f7-b122eff8428b/
+WARNING 2025-08-18 12:17:20,850 basehttp 12348 9692 "GET /api/food-listings/eb86e8b9-6abd-40aa-87f7-b122eff8428b/ HTTP/1.1" 404 60
+INFO 2025-08-18 12:17:23,146 basehttp 12348 9692 "GET /api/provider/listings/ HTTP/1.1" 200 368974
+INFO 2025-08-18 12:17:23,623 basehttp 12348 17260 "GET /api/provider/listings/ HTTP/1.1" 200 368974
+INFO 2025-08-18 12:17:26,066 basehttp 12348 17260 "GET /api/food-listings/36769696-f4b9-4ad8-b1d4-ea0d748b58f7/ HTTP/1.1" 200 1164
+INFO 2025-08-18 12:17:26,307 basehttp 12348 17260 "GET /api/food-listings/36769696-f4b9-4ad8-b1d4-ea0d748b58f7/ HTTP/1.1" 200 1164
+INFO 2025-08-18 12:17:30,081 basehttp 12348 17260 "GET /api/provider/listings/ HTTP/1.1" 200 368974
+INFO 2025-08-18 12:17:30,532 basehttp 12348 9692 "GET /api/provider/listings/ HTTP/1.1" 200 368974
+WARNING 2025-08-18 12:17:37,346 log 12348 9692 Not Found: /api/food-listings/eb86e8b9-6abd-40aa-87f7-b122eff8428b/
+WARNING 2025-08-18 12:17:37,348 basehttp 12348 9692 "GET /api/food-listings/eb86e8b9-6abd-40aa-87f7-b122eff8428b/ HTTP/1.1" 404 60
+WARNING 2025-08-18 12:17:37,570 log 12348 9692 Not Found: /api/food-listings/eb86e8b9-6abd-40aa-87f7-b122eff8428b/
+WARNING 2025-08-18 12:17:37,571 basehttp 12348 9692 "GET /api/food-listings/eb86e8b9-6abd-40aa-87f7-b122eff8428b/ HTTP/1.1" 404 60
+INFO 2025-08-18 12:17:41,130 basehttp 12348 9692 "GET /api/provider/listings/ HTTP/1.1" 200 368974
+INFO 2025-08-18 12:17:41,532 basehttp 12348 17260 "GET /api/provider/listings/ HTTP/1.1" 200 368974
+INFO 2025-08-18 12:20:17,311 basehttp 12348 17260 "GET /api/provider/listings/ HTTP/1.1" 200 368974
+INFO 2025-08-18 12:53:36,614 basehttp 12348 13180 "OPTIONS /api/notifications/preferences/ HTTP/1.1" 200 0
+INFO 2025-08-18 12:53:36,615 basehttp 12348 9756 "OPTIONS /api/notifications/preferences/ HTTP/1.1" 200 0
+INFO 2025-08-18 12:53:37,048 basehttp 12348 13180 "GET /api/notifications/unread-count/ HTTP/1.1" 200 19
+INFO 2025-08-18 12:53:37,082 basehttp 12348 15448 "GET /api/notifications/preferences/ HTTP/1.1" 200 132
+INFO 2025-08-18 12:53:37,281 basehttp 12348 13180 "GET /api/notifications/unread-count/ HTTP/1.1" 200 19
+INFO 2025-08-18 12:53:37,309 basehttp 12348 15448 "GET /api/notifications/preferences/ HTTP/1.1" 200 132
+INFO 2025-08-18 12:53:37,393 basehttp 12348 9756 "GET /api/provider/listings/ HTTP/1.1" 200 368974
+INFO 2025-08-18 12:53:37,976 basehttp 12348 15448 "GET /api/provider/listings/ HTTP/1.1" 200 368974
+INFO 2025-08-18 12:58:05,457 basehttp 12348 15448 "OPTIONS /api/provider/listings/8b5ee7f5-83e1-46c3-9286-153e1671dd39/delete/ HTTP/1.1" 200 0
+INFO 2025-08-18 12:58:05,810 blob_storage 12348 15448 Updated existing container to public access: food-listings
+ERROR 2025-08-18 12:58:05,834 blob_storage 12348 15448 Failed to delete blob f4d1c16b-388b-4320-bdc0-3a6f538ea7f0.jpeg: The specified blob does not exist.
+RequestId:9ead0dbc-342c-41a9-b699-5340a6b43cce
+Time:2025-08-18T10:58:05.823Z
+ErrorCode:BlobNotFound
+Content: <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Error>
+  <Code>BlobNotFound</Code>
+  <Message>The specified blob does not exist.
+RequestId:9ead0dbc-342c-41a9-b699-5340a6b43cce
+Time:2025-08-18T10:58:05.823Z</Message>
+</Error>
+INFO 2025-08-18 12:58:05,924 basehttp 12348 15448 "DELETE /api/provider/listings/8b5ee7f5-83e1-46c3-9286-153e1671dd39/delete/ HTTP/1.1" 200 288
+WARNING 2025-08-18 13:32:00,283 log 12348 17412 Unauthorized: /api/notifications/unread-count/
+WARNING 2025-08-18 13:32:00,286 log 12348 11804 Unauthorized: /api/notifications/preferences/
+WARNING 2025-08-18 13:32:00,288 basehttp 12348 17412 "GET /api/notifications/unread-count/ HTTP/1.1" 401 58
+WARNING 2025-08-18 13:32:00,290 basehttp 12348 11804 "GET /api/notifications/preferences/ HTTP/1.1" 401 58
+WARNING 2025-08-18 13:32:00,294 log 12348 17412 Unauthorized: /api/notifications/unread-count/
+WARNING 2025-08-18 13:32:00,298 log 12348 11804 Unauthorized: /api/notifications/preferences/
+WARNING 2025-08-18 13:32:00,299 basehttp 12348 17412 "GET /api/notifications/unread-count/ HTTP/1.1" 401 58
+WARNING 2025-08-18 13:32:00,300 basehttp 12348 11804 "GET /api/notifications/preferences/ HTTP/1.1" 401 58
+INFO 2025-08-18 13:33:27,280 basehttp 12348 11804 "POST /auth/login/ HTTP/1.1" 200 1078
+INFO 2025-08-18 13:33:27,339 basehttp 12348 17412 "OPTIONS /api/food-listings/ HTTP/1.1" 200 0
+INFO 2025-08-18 13:33:27,345 basehttp 12348 17412 "OPTIONS /api/food-listings/ HTTP/1.1" 200 0
+INFO 2025-08-18 13:33:27,448 basehttp 12348 11804 "GET /api/notifications/unread-count/ HTTP/1.1" 200 18
+INFO 2025-08-18 13:33:27,625 basehttp 12348 17412 "GET /api/food-listings/ HTTP/1.1" 200 354333
+INFO 2025-08-18 13:33:27,877 basehttp 12348 17412 "OPTIONS /auth/providers/?complete_profiles_only=true HTTP/1.1" 200 0
+INFO 2025-08-18 13:33:27,877 basehttp 12348 6988 "OPTIONS /auth/providers/?complete_profiles_only=true HTTP/1.1" 200 0
+INFO 2025-08-18 13:33:27,953 basehttp 12348 11804 "GET /api/food-listings/ HTTP/1.1" 200 354333
+INFO 2025-08-18 13:33:28,141 basehttp 12348 6988 "GET /auth/providers/?complete_profiles_only=true HTTP/1.1" 200 5067
+INFO 2025-08-18 13:33:28,152 basehttp 12348 6988 "OPTIONS /api/reviews/provider/813b9e73-40d9-4346-862c-2d13cfba0f5b/?page=1&page_size=1 HTTP/1.1" 200 0
+INFO 2025-08-18 13:33:28,152 basehttp 12348 17412 "OPTIONS /api/reviews/provider/ce83f6ac-2ebb-4f62-a625-ff889a702d83/?page=1&page_size=1 HTTP/1.1" 200 0
+INFO 2025-08-18 13:33:28,159 basehttp 12348 6988 "OPTIONS /api/reviews/provider/f2befc4d-4ab0-4ad0-8e56-f16918bb5d80/?page=1&page_size=1 HTTP/1.1" 200 0
+INFO 2025-08-18 13:33:28,159 basehttp 12348 17412 "OPTIONS /api/reviews/provider/0e0e5a4b-3820-41dd-a001-73755fea0d9e/?page=1&page_size=1 HTTP/1.1" 200 0
+INFO 2025-08-18 13:33:28,174 basehttp 12348 17412 "OPTIONS /api/reviews/provider/18c36b03-b3f9-487b-91eb-ad1be9efaaf6/?page=1&page_size=1 HTTP/1.1" 200 0
+INFO 2025-08-18 13:33:28,425 basehttp 12348 17412 "GET /api/reviews/provider/ce83f6ac-2ebb-4f62-a625-ff889a702d83/?page=1&page_size=1 HTTP/1.1" 200 413
+INFO 2025-08-18 13:33:28,446 basehttp 12348 11804 "GET /auth/providers/?complete_profiles_only=true HTTP/1.1" 200 5067
+INFO 2025-08-18 13:33:28,447 basehttp 12348 6988 "GET /api/reviews/provider/813b9e73-40d9-4346-862c-2d13cfba0f5b/?page=1&page_size=1 HTTP/1.1" 200 825
+INFO 2025-08-18 13:33:28,702 basehttp 12348 17412 "GET /api/reviews/provider/0e0e5a4b-3820-41dd-a001-73755fea0d9e/?page=1&page_size=1 HTTP/1.1" 200 410
+INFO 2025-08-18 13:33:28,792 basehttp 12348 11804 "GET /api/reviews/provider/18c36b03-b3f9-487b-91eb-ad1be9efaaf6/?page=1&page_size=1 HTTP/1.1" 200 410
+INFO 2025-08-18 13:33:28,801 basehttp 12348 15720 "GET /api/reviews/provider/813b9e73-40d9-4346-862c-2d13cfba0f5b/?page=1&page_size=1 HTTP/1.1" 200 825
+INFO 2025-08-18 13:33:28,811 basehttp 12348 6988 "GET /api/reviews/provider/f2befc4d-4ab0-4ad0-8e56-f16918bb5d80/?page=1&page_size=1 HTTP/1.1" 200 416
+INFO 2025-08-18 13:33:28,814 basehttp 12348 9988 "GET /api/reviews/provider/ce83f6ac-2ebb-4f62-a625-ff889a702d83/?page=1&page_size=1 HTTP/1.1" 200 413
+INFO 2025-08-18 13:33:28,990 basehttp 12348 17412 "GET /api/reviews/provider/0e0e5a4b-3820-41dd-a001-73755fea0d9e/?page=1&page_size=1 HTTP/1.1" 200 410
+INFO 2025-08-18 13:33:29,097 basehttp 12348 11804 "GET /api/reviews/provider/18c36b03-b3f9-487b-91eb-ad1be9efaaf6/?page=1&page_size=1 HTTP/1.1" 200 410
+INFO 2025-08-18 13:33:29,108 basehttp 12348 6988 "GET /api/reviews/provider/f2befc4d-4ab0-4ad0-8e56-f16918bb5d80/?page=1&page_size=1 HTTP/1.1" 200 416
+INFO 2025-08-18 13:33:30,908 basehttp 12348 6988 "GET /api/food-listings/ HTTP/1.1" 200 354333
+INFO 2025-08-18 13:33:31,167 basehttp 12348 11804 "GET /api/food-listings/ HTTP/1.1" 200 354333
+INFO 2025-08-18 13:33:31,226 basehttp 12348 6988 "GET /auth/providers/?complete_profiles_only=true HTTP/1.1" 200 5067
+INFO 2025-08-18 13:33:31,473 basehttp 12348 17412 "GET /api/reviews/provider/ce83f6ac-2ebb-4f62-a625-ff889a702d83/?page=1&page_size=1 HTTP/1.1" 200 413
+INFO 2025-08-18 13:33:31,493 basehttp 12348 15720 "GET /api/reviews/provider/0e0e5a4b-3820-41dd-a001-73755fea0d9e/?page=1&page_size=1 HTTP/1.1" 200 410
+INFO 2025-08-18 13:33:31,495 basehttp 12348 9988 "GET /api/reviews/provider/f2befc4d-4ab0-4ad0-8e56-f16918bb5d80/?page=1&page_size=1 HTTP/1.1" 200 416
+INFO 2025-08-18 13:33:31,496 basehttp 12348 11804 "GET /api/reviews/provider/813b9e73-40d9-4346-862c-2d13cfba0f5b/?page=1&page_size=1 HTTP/1.1" 200 825
+INFO 2025-08-18 13:33:31,507 basehttp 12348 3360 "GET /api/reviews/provider/18c36b03-b3f9-487b-91eb-ad1be9efaaf6/?page=1&page_size=1 HTTP/1.1" 200 410
+INFO 2025-08-18 13:33:31,514 basehttp 12348 6988 "GET /auth/providers/?complete_profiles_only=true HTTP/1.1" 200 5067
+INFO 2025-08-18 13:33:31,768 basehttp 12348 15720 "GET /api/reviews/provider/18c36b03-b3f9-487b-91eb-ad1be9efaaf6/?page=1&page_size=1 HTTP/1.1" 200 410
+INFO 2025-08-18 13:33:31,772 basehttp 12348 6988 "GET /api/reviews/provider/813b9e73-40d9-4346-862c-2d13cfba0f5b/?page=1&page_size=1 HTTP/1.1" 200 825
+INFO 2025-08-18 13:33:31,772 basehttp 12348 9988 "GET /api/reviews/provider/0e0e5a4b-3820-41dd-a001-73755fea0d9e/?page=1&page_size=1 HTTP/1.1" 200 410
+INFO 2025-08-18 13:33:31,774 basehttp 12348 3360 "GET /api/reviews/provider/ce83f6ac-2ebb-4f62-a625-ff889a702d83/?page=1&page_size=1 HTTP/1.1" 200 413
+INFO 2025-08-18 13:33:31,775 basehttp 12348 11804 "GET /api/reviews/provider/f2befc4d-4ab0-4ad0-8e56-f16918bb5d80/?page=1&page_size=1 HTTP/1.1" 200 416
+INFO 2025-08-18 13:33:45,632 basehttp 12348 11804 "GET /api/food-listings/ HTTP/1.1" 200 354333
+INFO 2025-08-18 13:33:45,930 basehttp 12348 3360 "GET /api/food-listings/ HTTP/1.1" 200 354333
+INFO 2025-08-18 13:33:46,002 basehttp 12348 11804 "GET /auth/providers/?complete_profiles_only=true HTTP/1.1" 200 5067
+INFO 2025-08-18 13:33:46,142 basehttp 12348 11804 "GET /auth/providers/?complete_profiles_only=true HTTP/1.1" 200 5067
+INFO 2025-08-18 13:33:46,682 basehttp 12348 6988 "GET /api/reviews/provider/f2befc4d-4ab0-4ad0-8e56-f16918bb5d80/?page=1&page_size=1 HTTP/1.1" 200 416
+INFO 2025-08-18 13:33:46,686 basehttp 12348 15720 "GET /api/reviews/provider/18c36b03-b3f9-487b-91eb-ad1be9efaaf6/?page=1&page_size=1 HTTP/1.1" 200 410
+INFO 2025-08-18 13:33:46,687 basehttp 12348 9988 "GET /api/reviews/provider/0e0e5a4b-3820-41dd-a001-73755fea0d9e/?page=1&page_size=1 HTTP/1.1" 200 410
+INFO 2025-08-18 13:33:46,687 basehttp 12348 3360 "GET /api/reviews/provider/ce83f6ac-2ebb-4f62-a625-ff889a702d83/?page=1&page_size=1 HTTP/1.1" 200 413
+INFO 2025-08-18 13:33:46,699 basehttp 12348 11804 "GET /api/reviews/provider/813b9e73-40d9-4346-862c-2d13cfba0f5b/?page=1&page_size=1 HTTP/1.1" 200 825
+INFO 2025-08-18 13:33:46,896 basehttp 12348 6988 "GET /api/reviews/provider/18c36b03-b3f9-487b-91eb-ad1be9efaaf6/?page=1&page_size=1 HTTP/1.1" 200 410
+INFO 2025-08-18 13:33:46,918 basehttp 12348 17412 "GET /api/reviews/provider/f2befc4d-4ab0-4ad0-8e56-f16918bb5d80/?page=1&page_size=1 HTTP/1.1" 200 416
+INFO 2025-08-18 13:33:46,923 basehttp 12348 9988 "GET /api/reviews/provider/0e0e5a4b-3820-41dd-a001-73755fea0d9e/?page=1&page_size=1 HTTP/1.1" 200 410
+INFO 2025-08-18 13:33:46,933 basehttp 12348 3360 "GET /api/reviews/provider/ce83f6ac-2ebb-4f62-a625-ff889a702d83/?page=1&page_size=1 HTTP/1.1" 200 413
+INFO 2025-08-18 13:33:46,937 basehttp 12348 11804 "GET /api/reviews/provider/813b9e73-40d9-4346-862c-2d13cfba0f5b/?page=1&page_size=1 HTTP/1.1" 200 825
+INFO 2025-08-18 13:36:41,798 basehttp 12348 11804 "OPTIONS /auth/providers/ HTTP/1.1" 200 0
+INFO 2025-08-18 13:36:41,799 basehttp 12348 3360 "OPTIONS /auth/providers/ HTTP/1.1" 200 0
+INFO 2025-08-18 13:36:42,235 basehttp 12348 3360 "GET /auth/providers/ HTTP/1.1" 200 5067
+INFO 2025-08-18 13:36:42,932 basehttp 12348 11804 "GET /api/reviews/provider/813b9e73-40d9-4346-862c-2d13cfba0f5b/?page=1&page_size=1 HTTP/1.1" 200 825
+INFO 2025-08-18 13:36:42,969 basehttp 12348 3360 "GET /auth/providers/ HTTP/1.1" 200 5067
+INFO 2025-08-18 13:36:43,085 basehttp 12348 6988 "GET /api/reviews/provider/0e0e5a4b-3820-41dd-a001-73755fea0d9e/?page=1&page_size=1 HTTP/1.1" 200 410
+INFO 2025-08-18 13:36:43,086 basehttp 12348 9988 "GET /api/reviews/provider/ce83f6ac-2ebb-4f62-a625-ff889a702d83/?page=1&page_size=1 HTTP/1.1" 200 413
+INFO 2025-08-18 13:36:43,086 basehttp 12348 17412 "GET /api/reviews/provider/f2befc4d-4ab0-4ad0-8e56-f16918bb5d80/?page=1&page_size=1 HTTP/1.1" 200 416
+INFO 2025-08-18 13:36:43,087 basehttp 12348 15720 "GET /api/reviews/provider/18c36b03-b3f9-487b-91eb-ad1be9efaaf6/?page=1&page_size=1 HTTP/1.1" 200 410
+INFO 2025-08-18 13:36:43,175 basehttp 12348 3360 "GET /api/reviews/provider/813b9e73-40d9-4346-862c-2d13cfba0f5b/?page=1&page_size=1 HTTP/1.1" 200 825
+INFO 2025-08-18 13:36:43,346 basehttp 12348 6988 "GET /api/reviews/provider/0e0e5a4b-3820-41dd-a001-73755fea0d9e/?page=1&page_size=1 HTTP/1.1" 200 410
+INFO 2025-08-18 13:36:43,350 basehttp 12348 9988 "GET /api/reviews/provider/f2befc4d-4ab0-4ad0-8e56-f16918bb5d80/?page=1&page_size=1 HTTP/1.1" 200 416
+INFO 2025-08-18 13:36:43,353 basehttp 12348 15720 "GET /api/reviews/provider/18c36b03-b3f9-487b-91eb-ad1be9efaaf6/?page=1&page_size=1 HTTP/1.1" 200 410
+INFO 2025-08-18 13:36:43,354 basehttp 12348 17412 "GET /api/reviews/provider/ce83f6ac-2ebb-4f62-a625-ff889a702d83/?page=1&page_size=1 HTTP/1.1" 200 413
+INFO 2025-08-18 13:36:45,852 basehttp 12348 15720 "OPTIONS /auth/providers/ce83f6ac-2ebb-4f62-a625-ff889a702d83/ HTTP/1.1" 200 0
+INFO 2025-08-18 13:36:45,853 basehttp 12348 17412 "OPTIONS /auth/providers/ce83f6ac-2ebb-4f62-a625-ff889a702d83/ HTTP/1.1" 200 0
+INFO 2025-08-18 13:36:46,218 basehttp 12348 15720 "GET /auth/providers/ce83f6ac-2ebb-4f62-a625-ff889a702d83/ HTTP/1.1" 200 1155
+INFO 2025-08-18 13:36:46,240 basehttp 12348 17412 "OPTIONS /api/reviews/provider/ce83f6ac-2ebb-4f62-a625-ff889a702d83/?page=1&page_size=20&sort=newest HTTP/1.1" 200 0
+INFO 2025-08-18 13:36:46,451 basehttp 12348 15720 "GET /auth/providers/ce83f6ac-2ebb-4f62-a625-ff889a702d83/ HTTP/1.1" 200 1155
+INFO 2025-08-18 13:36:46,461 basehttp 12348 17412 "GET /api/reviews/provider/ce83f6ac-2ebb-4f62-a625-ff889a702d83/?page=1&page_size=20&sort=newest HTTP/1.1" 200 413
+INFO 2025-08-18 13:36:46,550 basehttp 12348 9988 "GET /api/food-listings/ HTTP/1.1" 200 354333
+INFO 2025-08-18 13:36:46,650 basehttp 12348 17412 "GET /api/reviews/provider/ce83f6ac-2ebb-4f62-a625-ff889a702d83/?page=1&page_size=20&sort=newest HTTP/1.1" 200 413
+INFO 2025-08-18 13:36:46,771 basehttp 12348 15720 "GET /api/food-listings/ HTTP/1.1" 200 354333
+INFO 2025-08-18 13:36:48,879 basehttp 12348 15720 "GET /auth/providers/ HTTP/1.1" 200 5067
+INFO 2025-08-18 13:36:49,277 basehttp 12348 9988 "GET /api/reviews/provider/ce83f6ac-2ebb-4f62-a625-ff889a702d83/?page=1&page_size=1 HTTP/1.1" 200 413
+INFO 2025-08-18 13:36:49,304 basehttp 12348 3360 "GET /api/reviews/provider/0e0e5a4b-3820-41dd-a001-73755fea0d9e/?page=1&page_size=1 HTTP/1.1" 200 410
+INFO 2025-08-18 13:36:49,359 basehttp 12348 15720 "GET /auth/providers/ HTTP/1.1" 200 5067
+INFO 2025-08-18 13:36:49,408 basehttp 12348 6988 "GET /api/reviews/provider/f2befc4d-4ab0-4ad0-8e56-f16918bb5d80/?page=1&page_size=1 HTTP/1.1" 200 416
+INFO 2025-08-18 13:36:49,410 basehttp 12348 11804 "GET /api/reviews/provider/18c36b03-b3f9-487b-91eb-ad1be9efaaf6/?page=1&page_size=1 HTTP/1.1" 200 410
+INFO 2025-08-18 13:36:49,412 basehttp 12348 17412 "GET /api/reviews/provider/813b9e73-40d9-4346-862c-2d13cfba0f5b/?page=1&page_size=1 HTTP/1.1" 200 825
+INFO 2025-08-18 13:36:49,919 basehttp 12348 15720 "GET /api/reviews/provider/ce83f6ac-2ebb-4f62-a625-ff889a702d83/?page=1&page_size=1 HTTP/1.1" 200 413
+INFO 2025-08-18 13:36:49,927 basehttp 12348 3360 "GET /api/reviews/provider/0e0e5a4b-3820-41dd-a001-73755fea0d9e/?page=1&page_size=1 HTTP/1.1" 200 410
+INFO 2025-08-18 13:36:49,969 basehttp 12348 11804 "GET /api/reviews/provider/18c36b03-b3f9-487b-91eb-ad1be9efaaf6/?page=1&page_size=1 HTTP/1.1" 200 410
+INFO 2025-08-18 13:36:49,998 basehttp 12348 17412 "GET /api/reviews/provider/813b9e73-40d9-4346-862c-2d13cfba0f5b/?page=1&page_size=1 HTTP/1.1" 200 825
+INFO 2025-08-18 13:36:49,998 basehttp 12348 6988 "GET /api/reviews/provider/f2befc4d-4ab0-4ad0-8e56-f16918bb5d80/?page=1&page_size=1 HTTP/1.1" 200 416
+INFO 2025-08-18 13:36:55,943 basehttp 12348 6988 "OPTIONS /cart/ HTTP/1.1" 200 0
+INFO 2025-08-18 13:36:55,944 basehttp 12348 17412 "OPTIONS /cart/ HTTP/1.1" 200 0
+INFO 2025-08-18 13:36:56,255 basehttp 12348 17412 "GET /cart/ HTTP/1.1" 200 661
+INFO 2025-08-18 13:36:56,325 basehttp 12348 6988 "OPTIONS /api/scheduling/available-slots/?food_listing_id=eb86e8b9-6abd-40aa-87f7-b122eff8428b HTTP/1.1" 200 0
+INFO 2025-08-18 13:36:56,533 basehttp 12348 17412 "GET /cart/ HTTP/1.1" 200 661
+WARNING 2025-08-18 13:36:56,539 log 12348 6988 Not Found: /api/scheduling/available-slots/
+WARNING 2025-08-18 13:36:56,540 basehttp 12348 6988 "GET /api/scheduling/available-slots/?food_listing_id=eb86e8b9-6abd-40aa-87f7-b122eff8428b HTTP/1.1" 404 77
+WARNING 2025-08-18 13:36:56,663 log 12348 6988 Not Found: /api/scheduling/available-slots/
+WARNING 2025-08-18 13:36:56,664 basehttp 12348 6988 "GET /api/scheduling/available-slots/?food_listing_id=eb86e8b9-6abd-40aa-87f7-b122eff8428b HTTP/1.1" 404 77
+INFO 2025-08-18 13:37:06,081 basehttp 12348 6988 "OPTIONS /api/scheduling/my-pickups/ HTTP/1.1" 200 0
+INFO 2025-08-18 13:37:06,083 basehttp 12348 17412 "OPTIONS /cart/ngo/history/ HTTP/1.1" 200 0
+INFO 2025-08-18 13:37:06,084 basehttp 12348 11804 "OPTIONS /api/scheduling/my-pickups/ HTTP/1.1" 200 0
+INFO 2025-08-18 13:37:06,090 basehttp 12348 3360 "OPTIONS /cart/ngo/history/ HTTP/1.1" 200 0
+INFO 2025-08-18 13:37:06,275 basehttp 12348 3360 "GET /cart/ngo/history/ HTTP/1.1" 200 52
+INFO 2025-08-18 13:37:06,400 basehttp 12348 3360 "GET /cart/ngo/history/ HTTP/1.1" 200 52
+INFO 2025-08-18 13:37:06,476 basehttp 12348 6988 "GET /api/scheduling/my-pickups/ HTTP/1.1" 200 17459
+INFO 2025-08-18 13:37:06,493 basehttp 12348 3360 "OPTIONS /cart/interactions/37e1409e-99f9-4196-ac97-7876980eb6f6/review-status/ HTTP/1.1" 200 0
+INFO 2025-08-18 13:37:06,737 basehttp 12348 3360 "GET /cart/interactions/37e1409e-99f9-4196-ac97-7876980eb6f6/review-status/ HTTP/1.1" 200 227
+INFO 2025-08-18 13:37:06,748 basehttp 12348 3360 "OPTIONS /cart/interactions/aed5c281-6234-4f51-aabe-c58d509e1a2d/review-status/ HTTP/1.1" 200 0
+INFO 2025-08-18 13:37:06,876 basehttp 12348 6988 "GET /api/scheduling/my-pickups/ HTTP/1.1" 200 17459
+INFO 2025-08-18 13:37:06,988 basehttp 12348 3360 "GET /cart/interactions/aed5c281-6234-4f51-aabe-c58d509e1a2d/review-status/ HTTP/1.1" 200 227
+INFO 2025-08-18 13:37:07,000 basehttp 12348 3360 "OPTIONS /cart/interactions/05571c9c-6e26-41db-ad1b-e0d721f52517/review-status/ HTTP/1.1" 200 0
+INFO 2025-08-18 13:37:07,085 basehttp 12348 6988 "GET /cart/interactions/37e1409e-99f9-4196-ac97-7876980eb6f6/review-status/ HTTP/1.1" 200 227
+INFO 2025-08-18 13:37:07,209 basehttp 12348 6988 "GET /cart/interactions/aed5c281-6234-4f51-aabe-c58d509e1a2d/review-status/ HTTP/1.1" 200 227
+INFO 2025-08-18 13:37:07,252 basehttp 12348 3360 "GET /cart/interactions/05571c9c-6e26-41db-ad1b-e0d721f52517/review-status/ HTTP/1.1" 200 227
+INFO 2025-08-18 13:37:07,266 basehttp 12348 6988 "OPTIONS /cart/interactions/15e58698-64fe-4eed-8426-42af0b578b8b/review-status/ HTTP/1.1" 200 0
+INFO 2025-08-18 13:37:07,534 basehttp 12348 3360 "GET /cart/interactions/05571c9c-6e26-41db-ad1b-e0d721f52517/review-status/ HTTP/1.1" 200 227
+INFO 2025-08-18 13:37:07,552 basehttp 12348 6988 "GET /cart/interactions/15e58698-64fe-4eed-8426-42af0b578b8b/review-status/ HTTP/1.1" 200 227
+INFO 2025-08-18 13:37:07,570 basehttp 12348 3360 "OPTIONS /cart/interactions/5a75b306-b058-4663-893e-47e5984036d4/review-status/ HTTP/1.1" 200 0
+INFO 2025-08-18 13:37:07,737 basehttp 12348 6988 "GET /cart/interactions/15e58698-64fe-4eed-8426-42af0b578b8b/review-status/ HTTP/1.1" 200 227
+INFO 2025-08-18 13:37:07,745 basehttp 12348 3360 "GET /cart/interactions/5a75b306-b058-4663-893e-47e5984036d4/review-status/ HTTP/1.1" 200 194
+INFO 2025-08-18 13:37:07,754 basehttp 12348 6988 "OPTIONS /cart/interactions/62658c11-849a-44a0-b8c2-94027265b3f9/review-status/ HTTP/1.1" 200 0
+INFO 2025-08-18 13:37:07,886 basehttp 12348 6988 "GET /cart/interactions/62658c11-849a-44a0-b8c2-94027265b3f9/review-status/ HTTP/1.1" 200 227
+INFO 2025-08-18 13:37:07,893 basehttp 12348 6988 "OPTIONS /cart/interactions/19ccd595-b9ab-43c7-9a69-20d2fbf59009/review-status/ HTTP/1.1" 200 0
+INFO 2025-08-18 13:37:07,977 basehttp 12348 3360 "GET /cart/interactions/5a75b306-b058-4663-893e-47e5984036d4/review-status/ HTTP/1.1" 200 194
+INFO 2025-08-18 13:37:08,155 basehttp 12348 3360 "GET /cart/interactions/62658c11-849a-44a0-b8c2-94027265b3f9/review-status/ HTTP/1.1" 200 227
+INFO 2025-08-18 13:37:08,158 basehttp 12348 6988 "GET /cart/interactions/19ccd595-b9ab-43c7-9a69-20d2fbf59009/review-status/ HTTP/1.1" 200 227
+INFO 2025-08-18 13:37:08,170 basehttp 12348 3360 "OPTIONS /cart/interactions/2af6ac15-a792-4ef0-9778-21e5f6936ddf/review-status/ HTTP/1.1" 200 0
+INFO 2025-08-18 13:37:08,340 basehttp 12348 6988 "GET /cart/interactions/19ccd595-b9ab-43c7-9a69-20d2fbf59009/review-status/ HTTP/1.1" 200 227
+INFO 2025-08-18 13:37:08,342 basehttp 12348 3360 "GET /cart/interactions/2af6ac15-a792-4ef0-9778-21e5f6936ddf/review-status/ HTTP/1.1" 200 227
+INFO 2025-08-18 13:37:08,452 basehttp 12348 3360 "GET /cart/interactions/2af6ac15-a792-4ef0-9778-21e5f6936ddf/review-status/ HTTP/1.1" 200 227
+INFO 2025-08-18 13:37:21,478 basehttp 12348 3360 "GET /cart/ HTTP/1.1" 200 661
+WARNING 2025-08-18 13:37:21,726 log 12348 6988 Not Found: /api/scheduling/available-slots/
+WARNING 2025-08-18 13:37:21,731 basehttp 12348 6988 "GET /api/scheduling/available-slots/?food_listing_id=eb86e8b9-6abd-40aa-87f7-b122eff8428b HTTP/1.1" 404 77
+INFO 2025-08-18 13:37:21,760 basehttp 12348 3360 "GET /cart/ HTTP/1.1" 200 661
+WARNING 2025-08-18 13:37:21,999 log 12348 3360 Not Found: /api/scheduling/available-slots/
+WARNING 2025-08-18 13:37:22,001 basehttp 12348 3360 "GET /api/scheduling/available-slots/?food_listing_id=eb86e8b9-6abd-40aa-87f7-b122eff8428b HTTP/1.1" 404 77
+INFO 2025-08-18 13:37:23,264 basehttp 12348 3360 "GET /auth/providers/ HTTP/1.1" 200 5067
+INFO 2025-08-18 13:37:23,687 basehttp 12348 3360 "GET /api/reviews/provider/813b9e73-40d9-4346-862c-2d13cfba0f5b/?page=1&page_size=1 HTTP/1.1" 200 825
+INFO 2025-08-18 13:37:23,693 basehttp 12348 9988 "GET /api/reviews/provider/18c36b03-b3f9-487b-91eb-ad1be9efaaf6/?page=1&page_size=1 HTTP/1.1" 200 410
+INFO 2025-08-18 13:37:23,694 basehttp 12348 11804 "GET /api/reviews/provider/ce83f6ac-2ebb-4f62-a625-ff889a702d83/?page=1&page_size=1 HTTP/1.1" 200 413
+INFO 2025-08-18 13:37:23,711 basehttp 12348 15720 "GET /api/reviews/provider/0e0e5a4b-3820-41dd-a001-73755fea0d9e/?page=1&page_size=1 HTTP/1.1" 200 410
+INFO 2025-08-18 13:37:23,712 basehttp 12348 17412 "GET /api/reviews/provider/f2befc4d-4ab0-4ad0-8e56-f16918bb5d80/?page=1&page_size=1 HTTP/1.1" 200 416
+INFO 2025-08-18 13:37:23,733 basehttp 12348 6988 "GET /auth/providers/ HTTP/1.1" 200 5067
+INFO 2025-08-18 13:37:24,053 basehttp 12348 15720 "GET /api/reviews/provider/f2befc4d-4ab0-4ad0-8e56-f16918bb5d80/?page=1&page_size=1 HTTP/1.1" 200 416
+INFO 2025-08-18 13:37:24,057 basehttp 12348 11804 "GET /api/reviews/provider/0e0e5a4b-3820-41dd-a001-73755fea0d9e/?page=1&page_size=1 HTTP/1.1" 200 410
+INFO 2025-08-18 13:37:24,057 basehttp 12348 9988 "GET /api/reviews/provider/18c36b03-b3f9-487b-91eb-ad1be9efaaf6/?page=1&page_size=1 HTTP/1.1" 200 410
+INFO 2025-08-18 13:37:24,060 basehttp 12348 6988 "GET /api/reviews/provider/813b9e73-40d9-4346-862c-2d13cfba0f5b/?page=1&page_size=1 HTTP/1.1" 200 825
+INFO 2025-08-18 13:37:24,062 basehttp 12348 17412 "GET /api/reviews/provider/ce83f6ac-2ebb-4f62-a625-ff889a702d83/?page=1&page_size=1 HTTP/1.1" 200 413
+INFO 2025-08-18 13:37:26,220 basehttp 12348 17412 "GET /cart/ HTTP/1.1" 200 661
+WARNING 2025-08-18 13:37:26,368 log 12348 6988 Not Found: /api/scheduling/available-slots/
+WARNING 2025-08-18 13:37:26,371 basehttp 12348 6988 "GET /api/scheduling/available-slots/?food_listing_id=eb86e8b9-6abd-40aa-87f7-b122eff8428b HTTP/1.1" 404 77
+INFO 2025-08-18 13:37:26,387 basehttp 12348 17412 "GET /cart/ HTTP/1.1" 200 661
+WARNING 2025-08-18 13:37:26,513 log 12348 17412 Not Found: /api/scheduling/available-slots/
+WARNING 2025-08-18 13:37:26,514 basehttp 12348 17412 "GET /api/scheduling/available-slots/?food_listing_id=eb86e8b9-6abd-40aa-87f7-b122eff8428b HTTP/1.1" 404 77
+INFO 2025-08-18 13:37:33,816 basehttp 12348 17412 "GET /api/food-listings/ HTTP/1.1" 200 354333
+INFO 2025-08-18 13:37:34,138 basehttp 12348 6988 "GET /api/food-listings/ HTTP/1.1" 200 354333
+INFO 2025-08-18 13:37:34,220 basehttp 12348 17412 "GET /auth/providers/?complete_profiles_only=true HTTP/1.1" 200 5067
+INFO 2025-08-18 13:37:34,415 basehttp 12348 17412 "GET /auth/providers/?complete_profiles_only=true HTTP/1.1" 200 5067
+INFO 2025-08-18 13:37:34,935 basehttp 12348 9988 "GET /api/reviews/provider/f2befc4d-4ab0-4ad0-8e56-f16918bb5d80/?page=1&page_size=1 HTTP/1.1" 200 416
+INFO 2025-08-18 13:37:34,936 basehttp 12348 17412 "GET /api/reviews/provider/813b9e73-40d9-4346-862c-2d13cfba0f5b/?page=1&page_size=1 HTTP/1.1" 200 825
+INFO 2025-08-18 13:37:34,937 basehttp 12348 6988 "GET /api/reviews/provider/ce83f6ac-2ebb-4f62-a625-ff889a702d83/?page=1&page_size=1 HTTP/1.1" 200 413
+INFO 2025-08-18 13:37:34,937 basehttp 12348 11804 "GET /api/reviews/provider/0e0e5a4b-3820-41dd-a001-73755fea0d9e/?page=1&page_size=1 HTTP/1.1" 200 410
+INFO 2025-08-18 13:37:34,938 basehttp 12348 15720 "GET /api/reviews/provider/18c36b03-b3f9-487b-91eb-ad1be9efaaf6/?page=1&page_size=1 HTTP/1.1" 200 410
+INFO 2025-08-18 13:37:35,181 basehttp 12348 6988 "GET /api/reviews/provider/ce83f6ac-2ebb-4f62-a625-ff889a702d83/?page=1&page_size=1 HTTP/1.1" 200 413
+INFO 2025-08-18 13:37:35,196 basehttp 12348 17412 "GET /api/reviews/provider/f2befc4d-4ab0-4ad0-8e56-f16918bb5d80/?page=1&page_size=1 HTTP/1.1" 200 416
+INFO 2025-08-18 13:37:35,197 basehttp 12348 15720 "GET /api/reviews/provider/18c36b03-b3f9-487b-91eb-ad1be9efaaf6/?page=1&page_size=1 HTTP/1.1" 200 410
+INFO 2025-08-18 13:37:35,200 basehttp 12348 11804 "GET /api/reviews/provider/0e0e5a4b-3820-41dd-a001-73755fea0d9e/?page=1&page_size=1 HTTP/1.1" 200 410
+INFO 2025-08-18 13:37:35,201 basehttp 12348 9988 "GET /api/reviews/provider/813b9e73-40d9-4346-862c-2d13cfba0f5b/?page=1&page_size=1 HTTP/1.1" 200 825
+INFO 2025-08-18 13:37:38,003 basehttp 12348 11804 "GET /cart/ngo/history/ HTTP/1.1" 200 52
+INFO 2025-08-18 13:37:38,088 basehttp 12348 9988 "GET /api/scheduling/my-pickups/ HTTP/1.1" 200 17459
+INFO 2025-08-18 13:37:38,124 basehttp 12348 11804 "GET /cart/ngo/history/ HTTP/1.1" 200 52
+INFO 2025-08-18 13:37:38,228 basehttp 12348 15720 "GET /cart/interactions/37e1409e-99f9-4196-ac97-7876980eb6f6/review-status/ HTTP/1.1" 200 227
+INFO 2025-08-18 13:37:38,308 basehttp 12348 9988 "GET /api/scheduling/my-pickups/ HTTP/1.1" 200 17459
+INFO 2025-08-18 13:37:38,354 basehttp 12348 15720 "GET /cart/interactions/aed5c281-6234-4f51-aabe-c58d509e1a2d/review-status/ HTTP/1.1" 200 227
+INFO 2025-08-18 13:37:38,423 basehttp 12348 9988 "GET /cart/interactions/37e1409e-99f9-4196-ac97-7876980eb6f6/review-status/ HTTP/1.1" 200 227
+INFO 2025-08-18 13:37:38,466 basehttp 12348 15720 "GET /cart/interactions/05571c9c-6e26-41db-ad1b-e0d721f52517/review-status/ HTTP/1.1" 200 227
+INFO 2025-08-18 13:37:38,536 basehttp 12348 9988 "GET /cart/interactions/aed5c281-6234-4f51-aabe-c58d509e1a2d/review-status/ HTTP/1.1" 200 227
+INFO 2025-08-18 13:37:38,577 basehttp 12348 15720 "GET /cart/interactions/15e58698-64fe-4eed-8426-42af0b578b8b/review-status/ HTTP/1.1" 200 227
+INFO 2025-08-18 13:37:38,650 basehttp 12348 9988 "GET /cart/interactions/05571c9c-6e26-41db-ad1b-e0d721f52517/review-status/ HTTP/1.1" 200 227
+INFO 2025-08-18 13:37:38,691 basehttp 12348 15720 "GET /cart/interactions/5a75b306-b058-4663-893e-47e5984036d4/review-status/ HTTP/1.1" 200 194
+INFO 2025-08-18 13:37:38,784 basehttp 12348 9988 "GET /cart/interactions/15e58698-64fe-4eed-8426-42af0b578b8b/review-status/ HTTP/1.1" 200 227
+INFO 2025-08-18 13:37:38,878 basehttp 12348 15720 "GET /cart/interactions/62658c11-849a-44a0-b8c2-94027265b3f9/review-status/ HTTP/1.1" 200 227
+INFO 2025-08-18 13:37:38,988 basehttp 12348 9988 "GET /cart/interactions/5a75b306-b058-4663-893e-47e5984036d4/review-status/ HTTP/1.1" 200 194
+INFO 2025-08-18 13:37:39,036 basehttp 12348 15720 "GET /cart/interactions/19ccd595-b9ab-43c7-9a69-20d2fbf59009/review-status/ HTTP/1.1" 200 227
+INFO 2025-08-18 13:37:39,114 basehttp 12348 9988 "GET /cart/interactions/62658c11-849a-44a0-b8c2-94027265b3f9/review-status/ HTTP/1.1" 200 227
+INFO 2025-08-18 13:37:39,151 basehttp 12348 15720 "GET /cart/interactions/2af6ac15-a792-4ef0-9778-21e5f6936ddf/review-status/ HTTP/1.1" 200 227
+INFO 2025-08-18 13:37:39,411 basehttp 12348 9988 "GET /cart/interactions/19ccd595-b9ab-43c7-9a69-20d2fbf59009/review-status/ HTTP/1.1" 200 227
+INFO 2025-08-18 13:37:39,631 basehttp 12348 15720 "OPTIONS /auth/profile/me/ HTTP/1.1" 200 0
+INFO 2025-08-18 13:37:39,632 basehttp 12348 11804 "OPTIONS /auth/profile/me/ HTTP/1.1" 200 0
+INFO 2025-08-18 13:37:39,652 basehttp 12348 9988 "GET /cart/interactions/2af6ac15-a792-4ef0-9778-21e5f6936ddf/review-status/ HTTP/1.1" 200 227
+INFO 2025-08-18 13:37:39,948 basehttp 12348 11804 "GET /auth/profile/me/ HTTP/1.1" 200 2598
+INFO 2025-08-18 13:37:40,264 basehttp 12348 11804 "GET /auth/profile/me/ HTTP/1.1" 200 2598
+INFO 2025-08-18 13:37:47,170 basehttp 12348 11804 "OPTIONS /api/notifications/?limit=5&ordering=-created_at HTTP/1.1" 200 0
+INFO 2025-08-18 13:37:47,402 basehttp 12348 11804 "GET /api/notifications/?limit=5&ordering=-created_at HTTP/1.1" 200 6168
+INFO 2025-08-18 13:37:50,793 basehttp 12348 17412 "OPTIONS /api/notifications/ HTTP/1.1" 200 0
+INFO 2025-08-18 13:37:50,794 basehttp 12348 15720 "OPTIONS /api/notifications/ HTTP/1.1" 200 0
+INFO 2025-08-18 13:37:50,917 basehttp 12348 11804 "GET /api/notifications/preferences/ HTTP/1.1" 200 132
+INFO 2025-08-18 13:37:50,923 basehttp 12348 9988 "GET /api/notifications/unread-count/ HTTP/1.1" 200 18
+INFO 2025-08-18 13:37:50,989 basehttp 12348 15720 "GET /api/notifications/ HTTP/1.1" 200 6168
+INFO 2025-08-18 13:37:51,033 basehttp 12348 17412 "GET /api/notifications/preferences/ HTTP/1.1" 200 132
+INFO 2025-08-18 13:37:51,045 basehttp 12348 9988 "GET /api/notifications/unread-count/ HTTP/1.1" 200 18
+INFO 2025-08-18 13:37:51,138 basehttp 12348 15720 "GET /api/notifications/ HTTP/1.1" 200 6168
+INFO 2025-08-18 13:38:00,665 basehttp 12348 15720 "GET /api/food-listings/ HTTP/1.1" 200 354333
+INFO 2025-08-18 13:38:00,990 basehttp 12348 9988 "GET /api/food-listings/ HTTP/1.1" 200 354333
+INFO 2025-08-18 13:38:01,050 basehttp 12348 15720 "GET /auth/providers/?complete_profiles_only=true HTTP/1.1" 200 5067
+INFO 2025-08-18 13:38:01,221 basehttp 12348 15720 "GET /auth/providers/?complete_profiles_only=true HTTP/1.1" 200 5067
+INFO 2025-08-18 13:38:01,731 basehttp 12348 15720 "GET /api/reviews/provider/813b9e73-40d9-4346-862c-2d13cfba0f5b/?page=1&page_size=1 HTTP/1.1" 200 825
+INFO 2025-08-18 13:38:01,751 basehttp 12348 11804 "GET /api/reviews/provider/0e0e5a4b-3820-41dd-a001-73755fea0d9e/?page=1&page_size=1 HTTP/1.1" 200 410
+INFO 2025-08-18 13:38:01,752 basehttp 12348 17412 "GET /api/reviews/provider/f2befc4d-4ab0-4ad0-8e56-f16918bb5d80/?page=1&page_size=1 HTTP/1.1" 200 416
+INFO 2025-08-18 13:38:01,753 basehttp 12348 9988 "GET /api/reviews/provider/ce83f6ac-2ebb-4f62-a625-ff889a702d83/?page=1&page_size=1 HTTP/1.1" 200 413
+INFO 2025-08-18 13:38:01,753 basehttp 12348 6988 "GET /api/reviews/provider/18c36b03-b3f9-487b-91eb-ad1be9efaaf6/?page=1&page_size=1 HTTP/1.1" 200 410
+INFO 2025-08-18 13:38:01,982 basehttp 12348 15720 "GET /api/reviews/provider/f2befc4d-4ab0-4ad0-8e56-f16918bb5d80/?page=1&page_size=1 HTTP/1.1" 200 416
+INFO 2025-08-18 13:38:01,991 basehttp 12348 3360 "GET /api/reviews/provider/813b9e73-40d9-4346-862c-2d13cfba0f5b/?page=1&page_size=1 HTTP/1.1" 200 825
+INFO 2025-08-18 13:38:02,000 basehttp 12348 11804 "GET /api/reviews/provider/0e0e5a4b-3820-41dd-a001-73755fea0d9e/?page=1&page_size=1 HTTP/1.1" 200 410
+INFO 2025-08-18 13:38:02,003 basehttp 12348 9988 "GET /api/reviews/provider/ce83f6ac-2ebb-4f62-a625-ff889a702d83/?page=1&page_size=1 HTTP/1.1" 200 413
+INFO 2025-08-18 13:38:02,005 basehttp 12348 6988 "GET /api/reviews/provider/18c36b03-b3f9-487b-91eb-ad1be9efaaf6/?page=1&page_size=1 HTTP/1.1" 200 410
+INFO 2025-08-18 13:40:33,220 basehttp 12348 6988 "GET /api/food-listings/ HTTP/1.1" 200 354333
+INFO 2025-08-18 13:40:33,544 basehttp 12348 9988 "GET /api/food-listings/ HTTP/1.1" 200 354333
+INFO 2025-08-18 13:40:33,594 basehttp 12348 6988 "GET /auth/providers/?complete_profiles_only=true HTTP/1.1" 200 5067
+INFO 2025-08-18 13:40:33,761 basehttp 12348 6988 "GET /auth/providers/?complete_profiles_only=true HTTP/1.1" 200 5067
+INFO 2025-08-18 13:40:34,223 basehttp 12348 9988 "GET /api/reviews/provider/ce83f6ac-2ebb-4f62-a625-ff889a702d83/?page=1&page_size=1 HTTP/1.1" 200 413
+INFO 2025-08-18 13:40:34,224 basehttp 12348 11804 "GET /api/reviews/provider/f2befc4d-4ab0-4ad0-8e56-f16918bb5d80/?page=1&page_size=1 HTTP/1.1" 200 416
+INFO 2025-08-18 13:40:34,224 basehttp 12348 15720 "GET /api/reviews/provider/18c36b03-b3f9-487b-91eb-ad1be9efaaf6/?page=1&page_size=1 HTTP/1.1" 200 410
+INFO 2025-08-18 13:40:34,227 basehttp 12348 6988 "GET /api/reviews/provider/813b9e73-40d9-4346-862c-2d13cfba0f5b/?page=1&page_size=1 HTTP/1.1" 200 825
+INFO 2025-08-18 13:40:34,234 basehttp 12348 3360 "GET /api/reviews/provider/0e0e5a4b-3820-41dd-a001-73755fea0d9e/?page=1&page_size=1 HTTP/1.1" 200 410
+INFO 2025-08-18 13:40:34,420 basehttp 12348 17412 "GET /api/reviews/provider/ce83f6ac-2ebb-4f62-a625-ff889a702d83/?page=1&page_size=1 HTTP/1.1" 200 413
+INFO 2025-08-18 13:40:34,455 basehttp 12348 11804 "GET /api/reviews/provider/f2befc4d-4ab0-4ad0-8e56-f16918bb5d80/?page=1&page_size=1 HTTP/1.1" 200 416
+INFO 2025-08-18 13:40:34,468 basehttp 12348 15720 "GET /api/reviews/provider/18c36b03-b3f9-487b-91eb-ad1be9efaaf6/?page=1&page_size=1 HTTP/1.1" 200 410
+INFO 2025-08-18 13:40:34,470 basehttp 12348 3360 "GET /api/reviews/provider/0e0e5a4b-3820-41dd-a001-73755fea0d9e/?page=1&page_size=1 HTTP/1.1" 200 410
+INFO 2025-08-18 13:40:34,481 basehttp 12348 6988 "GET /api/reviews/provider/813b9e73-40d9-4346-862c-2d13cfba0f5b/?page=1&page_size=1 HTTP/1.1" 200 825
+INFO 2025-08-18 13:41:10,883 basehttp 12348 6988 "GET /api/notifications/?limit=5&ordering=-created_at HTTP/1.1" 200 6168
+INFO 2025-08-18 13:41:13,266 basehttp 12348 3360 "GET /api/notifications/preferences/ HTTP/1.1" 200 132
+INFO 2025-08-18 13:41:13,267 basehttp 12348 6988 "GET /api/notifications/unread-count/ HTTP/1.1" 200 18
+INFO 2025-08-18 13:41:13,329 basehttp 12348 15720 "GET /api/notifications/ HTTP/1.1" 200 6168
+INFO 2025-08-18 13:41:13,392 basehttp 12348 11804 "GET /api/notifications/unread-count/ HTTP/1.1" 200 18
+INFO 2025-08-18 13:41:13,405 basehttp 12348 3360 "GET /api/notifications/preferences/ HTTP/1.1" 200 132
+INFO 2025-08-18 13:41:13,474 basehttp 12348 15720 "GET /api/notifications/ HTTP/1.1" 200 6168
+INFO 2025-08-18 13:42:08,986 basehttp 12348 15720 "OPTIONS /api/notifications/mark-read/ HTTP/1.1" 200 0
+INFO 2025-08-18 13:42:09,221 basehttp 12348 15720 "POST /api/notifications/mark-read/ HTTP/1.1" 200 78
+INFO 2025-08-18 13:42:20,757 basehttp 12348 15720 "OPTIONS /api/food-listings/470a0324-c489-4d4c-a197-a05cde1bd241/ HTTP/1.1" 200 0
+INFO 2025-08-18 13:42:20,757 basehttp 12348 3360 "OPTIONS /api/food-listings/470a0324-c489-4d4c-a197-a05cde1bd241/ HTTP/1.1" 200 0
+WARNING 2025-08-18 13:42:20,999 log 12348 3360 Not Found: /api/food-listings/470a0324-c489-4d4c-a197-a05cde1bd241/
+WARNING 2025-08-18 13:42:21,001 basehttp 12348 3360 "GET /api/food-listings/470a0324-c489-4d4c-a197-a05cde1bd241/ HTTP/1.1" 404 60
+WARNING 2025-08-18 13:42:21,216 log 12348 3360 Not Found: /api/food-listings/470a0324-c489-4d4c-a197-a05cde1bd241/
+WARNING 2025-08-18 13:42:21,218 basehttp 12348 3360 "GET /api/food-listings/470a0324-c489-4d4c-a197-a05cde1bd241/ HTTP/1.1" 404 60
+INFO 2025-08-18 13:42:23,677 basehttp 12348 3360 "GET /api/notifications/ HTTP/1.1" 200 6192
+INFO 2025-08-18 13:42:23,941 basehttp 12348 15720 "GET /api/notifications/ HTTP/1.1" 200 6192
+INFO 2025-08-18 13:43:06,834 basehttp 12348 15720 "GET /api/food-listings/ HTTP/1.1" 200 354333
+INFO 2025-08-18 13:43:07,130 basehttp 12348 3360 "GET /api/food-listings/ HTTP/1.1" 200 354333
+INFO 2025-08-18 13:43:07,201 basehttp 12348 15720 "GET /auth/providers/?complete_profiles_only=true HTTP/1.1" 200 5067
+INFO 2025-08-18 13:43:07,378 basehttp 12348 3360 "GET /auth/providers/?complete_profiles_only=true HTTP/1.1" 200 5067
+INFO 2025-08-18 13:43:07,841 basehttp 12348 15720 "GET /api/reviews/provider/ce83f6ac-2ebb-4f62-a625-ff889a702d83/?page=1&page_size=1 HTTP/1.1" 200 413
+INFO 2025-08-18 13:43:07,863 basehttp 12348 3360 "GET /api/reviews/provider/813b9e73-40d9-4346-862c-2d13cfba0f5b/?page=1&page_size=1 HTTP/1.1" 200 825
+INFO 2025-08-18 13:43:07,863 basehttp 12348 17412 "GET /api/reviews/provider/18c36b03-b3f9-487b-91eb-ad1be9efaaf6/?page=1&page_size=1 HTTP/1.1" 200 410
+INFO 2025-08-18 13:43:07,865 basehttp 12348 11804 "GET /api/reviews/provider/f2befc4d-4ab0-4ad0-8e56-f16918bb5d80/?page=1&page_size=1 HTTP/1.1" 200 416
+INFO 2025-08-18 13:43:07,866 basehttp 12348 6988 "GET /api/reviews/provider/0e0e5a4b-3820-41dd-a001-73755fea0d9e/?page=1&page_size=1 HTTP/1.1" 200 410
+INFO 2025-08-18 13:43:08,041 basehttp 12348 9988 "GET /api/reviews/provider/ce83f6ac-2ebb-4f62-a625-ff889a702d83/?page=1&page_size=1 HTTP/1.1" 200 413
+INFO 2025-08-18 13:43:08,102 basehttp 12348 17412 "GET /api/reviews/provider/18c36b03-b3f9-487b-91eb-ad1be9efaaf6/?page=1&page_size=1 HTTP/1.1" 200 410
+INFO 2025-08-18 13:43:08,108 basehttp 12348 11804 "GET /api/reviews/provider/813b9e73-40d9-4346-862c-2d13cfba0f5b/?page=1&page_size=1 HTTP/1.1" 200 825
+INFO 2025-08-18 13:43:08,108 basehttp 12348 3360 "GET /api/reviews/provider/f2befc4d-4ab0-4ad0-8e56-f16918bb5d80/?page=1&page_size=1 HTTP/1.1" 200 416
+INFO 2025-08-18 13:43:08,111 basehttp 12348 6988 "GET /api/reviews/provider/0e0e5a4b-3820-41dd-a001-73755fea0d9e/?page=1&page_size=1 HTTP/1.1" 200 410
+INFO 2025-08-18 14:32:08,537 basehttp 12348 6612 "OPTIONS /api/notifications/unread-count/ HTTP/1.1" 200 0
+INFO 2025-08-18 14:32:08,540 basehttp 12348 14580 "OPTIONS /api/notifications/unread-count/ HTTP/1.1" 200 0
+INFO 2025-08-18 14:32:08,782 basehttp 12348 6832 "GET /api/notifications/preferences/ HTTP/1.1" 200 132
+INFO 2025-08-18 14:32:08,805 basehttp 12348 14580 "GET /api/notifications/unread-count/ HTTP/1.1" 200 18
+INFO 2025-08-18 14:32:08,940 basehttp 12348 6612 "GET /api/food-listings/ HTTP/1.1" 200 354333
+INFO 2025-08-18 14:32:09,073 basehttp 12348 6832 "GET /api/notifications/preferences/ HTTP/1.1" 200 132
+INFO 2025-08-18 14:32:09,132 basehttp 12348 14580 "GET /api/notifications/unread-count/ HTTP/1.1" 200 18
+INFO 2025-08-18 14:32:09,355 basehttp 12348 8368 "GET /api/food-listings/ HTTP/1.1" 200 354333
+INFO 2025-08-18 14:32:09,478 basehttp 12348 14580 "GET /auth/providers/?complete_profiles_only=true HTTP/1.1" 200 5067
+INFO 2025-08-18 14:32:09,822 basehttp 12348 8368 "GET /auth/providers/?complete_profiles_only=true HTTP/1.1" 200 5067
+INFO 2025-08-18 14:32:10,643 basehttp 12348 8368 "GET /api/reviews/provider/813b9e73-40d9-4346-862c-2d13cfba0f5b/?page=1&page_size=1 HTTP/1.1" 200 825
+INFO 2025-08-18 14:32:10,644 basehttp 12348 6612 "GET /api/reviews/provider/0e0e5a4b-3820-41dd-a001-73755fea0d9e/?page=1&page_size=1 HTTP/1.1" 200 410
+INFO 2025-08-18 14:32:10,644 basehttp 12348 14580 "GET /api/reviews/provider/ce83f6ac-2ebb-4f62-a625-ff889a702d83/?page=1&page_size=1 HTTP/1.1" 200 413
+INFO 2025-08-18 14:32:10,711 basehttp 12348 18760 "GET /api/reviews/provider/18c36b03-b3f9-487b-91eb-ad1be9efaaf6/?page=1&page_size=1 HTTP/1.1" 200 410
+INFO 2025-08-18 14:32:10,724 basehttp 12348 6832 "GET /api/reviews/provider/f2befc4d-4ab0-4ad0-8e56-f16918bb5d80/?page=1&page_size=1 HTTP/1.1" 200 416
+INFO 2025-08-18 14:32:10,995 basehttp 12348 6612 "GET /api/reviews/provider/ce83f6ac-2ebb-4f62-a625-ff889a702d83/?page=1&page_size=1 HTTP/1.1" 200 413
+INFO 2025-08-18 14:32:11,009 basehttp 12348 14580 "GET /api/reviews/provider/0e0e5a4b-3820-41dd-a001-73755fea0d9e/?page=1&page_size=1 HTTP/1.1" 200 410
+INFO 2025-08-18 14:32:11,010 basehttp 12348 8368 "GET /api/reviews/provider/813b9e73-40d9-4346-862c-2d13cfba0f5b/?page=1&page_size=1 HTTP/1.1" 200 825
+INFO 2025-08-18 14:32:11,080 basehttp 12348 18760 "GET /api/reviews/provider/18c36b03-b3f9-487b-91eb-ad1be9efaaf6/?page=1&page_size=1 HTTP/1.1" 200 410
+INFO 2025-08-18 14:32:11,088 basehttp 12348 6832 "GET /api/reviews/provider/f2befc4d-4ab0-4ad0-8e56-f16918bb5d80/?page=1&page_size=1 HTTP/1.1" 200 416
+INFO 2025-08-18 14:32:56,600 basehttp 12348 6832 "OPTIONS /auth/login/ HTTP/1.1" 200 0
+INFO 2025-08-18 14:32:58,513 basehttp 12348 6832 "POST /auth/login/ HTTP/1.1" 200 1359
+INFO 2025-08-18 14:32:58,560 basehttp 12348 18760 "OPTIONS /api/business/ HTTP/1.1" 200 0
+INFO 2025-08-18 14:32:58,561 basehttp 12348 14580 "OPTIONS /api/business/ HTTP/1.1" 200 0
+INFO 2025-08-18 14:32:58,665 basehttp 12348 6832 "GET /api/notifications/unread-count/ HTTP/1.1" 200 19
+INFO 2025-08-18 14:32:58,747 basehttp 12348 14580 "GET /api/business/ HTTP/1.1" 200 866
+INFO 2025-08-18 14:32:58,927 basehttp 12348 14580 "GET /api/business/ HTTP/1.1" 200 866
+INFO 2025-08-18 14:33:13,323 basehttp 12348 14580 "OPTIONS /api/provider/listings/ HTTP/1.1" 200 0
+INFO 2025-08-18 14:33:13,323 basehttp 12348 6832 "OPTIONS /api/provider/listings/ HTTP/1.1" 200 0
+INFO 2025-08-18 14:33:13,619 basehttp 12348 6832 "GET /api/provider/listings/ HTTP/1.1" 200 368869
+INFO 2025-08-18 14:33:14,018 basehttp 12348 14580 "GET /api/provider/listings/ HTTP/1.1" 200 368869
+INFO 2025-08-18 14:34:01,065 basehttp 12348 19892 "GET /api/provider/listings/ HTTP/1.1" 200 368869
+INFO 2025-08-18 14:40:06,727 basehttp 12348 20468 "POST /auth/login/ HTTP/1.1" 200 1078
+INFO 2025-08-18 14:40:06,802 basehttp 12348 20468 "GET /api/notifications/unread-count/ HTTP/1.1" 200 18
+INFO 2025-08-18 14:40:06,869 basehttp 12348 18760 "GET /api/food-listings/ HTTP/1.1" 200 354333
+INFO 2025-08-18 14:40:06,999 basehttp 12348 20468 "GET /api/food-listings/ HTTP/1.1" 200 354333
+INFO 2025-08-18 14:40:07,038 basehttp 12348 18760 "GET /auth/providers/?complete_profiles_only=true HTTP/1.1" 200 5067
+INFO 2025-08-18 14:40:07,133 basehttp 12348 18760 "GET /auth/providers/?complete_profiles_only=true HTTP/1.1" 200 5067
+INFO 2025-08-18 14:40:07,359 basehttp 12348 20468 "GET /api/reviews/provider/ce83f6ac-2ebb-4f62-a625-ff889a702d83/?page=1&page_size=1 HTTP/1.1" 200 413
+INFO 2025-08-18 14:40:07,365 basehttp 12348 18760 "GET /api/reviews/provider/813b9e73-40d9-4346-862c-2d13cfba0f5b/?page=1&page_size=1 HTTP/1.1" 200 825
+INFO 2025-08-18 14:40:07,457 basehttp 12348 20468 "GET /api/reviews/provider/f2befc4d-4ab0-4ad0-8e56-f16918bb5d80/?page=1&page_size=1 HTTP/1.1" 200 416
+INFO 2025-08-18 14:40:07,458 basehttp 12348 18760 "GET /api/reviews/provider/0e0e5a4b-3820-41dd-a001-73755fea0d9e/?page=1&page_size=1 HTTP/1.1" 200 410
+INFO 2025-08-18 14:40:07,560 basehttp 12348 20468 "GET /api/reviews/provider/18c36b03-b3f9-487b-91eb-ad1be9efaaf6/?page=1&page_size=1 HTTP/1.1" 200 410
+INFO 2025-08-18 14:40:07,561 basehttp 12348 18760 "GET /api/reviews/provider/ce83f6ac-2ebb-4f62-a625-ff889a702d83/?page=1&page_size=1 HTTP/1.1" 200 413
+INFO 2025-08-18 14:40:07,644 basehttp 12348 18824 "GET /api/reviews/provider/f2befc4d-4ab0-4ad0-8e56-f16918bb5d80/?page=1&page_size=1 HTTP/1.1" 200 416
+INFO 2025-08-18 14:40:07,649 basehttp 12348 12856 "GET /api/reviews/provider/813b9e73-40d9-4346-862c-2d13cfba0f5b/?page=1&page_size=1 HTTP/1.1" 200 825
+INFO 2025-08-18 14:40:07,654 basehttp 12348 11668 "GET /api/reviews/provider/0e0e5a4b-3820-41dd-a001-73755fea0d9e/?page=1&page_size=1 HTTP/1.1" 200 410
+INFO 2025-08-18 14:40:07,676 basehttp 12348 20468 "GET /api/reviews/provider/18c36b03-b3f9-487b-91eb-ad1be9efaaf6/?page=1&page_size=1 HTTP/1.1" 200 410
+INFO 2025-08-18 14:40:09,134 basehttp 12348 20468 "GET /auth/profile/me/ HTTP/1.1" 200 2598
+INFO 2025-08-18 14:40:09,229 basehttp 12348 20468 "GET /auth/profile/me/ HTTP/1.1" 200 2598
+INFO 2025-08-18 14:40:10,037 basehttp 12348 20468 "GET /api/food-listings/ HTTP/1.1" 200 354333
+INFO 2025-08-18 14:40:10,269 basehttp 12348 11668 "GET /api/food-listings/ HTTP/1.1" 200 354333
+INFO 2025-08-18 14:40:10,319 basehttp 12348 20468 "GET /auth/providers/?complete_profiles_only=true HTTP/1.1" 200 5067
+INFO 2025-08-18 14:40:10,497 basehttp 12348 11668 "GET /auth/providers/?complete_profiles_only=true HTTP/1.1" 200 5067
+INFO 2025-08-18 14:40:10,808 basehttp 12348 20468 "GET /api/reviews/provider/ce83f6ac-2ebb-4f62-a625-ff889a702d83/?page=1&page_size=1 HTTP/1.1" 200 413
+INFO 2025-08-18 14:40:10,820 basehttp 12348 11668 "GET /api/reviews/provider/813b9e73-40d9-4346-862c-2d13cfba0f5b/?page=1&page_size=1 HTTP/1.1" 200 825
+INFO 2025-08-18 14:40:10,826 basehttp 12348 18760 "GET /api/reviews/provider/18c36b03-b3f9-487b-91eb-ad1be9efaaf6/?page=1&page_size=1 HTTP/1.1" 200 410
+INFO 2025-08-18 14:40:10,828 basehttp 12348 18824 "GET /api/reviews/provider/0e0e5a4b-3820-41dd-a001-73755fea0d9e/?page=1&page_size=1 HTTP/1.1" 200 410
+INFO 2025-08-18 14:40:10,829 basehttp 12348 12856 "GET /api/reviews/provider/f2befc4d-4ab0-4ad0-8e56-f16918bb5d80/?page=1&page_size=1 HTTP/1.1" 200 416
+INFO 2025-08-18 14:40:10,955 basehttp 12348 20468 "GET /api/reviews/provider/ce83f6ac-2ebb-4f62-a625-ff889a702d83/?page=1&page_size=1 HTTP/1.1" 200 413
+INFO 2025-08-18 14:40:10,955 basehttp 12348 3388 "GET /api/reviews/provider/813b9e73-40d9-4346-862c-2d13cfba0f5b/?page=1&page_size=1 HTTP/1.1" 200 825
+INFO 2025-08-18 14:40:10,961 basehttp 12348 18760 "GET /api/reviews/provider/18c36b03-b3f9-487b-91eb-ad1be9efaaf6/?page=1&page_size=1 HTTP/1.1" 200 410
+INFO 2025-08-18 14:40:10,968 basehttp 12348 18824 "GET /api/reviews/provider/0e0e5a4b-3820-41dd-a001-73755fea0d9e/?page=1&page_size=1 HTTP/1.1" 200 410
+INFO 2025-08-18 14:40:10,972 basehttp 12348 12856 "GET /api/reviews/provider/f2befc4d-4ab0-4ad0-8e56-f16918bb5d80/?page=1&page_size=1 HTTP/1.1" 200 416
+INFO 2025-08-18 14:40:11,653 basehttp 12348 12856 "GET /auth/profile/me/ HTTP/1.1" 200 2598
+INFO 2025-08-18 14:40:11,744 basehttp 12348 12856 "GET /auth/profile/me/ HTTP/1.1" 200 2598
+INFO 2025-08-18 14:43:10,266 basehttp 12348 12856 "GET /auth/profile/me/ HTTP/1.1" 200 2598
+INFO 2025-08-18 14:43:10,487 basehttp 12348 12856 "GET /auth/profile/me/ HTTP/1.1" 200 2598
+INFO 2025-08-18 14:47:20,630 basehttp 12348 12856 "GET /auth/profile/me/ HTTP/1.1" 200 2598
+INFO 2025-08-18 14:47:50,641 basehttp 12348 12856 "GET /auth/profile/me/ HTTP/1.1" 200 2598
+INFO 2025-08-18 14:47:50,730 basehttp 12348 12856 "GET /auth/profile/me/ HTTP/1.1" 200 2598
+INFO 2025-08-18 14:48:04,102 basehttp 12348 12856 "GET /auth/profile/me/ HTTP/1.1" 200 2598
+INFO 2025-08-18 14:48:04,280 basehttp 12348 12856 "GET /api/notifications/unread-count/ HTTP/1.1" 200 18
+INFO 2025-08-18 14:48:04,341 basehttp 12348 12856 "GET /api/notifications/preferences/ HTTP/1.1" 200 132
+INFO 2025-08-18 14:48:04,365 basehttp 12348 12792 "GET /api/notifications/unread-count/ HTTP/1.1" 200 18
+INFO 2025-08-18 14:48:04,397 basehttp 12348 2452 "GET /auth/profile/me/ HTTP/1.1" 200 2598
+INFO 2025-08-18 14:48:04,568 basehttp 12348 12856 "GET /api/notifications/preferences/ HTTP/1.1" 200 132
+INFO 2025-08-18 14:48:12,886 basehttp 12348 12856 "GET /api/notifications/unread-count/ HTTP/1.1" 200 18
+INFO 2025-08-18 14:48:12,890 basehttp 12348 2452 "GET /api/notifications/preferences/ HTTP/1.1" 200 132
+INFO 2025-08-18 14:48:12,948 basehttp 12348 12856 "GET /api/notifications/unread-count/ HTTP/1.1" 200 18
+INFO 2025-08-18 14:48:12,950 basehttp 12348 2452 "GET /api/notifications/preferences/ HTTP/1.1" 200 132
+INFO 2025-08-18 14:50:17,285 basehttp 12348 2452 "GET /auth/profile/me/ HTTP/1.1" 200 2598
+INFO 2025-08-18 14:50:17,389 basehttp 12348 2452 "GET /auth/profile/me/ HTTP/1.1" 200 2598
+INFO 2025-08-18 14:58:09,079 basehttp 12348 15312 "GET /auth/profile/me/ HTTP/1.1" 200 2598
+INFO 2025-08-18 14:58:09,193 basehttp 12348 15312 "GET /auth/profile/me/ HTTP/1.1" 200 2598
+INFO 2025-08-18 14:59:05,412 basehttp 12348 15312 "OPTIONS /auth/profile/update/ HTTP/1.1" 200 0
+WARNING 2025-08-18 14:59:05,489 log 12348 15312 Bad Request: /auth/profile/update/
+WARNING 2025-08-18 14:59:05,490 basehttp 12348 15312 "PUT /auth/profile/update/ HTTP/1.1" 400 1013
+WARNING 2025-08-18 14:59:52,403 log 12348 15312 Bad Request: /auth/profile/update/
+WARNING 2025-08-18 14:59:52,404 basehttp 12348 15312 "PUT /auth/profile/update/ HTTP/1.1" 400 1013
+WARNING 2025-08-18 14:59:58,330 log 12348 15312 Bad Request: /auth/profile/update/
+WARNING 2025-08-18 14:59:58,331 basehttp 12348 15312 "PUT /auth/profile/update/ HTTP/1.1" 400 1013
+INFO 2025-08-18 15:01:46,642 basehttp 12348 15312 "GET /auth/profile/me/ HTTP/1.1" 200 2598
+WARNING 2025-08-18 15:02:15,828 log 12348 9756 Bad Request: /auth/profile/update/
+WARNING 2025-08-18 15:02:15,829 basehttp 12348 9756 "PUT /auth/profile/update/ HTTP/1.1" 400 1013
+INFO 2025-08-18 15:02:22,091 basehttp 12348 9756 "OPTIONS /api/notifications/preferences/ HTTP/1.1" 200 0
+INFO 2025-08-18 15:02:22,227 basehttp 12348 9756 "GET /api/notifications/unread-count/ HTTP/1.1" 200 18
+INFO 2025-08-18 15:02:22,308 basehttp 12348 9756 "GET /api/notifications/preferences/ HTTP/1.1" 200 132
+INFO 2025-08-18 15:02:22,328 basehttp 12348 4244 "GET /auth/profile/me/ HTTP/1.1" 200 2598
+INFO 2025-08-18 15:02:22,395 basehttp 12348 9756 "GET /api/notifications/unread-count/ HTTP/1.1" 200 18
+INFO 2025-08-18 15:02:22,410 basehttp 12348 4244 "GET /api/notifications/preferences/ HTTP/1.1" 200 132
+INFO 2025-08-18 15:02:22,492 basehttp 12348 9756 "GET /auth/profile/me/ HTTP/1.1" 200 2598
+WARNING 2025-08-18 15:02:38,600 log 12348 9756 Bad Request: /auth/profile/update/
+WARNING 2025-08-18 15:02:38,601 basehttp 12348 9756 "PUT /auth/profile/update/ HTTP/1.1" 400 1013
+INFO 2025-08-18 15:03:16,666 basehttp 12348 9756 "GET /auth/profile/me/ HTTP/1.1" 200 2598
+INFO 2025-08-18 15:03:17,655 basehttp 12348 9756 "GET /auth/profile/me/ HTTP/1.1" 200 2598
+INFO 2025-08-18 15:03:31,682 basehttp 12348 9756 "OPTIONS /auth/profile/me/update/ HTTP/1.1" 200 0
+INFO 2025-08-18 15:03:31,898 basehttp 12348 9756 "PUT /auth/profile/me/update/ HTTP/1.1" 200 169
+INFO 2025-08-18 15:03:38,060 basehttp 12348 4244 "GET /api/notifications/unread-count/ HTTP/1.1" 200 18
+INFO 2025-08-18 15:03:38,309 basehttp 12348 9756 "GET /auth/profile/me/ HTTP/1.1" 200 2598
+INFO 2025-08-18 15:03:38,332 basehttp 12348 4244 "GET /api/notifications/preferences/ HTTP/1.1" 200 132
+INFO 2025-08-18 15:03:38,416 basehttp 12348 4244 "GET /api/notifications/preferences/ HTTP/1.1" 200 132
+INFO 2025-08-18 15:03:38,440 basehttp 12348 11728 "GET /api/notifications/unread-count/ HTTP/1.1" 200 18
+INFO 2025-08-18 15:03:38,448 basehttp 12348 9756 "GET /auth/profile/me/ HTTP/1.1" 200 2598
+INFO 2025-08-18 15:07:40,815 basehttp 12348 9756 "GET /auth/profile/me/ HTTP/1.1" 200 2598
+INFO 2025-08-18 15:07:40,991 basehttp 12348 9756 "GET /auth/profile/me/ HTTP/1.1" 200 2598
+INFO 2025-08-18 15:09:23,629 basehttp 12348 9756 "PUT /auth/profile/me/update/ HTTP/1.1" 200 169
+INFO 2025-08-18 15:09:25,437 basehttp 12348 9756 "GET /auth/profile/me/ HTTP/1.1" 200 2598
+INFO 2025-08-18 15:09:25,537 basehttp 12348 9756 "GET /auth/profile/me/ HTTP/1.1" 200 2598
+INFO 2025-08-18 15:09:42,638 basehttp 12348 9756 "GET /auth/profile/me/ HTTP/1.1" 200 2598
+INFO 2025-08-18 15:09:42,742 basehttp 12348 9756 "GET /auth/profile/me/ HTTP/1.1" 200 2598
+INFO 2025-08-18 15:10:30,676 basehttp 12348 9756 "GET /auth/profile/me/ HTTP/1.1" 200 2598
+WARNING 2025-08-18 15:54:57,972 log 12348 20988 Unauthorized: /auth/profile/me/
+WARNING 2025-08-18 15:54:57,984 log 12348 3680 Unauthorized: /api/notifications/unread-count/
+WARNING 2025-08-18 15:54:57,998 log 12348 6212 Unauthorized: /api/notifications/preferences/
+WARNING 2025-08-18 15:54:58,000 basehttp 12348 20988 "GET /auth/profile/me/ HTTP/1.1" 401 58
+WARNING 2025-08-18 15:54:58,003 basehttp 12348 3680 "GET /api/notifications/unread-count/ HTTP/1.1" 401 58
+WARNING 2025-08-18 15:54:58,004 basehttp 12348 6212 "GET /api/notifications/preferences/ HTTP/1.1" 401 58
+WARNING 2025-08-18 15:54:58,009 log 12348 20988 Unauthorized: /auth/profile/me/
+WARNING 2025-08-18 15:54:58,011 log 12348 6212 Unauthorized: /api/notifications/unread-count/
+WARNING 2025-08-18 15:54:58,013 log 12348 3680 Unauthorized: /api/notifications/preferences/
+WARNING 2025-08-18 15:54:58,015 basehttp 12348 6212 "GET /api/notifications/unread-count/ HTTP/1.1" 401 58
+WARNING 2025-08-18 15:54:58,016 basehttp 12348 20988 "GET /auth/profile/me/ HTTP/1.1" 401 58
+WARNING 2025-08-18 15:54:58,017 basehttp 12348 3680 "GET /api/notifications/preferences/ HTTP/1.1" 401 58
+WARNING 2025-08-18 15:56:16,752 log 12348 3680 Unauthorized: /auth/profile/me/
+WARNING 2025-08-18 15:56:17,238 log 12348 6212 Unauthorized: /api/notifications/unread-count/
+WARNING 2025-08-18 15:56:17,240 log 12348 20988 Unauthorized: /api/notifications/preferences/
+WARNING 2025-08-18 15:56:17,400 basehttp 12348 3680 "GET /auth/profile/me/ HTTP/1.1" 401 58
+WARNING 2025-08-18 15:56:17,401 basehttp 12348 6212 "GET /api/notifications/unread-count/ HTTP/1.1" 401 58
+WARNING 2025-08-18 15:56:17,932 log 12348 6212 Unauthorized: /api/notifications/unread-count/
+WARNING 2025-08-18 15:56:17,933 log 12348 3680 Unauthorized: /auth/profile/me/
+WARNING 2025-08-18 15:56:17,934 basehttp 12348 20988 "GET /api/notifications/preferences/ HTTP/1.1" 401 58
+WARNING 2025-08-18 15:56:18,033 basehttp 12348 6212 "GET /api/notifications/unread-count/ HTTP/1.1" 401 58
+WARNING 2025-08-18 15:56:18,114 basehttp 12348 3680 "GET /auth/profile/me/ HTTP/1.1" 401 58
+WARNING 2025-08-18 15:56:18,115 log 12348 20988 Unauthorized: /api/notifications/preferences/
+WARNING 2025-08-18 15:56:18,117 basehttp 12348 20988 "GET /api/notifications/preferences/ HTTP/1.1" 401 58
+WARNING 2025-08-18 17:19:51,528 log 12348 15660 Unauthorized: /api/notifications/unread-count/
+WARNING 2025-08-18 17:19:51,532 log 12348 6852 Unauthorized: /api/notifications/preferences/
+WARNING 2025-08-18 17:19:51,540 basehttp 12348 6852 "GET /api/notifications/preferences/ HTTP/1.1" 401 58
+WARNING 2025-08-18 17:19:51,544 basehttp 12348 15660 "GET /api/notifications/unread-count/ HTTP/1.1" 401 58
+WARNING 2025-08-18 17:19:51,556 log 12348 15660 Unauthorized: /api/notifications/unread-count/
+WARNING 2025-08-18 17:19:51,562 log 12348 6852 Unauthorized: /api/notifications/preferences/
+WARNING 2025-08-18 17:19:51,565 basehttp 12348 15660 "GET /api/notifications/unread-count/ HTTP/1.1" 401 58
+WARNING 2025-08-18 17:19:51,567 basehttp 12348 6852 "GET /api/notifications/preferences/ HTTP/1.1" 401 58
+WARNING 2025-08-18 20:48:19,037 log 12348 22304 Unauthorized: /api/notifications/preferences/
+WARNING 2025-08-18 20:48:19,033 log 12348 10976 Unauthorized: /api/notifications/unread-count/
+WARNING 2025-08-18 20:48:19,053 basehttp 12348 10976 "GET /api/notifications/unread-count/ HTTP/1.1" 401 58
+WARNING 2025-08-18 20:48:19,054 basehttp 12348 22304 "GET /api/notifications/preferences/ HTTP/1.1" 401 58
+WARNING 2025-08-18 20:48:19,076 log 12348 10976 Unauthorized: /api/notifications/unread-count/
+WARNING 2025-08-18 20:48:19,080 log 12348 2644 Unauthorized: /api/notifications/preferences/
+WARNING 2025-08-18 20:48:19,084 basehttp 12348 10976 "GET /api/notifications/unread-count/ HTTP/1.1" 401 58
+WARNING 2025-08-18 20:48:19,085 basehttp 12348 2644 "GET /api/notifications/preferences/ HTTP/1.1" 401 58
+INFO 2025-08-18 20:48:31,104 basehttp 12348 2644 "OPTIONS /auth/login/ HTTP/1.1" 200 0
+INFO 2025-08-18 20:48:33,039 basehttp 12348 2644 "POST /auth/login/ HTTP/1.1" 200 1359
+INFO 2025-08-18 20:48:33,059 basehttp 12348 2644 "OPTIONS /api/notifications/unread-count/ HTTP/1.1" 200 0
+INFO 2025-08-18 20:48:33,110 basehttp 12348 10976 "OPTIONS /api/business/ HTTP/1.1" 200 0
+INFO 2025-08-18 20:48:33,110 basehttp 12348 22304 "OPTIONS /api/business/ HTTP/1.1" 200 0
+INFO 2025-08-18 20:48:33,209 basehttp 12348 2644 "GET /api/notifications/unread-count/ HTTP/1.1" 200 19
+INFO 2025-08-18 20:48:33,357 basehttp 12348 10976 "GET /api/business/ HTTP/1.1" 200 866
+INFO 2025-08-18 20:48:33,701 basehttp 12348 10976 "GET /api/business/ HTTP/1.1" 200 866
+INFO 2025-08-18 20:49:05,197 basehttp 12348 10976 "OPTIONS /api/scheduling/schedule-overview/?date=2025-08-18 HTTP/1.1" 200 0
+INFO 2025-08-18 20:49:05,197 basehttp 12348 2644 "OPTIONS /api/scheduling/schedule-overview/?date=2025-08-18 HTTP/1.1" 200 0
+INFO 2025-08-18 20:49:05,697 basehttp 12348 2644 "GET /api/scheduling/schedule-overview/?date=2025-08-18 HTTP/1.1" 200 175
+INFO 2025-08-18 20:49:06,016 basehttp 12348 2644 "GET /api/scheduling/schedule-overview/?date=2025-08-18 HTTP/1.1" 200 175
+INFO 2025-08-18 20:49:38,492 basehttp 12348 2644 "OPTIONS /api/scheduling/schedule-overview/?date=2025-07-10 HTTP/1.1" 200 0
+INFO 2025-08-18 20:49:38,952 basehttp 12348 2644 "GET /api/scheduling/schedule-overview/?date=2025-07-10 HTTP/1.1" 200 1841
+INFO 2025-08-18 20:49:54,710 basehttp 12348 2644 "OPTIONS /api/notifications/preferences/ HTTP/1.1" 200 0
+INFO 2025-08-18 20:49:54,715 basehttp 12348 10976 "OPTIONS /api/notifications/preferences/ HTTP/1.1" 200 0
+INFO 2025-08-18 20:49:54,908 basehttp 12348 22304 "GET /api/notifications/unread-count/ HTTP/1.1" 200 19
+INFO 2025-08-18 20:49:54,921 basehttp 12348 10976 "GET /api/notifications/preferences/ HTTP/1.1" 200 132
+INFO 2025-08-18 20:49:54,995 basehttp 12348 2644 "GET /api/scheduling/schedule-overview/?date=2025-08-18 HTTP/1.1" 200 175
+INFO 2025-08-18 20:49:55,066 basehttp 12348 22304 "GET /api/notifications/unread-count/ HTTP/1.1" 200 19
+INFO 2025-08-18 20:49:55,067 basehttp 12348 10976 "GET /api/notifications/preferences/ HTTP/1.1" 200 132
+INFO 2025-08-18 20:49:55,160 basehttp 12348 2644 "GET /api/scheduling/schedule-overview/?date=2025-08-18 HTTP/1.1" 200 175
+INFO 2025-08-18 20:50:30,152 basehttp 12348 2644 "OPTIONS /api/scheduling/schedule-overview/?date=2025-07-16 HTTP/1.1" 200 0
+INFO 2025-08-18 20:50:30,531 basehttp 12348 2644 "GET /api/scheduling/schedule-overview/?date=2025-07-16 HTTP/1.1" 200 804
+INFO 2025-08-18 20:50:46,804 basehttp 12348 2644 "OPTIONS /api/scheduling/schedule-overview/?date=2025-07-17 HTTP/1.1" 200 0
+INFO 2025-08-18 20:50:47,047 basehttp 12348 2644 "GET /api/scheduling/schedule-overview/?date=2025-07-17 HTTP/1.1" 200 175
+INFO 2025-08-18 20:50:50,760 basehttp 12348 2644 "OPTIONS /api/scheduling/schedule-overview/?date=2025-07-15 HTTP/1.1" 200 0
+INFO 2025-08-18 20:50:51,055 basehttp 12348 2644 "GET /api/scheduling/schedule-overview/?date=2025-07-15 HTTP/1.1" 200 748
+INFO 2025-08-18 20:50:57,799 basehttp 12348 2644 "OPTIONS /api/scheduling/schedule-overview/?date=2025-07-07 HTTP/1.1" 200 0
+INFO 2025-08-18 20:50:57,968 basehttp 12348 2644 "GET /api/scheduling/schedule-overview/?date=2025-07-07 HTTP/1.1" 200 175
+INFO 2025-08-18 20:51:02,531 basehttp 12348 2644 "OPTIONS /api/scheduling/schedule-overview/?date=2025-07-18 HTTP/1.1" 200 0
+INFO 2025-08-18 20:51:02,785 basehttp 12348 2644 "GET /api/scheduling/schedule-overview/?date=2025-07-18 HTTP/1.1" 200 175
+INFO 2025-08-18 20:51:05,971 basehttp 12348 2644 "OPTIONS /api/scheduling/schedule-overview/?date=2025-07-13 HTTP/1.1" 200 0
+INFO 2025-08-18 20:51:06,305 basehttp 12348 2644 "GET /api/scheduling/schedule-overview/?date=2025-07-13 HTTP/1.1" 200 175
+INFO 2025-08-18 20:51:55,076 basehttp 12348 2644 "OPTIONS /api/scheduling/schedule-overview/?date=2025-07-14 HTTP/1.1" 200 0
+INFO 2025-08-18 20:51:55,483 basehttp 12348 2644 "GET /api/scheduling/schedule-overview/?date=2025-07-14 HTTP/1.1" 200 922
+INFO 2025-08-18 20:52:41,124 basehttp 12348 2644 "GET /api/scheduling/schedule-overview/?date=2025-08-18 HTTP/1.1" 200 175
+INFO 2025-08-18 20:52:41,306 basehttp 12348 2644 "GET /api/scheduling/schedule-overview/?date=2025-08-18 HTTP/1.1" 200 175
+INFO 2025-08-18 20:53:16,420 basehttp 12348 2644 "GET /api/scheduling/schedule-overview/?date=2025-08-18 HTTP/1.1" 200 175
+INFO 2025-08-18 20:53:28,845 basehttp 12348 2644 "GET /api/scheduling/schedule-overview/?date=2025-07-15 HTTP/1.1" 200 748
+INFO 2025-08-18 20:53:33,588 basehttp 12348 2644 "GET /api/scheduling/schedule-overview/?date=2025-07-14 HTTP/1.1" 200 922
+INFO 2025-08-18 20:53:53,884 basehttp 12348 2644 "OPTIONS /api/scheduling/pickups/c9b82116-c340-4d15-990a-bef0d98bc004/ HTTP/1.1" 200 0
+WARNING 2025-08-18 20:53:54,031 log 12348 2644 Method Not Allowed: /api/scheduling/pickups/c9b82116-c340-4d15-990a-bef0d98bc004/
+WARNING 2025-08-18 20:53:54,032 basehttp 12348 2644 "PATCH /api/scheduling/pickups/c9b82116-c340-4d15-990a-bef0d98bc004/ HTTP/1.1" 405 42
+INFO 2025-08-18 20:56:33,417 basehttp 12348 2644 "OPTIONS /api/scheduling/verify-code/ HTTP/1.1" 200 0
+INFO 2025-08-18 20:56:33,709 basehttp 12348 2644 "POST /api/scheduling/verify-code/ HTTP/1.1" 200 1006
+INFO 2025-08-18 20:56:33,723 basehttp 12348 2644 "OPTIONS /api/scheduling/complete-pickup/c9b82116-c340-4d15-990a-bef0d98bc004/ HTTP/1.1" 200 0
+INFO 2025-08-18 20:56:39,564 basehttp 12348 2644 "POST /api/scheduling/complete-pickup/c9b82116-c340-4d15-990a-bef0d98bc004/ HTTP/1.1" 200 273
+INFO 2025-08-18 20:56:39,871 basehttp 12348 2644 "GET /api/scheduling/schedule-overview/?date=2025-07-14 HTTP/1.1" 200 922
+INFO 2025-08-18 20:59:10,591 basehttp 12348 2644 "GET /api/scheduling/schedule-overview/?date=2025-07-14 HTTP/1.1" 200 922
+INFO 2025-08-18 20:59:48,357 basehttp 12348 2644 "POST /api/scheduling/verify-code/ HTTP/1.1" 200 992
+INFO 2025-08-18 20:59:48,372 basehttp 12348 2644 "OPTIONS /api/scheduling/complete-pickup/710b7a98-fa85-4f6e-ab75-7c20e46f586b/ HTTP/1.1" 200 0
+INFO 2025-08-18 20:59:52,490 basehttp 12348 2644 "POST /api/scheduling/complete-pickup/710b7a98-fa85-4f6e-ab75-7c20e46f586b/ HTTP/1.1" 200 266
+INFO 2025-08-18 20:59:52,881 basehttp 12348 2644 "GET /api/scheduling/schedule-overview/?date=2025-07-14 HTTP/1.1" 200 922
+INFO 2025-08-18 21:00:07,004 basehttp 12348 2644 "GET /api/business/ HTTP/1.1" 200 869
+INFO 2025-08-18 21:00:07,286 basehttp 12348 2644 "GET /api/business/ HTTP/1.1" 200 869
+INFO 2025-08-18 21:00:31,707 basehttp 12348 2644 "GET /api/scheduling/schedule-overview/?date=2025-08-18 HTTP/1.1" 200 175
+INFO 2025-08-18 21:00:32,050 basehttp 12348 2644 "GET /api/scheduling/schedule-overview/?date=2025-08-18 HTTP/1.1" 200 175
+INFO 2025-08-18 21:00:59,498 basehttp 12348 2644 "GET /api/scheduling/schedule-overview/?date=2025-08-18 HTTP/1.1" 200 175
+INFO 2025-08-18 21:09:29,826 basehttp 12348 17012 "GET /api/scheduling/schedule-overview/?date=2025-08-18 HTTP/1.1" 200 175
+INFO 2025-08-18 21:10:07,226 basehttp 12348 17012 "GET /api/scheduling/schedule-overview/?date=2025-07-14 HTTP/1.1" 200 922
+INFO 2025-08-18 21:10:18,673 basehttp 12348 17012 "OPTIONS /api/scheduling/pickups/ce275abb-48e0-43f3-8643-dce7aaa27c8a/ HTTP/1.1" 200 0
+WARNING 2025-08-18 21:10:18,909 log 12348 17012 Method Not Allowed: /api/scheduling/pickups/ce275abb-48e0-43f3-8643-dce7aaa27c8a/
+WARNING 2025-08-18 21:10:18,911 basehttp 12348 17012 "PATCH /api/scheduling/pickups/ce275abb-48e0-43f3-8643-dce7aaa27c8a/ HTTP/1.1" 405 42
+INFO 2025-08-18 21:10:46,528 basehttp 12348 17012 "POST /api/scheduling/verify-code/ HTTP/1.1" 200 992
+INFO 2025-08-18 21:10:46,533 basehttp 12348 17012 "OPTIONS /api/scheduling/complete-pickup/ce275abb-48e0-43f3-8643-dce7aaa27c8a/ HTTP/1.1" 200 0
+INFO 2025-08-18 21:10:50,741 basehttp 12348 17012 "POST /api/scheduling/complete-pickup/ce275abb-48e0-43f3-8643-dce7aaa27c8a/ HTTP/1.1" 200 266
+INFO 2025-08-18 21:10:51,135 basehttp 12348 17012 "GET /api/scheduling/schedule-overview/?date=2025-07-14 HTTP/1.1" 200 922
+INFO 2025-08-18 21:14:27,876 basehttp 12348 20944 "GET /api/scheduling/schedule-overview/?date=2025-07-14 HTTP/1.1" 200 922
+INFO 2025-08-19 13:31:50,443 blob_storage 20012 19244 Updated existing container to public access: customer-profiles
+INFO 2025-08-19 13:31:50,613 blob_storage 20012 19244 Updated existing container to public access: ngo-documents
+INFO 2025-08-19 13:31:50,864 blob_storage 20012 19244 Updated existing container to public access: ngo-logos
+INFO 2025-08-19 13:31:50,919 blob_storage 20012 19244 Updated existing container to public access: provider-documents
+INFO 2025-08-19 13:31:50,978 blob_storage 20012 19244 Updated existing container to public access: provider-logos
+INFO 2025-08-19 13:31:51,035 blob_storage 20012 19244 Updated existing container to public access: provider-banners
+INFO 2025-08-19 13:32:02,152 blob_storage 22864 11616 Updated existing container to public access: customer-profiles
+INFO 2025-08-19 13:32:02,187 blob_storage 22864 11616 Updated existing container to public access: ngo-documents
+INFO 2025-08-19 13:32:02,228 blob_storage 22864 11616 Updated existing container to public access: ngo-logos
+INFO 2025-08-19 13:32:02,281 blob_storage 22864 11616 Updated existing container to public access: provider-documents
+INFO 2025-08-19 13:32:02,326 blob_storage 22864 11616 Updated existing container to public access: provider-logos
+INFO 2025-08-19 13:32:02,375 blob_storage 22864 11616 Updated existing container to public access: provider-banners
+INFO 2025-08-19 13:32:02,577 autoreload 22864 11616 Watching for file changes with StatReloader
+INFO 2025-08-19 13:32:08,886 blob_storage 22864 10832 Updated existing container to public access: customer-profiles
+INFO 2025-08-19 13:32:08,936 blob_storage 22864 10832 Updated existing container to public access: provider-banners
+INFO 2025-08-19 13:32:08,977 blob_storage 22864 10832 Updated existing container to public access: provider-documents
+INFO 2025-08-19 13:32:09,028 blob_storage 22864 10832 Updated existing container to public access: provider-logos
+INFO 2025-08-19 13:32:09,076 blob_storage 22864 10832 Updated existing container to public access: ngo-documents
+INFO 2025-08-19 13:32:09,131 blob_storage 22864 10832 Updated existing container to public access: ngo-logos
+WARNING 2025-08-19 13:32:30,038 log 22864 14392 Unauthorized: /api/notifications/unread-count/
+WARNING 2025-08-19 13:32:30,039 log 22864 22192 Unauthorized: /api/notifications/preferences/
+WARNING 2025-08-19 13:32:30,043 basehttp 22864 14392 "GET /api/notifications/unread-count/ HTTP/1.1" 401 58
+WARNING 2025-08-19 13:32:30,044 basehttp 22864 22192 "GET /api/notifications/preferences/ HTTP/1.1" 401 58
+WARNING 2025-08-19 13:32:30,055 log 22864 14392 Unauthorized: /api/notifications/unread-count/
+WARNING 2025-08-19 13:32:30,062 log 22864 22192 Unauthorized: /api/notifications/preferences/
+WARNING 2025-08-19 13:32:30,065 basehttp 22864 22192 "GET /api/notifications/preferences/ HTTP/1.1" 401 58
+WARNING 2025-08-19 13:32:30,066 basehttp 22864 14392 "GET /api/notifications/unread-count/ HTTP/1.1" 401 58
+INFO 2025-08-19 13:32:41,972 basehttp 22864 22192 "OPTIONS /auth/login/ HTTP/1.1" 200 0
+INFO 2025-08-19 13:32:44,344 basehttp 22864 22192 "POST /auth/login/ HTTP/1.1" 200 1359
+INFO 2025-08-19 13:32:44,363 basehttp 22864 22192 "OPTIONS /api/notifications/unread-count/ HTTP/1.1" 200 0
+INFO 2025-08-19 13:32:44,417 basehttp 22864 14392 "OPTIONS /api/business/ HTTP/1.1" 200 0
+INFO 2025-08-19 13:32:44,418 basehttp 22864 22352 "OPTIONS /api/business/ HTTP/1.1" 200 0
+INFO 2025-08-19 13:32:44,525 basehttp 22864 22192 "GET /api/notifications/unread-count/ HTTP/1.1" 200 19
+INFO 2025-08-19 13:32:44,813 basehttp 22864 22352 "GET /api/business/ HTTP/1.1" 200 869
+INFO 2025-08-19 13:32:45,024 basehttp 22864 22352 "GET /api/business/ HTTP/1.1" 200 869
+INFO 2025-08-19 13:33:11,823 basehttp 22864 22192 "OPTIONS /api/business/reviews/ HTTP/1.1" 200 0
+INFO 2025-08-19 13:33:11,824 basehttp 22864 22352 "OPTIONS /api/business/reviews/ HTTP/1.1" 200 0
+INFO 2025-08-19 13:33:12,378 basehttp 22864 22352 "GET /api/business/reviews/ HTTP/1.1" 200 3604
+INFO 2025-08-19 13:33:12,765 basehttp 22864 22352 "GET /api/business/reviews/ HTTP/1.1" 200 3604
+INFO 2025-08-19 13:33:13,060 basehttp 22864 22352 "GET /api/business/reviews/ HTTP/1.1" 200 3604
+INFO 2025-08-19 13:33:13,076 basehttp 22864 22192 "OPTIONS /api/business/reviews/stats/ HTTP/1.1" 200 0
+INFO 2025-08-19 13:33:13,375 basehttp 22864 22192 "GET /api/business/reviews/stats/ HTTP/1.1" 200 303
+INFO 2025-08-19 13:33:13,380 basehttp 22864 22352 "GET /api/business/reviews/ HTTP/1.1" 200 3604
+INFO 2025-08-19 13:33:13,667 basehttp 22864 22352 "GET /api/business/reviews/stats/ HTTP/1.1" 200 303
+INFO 2025-08-19 14:18:08,191 basehttp 22864 17252 "OPTIONS /api/notifications/preferences/ HTTP/1.1" 200 0
+INFO 2025-08-19 14:18:08,252 basehttp 22864 11440 "OPTIONS /api/notifications/preferences/ HTTP/1.1" 200 0
+INFO 2025-08-19 14:18:08,794 basehttp 22864 3556 "GET /api/notifications/unread-count/ HTTP/1.1" 200 19
+INFO 2025-08-19 14:18:08,795 basehttp 22864 17252 "GET /api/notifications/preferences/ HTTP/1.1" 200 132
+INFO 2025-08-19 14:18:08,999 basehttp 22864 4500 "GET /api/business/reviews/ HTTP/1.1" 200 3604
+INFO 2025-08-19 14:18:09,152 basehttp 22864 17252 "GET /api/notifications/preferences/ HTTP/1.1" 200 132
+INFO 2025-08-19 14:18:09,153 basehttp 22864 3556 "GET /api/notifications/unread-count/ HTTP/1.1" 200 19
+INFO 2025-08-19 14:18:09,315 basehttp 22864 4500 "GET /api/business/reviews/ HTTP/1.1" 200 3604
+INFO 2025-08-19 14:18:09,556 basehttp 22864 4500 "GET /api/business/reviews/ HTTP/1.1" 200 3604
+INFO 2025-08-19 14:18:09,788 basehttp 22864 3556 "GET /api/business/reviews/stats/ HTTP/1.1" 200 303
+INFO 2025-08-19 14:18:09,844 basehttp 22864 4500 "GET /api/business/reviews/ HTTP/1.1" 200 3604
+INFO 2025-08-19 14:18:09,989 basehttp 22864 4500 "GET /api/business/reviews/stats/ HTTP/1.1" 200 303
+INFO 2025-08-19 14:19:03,758 basehttp 22864 4500 "OPTIONS /api/scheduling/schedule-overview/?date=2025-08-19 HTTP/1.1" 200 0
+INFO 2025-08-19 14:19:03,759 basehttp 22864 3556 "OPTIONS /api/scheduling/schedule-overview/?date=2025-08-19 HTTP/1.1" 200 0
+INFO 2025-08-19 14:19:04,248 basehttp 22864 3556 "GET /api/scheduling/schedule-overview/?date=2025-08-19 HTTP/1.1" 200 175
+INFO 2025-08-19 14:19:04,615 basehttp 22864 3556 "GET /api/scheduling/schedule-overview/?date=2025-08-19 HTTP/1.1" 200 175
+INFO 2025-08-19 14:19:12,717 basehttp 22864 3556 "OPTIONS /api/provider/listings/ HTTP/1.1" 200 0
+INFO 2025-08-19 14:19:12,718 basehttp 22864 4500 "OPTIONS /api/provider/listings/ HTTP/1.1" 200 0
+INFO 2025-08-19 14:19:13,473 basehttp 22864 4500 "GET /api/provider/listings/ HTTP/1.1" 200 368869
+INFO 2025-08-19 14:19:13,966 basehttp 22864 3556 "GET /api/provider/listings/ HTTP/1.1" 200 368869
+INFO 2025-08-19 14:19:19,704 basehttp 22864 3556 "GET /api/business/reviews/ HTTP/1.1" 200 3604
+INFO 2025-08-19 14:19:20,033 basehttp 22864 3556 "GET /api/business/reviews/ HTTP/1.1" 200 3604
+INFO 2025-08-19 14:19:20,254 basehttp 22864 3556 "GET /api/business/reviews/ HTTP/1.1" 200 3604
+INFO 2025-08-19 14:19:20,542 basehttp 22864 4500 "GET /api/business/reviews/stats/ HTTP/1.1" 200 303
+INFO 2025-08-19 14:19:20,654 basehttp 22864 3556 "GET /api/business/reviews/ HTTP/1.1" 200 3604
+INFO 2025-08-19 14:19:20,886 basehttp 22864 3556 "GET /api/business/reviews/stats/ HTTP/1.1" 200 303
+INFO 2025-08-19 14:21:06,227 basehttp 22864 3556 "POST /auth/login/ HTTP/1.1" 200 1078
+INFO 2025-08-19 14:21:06,264 basehttp 22864 4500 "OPTIONS /api/food-listings/ HTTP/1.1" 200 0
+INFO 2025-08-19 14:21:06,270 basehttp 22864 17252 "OPTIONS /api/food-listings/ HTTP/1.1" 200 0
+INFO 2025-08-19 14:21:06,395 basehttp 22864 3556 "GET /api/notifications/unread-count/ HTTP/1.1" 200 18
+INFO 2025-08-19 14:21:06,509 basehttp 22864 17252 "GET /api/food-listings/ HTTP/1.1" 200 354333
+INFO 2025-08-19 14:21:06,633 basehttp 22864 17252 "OPTIONS /auth/providers/?complete_profiles_only=true HTTP/1.1" 200 0
+INFO 2025-08-19 14:21:06,633 basehttp 22864 4500 "OPTIONS /auth/providers/?complete_profiles_only=true HTTP/1.1" 200 0
+INFO 2025-08-19 14:21:06,757 basehttp 22864 3556 "GET /api/food-listings/ HTTP/1.1" 200 354333
+INFO 2025-08-19 14:21:06,908 basehttp 22864 17252 "GET /auth/providers/?complete_profiles_only=true HTTP/1.1" 200 5067
+INFO 2025-08-19 14:21:06,928 basehttp 22864 11440 "OPTIONS /api/reviews/provider/f2befc4d-4ab0-4ad0-8e56-f16918bb5d80/?page=1&page_size=1 HTTP/1.1" 200 0
+INFO 2025-08-19 14:21:06,928 basehttp 22864 4500 "OPTIONS /api/reviews/provider/ce83f6ac-2ebb-4f62-a625-ff889a702d83/?page=1&page_size=1 HTTP/1.1" 200 0
+INFO 2025-08-19 14:21:06,929 basehttp 22864 17252 "OPTIONS /api/reviews/provider/813b9e73-40d9-4346-862c-2d13cfba0f5b/?page=1&page_size=1 HTTP/1.1" 200 0
+INFO 2025-08-19 14:21:06,949 basehttp 22864 4500 "OPTIONS /api/reviews/provider/18c36b03-b3f9-487b-91eb-ad1be9efaaf6/?page=1&page_size=1 HTTP/1.1" 200 0
+INFO 2025-08-19 14:21:06,950 basehttp 22864 11440 "OPTIONS /api/reviews/provider/0e0e5a4b-3820-41dd-a001-73755fea0d9e/?page=1&page_size=1 HTTP/1.1" 200 0
+INFO 2025-08-19 14:21:07,218 basehttp 22864 17252 "GET /api/reviews/provider/f2befc4d-4ab0-4ad0-8e56-f16918bb5d80/?page=1&page_size=1 HTTP/1.1" 200 416
+INFO 2025-08-19 14:21:07,219 basehttp 22864 4500 "GET /api/reviews/provider/ce83f6ac-2ebb-4f62-a625-ff889a702d83/?page=1&page_size=1 HTTP/1.1" 200 413
+INFO 2025-08-19 14:21:07,257 basehttp 22864 11440 "GET /api/reviews/provider/813b9e73-40d9-4346-862c-2d13cfba0f5b/?page=1&page_size=1 HTTP/1.1" 200 825
+INFO 2025-08-19 14:21:07,278 basehttp 22864 3556 "GET /auth/providers/?complete_profiles_only=true HTTP/1.1" 200 5067
+INFO 2025-08-19 14:21:07,449 basehttp 22864 17252 "GET /api/reviews/provider/0e0e5a4b-3820-41dd-a001-73755fea0d9e/?page=1&page_size=1 HTTP/1.1" 200 410
+INFO 2025-08-19 14:21:07,487 basehttp 22864 4500 "GET /api/reviews/provider/18c36b03-b3f9-487b-91eb-ad1be9efaaf6/?page=1&page_size=1 HTTP/1.1" 200 410
+INFO 2025-08-19 14:21:07,514 basehttp 22864 11440 "GET /api/reviews/provider/ce83f6ac-2ebb-4f62-a625-ff889a702d83/?page=1&page_size=1 HTTP/1.1" 200 413
+INFO 2025-08-19 14:21:07,518 basehttp 22864 7644 "GET /api/reviews/provider/f2befc4d-4ab0-4ad0-8e56-f16918bb5d80/?page=1&page_size=1 HTTP/1.1" 200 416
+INFO 2025-08-19 14:21:07,540 basehttp 22864 3556 "GET /api/reviews/provider/813b9e73-40d9-4346-862c-2d13cfba0f5b/?page=1&page_size=1 HTTP/1.1" 200 825
+INFO 2025-08-19 14:21:07,623 basehttp 22864 22876 "GET /api/reviews/provider/0e0e5a4b-3820-41dd-a001-73755fea0d9e/?page=1&page_size=1 HTTP/1.1" 200 410
+INFO 2025-08-19 14:21:07,648 basehttp 22864 17252 "GET /api/reviews/provider/18c36b03-b3f9-487b-91eb-ad1be9efaaf6/?page=1&page_size=1 HTTP/1.1" 200 410
+INFO 2025-08-19 14:22:07,704 basehttp 22864 22876 "OPTIONS /auth/providers/ce83f6ac-2ebb-4f62-a625-ff889a702d83/ HTTP/1.1" 200 0
+INFO 2025-08-19 14:22:07,705 basehttp 22864 17252 "OPTIONS /auth/providers/ce83f6ac-2ebb-4f62-a625-ff889a702d83/ HTTP/1.1" 200 0
+INFO 2025-08-19 14:22:07,982 basehttp 22864 17252 "GET /auth/providers/ce83f6ac-2ebb-4f62-a625-ff889a702d83/ HTTP/1.1" 200 1155
+INFO 2025-08-19 14:22:08,007 basehttp 22864 22876 "OPTIONS /api/reviews/provider/ce83f6ac-2ebb-4f62-a625-ff889a702d83/?page=1&page_size=20&sort=newest HTTP/1.1" 200 0
+INFO 2025-08-19 14:22:08,284 basehttp 22864 17252 "GET /auth/providers/ce83f6ac-2ebb-4f62-a625-ff889a702d83/ HTTP/1.1" 200 1155
+INFO 2025-08-19 14:22:08,321 basehttp 22864 22876 "GET /api/reviews/provider/ce83f6ac-2ebb-4f62-a625-ff889a702d83/?page=1&page_size=20&sort=newest HTTP/1.1" 200 413
+INFO 2025-08-19 14:22:08,397 basehttp 22864 3556 "GET /api/food-listings/ HTTP/1.1" 200 354333
+INFO 2025-08-19 14:22:08,494 basehttp 22864 22876 "GET /api/reviews/provider/ce83f6ac-2ebb-4f62-a625-ff889a702d83/?page=1&page_size=20&sort=newest HTTP/1.1" 200 413
+INFO 2025-08-19 14:22:08,641 basehttp 22864 17252 "GET /api/food-listings/ HTTP/1.1" 200 354333
+INFO 2025-08-19 14:22:15,295 basehttp 22864 17252 "GET /api/food-listings/ HTTP/1.1" 200 354333
+INFO 2025-08-19 14:22:15,660 basehttp 22864 22876 "GET /api/food-listings/ HTTP/1.1" 200 354333
+INFO 2025-08-19 14:22:15,720 basehttp 22864 17252 "GET /auth/providers/?complete_profiles_only=true HTTP/1.1" 200 5067
+INFO 2025-08-19 14:22:16,012 basehttp 22864 3556 "GET /api/reviews/provider/ce83f6ac-2ebb-4f62-a625-ff889a702d83/?page=1&page_size=1 HTTP/1.1" 200 413
+INFO 2025-08-19 14:22:16,026 basehttp 22864 22876 "GET /api/reviews/provider/813b9e73-40d9-4346-862c-2d13cfba0f5b/?page=1&page_size=1 HTTP/1.1" 200 825
+INFO 2025-08-19 14:22:16,033 basehttp 22864 7644 "GET /api/reviews/provider/f2befc4d-4ab0-4ad0-8e56-f16918bb5d80/?page=1&page_size=1 HTTP/1.1" 200 416
+INFO 2025-08-19 14:22:16,034 basehttp 22864 11440 "GET /api/reviews/provider/0e0e5a4b-3820-41dd-a001-73755fea0d9e/?page=1&page_size=1 HTTP/1.1" 200 410
+INFO 2025-08-19 14:22:16,041 basehttp 22864 4500 "GET /api/reviews/provider/18c36b03-b3f9-487b-91eb-ad1be9efaaf6/?page=1&page_size=1 HTTP/1.1" 200 410
+INFO 2025-08-19 14:22:16,054 basehttp 22864 17252 "GET /auth/providers/?complete_profiles_only=true HTTP/1.1" 200 5067
+INFO 2025-08-19 14:22:16,339 basehttp 22864 4500 "GET /api/reviews/provider/ce83f6ac-2ebb-4f62-a625-ff889a702d83/?page=1&page_size=1 HTTP/1.1" 200 413
+INFO 2025-08-19 14:22:16,356 basehttp 22864 7644 "GET /api/reviews/provider/0e0e5a4b-3820-41dd-a001-73755fea0d9e/?page=1&page_size=1 HTTP/1.1" 200 410
+INFO 2025-08-19 14:22:16,360 basehttp 22864 11440 "GET /api/reviews/provider/f2befc4d-4ab0-4ad0-8e56-f16918bb5d80/?page=1&page_size=1 HTTP/1.1" 200 416
+INFO 2025-08-19 14:22:16,362 basehttp 22864 22876 "GET /api/reviews/provider/18c36b03-b3f9-487b-91eb-ad1be9efaaf6/?page=1&page_size=1 HTTP/1.1" 200 410
+INFO 2025-08-19 14:22:16,372 basehttp 22864 17252 "GET /api/reviews/provider/813b9e73-40d9-4346-862c-2d13cfba0f5b/?page=1&page_size=1 HTTP/1.1" 200 825
+INFO 2025-08-19 14:22:21,793 basehttp 22864 22876 "OPTIONS /auth/providers/ HTTP/1.1" 200 0
+INFO 2025-08-19 14:22:21,794 basehttp 22864 17252 "OPTIONS /auth/providers/ HTTP/1.1" 200 0
+INFO 2025-08-19 14:22:22,209 basehttp 22864 17252 "GET /auth/providers/ HTTP/1.1" 200 5067
+INFO 2025-08-19 14:22:22,670 basehttp 22864 11440 "GET /api/reviews/provider/ce83f6ac-2ebb-4f62-a625-ff889a702d83/?page=1&page_size=1 HTTP/1.1" 200 413
+INFO 2025-08-19 14:22:22,683 basehttp 22864 4500 "GET /api/reviews/provider/0e0e5a4b-3820-41dd-a001-73755fea0d9e/?page=1&page_size=1 HTTP/1.1" 200 410
+INFO 2025-08-19 14:22:22,693 basehttp 22864 3556 "GET /api/reviews/provider/18c36b03-b3f9-487b-91eb-ad1be9efaaf6/?page=1&page_size=1 HTTP/1.1" 200 410
+INFO 2025-08-19 14:22:22,694 basehttp 22864 7644 "GET /api/reviews/provider/f2befc4d-4ab0-4ad0-8e56-f16918bb5d80/?page=1&page_size=1 HTTP/1.1" 200 416
+INFO 2025-08-19 14:22:22,704 basehttp 22864 17252 "GET /api/reviews/provider/813b9e73-40d9-4346-862c-2d13cfba0f5b/?page=1&page_size=1 HTTP/1.1" 200 825
+INFO 2025-08-19 14:22:22,710 basehttp 22864 22876 "GET /auth/providers/ HTTP/1.1" 200 5067
+INFO 2025-08-19 14:22:23,037 basehttp 22864 22876 "GET /api/reviews/provider/813b9e73-40d9-4346-862c-2d13cfba0f5b/?page=1&page_size=1 HTTP/1.1" 200 825
+INFO 2025-08-19 14:22:23,049 basehttp 22864 17252 "GET /api/reviews/provider/ce83f6ac-2ebb-4f62-a625-ff889a702d83/?page=1&page_size=1 HTTP/1.1" 200 413
+INFO 2025-08-19 14:22:23,049 basehttp 22864 7644 "GET /api/reviews/provider/f2befc4d-4ab0-4ad0-8e56-f16918bb5d80/?page=1&page_size=1 HTTP/1.1" 200 416
+INFO 2025-08-19 14:22:23,050 basehttp 22864 3556 "GET /api/reviews/provider/0e0e5a4b-3820-41dd-a001-73755fea0d9e/?page=1&page_size=1 HTTP/1.1" 200 410
+INFO 2025-08-19 14:22:23,057 basehttp 22864 4500 "GET /api/reviews/provider/18c36b03-b3f9-487b-91eb-ad1be9efaaf6/?page=1&page_size=1 HTTP/1.1" 200 410
+INFO 2025-08-19 14:22:29,422 basehttp 22864 4500 "OPTIONS /auth/providers/813b9e73-40d9-4346-862c-2d13cfba0f5b/ HTTP/1.1" 200 0
+INFO 2025-08-19 14:22:29,423 basehttp 22864 3556 "OPTIONS /auth/providers/813b9e73-40d9-4346-862c-2d13cfba0f5b/ HTTP/1.1" 200 0
+INFO 2025-08-19 14:22:29,760 basehttp 22864 3556 "GET /auth/providers/813b9e73-40d9-4346-862c-2d13cfba0f5b/ HTTP/1.1" 200 934
+INFO 2025-08-19 14:22:29,787 basehttp 22864 4500 "OPTIONS /api/reviews/provider/813b9e73-40d9-4346-862c-2d13cfba0f5b/?page=1&page_size=20&sort=newest HTTP/1.1" 200 0
+INFO 2025-08-19 14:22:30,017 basehttp 22864 3556 "GET /auth/providers/813b9e73-40d9-4346-862c-2d13cfba0f5b/ HTTP/1.1" 200 934
+INFO 2025-08-19 14:22:30,123 basehttp 22864 4500 "GET /api/reviews/provider/813b9e73-40d9-4346-862c-2d13cfba0f5b/?page=1&page_size=20&sort=newest HTTP/1.1" 200 2576
+INFO 2025-08-19 14:22:30,155 basehttp 22864 7644 "GET /api/food-listings/ HTTP/1.1" 200 354333
+INFO 2025-08-19 14:22:30,453 basehttp 22864 4500 "GET /api/reviews/provider/813b9e73-40d9-4346-862c-2d13cfba0f5b/?page=1&page_size=20&sort=newest HTTP/1.1" 200 2576
+INFO 2025-08-19 14:22:30,476 basehttp 22864 3556 "GET /api/food-listings/ HTTP/1.1" 200 354333
+INFO 2025-08-19 14:22:30,939 basehttp 22864 4500 "GET /api/food-listings/ HTTP/1.1" 200 354333
+INFO 2025-08-19 14:22:31,175 basehttp 22864 3556 "GET /api/food-listings/ HTTP/1.1" 200 354333
+INFO 2025-08-19 14:22:49,925 basehttp 22864 3556 "OPTIONS /auth/profile/me/ HTTP/1.1" 200 0
+INFO 2025-08-19 14:22:49,926 basehttp 22864 4500 "OPTIONS /auth/profile/me/ HTTP/1.1" 200 0
+INFO 2025-08-19 14:22:50,315 basehttp 22864 3556 "GET /auth/profile/me/ HTTP/1.1" 200 2599
+INFO 2025-08-19 14:22:50,608 basehttp 22864 3556 "GET /auth/profile/me/ HTTP/1.1" 200 2599
+INFO 2025-08-19 14:23:04,377 basehttp 22864 3556 "OPTIONS /api/scheduling/my-pickups/ HTTP/1.1" 200 0
+INFO 2025-08-19 14:23:04,379 basehttp 22864 17252 "OPTIONS /cart/ngo/history/ HTTP/1.1" 200 0
+INFO 2025-08-19 14:23:04,379 basehttp 22864 4500 "OPTIONS /cart/ngo/history/ HTTP/1.1" 200 0
+INFO 2025-08-19 14:23:04,380 basehttp 22864 7644 "OPTIONS /api/scheduling/my-pickups/ HTTP/1.1" 200 0
+INFO 2025-08-19 14:23:04,617 basehttp 22864 7644 "GET /cart/ngo/history/ HTTP/1.1" 200 52
+INFO 2025-08-19 14:23:04,728 basehttp 22864 3556 "GET /api/scheduling/my-pickups/ HTTP/1.1" 200 17459
+INFO 2025-08-19 14:23:04,762 basehttp 22864 7644 "GET /cart/ngo/history/ HTTP/1.1" 200 52
+INFO 2025-08-19 14:23:04,773 basehttp 22864 7644 "OPTIONS /cart/interactions/37e1409e-99f9-4196-ac97-7876980eb6f6/review-status/ HTTP/1.1" 200 0
+INFO 2025-08-19 14:23:04,917 basehttp 22864 7644 "GET /cart/interactions/37e1409e-99f9-4196-ac97-7876980eb6f6/review-status/ HTTP/1.1" 200 227
+INFO 2025-08-19 14:23:04,926 basehttp 22864 7644 "OPTIONS /cart/interactions/6546bad8-00cd-4498-99e8-a0f2f9589b4b/review-status/ HTTP/1.1" 200 0
+INFO 2025-08-19 14:23:04,985 basehttp 22864 4500 "GET /api/scheduling/my-pickups/ HTTP/1.1" 200 17459
+INFO 2025-08-19 14:23:05,082 basehttp 22864 7644 "GET /cart/interactions/6546bad8-00cd-4498-99e8-a0f2f9589b4b/review-status/ HTTP/1.1" 200 194
+INFO 2025-08-19 14:23:05,088 basehttp 22864 7644 "OPTIONS /cart/interactions/06d5a02d-fd76-4140-bd5f-120915c5a62c/review-status/ HTTP/1.1" 200 0
+INFO 2025-08-19 14:23:05,147 basehttp 22864 4500 "GET /cart/interactions/37e1409e-99f9-4196-ac97-7876980eb6f6/review-status/ HTTP/1.1" 200 227
+INFO 2025-08-19 14:23:05,250 basehttp 22864 7644 "GET /cart/interactions/06d5a02d-fd76-4140-bd5f-120915c5a62c/review-status/ HTTP/1.1" 200 194
+INFO 2025-08-19 14:23:05,257 basehttp 22864 7644 "OPTIONS /cart/interactions/60e0d7ed-8a5f-4c25-9757-4812c9c6f382/review-status/ HTTP/1.1" 200 0
+INFO 2025-08-19 14:23:05,308 basehttp 22864 4500 "GET /cart/interactions/6546bad8-00cd-4498-99e8-a0f2f9589b4b/review-status/ HTTP/1.1" 200 194
+INFO 2025-08-19 14:23:05,414 basehttp 22864 7644 "GET /cart/interactions/60e0d7ed-8a5f-4c25-9757-4812c9c6f382/review-status/ HTTP/1.1" 200 194
+INFO 2025-08-19 14:23:05,421 basehttp 22864 7644 "OPTIONS /cart/interactions/aed5c281-6234-4f51-aabe-c58d509e1a2d/review-status/ HTTP/1.1" 200 0
+INFO 2025-08-19 14:23:05,570 basehttp 22864 4500 "GET /cart/interactions/06d5a02d-fd76-4140-bd5f-120915c5a62c/review-status/ HTTP/1.1" 200 194
+INFO 2025-08-19 14:23:05,809 basehttp 22864 7644 "GET /cart/interactions/aed5c281-6234-4f51-aabe-c58d509e1a2d/review-status/ HTTP/1.1" 200 227
+INFO 2025-08-19 14:23:05,829 basehttp 22864 7644 "OPTIONS /cart/interactions/05571c9c-6e26-41db-ad1b-e0d721f52517/review-status/ HTTP/1.1" 200 0
+INFO 2025-08-19 14:23:05,871 basehttp 22864 4500 "GET /cart/interactions/60e0d7ed-8a5f-4c25-9757-4812c9c6f382/review-status/ HTTP/1.1" 200 194
+INFO 2025-08-19 14:23:06,064 basehttp 22864 7644 "GET /cart/interactions/05571c9c-6e26-41db-ad1b-e0d721f52517/review-status/ HTTP/1.1" 200 227
+INFO 2025-08-19 14:23:06,074 basehttp 22864 7644 "OPTIONS /cart/interactions/5a75b306-b058-4663-893e-47e5984036d4/review-status/ HTTP/1.1" 200 0
+INFO 2025-08-19 14:23:06,086 basehttp 22864 4500 "GET /cart/interactions/aed5c281-6234-4f51-aabe-c58d509e1a2d/review-status/ HTTP/1.1" 200 227
+INFO 2025-08-19 14:23:06,253 basehttp 22864 4500 "GET /cart/interactions/05571c9c-6e26-41db-ad1b-e0d721f52517/review-status/ HTTP/1.1" 200 227
+INFO 2025-08-19 14:23:06,363 basehttp 22864 7644 "GET /cart/interactions/5a75b306-b058-4663-893e-47e5984036d4/review-status/ HTTP/1.1" 200 194
+INFO 2025-08-19 14:23:06,383 basehttp 22864 4500 "OPTIONS /cart/interactions/15e58698-64fe-4eed-8426-42af0b578b8b/review-status/ HTTP/1.1" 200 0
+INFO 2025-08-19 14:23:06,602 basehttp 22864 7644 "GET /cart/interactions/5a75b306-b058-4663-893e-47e5984036d4/review-status/ HTTP/1.1" 200 194
+INFO 2025-08-19 14:23:06,610 basehttp 22864 4500 "GET /cart/interactions/15e58698-64fe-4eed-8426-42af0b578b8b/review-status/ HTTP/1.1" 200 227
+INFO 2025-08-19 14:23:06,618 basehttp 22864 7644 "OPTIONS /cart/interactions/62658c11-849a-44a0-b8c2-94027265b3f9/review-status/ HTTP/1.1" 200 0
+INFO 2025-08-19 14:23:06,744 basehttp 22864 4500 "GET /cart/interactions/15e58698-64fe-4eed-8426-42af0b578b8b/review-status/ HTTP/1.1" 200 227
+INFO 2025-08-19 14:23:06,755 basehttp 22864 7644 "GET /cart/interactions/62658c11-849a-44a0-b8c2-94027265b3f9/review-status/ HTTP/1.1" 200 227
+INFO 2025-08-19 14:23:06,764 basehttp 22864 4500 "OPTIONS /cart/interactions/19ccd595-b9ab-43c7-9a69-20d2fbf59009/review-status/ HTTP/1.1" 200 0
+INFO 2025-08-19 14:23:06,905 basehttp 22864 7644 "GET /cart/interactions/62658c11-849a-44a0-b8c2-94027265b3f9/review-status/ HTTP/1.1" 200 227
+INFO 2025-08-19 14:23:06,916 basehttp 22864 4500 "GET /cart/interactions/19ccd595-b9ab-43c7-9a69-20d2fbf59009/review-status/ HTTP/1.1" 200 227
+INFO 2025-08-19 14:23:06,927 basehttp 22864 7644 "OPTIONS /cart/interactions/2af6ac15-a792-4ef0-9778-21e5f6936ddf/review-status/ HTTP/1.1" 200 0
+INFO 2025-08-19 14:23:07,072 basehttp 22864 7644 "GET /cart/interactions/2af6ac15-a792-4ef0-9778-21e5f6936ddf/review-status/ HTTP/1.1" 200 227
+INFO 2025-08-19 14:23:07,077 basehttp 22864 4500 "GET /cart/interactions/19ccd595-b9ab-43c7-9a69-20d2fbf59009/review-status/ HTTP/1.1" 200 227
+INFO 2025-08-19 14:23:07,274 basehttp 22864 4500 "GET /cart/interactions/2af6ac15-a792-4ef0-9778-21e5f6936ddf/review-status/ HTTP/1.1" 200 227
+INFO 2025-08-19 14:23:14,132 basehttp 22864 4500 "OPTIONS /api/notifications/?limit=5&ordering=-created_at HTTP/1.1" 200 0
+INFO 2025-08-19 14:23:14,576 basehttp 22864 4500 "GET /api/notifications/?limit=5&ordering=-created_at HTTP/1.1" 200 8675
+INFO 2025-08-19 14:23:17,127 basehttp 22864 17252 "OPTIONS /api/notifications/ HTTP/1.1" 200 0
+INFO 2025-08-19 14:23:17,129 basehttp 22864 3556 "OPTIONS /api/notifications/ HTTP/1.1" 200 0
+INFO 2025-08-19 14:23:17,283 basehttp 22864 7644 "GET /api/notifications/preferences/ HTTP/1.1" 200 132
+INFO 2025-08-19 14:23:17,290 basehttp 22864 4500 "GET /api/notifications/unread-count/ HTTP/1.1" 200 18
+INFO 2025-08-19 14:23:17,390 basehttp 22864 3556 "GET /api/notifications/ HTTP/1.1" 200 8675
+INFO 2025-08-19 14:23:17,421 basehttp 22864 7644 "GET /api/notifications/preferences/ HTTP/1.1" 200 132
+INFO 2025-08-19 14:23:17,440 basehttp 22864 4500 "GET /api/notifications/unread-count/ HTTP/1.1" 200 18
+INFO 2025-08-19 14:23:17,609 basehttp 22864 3556 "GET /api/notifications/ HTTP/1.1" 200 8675
+INFO 2025-08-19 14:23:21,712 basehttp 22864 3556 "GET /api/food-listings/ HTTP/1.1" 200 354333
+INFO 2025-08-19 14:23:21,993 basehttp 22864 4500 "GET /api/food-listings/ HTTP/1.1" 200 354333
+INFO 2025-08-19 14:23:22,074 basehttp 22864 3556 "GET /auth/providers/?complete_profiles_only=true HTTP/1.1" 200 5067
+INFO 2025-08-19 14:23:22,396 basehttp 22864 3556 "GET /auth/providers/?complete_profiles_only=true HTTP/1.1" 200 5067
+INFO 2025-08-19 14:23:22,501 basehttp 22864 7644 "GET /api/reviews/provider/ce83f6ac-2ebb-4f62-a625-ff889a702d83/?page=1&page_size=1 HTTP/1.1" 200 413
+INFO 2025-08-19 14:23:22,534 basehttp 22864 4500 "GET /api/reviews/provider/813b9e73-40d9-4346-862c-2d13cfba0f5b/?page=1&page_size=1 HTTP/1.1" 200 825
+INFO 2025-08-19 14:23:22,548 basehttp 22864 11440 "GET /api/reviews/provider/18c36b03-b3f9-487b-91eb-ad1be9efaaf6/?page=1&page_size=1 HTTP/1.1" 200 410
+INFO 2025-08-19 14:23:22,555 basehttp 22864 22876 "GET /api/reviews/provider/0e0e5a4b-3820-41dd-a001-73755fea0d9e/?page=1&page_size=1 HTTP/1.1" 200 410
+INFO 2025-08-19 14:23:22,565 basehttp 22864 17252 "GET /api/reviews/provider/f2befc4d-4ab0-4ad0-8e56-f16918bb5d80/?page=1&page_size=1 HTTP/1.1" 200 416
+INFO 2025-08-19 14:23:22,699 basehttp 22864 7644 "GET /api/reviews/provider/ce83f6ac-2ebb-4f62-a625-ff889a702d83/?page=1&page_size=1 HTTP/1.1" 200 413
+INFO 2025-08-19 14:23:22,792 basehttp 22864 4500 "GET /api/reviews/provider/18c36b03-b3f9-487b-91eb-ad1be9efaaf6/?page=1&page_size=1 HTTP/1.1" 200 410
+INFO 2025-08-19 14:23:22,799 basehttp 22864 22876 "GET /api/reviews/provider/0e0e5a4b-3820-41dd-a001-73755fea0d9e/?page=1&page_size=1 HTTP/1.1" 200 410
+INFO 2025-08-19 14:23:22,802 basehttp 22864 3556 "GET /api/reviews/provider/813b9e73-40d9-4346-862c-2d13cfba0f5b/?page=1&page_size=1 HTTP/1.1" 200 825
+INFO 2025-08-19 14:23:22,811 basehttp 22864 17252 "GET /api/reviews/provider/f2befc4d-4ab0-4ad0-8e56-f16918bb5d80/?page=1&page_size=1 HTTP/1.1" 200 416
+INFO 2025-08-19 14:23:44,481 basehttp 22864 17252 "OPTIONS /api/food-listings/38208e55-0823-4d2a-8b37-2012acb151a0/ HTTP/1.1" 200 0
+INFO 2025-08-19 14:23:44,483 basehttp 22864 3556 "OPTIONS /api/food-listings/38208e55-0823-4d2a-8b37-2012acb151a0/ HTTP/1.1" 200 0
+INFO 2025-08-19 14:23:44,828 basehttp 22864 17252 "GET /api/food-listings/38208e55-0823-4d2a-8b37-2012acb151a0/ HTTP/1.1" 200 727
+INFO 2025-08-19 14:23:45,126 basehttp 22864 17252 "GET /api/food-listings/38208e55-0823-4d2a-8b37-2012acb151a0/ HTTP/1.1" 200 727
+INFO 2025-08-19 14:23:47,340 basehttp 22864 17252 "OPTIONS /cart/add/ HTTP/1.1" 200 0
+INFO 2025-08-19 14:23:47,699 basehttp 22864 17252 "POST /cart/add/ HTTP/1.1" 201 300
+INFO 2025-08-19 14:23:49,255 basehttp 22864 17252 "OPTIONS /cart/ HTTP/1.1" 200 0
+INFO 2025-08-19 14:23:49,256 basehttp 22864 3556 "OPTIONS /cart/ HTTP/1.1" 200 0
+INFO 2025-08-19 14:23:49,513 basehttp 22864 3556 "GET /cart/ HTTP/1.1" 200 663
+INFO 2025-08-19 14:23:49,550 basehttp 22864 17252 "OPTIONS /api/scheduling/available-slots/?food_listing_id=38208e55-0823-4d2a-8b37-2012acb151a0 HTTP/1.1" 200 0
+INFO 2025-08-19 14:23:49,706 basehttp 22864 3556 "GET /cart/ HTTP/1.1" 200 663
+INFO 2025-08-19 14:23:49,744 basehttp 22864 17252 "GET /api/scheduling/available-slots/?food_listing_id=38208e55-0823-4d2a-8b37-2012acb151a0 HTTP/1.1" 200 2319
+INFO 2025-08-19 14:23:49,967 basehttp 22864 17252 "GET /api/scheduling/available-slots/?food_listing_id=38208e55-0823-4d2a-8b37-2012acb151a0 HTTP/1.1" 200 2319
+INFO 2025-08-19 14:24:17,365 basehttp 22864 17252 "POST /auth/login/ HTTP/1.1" 200 1359
+INFO 2025-08-19 14:24:17,545 basehttp 22864 17252 "GET /api/notifications/unread-count/ HTTP/1.1" 200 19
+INFO 2025-08-19 14:24:17,632 basehttp 22864 3556 "GET /api/business/ HTTP/1.1" 200 869
+INFO 2025-08-19 14:24:17,831 basehttp 22864 3556 "GET /api/business/ HTTP/1.1" 200 869
+INFO 2025-08-19 14:25:35,290 basehttp 22864 3556 "OPTIONS /api/provider/listings/create/ HTTP/1.1" 200 0
+INFO 2025-08-19 14:25:35,908 signals 22864 3556 Notified followers about new listing: Cakey from JoyfulFood
+INFO 2025-08-19 14:25:36,083 blob_storage 22864 3556 Updated existing container to public access: food-listings
+INFO 2025-08-19 14:25:36,606 blob_storage 22864 3556 Successfully uploaded blob with public access: food_listings/9a29c5ef-c774-439b-9ff9-25cbc40642b0.jpeg
+INFO 2025-08-19 14:25:36,616 serializers 22864 3556 Successfully uploaded image for food listing Cakey: http://127.0.0.1:10000/devstoreaccount1/food-listings/food_listings/9a29c5ef-c774-439b-9ff9-25cbc40642b0.jpeg
+INFO 2025-08-19 14:25:36,618 basehttp 22864 3556 "POST /api/provider/listings/create/ HTTP/1.1" 201 205
+INFO 2025-08-19 14:25:36,630 basehttp 22864 3556 "OPTIONS /api/scheduling/pickup-locations/ HTTP/1.1" 200 0
+INFO 2025-08-19 14:25:36,777 basehttp 22864 3556 "POST /api/scheduling/pickup-locations/ HTTP/1.1" 201 432
+INFO 2025-08-19 14:25:36,784 basehttp 22864 3556 "OPTIONS /api/scheduling/pickup-schedules/ HTTP/1.1" 200 0
+INFO 2025-08-19 14:25:36,973 basehttp 22864 3556 "POST /api/scheduling/pickup-schedules/ HTTP/1.1" 201 953
+INFO 2025-08-19 14:25:40,921 basehttp 22864 21772 "GET /api/provider/listings/ HTTP/1.1" 200 369631
+INFO 2025-08-19 14:25:41,396 basehttp 22864 3868 "GET /api/provider/listings/ HTTP/1.1" 200 369631
+INFO 2025-08-19 14:26:02,651 basehttp 22864 3868 "POST /auth/login/ HTTP/1.1" 200 1078
+INFO 2025-08-19 14:26:02,785 basehttp 22864 3868 "GET /api/notifications/unread-count/ HTTP/1.1" 200 18
+INFO 2025-08-19 14:26:02,882 basehttp 22864 21772 "GET /api/food-listings/ HTTP/1.1" 200 354457
+INFO 2025-08-19 14:26:03,146 basehttp 22864 3868 "GET /api/food-listings/ HTTP/1.1" 200 354457
+INFO 2025-08-19 14:26:03,244 basehttp 22864 21772 "GET /auth/providers/?complete_profiles_only=true HTTP/1.1" 200 5067
+INFO 2025-08-19 14:26:03,529 basehttp 22864 3868 "GET /api/reviews/provider/813b9e73-40d9-4346-862c-2d13cfba0f5b/?page=1&page_size=1 HTTP/1.1" 200 825
+INFO 2025-08-19 14:26:03,581 basehttp 22864 21772 "GET /auth/providers/?complete_profiles_only=true HTTP/1.1" 200 5067
+INFO 2025-08-19 14:26:03,753 basehttp 22864 3868 "GET /api/reviews/provider/ce83f6ac-2ebb-4f62-a625-ff889a702d83/?page=1&page_size=1 HTTP/1.1" 200 413
+INFO 2025-08-19 14:26:03,823 basehttp 22864 19820 "GET /api/reviews/provider/f2befc4d-4ab0-4ad0-8e56-f16918bb5d80/?page=1&page_size=1 HTTP/1.1" 200 416
+INFO 2025-08-19 14:26:03,843 basehttp 22864 5132 "GET /api/reviews/provider/0e0e5a4b-3820-41dd-a001-73755fea0d9e/?page=1&page_size=1 HTTP/1.1" 200 410
+INFO 2025-08-19 14:26:03,855 basehttp 22864 10676 "GET /api/reviews/provider/18c36b03-b3f9-487b-91eb-ad1be9efaaf6/?page=1&page_size=1 HTTP/1.1" 200 410
+INFO 2025-08-19 14:26:03,875 basehttp 22864 21772 "GET /api/reviews/provider/813b9e73-40d9-4346-862c-2d13cfba0f5b/?page=1&page_size=1 HTTP/1.1" 200 825
+INFO 2025-08-19 14:26:03,952 basehttp 22864 3868 "GET /api/reviews/provider/ce83f6ac-2ebb-4f62-a625-ff889a702d83/?page=1&page_size=1 HTTP/1.1" 200 413
+INFO 2025-08-19 14:26:04,022 basehttp 22864 19820 "GET /api/reviews/provider/f2befc4d-4ab0-4ad0-8e56-f16918bb5d80/?page=1&page_size=1 HTTP/1.1" 200 416
+INFO 2025-08-19 14:26:04,051 basehttp 22864 11796 "GET /api/reviews/provider/0e0e5a4b-3820-41dd-a001-73755fea0d9e/?page=1&page_size=1 HTTP/1.1" 200 410
+INFO 2025-08-19 14:26:04,059 basehttp 22864 10676 "GET /api/reviews/provider/18c36b03-b3f9-487b-91eb-ad1be9efaaf6/?page=1&page_size=1 HTTP/1.1" 200 410
+INFO 2025-08-19 14:26:11,263 basehttp 22864 10676 "OPTIONS /api/food-listings/6cab8f90-2e3d-4ad9-bd47-fb4dc5850531/ HTTP/1.1" 200 0
+INFO 2025-08-19 14:26:11,263 basehttp 22864 11796 "OPTIONS /api/food-listings/6cab8f90-2e3d-4ad9-bd47-fb4dc5850531/ HTTP/1.1" 200 0
+INFO 2025-08-19 14:26:11,612 basehttp 22864 11796 "GET /api/food-listings/6cab8f90-2e3d-4ad9-bd47-fb4dc5850531/ HTTP/1.1" 200 940
+INFO 2025-08-19 14:26:11,907 basehttp 22864 11796 "GET /api/food-listings/6cab8f90-2e3d-4ad9-bd47-fb4dc5850531/ HTTP/1.1" 200 940
+INFO 2025-08-19 14:26:23,347 basehttp 22864 11796 "GET /api/food-listings/ HTTP/1.1" 200 354457
+INFO 2025-08-19 14:26:23,645 basehttp 22864 10676 "GET /api/food-listings/ HTTP/1.1" 200 354457
+INFO 2025-08-19 14:26:23,703 basehttp 22864 11796 "GET /auth/providers/?complete_profiles_only=true HTTP/1.1" 200 5067
+INFO 2025-08-19 14:26:24,053 basehttp 22864 3868 "GET /api/reviews/provider/f2befc4d-4ab0-4ad0-8e56-f16918bb5d80/?page=1&page_size=1 HTTP/1.1" 200 416
+INFO 2025-08-19 14:26:24,062 basehttp 22864 5132 "GET /api/reviews/provider/18c36b03-b3f9-487b-91eb-ad1be9efaaf6/?page=1&page_size=1 HTTP/1.1" 200 410
+INFO 2025-08-19 14:26:24,062 basehttp 22864 21772 "GET /api/reviews/provider/0e0e5a4b-3820-41dd-a001-73755fea0d9e/?page=1&page_size=1 HTTP/1.1" 200 410
+INFO 2025-08-19 14:26:24,063 basehttp 22864 19820 "GET /api/reviews/provider/ce83f6ac-2ebb-4f62-a625-ff889a702d83/?page=1&page_size=1 HTTP/1.1" 200 413
+INFO 2025-08-19 14:26:24,068 basehttp 22864 11796 "GET /api/reviews/provider/813b9e73-40d9-4346-862c-2d13cfba0f5b/?page=1&page_size=1 HTTP/1.1" 200 825
+INFO 2025-08-19 14:26:24,197 basehttp 22864 10676 "GET /auth/providers/?complete_profiles_only=true HTTP/1.1" 200 5067
+INFO 2025-08-19 14:26:24,572 basehttp 22864 10676 "GET /api/reviews/provider/813b9e73-40d9-4346-862c-2d13cfba0f5b/?page=1&page_size=1 HTTP/1.1" 200 825
+INFO 2025-08-19 14:26:24,585 basehttp 22864 11796 "GET /api/reviews/provider/ce83f6ac-2ebb-4f62-a625-ff889a702d83/?page=1&page_size=1 HTTP/1.1" 200 413
+INFO 2025-08-19 14:26:24,589 basehttp 22864 21772 "GET /api/reviews/provider/18c36b03-b3f9-487b-91eb-ad1be9efaaf6/?page=1&page_size=1 HTTP/1.1" 200 410
+INFO 2025-08-19 14:26:24,590 basehttp 22864 19820 "GET /api/reviews/provider/f2befc4d-4ab0-4ad0-8e56-f16918bb5d80/?page=1&page_size=1 HTTP/1.1" 200 416
+INFO 2025-08-19 14:26:24,590 basehttp 22864 5132 "GET /api/reviews/provider/0e0e5a4b-3820-41dd-a001-73755fea0d9e/?page=1&page_size=1 HTTP/1.1" 200 410
+INFO 2025-08-19 14:26:25,518 basehttp 22864 5132 "GET /api/food-listings/6cab8f90-2e3d-4ad9-bd47-fb4dc5850531/ HTTP/1.1" 200 940
+INFO 2025-08-19 14:26:25,809 basehttp 22864 5132 "GET /api/food-listings/6cab8f90-2e3d-4ad9-bd47-fb4dc5850531/ HTTP/1.1" 200 940
+INFO 2025-08-19 14:26:27,686 basehttp 22864 5132 "POST /cart/add/ HTTP/1.1" 201 300
+INFO 2025-08-19 14:26:29,389 basehttp 22864 5132 "GET /cart/ HTTP/1.1" 200 1320
+INFO 2025-08-19 14:26:29,422 basehttp 22864 19820 "OPTIONS /api/scheduling/available-slots/?food_listing_id=6cab8f90-2e3d-4ad9-bd47-fb4dc5850531 HTTP/1.1" 200 0
+INFO 2025-08-19 14:26:29,577 basehttp 22864 5132 "GET /cart/ HTTP/1.1" 200 1320
+INFO 2025-08-19 14:26:29,725 basehttp 22864 19820 "GET /api/scheduling/available-slots/?food_listing_id=6cab8f90-2e3d-4ad9-bd47-fb4dc5850531 HTTP/1.1" 200 2181
+INFO 2025-08-19 14:26:30,007 basehttp 22864 19820 "GET /api/scheduling/available-slots/?food_listing_id=6cab8f90-2e3d-4ad9-bd47-fb4dc5850531 HTTP/1.1" 200 2181
+INFO 2025-08-19 14:26:30,032 basehttp 22864 5132 "GET /api/scheduling/available-slots/?food_listing_id=38208e55-0823-4d2a-8b37-2012acb151a0 HTTP/1.1" 200 2319
+INFO 2025-08-19 14:26:30,247 basehttp 22864 5132 "GET /api/scheduling/available-slots/?food_listing_id=38208e55-0823-4d2a-8b37-2012acb151a0 HTTP/1.1" 200 2319
+INFO 2025-08-19 14:26:32,281 basehttp 22864 5132 "OPTIONS /cart/remove/ HTTP/1.1" 200 0
+INFO 2025-08-19 14:26:32,543 basehttp 22864 5132 "POST /cart/remove/ HTTP/1.1" 200 99
+INFO 2025-08-19 14:26:32,828 basehttp 22864 5132 "GET /api/scheduling/available-slots/?food_listing_id=6cab8f90-2e3d-4ad9-bd47-fb4dc5850531 HTTP/1.1" 200 2181
+INFO 2025-08-19 14:26:38,761 basehttp 22864 5132 "GET /api/food-listings/6cab8f90-2e3d-4ad9-bd47-fb4dc5850531/ HTTP/1.1" 200 940
+INFO 2025-08-19 14:26:39,015 basehttp 22864 5132 "GET /api/food-listings/6cab8f90-2e3d-4ad9-bd47-fb4dc5850531/ HTTP/1.1" 200 940
+INFO 2025-08-19 14:26:41,132 basehttp 22864 5132 "GET /api/food-listings/ HTTP/1.1" 200 354457
+INFO 2025-08-19 14:26:41,474 basehttp 22864 19820 "GET /api/food-listings/ HTTP/1.1" 200 354457
+INFO 2025-08-19 14:26:41,557 basehttp 22864 5132 "GET /auth/providers/?complete_profiles_only=true HTTP/1.1" 200 5067
+INFO 2025-08-19 14:26:41,958 basehttp 22864 5132 "GET /api/reviews/provider/813b9e73-40d9-4346-862c-2d13cfba0f5b/?page=1&page_size=1 HTTP/1.1" 200 825
+INFO 2025-08-19 14:26:41,961 basehttp 22864 21772 "GET /api/reviews/provider/ce83f6ac-2ebb-4f62-a625-ff889a702d83/?page=1&page_size=1 HTTP/1.1" 200 413
+INFO 2025-08-19 14:26:41,970 basehttp 22864 11796 "GET /api/reviews/provider/f2befc4d-4ab0-4ad0-8e56-f16918bb5d80/?page=1&page_size=1 HTTP/1.1" 200 416
+INFO 2025-08-19 14:26:41,983 basehttp 22864 3868 "GET /api/reviews/provider/18c36b03-b3f9-487b-91eb-ad1be9efaaf6/?page=1&page_size=1 HTTP/1.1" 200 410
+INFO 2025-08-19 14:26:41,995 basehttp 22864 10676 "GET /api/reviews/provider/0e0e5a4b-3820-41dd-a001-73755fea0d9e/?page=1&page_size=1 HTTP/1.1" 200 410
+INFO 2025-08-19 14:26:42,002 basehttp 22864 19820 "GET /auth/providers/?complete_profiles_only=true HTTP/1.1" 200 5067
+INFO 2025-08-19 14:26:42,318 basehttp 22864 10676 "GET /api/reviews/provider/ce83f6ac-2ebb-4f62-a625-ff889a702d83/?page=1&page_size=1 HTTP/1.1" 200 413
+INFO 2025-08-19 14:26:42,342 basehttp 22864 19820 "GET /api/reviews/provider/813b9e73-40d9-4346-862c-2d13cfba0f5b/?page=1&page_size=1 HTTP/1.1" 200 825
+INFO 2025-08-19 14:26:42,345 basehttp 22864 11796 "GET /api/reviews/provider/0e0e5a4b-3820-41dd-a001-73755fea0d9e/?page=1&page_size=1 HTTP/1.1" 200 410
+INFO 2025-08-19 14:26:42,345 basehttp 22864 21772 "GET /api/reviews/provider/18c36b03-b3f9-487b-91eb-ad1be9efaaf6/?page=1&page_size=1 HTTP/1.1" 200 410
+INFO 2025-08-19 14:26:42,350 basehttp 22864 3868 "GET /api/reviews/provider/f2befc4d-4ab0-4ad0-8e56-f16918bb5d80/?page=1&page_size=1 HTTP/1.1" 200 416
+INFO 2025-08-19 14:26:44,882 basehttp 22864 3868 "GET /api/food-listings/6cab8f90-2e3d-4ad9-bd47-fb4dc5850531/ HTTP/1.1" 200 940
+INFO 2025-08-19 14:26:45,192 basehttp 22864 3868 "GET /api/food-listings/6cab8f90-2e3d-4ad9-bd47-fb4dc5850531/ HTTP/1.1" 200 940
+INFO 2025-08-19 14:26:47,759 basehttp 22864 3868 "POST /cart/add/ HTTP/1.1" 201 299
+INFO 2025-08-19 14:26:49,679 basehttp 22864 3868 "GET /cart/ HTTP/1.1" 200 762
+INFO 2025-08-19 14:26:49,955 basehttp 22864 3868 "GET /cart/ HTTP/1.1" 200 762
+INFO 2025-08-19 14:26:49,966 basehttp 22864 21772 "GET /api/scheduling/available-slots/?food_listing_id=6cab8f90-2e3d-4ad9-bd47-fb4dc5850531 HTTP/1.1" 200 2181
+INFO 2025-08-19 14:26:50,146 basehttp 22864 21772 "GET /api/scheduling/available-slots/?food_listing_id=6cab8f90-2e3d-4ad9-bd47-fb4dc5850531 HTTP/1.1" 200 2181
+INFO 2025-08-19 14:27:18,938 basehttp 22864 21772 "GET /api/notifications/?limit=5&ordering=-created_at HTTP/1.1" 200 8675
+INFO 2025-08-19 14:28:28,221 basehttp 22864 21772 "GET /api/notifications/?limit=5&ordering=-created_at HTTP/1.1" 200 8675
+INFO 2025-08-19 14:29:20,725 basehttp 22864 21772 "GET /api/food-listings/ HTTP/1.1" 200 354457
+INFO 2025-08-19 14:29:21,068 basehttp 22864 3868 "GET /api/food-listings/ HTTP/1.1" 200 354457
+INFO 2025-08-19 14:29:21,116 basehttp 22864 21772 "GET /auth/providers/?complete_profiles_only=true HTTP/1.1" 200 5067
+INFO 2025-08-19 14:29:21,290 basehttp 22864 3868 "GET /auth/providers/?complete_profiles_only=true HTTP/1.1" 200 5067
+INFO 2025-08-19 14:29:21,681 basehttp 22864 19820 "GET /api/reviews/provider/0e0e5a4b-3820-41dd-a001-73755fea0d9e/?page=1&page_size=1 HTTP/1.1" 200 410
+INFO 2025-08-19 14:29:21,684 basehttp 22864 11796 "GET /api/reviews/provider/f2befc4d-4ab0-4ad0-8e56-f16918bb5d80/?page=1&page_size=1 HTTP/1.1" 200 416
+INFO 2025-08-19 14:29:21,691 basehttp 22864 10676 "GET /api/reviews/provider/18c36b03-b3f9-487b-91eb-ad1be9efaaf6/?page=1&page_size=1 HTTP/1.1" 200 410
+INFO 2025-08-19 14:29:21,692 basehttp 22864 3868 "GET /api/reviews/provider/813b9e73-40d9-4346-862c-2d13cfba0f5b/?page=1&page_size=1 HTTP/1.1" 200 825
+INFO 2025-08-19 14:29:21,697 basehttp 22864 21772 "GET /api/reviews/provider/ce83f6ac-2ebb-4f62-a625-ff889a702d83/?page=1&page_size=1 HTTP/1.1" 200 413
+INFO 2025-08-19 14:29:21,929 basehttp 22864 5132 "GET /api/reviews/provider/f2befc4d-4ab0-4ad0-8e56-f16918bb5d80/?page=1&page_size=1 HTTP/1.1" 200 416
+INFO 2025-08-19 14:29:21,980 basehttp 22864 19820 "GET /api/reviews/provider/0e0e5a4b-3820-41dd-a001-73755fea0d9e/?page=1&page_size=1 HTTP/1.1" 200 410
+INFO 2025-08-19 14:29:21,995 basehttp 22864 11796 "GET /api/reviews/provider/813b9e73-40d9-4346-862c-2d13cfba0f5b/?page=1&page_size=1 HTTP/1.1" 200 825
+INFO 2025-08-19 14:29:22,019 basehttp 22864 3868 "GET /api/reviews/provider/18c36b03-b3f9-487b-91eb-ad1be9efaaf6/?page=1&page_size=1 HTTP/1.1" 200 410
+INFO 2025-08-19 14:29:22,032 basehttp 22864 21772 "GET /api/reviews/provider/ce83f6ac-2ebb-4f62-a625-ff889a702d83/?page=1&page_size=1 HTTP/1.1" 200 413
+INFO 2025-08-19 14:31:27,478 basehttp 22864 21772 "GET /api/food-listings/ HTTP/1.1" 200 354457
+INFO 2025-08-19 14:31:27,765 basehttp 22864 3868 "GET /api/food-listings/ HTTP/1.1" 200 354457
+INFO 2025-08-19 14:31:27,846 basehttp 22864 21772 "GET /auth/providers/?complete_profiles_only=true HTTP/1.1" 200 5067
+INFO 2025-08-19 14:31:28,199 basehttp 22864 19820 "GET /api/reviews/provider/f2befc4d-4ab0-4ad0-8e56-f16918bb5d80/?page=1&page_size=1 HTTP/1.1" 200 416
+INFO 2025-08-19 14:31:28,229 basehttp 22864 5132 "GET /api/reviews/provider/0e0e5a4b-3820-41dd-a001-73755fea0d9e/?page=1&page_size=1 HTTP/1.1" 200 410
+INFO 2025-08-19 14:31:28,239 basehttp 22864 3868 "GET /api/reviews/provider/813b9e73-40d9-4346-862c-2d13cfba0f5b/?page=1&page_size=1 HTTP/1.1" 200 825
+INFO 2025-08-19 14:31:28,245 basehttp 22864 11796 "GET /api/reviews/provider/ce83f6ac-2ebb-4f62-a625-ff889a702d83/?page=1&page_size=1 HTTP/1.1" 200 413
+INFO 2025-08-19 14:31:28,251 basehttp 22864 10676 "GET /api/reviews/provider/18c36b03-b3f9-487b-91eb-ad1be9efaaf6/?page=1&page_size=1 HTTP/1.1" 200 410
+INFO 2025-08-19 14:31:28,287 basehttp 22864 21772 "GET /auth/providers/?complete_profiles_only=true HTTP/1.1" 200 5067
+INFO 2025-08-19 14:31:28,572 basehttp 22864 10676 "GET /api/reviews/provider/ce83f6ac-2ebb-4f62-a625-ff889a702d83/?page=1&page_size=1 HTTP/1.1" 200 413
+INFO 2025-08-19 14:31:28,592 basehttp 22864 21772 "GET /api/reviews/provider/813b9e73-40d9-4346-862c-2d13cfba0f5b/?page=1&page_size=1 HTTP/1.1" 200 825
+INFO 2025-08-19 14:31:28,600 basehttp 22864 3868 "GET /api/reviews/provider/0e0e5a4b-3820-41dd-a001-73755fea0d9e/?page=1&page_size=1 HTTP/1.1" 200 410
+INFO 2025-08-19 14:31:28,600 basehttp 22864 5132 "GET /api/reviews/provider/18c36b03-b3f9-487b-91eb-ad1be9efaaf6/?page=1&page_size=1 HTTP/1.1" 200 410
+INFO 2025-08-19 14:31:28,606 basehttp 22864 11796 "GET /api/reviews/provider/f2befc4d-4ab0-4ad0-8e56-f16918bb5d80/?page=1&page_size=1 HTTP/1.1" 200 416
+INFO 2025-08-19 14:32:48,876 basehttp 22864 11796 "GET /api/food-listings/6cab8f90-2e3d-4ad9-bd47-fb4dc5850531/ HTTP/1.1" 200 940
+INFO 2025-08-19 14:32:49,028 basehttp 22864 11796 "GET /api/food-listings/6cab8f90-2e3d-4ad9-bd47-fb4dc5850531/ HTTP/1.1" 200 940
+INFO 2025-08-19 14:32:51,400 basehttp 22864 11796 "POST /cart/add/ HTTP/1.1" 201 300
+INFO 2025-08-19 14:32:53,261 basehttp 22864 11796 "GET /cart/ HTTP/1.1" 200 765
+INFO 2025-08-19 14:32:53,529 basehttp 22864 11796 "GET /cart/ HTTP/1.1" 200 765
+INFO 2025-08-19 14:32:53,549 basehttp 22864 5132 "GET /api/scheduling/available-slots/?food_listing_id=6cab8f90-2e3d-4ad9-bd47-fb4dc5850531 HTTP/1.1" 200 2181
+INFO 2025-08-19 14:32:53,745 basehttp 22864 5132 "GET /api/scheduling/available-slots/?food_listing_id=6cab8f90-2e3d-4ad9-bd47-fb4dc5850531 HTTP/1.1" 200 2181
+INFO 2025-08-19 14:39:19,337 autoreload 22864 11616 C:\Users\Capleton\Desktop\COS214\practical\Save-n-Bite\save-n-bite-backend\authentication\urls.py changed, reloading.
+INFO 2025-08-19 14:39:26,577 blob_storage 7792 7548 Updated existing container to public access: customer-profiles
+INFO 2025-08-19 14:39:26,667 blob_storage 7792 7548 Updated existing container to public access: ngo-documents
+INFO 2025-08-19 14:39:26,777 blob_storage 7792 7548 Updated existing container to public access: ngo-logos
+INFO 2025-08-19 14:39:26,843 blob_storage 7792 7548 Updated existing container to public access: provider-documents
+INFO 2025-08-19 14:39:26,918 blob_storage 7792 7548 Updated existing container to public access: provider-logos
+INFO 2025-08-19 14:39:27,003 blob_storage 7792 7548 Updated existing container to public access: provider-banners
+INFO 2025-08-19 14:39:27,987 autoreload 7792 7548 Watching for file changes with StatReloader
+INFO 2025-08-19 14:39:29,154 blob_storage 7792 21836 Updated existing container to public access: customer-profiles
+INFO 2025-08-19 14:39:29,292 blob_storage 7792 21836 Updated existing container to public access: provider-banners
+INFO 2025-08-19 14:39:29,363 blob_storage 7792 21836 Updated existing container to public access: provider-documents
+INFO 2025-08-19 14:39:29,512 blob_storage 7792 21836 Updated existing container to public access: provider-logos
+INFO 2025-08-19 14:39:29,596 blob_storage 7792 21836 Updated existing container to public access: ngo-documents
+INFO 2025-08-19 14:39:29,691 blob_storage 7792 21836 Updated existing container to public access: ngo-logos
