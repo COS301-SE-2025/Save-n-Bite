@@ -1,4 +1,7 @@
 import React, { useState, useEffect } from 'react';
+import { Toast } from '../../components/ui/Toast';
+import { ConfirmDialog } from '../../components/ui/ConfirmDialog';
+import { InputDialog } from '../../components/ui/InputDialog';
 import {
   Clock4,
   QrCode,
@@ -14,7 +17,7 @@ import {
   Menu,
   X,
 } from 'lucide-react';
-import {StatusBadge} from '../../components/foodProvider/StatusBadge';
+import { StatusBadge } from '../../components/foodProvider/StatusBadge';
 import { Button } from '../../components/foodProvider/Button'
 import CalendarView from '../../components/foodProvider/CalendarView';
 import SideBar from '../../components/foodProvider/SideBar';
@@ -37,11 +40,20 @@ function PickupCoordination() {
   const [verifyingCode, setVerifyingCode] = useState(false);
   const [showVerifyModal, setShowVerifyModal] = useState(false);
   const [verificationCode, setVerificationCode] = useState('');
-  const [customerDetails, setCustomerDetails] = useState({}); 
+  const [customerDetails, setCustomerDetails] = useState({});
   const [completingPickup, setCompletingPickup] = useState(null);
-  
+
   // Mobile sidebar state
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
+
+  // Toast state
+  const [toast, setToast] = useState(null);
+
+  // New state variables for pickup confirmation
+  const [showNoShowDialog, setShowNoShowDialog] = useState(false);
+  const [showPickupDialog, setShowPickupDialog] = useState(false);
+  const [activePickup, setActivePickup] = useState(null);
+  const [confirmationInput, setConfirmationInput] = useState('');
 
   // Toggle mobile sidebar
   const toggleMobileSidebar = () => {
@@ -69,17 +81,17 @@ function PickupCoordination() {
     setError(null);
     try {
       const apiDate = selectedDate;
-      
+
       console.log('Loading schedule for date:', apiDate);
-      
+
       const response = await schedulingAPI.getScheduleOverview(apiDate);
-      
+
       if (response.success) {
         const overview = response.data.schedule_overview;
         setScheduleOverview(overview);
-        
+
         const allPickups = [];
-        
+
         if (overview.pickups_by_hour) {
           Object.entries(overview.pickups_by_hour).forEach(([hour, hourPickups]) => {
             hourPickups.forEach(pickup => {
@@ -101,7 +113,7 @@ function PickupCoordination() {
             });
           });
         }
-        
+
         setPickups(allPickups);
         console.log(`Loaded ${allPickups.length} pickups for ${apiDate}`);
       } else {
@@ -161,112 +173,120 @@ function PickupCoordination() {
     return false;
   };
 
-  const handleMarkAsPickedUp = async (pickup, status = 'completed') => {
-    const confirmationCode = prompt(`Please enter confirmation code for ${pickup.customerName}:`);
-    if (!confirmationCode) return;
+  const showToast = (message, type = 'info') => {
+    setToast({ message, type });
+    // Auto hide toast after 3 seconds
+    setTimeout(() => setToast(null), 3000);
+  };
+
+  const handleMarkAsPickedUp = async (pickup) => {
+    setActivePickup(pickup);
+    setShowPickupDialog(true);
+  };
+
+  // New function to handle confirmation
+  const handleConfirmPickup = async () => {
+    if (!confirmationInput || !activePickup) return;
 
     try {
-      setCompletingPickup(pickup.id);
-     
-      const response = await schedulingAPI.verifyPickupCode(confirmationCode.trim());
-      
+      setCompletingPickup(activePickup.id);
+      const response = await schedulingAPI.verifyPickupCode(confirmationInput.trim());
+
       if (!response.success) {
-        alert('Invalid confirmation code or pickup not found');
+        showToast('Invalid confirmation code or pickup not found', 'error');
         return;
       }
 
       const pickupData = response.data.pickup;
-      const completeResponse = await schedulingAPI.completePickup(pickup.id);
-      
+      const completeResponse = await schedulingAPI.completePickup(activePickup.id);
+
       if (!completeResponse.success) {
-        alert('Failed to complete pickup');
+        showToast('Failed to complete pickup', 'error');
         return;
       }
-      
+
+      // Update state and show success message
       setCustomerDetails(prev => ({
         ...prev,
-        [pickup.id]: {
+        [activePickup.id]: {
           name: pickupData.customer.name,
           email: pickupData.customer.email,
           notes: pickupData.customer_notes
         }
       }));
-      
+
       setPickups(pickups.map(p =>
-        p.id === pickup.id
-          ? { ...p, status: status, pickupStatus: status === 'completed' ? 'On Time' : 'No Show' }
+        p.id === activePickup.id
+          ? { ...p, status: 'completed', pickupStatus: 'On Time' }
           : p
       ));
-      
-      const statusText = status === 'completed' ? 'completed' : 'marked as no-show';
-      setShowSuccessMessage(true);
-      setSuccessMessage(`Pickup ${statusText} for ${pickupData.customer.name}`);
-      
-      window.dispatchEvent(new CustomEvent('orderCompleted', {
-        detail: { pickup, status }
-      }));
-      
+
+      showToast(`Pickup completed `, 'success');
       await loadScheduleData();
-   
     } catch (error) {
       console.error('Error completing pickup:', error);
-      alert('Failed to verify confirmation code');
+      showToast('Failed to verify confirmation code', 'error');
     } finally {
       setCompletingPickup(null);
+      setShowPickupDialog(false);
+      setActivePickup(null);
+      setConfirmationInput('');
     }
   };
 
-  const handleMarkAsNoShow = async (pickup) => {
-    if (!confirm(`Mark pickup for ${pickup.customerName} as no-show?`)) {
-      return;
-    }
+  const handleMarkAsNoShow = (pickup) => {
+    setActivePickup(pickup);
+    setShowNoShowDialog(true);
+  };
 
+  // Add new function to handle no-show confirmation
+  const handleConfirmNoShow = async () => {
     try {
-      setCompletingPickup(pickup.id);
-      
-      const response = await schedulingAPI.updatePickupStatus(pickup.id, 'missed', {
+      setCompletingPickup(activePickup.id);
+
+      const response = await schedulingAPI.updatePickupStatus(activePickup.id, 'missed', {
         business_notes: 'Customer did not show up for pickup'
       });
-      
+
       if (response.success) {
         setPickups(pickups.map(p =>
-          p.id === pickup.id
+          p.id === activePickup.id
             ? { ...p, status: 'missed', pickupStatus: 'No Show' }
             : p
         ));
-        
-        setShowSuccessMessage(true);
-        setSuccessMessage(`Pickup marked as no-show for ${pickup.customerName}`);
-        
+
+        showToast(`Pickup marked as no-show for ${activePickup.customerName}`, 'success');
         await loadScheduleData();
       } else {
-        alert('Failed to mark as no-show: ' + response.error);
+        showToast(response.error || 'Failed to mark as no-show', 'error');
       }
     } catch (error) {
       console.error('Error marking as no-show:', error);
-      alert('Failed to mark pickup as no-show');
+      showToast('Failed to mark pickup as no-show', 'error');
     } finally {
       setCompletingPickup(null);
+      setShowNoShowDialog(false);
+      setActivePickup(null);
     }
   };
 
   const handleVerifyCode = async () => {
     if (!verificationCode.trim()) {
-      alert('Please enter a confirmation code');
+      showToast('Please enter a confirmation code', 'error');
       return;
     }
 
     setVerifyingCode(true);
     try {
       const response = await schedulingAPI.verifyPickupCode(verificationCode.trim());
-      
+
       if (!response.success) {
-        alert('Invalid confirmation code or pickup not found');
+        showToast('Invalid confirmation code or pickup not found', 'error');
         return;
       }
-      
+
       const pickup = response.data.pickup;
-      
+
       setCustomerDetails(prev => ({
         ...prev,
         [pickup.id]: {
@@ -275,17 +295,16 @@ function PickupCoordination() {
           notes: pickup.customer_notes
         }
       }));
-      
-      setShowSuccessMessage(true);
-      setSuccessMessage(`Verification successful for ${pickup.customer.full_name}'s pickup`);
+
+      showToast(`Verification successful for ${pickup.customer.full_name}'s pickup`, 'success');
       setShowVerifyModal(false);
       setVerificationCode('');
-      
+
       await loadScheduleData();
-  
+
     } catch (error) {
       console.error('Error verifying code:', error);
-      alert('Failed to verify confirmation code');
+      showToast('Failed to verify confirmation code', 'error');
     } finally {
       setVerifyingCode(false);
     }
@@ -307,7 +326,7 @@ function PickupCoordination() {
       dateFilter === 'all' ||
       (dateFilter === 'today' &&
         new Date(pickup.pickupDate).toLocaleDateString() ===
-          new Date().toLocaleDateString()) ||
+        new Date().toLocaleDateString()) ||
       (dateFilter === 'past' &&
         new Date(pickup.pickupDate) < new Date().setHours(0, 0, 0, 0));
 
@@ -317,14 +336,14 @@ function PickupCoordination() {
   const sortedPickups = [...filteredPickups].sort((a, b) => {
     const aHour = parseInt(a.hour);
     const bHour = parseInt(b.hour);
-    
+
     if (aHour !== bHour) {
       return aHour - bHour;
     }
-    
+
     if (a.status === 'scheduled' && b.status !== 'scheduled') return -1;
     if (a.status !== 'scheduled' && b.status === 'scheduled') return 1;
-    
+
     return 0;
   });
 
@@ -362,7 +381,9 @@ function PickupCoordination() {
       <div className="w-full flex min-h-screen bg-gray-50 dark:bg-gray-900">
         {/* Desktop Sidebar */}
         <div className="hidden md:flex">
+
           <SideBar onNavigate={() => {}} currentPage="pickup-coordination" />
+
         </div>
         <div className="flex-1 p-4 sm:p-6 overflow-auto">
           <div className="flex items-center justify-center min-h-[60vh]">
@@ -381,14 +402,16 @@ function PickupCoordination() {
       <div className="w-full flex min-h-screen bg-gray-50 dark:bg-gray-900">
         {/* Desktop Sidebar */}
         <div className="hidden md:flex">
+
           <SideBar onNavigate={() => {}} currentPage="pickup-coordination" />
+  
         </div>
         <div className="flex-1 p-4 sm:p-6 overflow-auto">
           <div className="max-w-4xl mx-auto">
             <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-600 dark:text-red-400 px-4 py-3 rounded-md">
               <p className="font-medium">Error loading pickup schedule</p>
               <p className="text-sm">{error}</p>
-              <button 
+              <button
                 onClick={loadScheduleData}
                 className="mt-2 text-sm underline hover:no-underline"
               >
@@ -405,21 +428,23 @@ function PickupCoordination() {
     <div className="w-full flex min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
       {/* Desktop Sidebar - Hidden on mobile */}
       <div className="hidden md:flex">
+
         <SideBar onNavigate={() => {}} currentPage="pickup-coordination" />
+
       </div>
 
       {/* Mobile Sidebar Overlay */}
       {isMobileSidebarOpen && (
         <div className="fixed inset-0 z-50 md:hidden">
           {/* Backdrop */}
-          <div 
+          <div
             className="fixed inset-0 bg-black bg-opacity-50"
             onClick={toggleMobileSidebar}
           />
           {/* Sidebar */}
           <div className="fixed left-0 top-0 h-full w-64 z-50">
-            <SideBar 
-              onNavigate={() => setIsMobileSidebarOpen(false)} 
+            <SideBar
+              onNavigate={() => setIsMobileSidebarOpen(false)}
               currentPage="pickup-coordination"
               onClose={() => setIsMobileSidebarOpen(false)}
             />
@@ -457,7 +482,7 @@ function PickupCoordination() {
                 Manage food pickups and coordinate with customers
               </p>
             </div>
-            
+
             {/* Date Selection Section */}
             <div className="mt-4 bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-3 sm:p-4">
               <div className="flex flex-col gap-3 sm:gap-4">
@@ -465,15 +490,21 @@ function PickupCoordination() {
                   <Calendar className="h-4 w-4 sm:h-5 sm:w-5 text-gray-500 dark:text-gray-400" />
                   <label className="text-sm font-medium text-gray-700 dark:text-gray-200">Viewing pickups for:</label>
                 </div>
-                
+
                 <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
                   <input
                     type="date"
                     value={selectedDate}
                     onChange={(e) => handleDateChange(e.target.value)}
-                    className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                    onKeyDown={(e) => {
+
+                      if (e.key !== 'Tab') {
+                        e.preventDefault();
+                      }
+                    }}
+                    className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white cursor-pointer"
                   />
-                  
+
                   {/* Quick date buttons */}
                   <div className="flex gap-1 flex-wrap">
                     <button
@@ -496,7 +527,7 @@ function PickupCoordination() {
                     </button>
                   </div>
                 </div>
-                
+
                 {/* Display formatted date */}
                 <div className="text-sm text-gray-600 dark:text-gray-400">
                   {new Date(selectedDate + 'T00:00:00').toLocaleDateString('en-US', {
@@ -508,7 +539,7 @@ function PickupCoordination() {
                 </div>
               </div>
             </div>
-            
+
             {/* Schedule Overview Stats */}
             {scheduleOverview && (
               <div className="mt-4 grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
@@ -550,7 +581,7 @@ function PickupCoordination() {
                 </div>
               </div>
             )}
-            
+
             {/* Success Message */}
             {showSuccessMessage && (
               <div className="mt-4 p-3 sm:p-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
@@ -577,7 +608,7 @@ function PickupCoordination() {
                   onChange={(e) => setSearchQuery(e.target.value)}
                 />
               </div>
-              
+
               <div className="flex gap-2 sm:gap-4">
                 <select
                   className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm flex-1 sm:flex-none"
@@ -599,7 +630,7 @@ function PickupCoordination() {
                   <option value="missed">Missed</option>
                 </select>
               </div>
-              
+
               <div className="flex gap-2">
                 <Button
                   variant="primary"
@@ -692,7 +723,7 @@ function PickupCoordination() {
                       </div>
                       <div>
                         <h4 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Customer & Code:</h4>
-                        
+
                         {/* Customer Contact Info (shown after verification) */}
                         {customerDetails[pickup.id] ? (
                           <div className="space-y-2 mb-3">
@@ -729,7 +760,7 @@ function PickupCoordination() {
                             <p className="text-xs text-gray-500 dark:text-gray-400 mb-2">Contact info available after verification</p>
                           </div>
                         )}
-                        
+
                         {/* Confirmation Code */}
                         <div>
                           <p className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Confirmation Code:</p>
@@ -755,7 +786,7 @@ function PickupCoordination() {
                             >
                               {completingPickup === pickup.id ? 'Completing...' : 'Mark as Completed'}
                             </Button>
-                            <Button
+                            {/* <Button
                               variant="danger"
                               size="sm"
                               onClick={() => handleMarkAsNoShow(pickup)}
@@ -763,24 +794,23 @@ function PickupCoordination() {
                               className="text-sm"
                             >
                               {completingPickup === pickup.id ? 'Processing...' : 'Mark as No Show'}
-                            </Button>
+                            </Button> */}
                           </div>
                         ) : (
-                          <div className={`px-3 py-2 rounded-md flex items-center ${
-                            pickup.status === 'completed' 
-                              ? 'bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-300' 
+                          <div className={`px-3 py-2 rounded-md flex items-center ${pickup.status === 'completed'
+                              ? 'bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-300'
                               : pickup.status === 'confirmed'
-                              ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300'
-                              : 'bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300'
-                          }`}>
+                                ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300'
+                                : 'bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300'
+                            }`}>
                             <span className="text-sm font-medium">
-                              {pickup.status === 'completed' ? 'Pickup completed' : 
-                               pickup.status === 'confirmed' ? 'Code verified - ready for pickup' :
-                               'Customer no-show'}
+                              {pickup.status === 'completed' ? 'Pickup completed' :
+                                pickup.status === 'confirmed' ? 'Code verified - ready for pickup' :
+                                  'Customer no-show'}
                             </span>
                           </div>
                         )}
-                        
+
                         <Button
                           variant="secondary"
                           size="sm"
@@ -878,6 +908,52 @@ function PickupCoordination() {
               </div>
             </div>
           )}
+
+          {/* Toast component */}
+          {toast && (
+            <div className="fixed top-4 right-4 z-50">
+              <div className={`px-4 py-3 rounded-lg shadow-lg flex items-center space-x-2 ${toast.type === 'success'
+                  ? 'bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-100'
+                  : toast.type === 'error'
+                    ? 'bg-red-100 text-red-800 dark:bg-red-800 dark:text-red-100'
+                    : 'bg-blue-100 text-blue-800 dark:bg-blue-800 dark:text-blue-100'
+                }`}>
+                <span className="text-sm font-medium">{toast.message}</span>
+              </div>
+            </div>
+          )}
+
+          {/* Pickup Completion Dialog */}
+          <InputDialog
+            isOpen={showPickupDialog}
+            onClose={() => {
+              setShowPickupDialog(false);
+              setActivePickup(null);
+              setConfirmationInput('');
+            }}
+            onConfirm={handleConfirmPickup}
+            title="Complete Pickup"
+            message={`Enter confirmation code for ${activePickup?.customerName}'s pickup:`}
+            inputValue={confirmationInput}
+            onInputChange={(value) => setConfirmationInput(value.toUpperCase())}
+            placeholder="Enter confirmation code"
+            confirmText="Complete Pickup"
+            cancelText="Cancel"
+          />
+
+          {/* No Show Confirmation Dialog */}
+          <ConfirmDialog
+            isOpen={showNoShowDialog}
+            onClose={() => {
+              setShowNoShowDialog(false);
+              setActivePickup(null);
+            }}
+            onConfirm={handleConfirmNoShow}
+            title="Mark as No-Show"
+            message={`Are you sure you want to mark ${activePickup?.customerName}'s pickup as no-show? This action cannot be undone.`}
+            confirmText="Mark as No-Show"
+            cancelText="Cancel"
+          />
         </div>
       </div>
     </div>
