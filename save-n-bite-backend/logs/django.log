@@ -1517,3 +1517,101 @@ INFO 2025-08-19 20:47:24,950 basehttp 7276 16872 "GET /cart/business/history/ HT
 INFO 2025-08-19 20:47:25,141 basehttp 7276 16872 "GET /cart/business/history/ HTTP/1.1" 200 20365
 INFO 2025-08-19 20:47:30,332 basehttp 7276 16872 "GET /api/scheduling/schedule-overview/?date=2025-08-19 HTTP/1.1" 200 1147
 INFO 2025-08-19 20:47:30,435 basehttp 7276 16872 "GET /api/scheduling/schedule-overview/?date=2025-08-19 HTTP/1.1" 200 1147
+INFO 2025-08-19 21:11:02,848 blob_storage 80417 140641671921792 Updated existing container to public access: customer-profiles
+INFO 2025-08-19 21:11:02,861 blob_storage 80417 140641671921792 Updated existing container to public access: ngo-documents
+INFO 2025-08-19 21:11:02,872 blob_storage 80417 140641671921792 Updated existing container to public access: ngo-logos
+INFO 2025-08-19 21:11:02,881 blob_storage 80417 140641671921792 Updated existing container to public access: provider-documents
+INFO 2025-08-19 21:11:02,892 blob_storage 80417 140641671921792 Updated existing container to public access: provider-logos
+INFO 2025-08-19 21:11:02,901 blob_storage 80417 140641671921792 Updated existing container to public access: provider-banners
+INFO 2025-08-19 21:11:02,938 autoreload 80417 140641671921792 Watching for file changes with StatReloader
+INFO 2025-08-19 21:11:03,073 blob_storage 80417 140641590802112 Updated existing container to public access: customer-profiles
+INFO 2025-08-19 21:11:03,084 blob_storage 80417 140641590802112 Updated existing container to public access: provider-banners
+INFO 2025-08-19 21:11:03,093 blob_storage 80417 140641590802112 Updated existing container to public access: provider-documents
+INFO 2025-08-19 21:11:03,103 blob_storage 80417 140641590802112 Updated existing container to public access: provider-logos
+INFO 2025-08-19 21:11:03,118 blob_storage 80417 140641590802112 Updated existing container to public access: ngo-documents
+INFO 2025-08-19 21:11:03,131 blob_storage 80417 140641590802112 Updated existing container to public access: ngo-logos
+INFO 2025-08-19 21:25:41,802 blob_storage 83874 140178574053504 Updated existing container to public access: customer-profiles
+INFO 2025-08-19 21:25:41,821 blob_storage 83874 140178574053504 Updated existing container to public access: ngo-documents
+INFO 2025-08-19 21:25:41,834 blob_storage 83874 140178574053504 Updated existing container to public access: ngo-logos
+INFO 2025-08-19 21:25:41,851 blob_storage 83874 140178574053504 Updated existing container to public access: provider-documents
+INFO 2025-08-19 21:25:41,865 blob_storage 83874 140178574053504 Updated existing container to public access: provider-logos
+INFO 2025-08-19 21:25:41,883 blob_storage 83874 140178574053504 Updated existing container to public access: provider-banners
+INFO 2025-08-19 21:25:41,977 autoreload 83874 140178574053504 Watching for file changes with StatReloader
+INFO 2025-08-19 21:25:42,248 blob_storage 83874 140178492454592 Updated existing container to public access: customer-profiles
+INFO 2025-08-19 21:25:42,258 blob_storage 83874 140178492454592 Updated existing container to public access: provider-banners
+INFO 2025-08-19 21:25:42,269 blob_storage 83874 140178492454592 Updated existing container to public access: provider-documents
+INFO 2025-08-19 21:25:42,278 blob_storage 83874 140178492454592 Updated existing container to public access: provider-logos
+INFO 2025-08-19 21:25:42,288 blob_storage 83874 140178492454592 Updated existing container to public access: ngo-documents
+INFO 2025-08-19 21:25:42,299 blob_storage 83874 140178492454592 Updated existing container to public access: ngo-logos
+INFO 2025-08-19 21:25:43,418 autoreload 83874 140178574053504 /home/somworld/COS301/Capstone/Save-n-Bite/save-n-bite-backend/interactions/views.py changed, reloading.
+INFO 2025-08-19 21:25:44,078 blob_storage 83915 139729781907584 Updated existing container to public access: customer-profiles
+INFO 2025-08-19 21:25:44,089 blob_storage 83915 139729781907584 Updated existing container to public access: ngo-documents
+INFO 2025-08-19 21:25:44,099 blob_storage 83915 139729781907584 Updated existing container to public access: ngo-logos
+INFO 2025-08-19 21:25:44,110 blob_storage 83915 139729781907584 Updated existing container to public access: provider-documents
+INFO 2025-08-19 21:25:44,121 blob_storage 83915 139729781907584 Updated existing container to public access: provider-logos
+INFO 2025-08-19 21:25:44,130 blob_storage 83915 139729781907584 Updated existing container to public access: provider-banners
+INFO 2025-08-19 21:25:44,173 autoreload 83915 139729781907584 Watching for file changes with StatReloader
+INFO 2025-08-19 21:25:44,323 blob_storage 83915 139729700878016 Updated existing container to public access: customer-profiles
+INFO 2025-08-19 21:25:44,333 blob_storage 83915 139729700878016 Updated existing container to public access: provider-banners
+INFO 2025-08-19 21:25:44,342 blob_storage 83915 139729700878016 Updated existing container to public access: provider-documents
+INFO 2025-08-19 21:25:44,355 blob_storage 83915 139729700878016 Updated existing container to public access: provider-logos
+INFO 2025-08-19 21:25:44,364 blob_storage 83915 139729700878016 Updated existing container to public access: ngo-documents
+INFO 2025-08-19 21:25:44,376 blob_storage 83915 139729700878016 Updated existing container to public access: ngo-logos
+INFO 2025-08-19 21:25:51,560 autoreload 83915 139729781907584 /home/somworld/COS301/Capstone/Save-n-Bite/save-n-bite-backend/interactions/views.py changed, reloading.
+INFO 2025-08-19 21:25:52,082 blob_storage 83967 139864194490496 Updated existing container to public access: customer-profiles
+INFO 2025-08-19 21:25:52,091 blob_storage 83967 139864194490496 Updated existing container to public access: ngo-documents
+INFO 2025-08-19 21:25:52,099 blob_storage 83967 139864194490496 Updated existing container to public access: ngo-logos
+INFO 2025-08-19 21:25:52,109 blob_storage 83967 139864194490496 Updated existing container to public access: provider-documents
+INFO 2025-08-19 21:25:52,120 blob_storage 83967 139864194490496 Updated existing container to public access: provider-logos
+INFO 2025-08-19 21:25:52,128 blob_storage 83967 139864194490496 Updated existing container to public access: provider-banners
+INFO 2025-08-19 21:25:52,163 autoreload 83967 139864194490496 Watching for file changes with StatReloader
+INFO 2025-08-19 21:25:52,282 blob_storage 83967 139864112592576 Updated existing container to public access: customer-profiles
+INFO 2025-08-19 21:25:52,290 blob_storage 83967 139864112592576 Updated existing container to public access: provider-banners
+INFO 2025-08-19 21:25:52,303 blob_storage 83967 139864112592576 Updated existing container to public access: provider-documents
+INFO 2025-08-19 21:25:52,314 blob_storage 83967 139864112592576 Updated existing container to public access: provider-logos
+INFO 2025-08-19 21:25:52,325 blob_storage 83967 139864112592576 Updated existing container to public access: ngo-documents
+INFO 2025-08-19 21:25:52,335 blob_storage 83967 139864112592576 Updated existing container to public access: ngo-logos
+WARNING 2025-08-19 21:26:04,673 log 83967 139864091653824 Unauthorized: /api/notifications/unread-count/
+WARNING 2025-08-19 21:26:04,673 log 83967 139864083261120 Unauthorized: /api/notifications/preferences/
+WARNING 2025-08-19 21:26:04,673 basehttp 83967 139864091653824 "GET /api/notifications/unread-count/ HTTP/1.1" 401 58
+WARNING 2025-08-19 21:26:04,674 basehttp 83967 139864083261120 "GET /api/notifications/preferences/ HTTP/1.1" 401 58
+WARNING 2025-08-19 21:26:04,676 log 83967 139864091653824 Unauthorized: /api/notifications/unread-count/
+WARNING 2025-08-19 21:26:04,677 log 83967 139864083261120 Unauthorized: /api/notifications/preferences/
+WARNING 2025-08-19 21:26:04,678 basehttp 83967 139864091653824 "GET /api/notifications/unread-count/ HTTP/1.1" 401 58
+WARNING 2025-08-19 21:26:04,678 basehttp 83967 139864083261120 "GET /api/notifications/preferences/ HTTP/1.1" 401 58
+INFO 2025-08-19 21:26:06,349 basehttp 83967 139864083261120 "OPTIONS /auth/login/ HTTP/1.1" 200 0
+INFO 2025-08-19 21:26:06,698 basehttp 83967 139864083261120 "POST /auth/login/ HTTP/1.1" 200 1327
+INFO 2025-08-19 21:26:06,751 basehttp 83967 139864083261120 "OPTIONS /api/notifications/unread-count/ HTTP/1.1" 200 0
+INFO 2025-08-19 21:26:06,776 basehttp 83967 139863865161408 "OPTIONS /api/food-listings/ HTTP/1.1" 200 0
+INFO 2025-08-19 21:26:06,776 basehttp 83967 139864091653824 "OPTIONS /api/food-listings/ HTTP/1.1" 200 0
+INFO 2025-08-19 21:26:06,822 basehttp 83967 139864083261120 "GET /api/notifications/unread-count/ HTTP/1.1" 200 18
+INFO 2025-08-19 21:26:06,825 basehttp 83967 139864091653824 "GET /api/food-listings/ HTTP/1.1" 200 2932
+INFO 2025-08-19 21:26:06,915 basehttp 83967 139864091653824 "GET /api/food-listings/ HTTP/1.1" 200 2932
+INFO 2025-08-19 21:26:06,927 basehttp 83967 139864083261120 "OPTIONS /auth/providers/?complete_profiles_only=true HTTP/1.1" 200 0
+INFO 2025-08-19 21:26:06,927 basehttp 83967 139863865161408 "OPTIONS /auth/providers/?complete_profiles_only=true HTTP/1.1" 200 0
+INFO 2025-08-19 21:26:06,969 basehttp 83967 139863865161408 "GET /auth/providers/?complete_profiles_only=true HTTP/1.1" 200 1459
+INFO 2025-08-19 21:26:07,017 basehttp 83967 139864091653824 "OPTIONS /api/reviews/provider/0a7edef6-f708-4472-86e1-c463a31172a1/?page=1&page_size=1 HTTP/1.1" 200 0
+INFO 2025-08-19 21:26:07,083 basehttp 83967 139863865161408 "GET /auth/providers/?complete_profiles_only=true HTTP/1.1" 200 1459
+INFO 2025-08-19 21:26:07,091 basehttp 83967 139864091653824 "GET /api/reviews/provider/0a7edef6-f708-4472-86e1-c463a31172a1/?page=1&page_size=1 HTTP/1.1" 200 729
+INFO 2025-08-19 21:26:07,176 basehttp 83967 139864091653824 "GET /api/reviews/provider/0a7edef6-f708-4472-86e1-c463a31172a1/?page=1&page_size=1 HTTP/1.1" 200 729
+INFO 2025-08-19 21:26:08,750 basehttp 83967 139864091653824 "OPTIONS /api/notifications/?limit=5&ordering=-created_at HTTP/1.1" 200 0
+INFO 2025-08-19 21:26:08,778 basehttp 83967 139864091653824 "GET /api/notifications/?limit=5&ordering=-created_at HTTP/1.1" 200 3438
+INFO 2025-08-19 21:26:12,512 basehttp 83967 139864091653824 "OPTIONS /api/notifications/mark-read/ HTTP/1.1" 200 0
+INFO 2025-08-19 21:26:12,571 basehttp 83967 139864091653824 "POST /api/notifications/mark-read/ HTTP/1.1" 200 78
+INFO 2025-08-19 21:26:14,667 basehttp 83967 139864091653824 "POST /api/notifications/mark-read/ HTTP/1.1" 200 78
+INFO 2025-08-19 21:26:19,370 basehttp 83967 139863865161408 "OPTIONS /api/notifications/preferences/ HTTP/1.1" 200 0
+INFO 2025-08-19 21:26:19,371 basehttp 83967 139864091653824 "OPTIONS /api/notifications/preferences/ HTTP/1.1" 200 0
+INFO 2025-08-19 21:26:19,372 basehttp 83967 139863865161408 "OPTIONS /api/notifications/ HTTP/1.1" 200 0
+INFO 2025-08-19 21:26:19,388 basehttp 83967 139864091653824 "OPTIONS /api/notifications/ HTTP/1.1" 200 0
+INFO 2025-08-19 21:26:19,419 basehttp 83967 139864083261120 "GET /api/notifications/unread-count/ HTTP/1.1" 200 18
+INFO 2025-08-19 21:26:19,518 basehttp 83967 139863865161408 "GET /api/notifications/preferences/ HTTP/1.1" 200 132
+INFO 2025-08-19 21:26:19,551 basehttp 83967 139864091653824 "GET /api/notifications/unread-count/ HTTP/1.1" 200 18
+INFO 2025-08-19 21:26:19,556 basehttp 83967 139864083261120 "GET /api/notifications/ HTTP/1.1" 200 3486
+INFO 2025-08-19 21:26:19,719 basehttp 83967 139864091653824 "GET /api/notifications/preferences/ HTTP/1.1" 200 132
+INFO 2025-08-19 21:26:19,746 basehttp 83967 139864083261120 "GET /api/notifications/ HTTP/1.1" 200 3486
+INFO 2025-08-19 21:26:25,114 basehttp 83967 139864083261120 "GET /api/food-listings/ HTTP/1.1" 200 2932
+INFO 2025-08-19 21:26:25,152 basehttp 83967 139864083261120 "GET /api/food-listings/ HTTP/1.1" 200 2932
+INFO 2025-08-19 21:26:25,171 basehttp 83967 139864091653824 "GET /auth/providers/?complete_profiles_only=true HTTP/1.1" 200 1459
+INFO 2025-08-19 21:26:25,206 basehttp 83967 139864091653824 "GET /auth/providers/?complete_profiles_only=true HTTP/1.1" 200 1459
+INFO 2025-08-19 21:26:25,210 basehttp 83967 139863865161408 "GET /api/reviews/provider/0a7edef6-f708-4472-86e1-c463a31172a1/?page=1&page_size=1 HTTP/1.1" 200 729
+INFO 2025-08-19 21:26:25,308 basehttp 83967 139864091653824 "GET /api/reviews/provider/0a7edef6-f708-4472-86e1-c463a31172a1/?page=1&page_size=1 HTTP/1.1" 200 729

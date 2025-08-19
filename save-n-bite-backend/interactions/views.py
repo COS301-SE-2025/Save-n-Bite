@@ -1271,11 +1271,6 @@ class RejectDonationView(APIView):
                 interaction.rejection_reason = rejection_reason
             interaction.save()
 
-            # Update associated order status
-            if hasattr(interaction, 'order'):
-                interaction.order.status = Order.Status.CANCELLED
-                interaction.order.save()
-
             # Send rejection notifications
             try:
                 notification = NotificationService.send_donation_response_notification(

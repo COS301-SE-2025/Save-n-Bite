@@ -13,15 +13,8 @@ __pycache__/
 *.swp
 *.swo
 save-n-bite-backend/logs/django.log
-<<<<<<< HEAD
 
 #Logs
 /save-n-bite-backend/logs/
-=======
 save-n-bite-backend/logs/django.log
-save-n-bite-backend/logs/django.log
-save-n-bite-backend/logs/django.log
-save-n-bite-backend/logs/django.log
-save-n-bite-backend/logs/django.log
->>>>>>> b2d4e4a1132480c826faf6858f82bde953675cfa
-save-n-bite-backend/logs/django.log
+
