@@ -51,6 +51,7 @@ jobs:
       run: |
         poetry run pip install model_bakery
         poetry run pip install celery
+        poetry run pip install azure-storage-blob
 
     - name: Set up environment variables
       run: |
