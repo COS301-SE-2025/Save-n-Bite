@@ -17,6 +17,31 @@ jobs:
   test:
     runs-on: ubuntu-latest
 
+    # Set up PostgreSQL service for testing
+    services:
+      postgres:
+        image: postgres:13
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: test_savenbite_db
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+      redis:
+        image: redis:7
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 6379:6379
+
     defaults:
       run:
         working-directory: save-n-bite-backend
@@ -32,36 +57,55 @@ jobs:
     - name: Install Poetry
       run: |
         curl -sSL https://install.python-poetry.org | python3 -
-        echo "$HOME/.local/bin" >> $GITHUB_PATH  # Adds Poetry to PATH
+        echo "$HOME/.local/bin" >> $GITHUB_PATH
 
-    - name: Cache virtualenv and Poetry
+    - name: Cache Poetry dependencies
       uses: actions/cache@v3
       with:
         path: |
           ~/.cache/pip
           ~/.cache/pypoetry
+          save-n-bite-backend/.venv
         key: ${{ runner.os }}-poetry-${{ hashFiles('save-n-bite-backend/poetry.lock') }}
         restore-keys: |
           ${{ runner.os }}-poetry-
 
-    - name: Install dependencies with Poetry (including dev)
-      run: poetry install --with dev
-
-    - name: Install additional test dependencies
+    - name: Configure Poetry
       run: |
-        poetry run pip install model_bakery
-        poetry run pip install celery
-        poetry run pip install azure-storage-blob
+        poetry config virtualenvs.create true
+        poetry config virtualenvs.in-project true
 
-    - name: Set up environment variables
+    - name: Install dependencies with Poetry
       run: |
-        echo "DEBUG=True" >> $GITHUB_ENV
-        echo "SECRET_KEY=test-secret-key-for-ci" >> $GITHUB_ENV
+        poetry install --with dev
+        # Ensure all test dependencies are properly installed
+        poetry run pip install model_bakery coverage pytest-html
+
+    - name: Create test environment file
+      run: |
+        cat > .env << EOF
+        DEBUG=True
+        SECRET_KEY=test-secret-key-for-github-actions-very-long-and-secure
+        DB_NAME=test_savenbite_db
+        DB_USER=postgres
+        DB_PASSWORD=postgres
+        DB_HOST=localhost
+        DB_PORT=5432
+        REDIS_URL=redis://localhost:6379/0
+        ALLOWED_HOSTS=localhost,127.0.0.1
+        CORS_ALLOWED_ORIGINS=http://localhost:3000,http://127.0.0.1:3000
+        EOF
+
+    - name: Run migrations
+      run: poetry run python manage.py migrate
+
+    - name: Run Django system check
+      run: poetry run python manage.py check
 
     - name: Run reviews tests
       run: poetry run pytest reviews/ -v
 
-    - name: Run scheduling tests
+    - name: Run scheduling tests  
       run: poetry run pytest scheduling/ -v
 
     - name: Run food_listings tests
@@ -72,3 +116,20 @@ jobs:
 
     - name: Run admin_system tests
       run: poetry run pytest admin_system/ -v
+
+    - name: Run authentication tests (if exists)
+      run: |
+        if [ -d "authentication" ]; then
+          poetry run pytest authentication/ -v
+        fi
+
+    - name: Run coverage report (if requested)
+      if: ${{ github.event.inputs.run_coverage == 'true' || github.event_name == 'pull_request' }}
+      run: poetry run pytest --cov=. --cov-report=html --cov-report=term-missing
+
+    - name: Upload coverage reports
+      if: ${{ github.event.inputs.run_coverage == 'true' || github.event_name == 'pull_request' }}
+      uses: actions/upload-artifact@v3
+      with:
+        name: coverage-report
+        path: save-n-bite-backend/htmlcov/
