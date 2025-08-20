@@ -1517,3 +1517,77 @@ INFO 2025-08-19 20:47:24,950 basehttp 7276 16872 "GET /cart/business/history/ HT
 INFO 2025-08-19 20:47:25,141 basehttp 7276 16872 "GET /cart/business/history/ HTTP/1.1" 200 20365
 INFO 2025-08-19 20:47:30,332 basehttp 7276 16872 "GET /api/scheduling/schedule-overview/?date=2025-08-19 HTTP/1.1" 200 1147
 INFO 2025-08-19 20:47:30,435 basehttp 7276 16872 "GET /api/scheduling/schedule-overview/?date=2025-08-19 HTTP/1.1" 200 1147
+INFO 2025-08-19 20:52:03,374 basehttp 7276 10704 "OPTIONS /api/notifications/preferences/ HTTP/1.1" 200 0
+INFO 2025-08-19 20:52:03,376 basehttp 7276 10704 "OPTIONS /api/notifications/preferences/ HTTP/1.1" 200 0
+INFO 2025-08-19 20:52:03,528 basehttp 7276 16872 "GET /api/notifications/unread-count/ HTTP/1.1" 200 19
+INFO 2025-08-19 20:52:03,540 basehttp 7276 10704 "GET /api/notifications/preferences/ HTTP/1.1" 200 132
+INFO 2025-08-19 20:52:03,608 basehttp 7276 10704 "GET /api/notifications/preferences/ HTTP/1.1" 200 132
+INFO 2025-08-19 20:52:03,695 basehttp 7276 16872 "GET /api/notifications/unread-count/ HTTP/1.1" 200 19
+INFO 2025-08-19 20:52:20,565 basehttp 7276 16872 "GET /api/notifications/unread-count/ HTTP/1.1" 200 19
+INFO 2025-08-19 20:52:20,575 basehttp 7276 10704 "GET /api/notifications/preferences/ HTTP/1.1" 200 132
+INFO 2025-08-19 20:52:20,636 basehttp 7276 16872 "GET /api/notifications/unread-count/ HTTP/1.1" 200 19
+INFO 2025-08-19 20:52:20,646 basehttp 7276 10704 "GET /api/notifications/preferences/ HTTP/1.1" 200 132
+INFO 2025-08-19 20:52:31,827 basehttp 7276 10704 "GET /api/notifications/unread-count/ HTTP/1.1" 200 19
+INFO 2025-08-19 20:52:31,835 basehttp 7276 16872 "GET /api/notifications/preferences/ HTTP/1.1" 200 132
+INFO 2025-08-19 20:52:31,901 basehttp 7276 16872 "GET /api/notifications/preferences/ HTTP/1.1" 200 132
+INFO 2025-08-19 20:52:31,902 basehttp 7276 10704 "GET /api/notifications/unread-count/ HTTP/1.1" 200 19
+INFO 2025-08-19 20:53:01,401 basehttp 7276 16872 "POST /auth/login/ HTTP/1.1" 200 1034
+INFO 2025-08-19 20:53:01,462 basehttp 7276 16872 "GET /api/notifications/unread-count/ HTTP/1.1" 200 18
+INFO 2025-08-19 20:53:04,644 basehttp 7276 16872 "GET /api/food-listings/ HTTP/1.1" 200 354077
+INFO 2025-08-19 20:53:04,858 basehttp 7276 16872 "GET /auth/providers/?complete_profiles_only=true HTTP/1.1" 200 5068
+INFO 2025-08-19 20:53:04,873 basehttp 7276 10704 "GET /api/food-listings/ HTTP/1.1" 200 354077
+INFO 2025-08-19 20:53:04,948 basehttp 7276 16872 "GET /auth/providers/?complete_profiles_only=true HTTP/1.1" 200 5068
+INFO 2025-08-19 20:53:05,175 basehttp 7276 10704 "GET /api/reviews/provider/ce83f6ac-2ebb-4f62-a625-ff889a702d83/?page=1&page_size=1 HTTP/1.1" 200 413
+INFO 2025-08-19 20:53:05,183 basehttp 7276 16872 "GET /api/reviews/provider/813b9e73-40d9-4346-862c-2d13cfba0f5b/?page=1&page_size=1 HTTP/1.1" 200 825
+INFO 2025-08-19 20:53:05,273 basehttp 7276 10704 "GET /api/reviews/provider/f2befc4d-4ab0-4ad0-8e56-f16918bb5d80/?page=1&page_size=1 HTTP/1.1" 200 416
+INFO 2025-08-19 20:53:05,276 basehttp 7276 16872 "GET /api/reviews/provider/0e0e5a4b-3820-41dd-a001-73755fea0d9e/?page=1&page_size=1 HTTP/1.1" 200 410
+INFO 2025-08-19 20:53:05,401 basehttp 7276 16872 "GET /api/reviews/provider/ce83f6ac-2ebb-4f62-a625-ff889a702d83/?page=1&page_size=1 HTTP/1.1" 200 413
+INFO 2025-08-19 20:53:05,402 basehttp 7276 10704 "GET /api/reviews/provider/18c36b03-b3f9-487b-91eb-ad1be9efaaf6/?page=1&page_size=1 HTTP/1.1" 200 410
+INFO 2025-08-19 20:53:05,458 basehttp 7276 23664 "GET /api/reviews/provider/0e0e5a4b-3820-41dd-a001-73755fea0d9e/?page=1&page_size=1 HTTP/1.1" 200 410
+INFO 2025-08-19 20:53:05,458 basehttp 7276 12160 "GET /api/reviews/provider/f2befc4d-4ab0-4ad0-8e56-f16918bb5d80/?page=1&page_size=1 HTTP/1.1" 200 416
+INFO 2025-08-19 20:53:05,463 basehttp 7276 3040 "GET /api/reviews/provider/813b9e73-40d9-4346-862c-2d13cfba0f5b/?page=1&page_size=1 HTTP/1.1" 200 825
+INFO 2025-08-19 20:53:05,562 basehttp 7276 10704 "GET /api/reviews/provider/18c36b03-b3f9-487b-91eb-ad1be9efaaf6/?page=1&page_size=1 HTTP/1.1" 200 410
+INFO 2025-08-19 20:53:47,736 basehttp 7276 10704 "OPTIONS /api/admin/dashboard/ HTTP/1.1" 200 0
+INFO 2025-08-19 20:53:47,737 basehttp 7276 3040 "OPTIONS /api/admin/dashboard/ HTTP/1.1" 200 0
+INFO 2025-08-19 20:53:47,743 basehttp 7276 12160 "OPTIONS /api/admin/dashboard/ HTTP/1.1" 200 0
+INFO 2025-08-19 20:53:47,744 basehttp 7276 23664 "OPTIONS /api/admin/dashboard/ HTTP/1.1" 200 0
+INFO 2025-08-19 20:53:47,987 basehttp 7276 3040 "GET /api/notifications/preferences/ HTTP/1.1" 200 132
+WARNING 2025-08-19 20:53:48,001 log 7276 12160 Forbidden: /api/admin/dashboard/
+WARNING 2025-08-19 20:53:48,008 basehttp 7276 12160 "GET /api/admin/dashboard/ HTTP/1.1" 403 63
+INFO 2025-08-19 20:53:48,011 basehttp 7276 23664 "GET /api/notifications/unread-count/ HTTP/1.1" 200 18
+INFO 2025-08-19 20:53:48,094 basehttp 7276 3040 "GET /api/notifications/preferences/ HTTP/1.1" 200 132
+WARNING 2025-08-19 20:53:48,103 log 7276 12160 Forbidden: /api/admin/dashboard/
+WARNING 2025-08-19 20:53:48,103 basehttp 7276 12160 "GET /api/admin/dashboard/ HTTP/1.1" 403 63
+INFO 2025-08-19 20:53:48,108 basehttp 7276 23664 "GET /api/notifications/unread-count/ HTTP/1.1" 200 18
+WARNING 2025-08-19 20:53:48,161 log 7276 12160 Forbidden: /api/admin/dashboard/
+WARNING 2025-08-19 20:53:48,161 basehttp 7276 12160 "GET /api/admin/dashboard/ HTTP/1.1" 403 63
+WARNING 2025-08-19 20:53:48,217 log 7276 12160 Forbidden: /api/admin/dashboard/
+WARNING 2025-08-19 20:53:48,218 basehttp 7276 12160 "GET /api/admin/dashboard/ HTTP/1.1" 403 63
+INFO 2025-08-19 20:58:50,315 basehttp 7276 21460 "POST /auth/login/ HTTP/1.1" 200 1052
+INFO 2025-08-19 20:58:50,383 basehttp 7276 21460 "GET /api/notifications/unread-count/ HTTP/1.1" 200 18
+INFO 2025-08-19 20:58:53,558 basehttp 7276 21460 "GET /api/admin/dashboard/ HTTP/1.1" 200 553
+INFO 2025-08-19 20:58:53,643 basehttp 7276 21460 "GET /api/admin/dashboard/ HTTP/1.1" 200 553
+INFO 2025-08-19 20:58:53,732 basehttp 7276 21460 "GET /api/admin/dashboard/ HTTP/1.1" 200 553
+INFO 2025-08-19 20:58:53,813 basehttp 7276 21460 "GET /api/admin/dashboard/ HTTP/1.1" 200 553
+INFO 2025-08-19 20:58:58,474 basehttp 7276 20732 "OPTIONS /api/admin/verifications/pending/ HTTP/1.1" 200 0
+INFO 2025-08-19 20:58:58,474 basehttp 7276 21460 "OPTIONS /api/admin/verifications/pending/ HTTP/1.1" 200 0
+INFO 2025-08-19 20:58:58,663 basehttp 7276 21460 "GET /api/admin/verifications/pending/ HTTP/1.1" 200 1286
+INFO 2025-08-19 20:58:58,766 basehttp 7276 21460 "GET /api/admin/verifications/pending/ HTTP/1.1" 200 1286
+INFO 2025-08-19 21:37:47,115 basehttp 7276 17392 "POST /auth/login/ HTTP/1.1" 200 1042
+INFO 2025-08-19 21:37:47,298 basehttp 7276 17392 "GET /api/notifications/unread-count/ HTTP/1.1" 200 18
+WARNING 2025-08-19 21:37:50,397 log 7276 17392 Forbidden: /api/admin/dashboard/
+WARNING 2025-08-19 21:37:50,397 basehttp 7276 17392 "GET /api/admin/dashboard/ HTTP/1.1" 403 63
+WARNING 2025-08-19 21:37:50,450 log 7276 17392 Forbidden: /api/admin/dashboard/
+WARNING 2025-08-19 21:37:50,451 basehttp 7276 17392 "GET /api/admin/dashboard/ HTTP/1.1" 403 63
+WARNING 2025-08-19 21:37:50,624 log 7276 17392 Forbidden: /api/admin/dashboard/
+WARNING 2025-08-19 21:37:50,624 basehttp 7276 17392 "GET /api/admin/dashboard/ HTTP/1.1" 403 63
+WARNING 2025-08-19 21:37:50,675 log 7276 17392 Forbidden: /api/admin/dashboard/
+WARNING 2025-08-19 21:37:50,675 basehttp 7276 17392 "GET /api/admin/dashboard/ HTTP/1.1" 403 63
+INFO 2025-08-19 21:38:45,492 basehttp 7276 8156 "GET /api/notifications/unread-count/ HTTP/1.1" 200 18
+INFO 2025-08-19 21:38:45,543 basehttp 7276 17392 "GET /api/admin/dashboard/ HTTP/1.1" 200 560
+INFO 2025-08-19 21:38:45,568 basehttp 7276 8156 "GET /api/notifications/preferences/ HTTP/1.1" 200 132
+INFO 2025-08-19 21:38:45,660 basehttp 7276 8156 "GET /api/admin/dashboard/ HTTP/1.1" 200 560
+INFO 2025-08-19 21:38:45,724 basehttp 7276 17392 "GET /api/notifications/unread-count/ HTTP/1.1" 200 18
+INFO 2025-08-19 21:38:45,727 basehttp 7276 8156 "GET /api/notifications/preferences/ HTTP/1.1" 200 132
+INFO 2025-08-19 21:38:45,787 basehttp 7276 13708 "GET /api/admin/dashboard/ HTTP/1.1" 200 560
+INFO 2025-08-19 21:38:45,868 basehttp 7276 13708 "GET /api/admin/dashboard/ HTTP/1.1" 200 560
