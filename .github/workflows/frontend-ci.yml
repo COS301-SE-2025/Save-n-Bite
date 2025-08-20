@@ -1,9 +1,10 @@
 name: frontend
 on:
   push:
-    branches: [main]
+    branches: [ backend ]
   pull_request:
-    branches: [main]
+    branches: [  backend ]
+
 env:
   NODE_VERSION: 20
 jobs:
@@ -21,19 +22,15 @@ jobs:
           node-version: ${{env.NODE_VERSION}}
           cache: 'npm'
           cache-dependency-path: './save-n-bite-frontend/package-lock.json'
-      - name: Install Dependencies
-        run: npm install
-      - name: Run Tests with Coverage
-        run: npm run test:coverage
-      - name: Upload coverage reports to Codecov
-        uses: codecov/codecov-action@v4
-        with:
-          directory: ./save-n-bite-frontend/coverage
-          fail_ci_if_error: true
-          token: ${{ secrets.CODECOV_TOKEN }}
-      - name: Comment PR with Coverage
-        if: github.event_name == 'pull_request'
-        uses: romeovs/lcov-reporter-action@v0.3.1
+          
+      - name: Install dependencies
+        run: npm i
+        
+      - name: Run Vitest
+        run: npm test
+        
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v3
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           lcov-file: ./save-n-bite-frontend/coverage/lcov.info

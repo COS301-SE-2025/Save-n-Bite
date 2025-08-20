@@ -46,81 +46,46 @@ const Navigation = () => {
             {isMenuOpen ? <XIcon size={24} /> : <MenuIcon size={24} />}
           </button>
         </div>
+
         <div className="hidden md:flex items-center space-x-8">
-          <Link to="/about" className="text-gray-600 dark:text-gray-300 hover:text-emerald-600 dark:hover:text-emerald-500">
+          <a href="#about" className="text-gray-600 dark:text-gray-300 hover:text-emerald-600 dark:hover:text-emerald-500">
             About
-          </Link>
-          <Link to="/browse" className="text-gray-600 dark:text-gray-300 hover:text-emerald-600 dark:hover:text-emerald-500">
-            Browse Food
-          </Link>
-          <Link to="/how-it-works" className="text-gray-600 dark:text-gray-300 hover:text-emerald-600 dark:hover:text-emerald-500">
+          </a>
+        
+          <a href="#how-it-works" className="text-gray-600 dark:text-gray-300 hover:text-emerald-600 dark:hover:text-emerald-500">
             How It Works
-          </Link>
+          </a>
           
-          {isAuthenticated ? (
-            <>
-              {userData?.user_type === 'provider' && (
-                <Link to="/create-listing" className="text-gray-600 dark:text-gray-300 hover:text-emerald-600 dark:hover:text-emerald-500">
-                  Create Listing
-                </Link>
-              )}
-              <button
-                onClick={handleLogout}
-                className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700"
-              >
-                Logout
-              </button>
-            </>
-          ) : (
-            <>
-              <Link to="/register" className="text-gray-600 dark:text-gray-300 hover:text-emerald-600 dark:hover:text-emerald-500">
-                Sign Up
-              </Link>
-              <Link to="/login" className="px-4 py-2 bg-emerald-600 text-white rounded-md hover:bg-emerald-700">
-                Login
-              </Link>
-            </>
-          )}
+          <Link to="/register" className="text-gray-600 dark:text-gray-300 hover:text-emerald-600 dark:hover:text-emerald-500">
+            Sign Up
+          </Link>
+          <Link to="/login" className="px-4 py-2 bg-emerald-600 text-white rounded-md hover:bg-emerald-700">
+            Login
+          </Link>
         </div>
+
+
       </div>
-      {isMenuOpen && <div className="md:hidden mt-4 pb-4 px-4">
+
+       {isMenuOpen && (
+        <div className="md:hidden mt-4 pb-4 px-4">
           <div className="flex flex-col space-y-4">
-            <Link to="/about" className="text-gray-600 dark:text-gray-300 hover:text-emerald-600 dark:hover:text-emerald-500 py-2">
+            <a href="#about" className="text-gray-600 dark:text-gray-300 hover:text-emerald-600 dark:hover:text-emerald-500 py-2">
               About
-            </Link>
-            <Link to="/browse" className="text-gray-600 dark:text-gray-300 hover:text-emerald-600 dark:hover:text-emerald-500 py-2">
-              Browse Food
-            </Link>
-            <Link to="/how-it-works" className="text-gray-600 dark:text-gray-300 hover:text-emerald-600 dark:hover:text-emerald-500 py-2">
+            </a>
+            <a href="#how-it-works" className="text-gray-600 dark:text-gray-300 hover:text-emerald-600 dark:hover:text-emerald-500 py-2">
               How It Works
-            </Link>
+            </a>
             
-            {isAuthenticated ? (
-              <>
-                {userData?.user_type === 'provider' && (
-                  <Link to="/create-listing" className="text-gray-600 dark:text-gray-300 hover:text-emerald-600 dark:hover:text-emerald-500 py-2">
-                    Create Listing
-                  </Link>
-                )}
-                <button
-                  onClick={handleLogout}
-                  className="text-center py-2 bg-red-600 text-white rounded-md hover:bg-red-700"
-                >
-                  Logout
-                </button>
-              </>
-            ) : (
-              <>
-                <Link to="/register" className="text-gray-600 dark:text-gray-300 hover:text-emerald-600 dark:hover:text-emerald-500 py-2">
-                  Sign Up
-                </Link>
-                <Link to="/login" className="text-center py-2 bg-emerald-600 text-white rounded-md hover:bg-emerald-700">
-                  Login
-                </Link>
-              </>
-            )}
+            <Link to="/register" className="text-gray-600 dark:text-gray-300 hover:text-emerald-600 dark:hover:text-emerald-500 py-2">
+              Sign Up
+            </Link>
+            <Link to="/login" className="text-center py-2 bg-emerald-600 text-white rounded-md hover:bg-emerald-700">
+              Login
+            </Link>
           </div>
-        </div>}
+        </div>
+      )}
     </nav>;
 };
 export default Navigation;

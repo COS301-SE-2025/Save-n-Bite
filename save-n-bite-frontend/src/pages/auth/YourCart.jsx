@@ -1,35 +1,14 @@
-import React, { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import React, { useState, useEffect  } from 'react';
+import { Link, useNavigate ,useSearchParams} from 'react-router-dom';
 import { ShoppingCartIcon, TrashIcon, CreditCardIcon, ClockIcon } from 'lucide-react';
 import CustomerNavBar from '../../components/auth/CustomerNavBar';
 import foodAPI from '../../services/FoodAPI';
 import schedulingAPI from '../../services/schedulingAPI';
 
-// Helper to generate 30-minute intervals from a pickup window string (e.g., '09:00-15:00')
-function generateTimeIntervals(pickupWindow, intervalMinutes = 30) {
-  if (!pickupWindow) return [];
-  const [start, end] = pickupWindow.split('-');
-  const [startHour, startMinute] = start.split(':').map(Number);
-  const [endHour, endMinute] = end.split(':').map(Number);
-
-  const intervals = [];
-  let current = new Date();
-  current.setHours(startHour, startMinute, 0, 0);
-
-  const endTime = new Date();
-  endTime.setHours(endHour, endMinute, 0, 0);
-
-  while (current <= endTime) {
-    intervals.push(
-      current.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false })
-    );
-    current = new Date(current.getTime() + intervalMinutes * 60000);
-  }
-  return intervals;
-}
-
 const YourCart = () => {
-  const navigate = useNavigate();
+   const [searchParams] = useSearchParams();
+  const focusedItemId = searchParams.get('item'); 
+ const navigate = useNavigate();
   const [cartItems, setCartItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -37,6 +16,15 @@ const YourCart = () => {
   const [selectedTimeSlot, setSelectedTimeSlot] = useState('');
   const [timeSlots, setTimeSlots] = useState([]);
   const [slotsLoading, setSlotsLoading] = useState(false);
+  const [selectedItemSlots, setSelectedItemSlots] = useState({}); // Track slots per item
+  
+  // Payment form validation states
+  const [paymentErrors, setPaymentErrors] = useState({});
+  const [paymentData, setPaymentData] = useState({
+    card_number: '',
+    expiry_date: '',
+    cvv: ''
+  });
 
   useEffect(() => {
     fetchCart();
@@ -70,49 +58,53 @@ const YourCart = () => {
     setSlotsLoading(true);
     try {
       const today = new Date().toISOString().split('T')[0];
-      const tomorrow = new Date();
-      tomorrow.setDate(tomorrow.getDate() + 1);
-      const tomorrowStr = tomorrow.toISOString().split('T')[0];
-
       let allSlots = [];
+      const itemSlotsMap = {};
+
       for (const item of cartItems) {
-        const listingId = item.listingId || item.id;
-        if (!listingId) continue;
-        // Only fetch for today for now (can add tomorrow if needed)
-        const todayResponse = await schedulingAPI.getAvailableSlots(listingId, today);
-        let slots = [];
-        if (todayResponse.success) {
-          if (todayResponse.data.available_slots && todayResponse.data.available_slots.length > 0) {
-            // Use available_slots as before
-            todayResponse.data.available_slots.forEach(slot => {
-              slots.push({
-                value: `${slot.date}-${slot.start_time}-${listingId}`,
-                label: `Today ${formatTime(slot.start_time)} (Item: ${item.name})`,
-                time: formatTime(slot.start_time),
-                date: 'Today',
-                slotData: slot,
-                listingId,
-                itemName: item.name
-              });
-            });
-          } else if (todayResponse.data.food_listing && todayResponse.data.food_listing.pickup_window) {
-            // Generate intervals from pickup_window
-            const intervals = generateTimeIntervals(todayResponse.data.food_listing.pickup_window);
-            slots = intervals.map(time => ({
-              value: `${today}-${time}-${listingId}`,
-              label: `Today ${time} (Item: ${item.name})`,
-              time,
-              date: 'Today',
-              slotData: { time },
-              listingId,
-              itemName: item.name
-            }));
-          }
+        // Use the correct food listing ID - check multiple possible fields
+        const listingId = item.food_listing_id || item.listingId || item.listing_id || item.id;
+        
+        console.log('Cart item structure:', item);
+        console.log(`Trying to fetch slots for listing ID: ${listingId}`);
+        
+        if (!listingId) {
+          console.warn('No listing ID found for cart item:', item);
+          continue;
         }
-        allSlots.push(...slots);
+
+        const slotsResponse = await schedulingAPI.getAvailableTimeSlots(listingId);
+        
+        if (slotsResponse.success && slotsResponse.data.available_slots) {
+          const itemSlots = slotsResponse.data.available_slots.map(slot => ({
+            value: `${slot.date}-${slot.start_time}-${listingId}-${slot.id}`,
+            label: `${formatDate(slot.date)} ${formatTime(slot.start_time)} - ${formatTime(slot.end_time)} (${slot.available_spots} spots)`,
+            time: formatTime(slot.start_time),
+            date: formatDate(slot.date),
+            slotData: slot,
+            listingId,
+            itemName: item.name,
+            available_spots: slot.available_spots,
+            location: slot.location // Include location info
+          }));
+          
+          // Store slots for this specific item
+          itemSlotsMap[listingId] = itemSlots;
+          allSlots.push(...itemSlots);
+          
+          console.log(`Found ${itemSlots.length} slots for ${item.name}`);
+        } else {
+          console.log(`No slots found for ${item.name}:`, slotsResponse.error);
+          // Set empty array for items with no slots
+          itemSlotsMap[listingId] = [];
+        }
       }
+      
       setTimeSlots(allSlots);
+      setSelectedItemSlots(itemSlotsMap);
+      
     } catch (err) {
+      console.error('Error fetching time slots:', err);
       setError('Failed to load available time slots');
     } finally {
       setSlotsLoading(false);
@@ -134,6 +126,176 @@ const YourCart = () => {
     }
   };
 
+  const formatDate = (dateString) => {
+    try {
+      const date = new Date(dateString);
+      const today = new Date();
+      const tomorrow = new Date(today);
+      tomorrow.setDate(tomorrow.getDate() + 1);
+      
+      if (date.toDateString() === today.toDateString()) {
+        return 'Today';
+      } else if (date.toDateString() === tomorrow.toDateString()) {
+        return 'Tomorrow';
+      } else {
+        return date.toLocaleDateString('en-US', { 
+          month: 'short', 
+          day: 'numeric' 
+        });
+      }
+    } catch (error) {
+      return dateString;
+    }
+  };
+
+const formatCardNumber = (value) => {
+    // Remove all non-digits
+    const v = value.replace(/\s+/g, '').replace(/[^0-9]/gi, '');
+    
+    // Add spaces every 4 digits, but allow longer numbers
+    const parts = [];
+    
+    for (let i = 0, len = v.length; i < len; i += 4) {
+      parts.push(v.substring(i, i + 4));
+    }
+    
+    if (parts.length) {
+      return parts.join(' ');
+    } else {
+      return v;
+    }
+  };
+
+  const formatExpiryDate = (value) => {
+    // Remove all non-digits
+    const v = value.replace(/\D/g, '');
+    
+    // Add slash after 2 digits
+    if (v.length >= 2) {
+      return `${v.substring(0, 2)}/${v.substring(2, 4)}`;
+    }
+    return v;
+  };
+
+  const validateCardNumber = (cardNumber) => {
+    const cleanNumber = cardNumber.replace(/\s/g, '');
+    
+    if (!cleanNumber) {
+      return 'Card number is required';
+    }
+    
+    if (cleanNumber.length < 13 || cleanNumber.length > 19) {
+      return 'Card number must be between 13-19 digits';
+    }
+    
+    // Basic Luhn algorithm check
+    let sum = 0;
+    let shouldDouble = false;
+    
+    for (let i = cleanNumber.length - 1; i >= 0; i--) {
+      let digit = parseInt(cleanNumber.charAt(i));
+      
+      if (shouldDouble) {
+        digit *= 2;
+        if (digit > 9) digit -= 9;
+      }
+      
+      sum += digit;
+      shouldDouble = !shouldDouble;
+    }
+    
+    if (sum % 10 !== 0) {
+      return 'Invalid card number';
+    }
+    
+    return null;
+  };
+
+  const validateExpiryDate = (expiryDate) => {
+    if (!expiryDate) {
+      return 'Expiry date is required';
+    }
+    
+    const cleanDate = expiryDate.replace(/\D/g, '');
+    
+    if (cleanDate.length !== 4) {
+      return 'Please enter MM/YY format';
+    }
+    
+    const month = parseInt(cleanDate.substring(0, 2));
+    const year = parseInt(`20${cleanDate.substring(2, 4)}`);
+    
+    if (month < 1 || month > 12) {
+      return 'Invalid month (01-12)';
+    }
+    
+    const currentDate = new Date();
+    const currentYear = currentDate.getFullYear();
+    const currentMonth = currentDate.getMonth() + 1;
+    
+    if (year < currentYear || (year === currentYear && month < currentMonth)) {
+      return 'Card has expired';
+    }
+    
+    if (year > currentYear + 20) {
+      return 'Invalid expiry year';
+    }
+    
+    return null;
+  };
+
+  const validateCVV = (cvv) => {
+    if (!cvv) {
+      return 'CVV is required';
+    }
+    
+    if (!/^\d{3}$/.test(cvv)) {
+      return 'CVV must be exactly 3 digits';
+    }
+    
+    return null;
+  };
+
+  const handlePaymentInputChange = (field, value) => {
+    let formattedValue = value;
+    
+    if (field === 'card_number') {
+      formattedValue = formatCardNumber(value);
+      if (formattedValue.replace(/\s/g, '').length > 19) return; // Limit to 19 digits
+    } else if (field === 'expiry_date') {
+      formattedValue = formatExpiryDate(value);
+      if (formattedValue.replace(/\D/g, '').length > 4) return; // Limit to 4 digits
+    } else if (field === 'cvv') {
+      formattedValue = value.replace(/\D/g, ''); // Only allow digits
+      if (formattedValue.length > 3) return; // Limit to 3 digits
+    }
+    
+    setPaymentData(prev => ({
+      ...prev,
+      [field]: formattedValue
+    }));
+    
+    // Clear error for this field when user starts typing
+    if (paymentErrors[field]) {
+      setPaymentErrors(prev => ({
+        ...prev,
+        [field]: null
+      }));
+    }
+  };
+
+  const validatePaymentForm = () => {
+    const errors = {
+      card_number: validateCardNumber(paymentData.card_number),
+      expiry_date: validateExpiryDate(paymentData.expiry_date),
+      cvv: validateCVV(paymentData.cvv)
+    };
+    
+    setPaymentErrors(errors);
+    
+    return !Object.values(errors).some(error => error !== null);
+  };
+
   const updateQuantity = (itemId, newQuantity) => {
     if (newQuantity < 1) return;
     
@@ -147,6 +309,14 @@ const YourCart = () => {
       const response = await foodAPI.removeFromCart(itemId);
       if (response.success) {
         setCartItems(cartItems.filter(item => item.id !== itemId));
+        // Clear selected time slot if it was for this item
+        const removedItem = cartItems.find(item => item.id === itemId);
+        if (removedItem) {
+          const listingId = removedItem.food_listing_id || removedItem.listingId || removedItem.listing_id || removedItem.id;
+          if (selectedTimeSlot.includes(listingId)) {
+            setSelectedTimeSlot('');
+          }
+        }
       } else {
         setError(response.error);
       }
@@ -158,110 +328,153 @@ const YourCart = () => {
   function generateOrderNumber() {
     return 'SNB' + Math.floor(100000 + Math.random() * 900000);
   }
+
   function generateConfirmationCode() {
     return Math.random().toString(36).substring(2, 8).toUpperCase();
   }
 
-  const handleCheckout = async (paymentDetails) => {
+const handleCheckout = async (paymentDetails) => {
     try {
-      // Instead of calling checkout, just navigate to pickup with item id and time slot
       const selectedSlot = timeSlots.find(slot => slot.value === selectedTimeSlot);
-      // For now, just use the first item in cartItems (single-item flow)
-      const item = cartItems[0];
-  
-      // Prepare all info for PickupPage
-      const orderNumber = generateOrderNumber();
-      const confirmationCode = generateConfirmationCode();
-      
-      // Get user's email from localStorage
-      const userEmail = localStorage.getItem('userEmail') || 'customer@example.com';
-      
-      // Try to get user's name from stored user data
-      let customerName = 'Customer';
-      try {
-        const userData = JSON.parse(localStorage.getItem('userData') || '{}');
-        if (userData.profile?.full_name) {
-          customerName = userData.profile.full_name;
-        } else if (userData.email) {
-          // Use email prefix as name if no full name is available
-          customerName = userData.email.split('@')[0];
-        }
-      } catch (error) {
-        console.log('Could not parse user data, using default name');
+      if (!selectedSlot) {
+        setError('Please select a valid time slot');
+        return;
       }
-      
-      // Store order data for PickupCoordination page
-      const orderData = {
-        id: Date.now(), // Simple ID for demo
-        orderNumber,
-        customerName: customerName, // Use actual customer name if available
-        status: 'Active',
-        pickupDate: item.expiryDate || new Date().toISOString().split('T')[0], // Use actual expiry date from listing
-        pickupWindow: selectedSlot ? selectedSlot.label : selectedTimeSlot,
-        items: [item.name],
-        contactPhone: 'N/A',
-        contactEmail: userEmail, // Use the actual user's email
-        confirmationCode,
-        itemName: item.name,
-        itemDescription: item.description,
-        providerName: item.provider?.businessName || item.provider?.business_name || 'Provider',
-        providerAddress: item.provider?.business_address || item.provider?.address || 'Pickup Address',
-        pickupTime: selectedSlot ? selectedSlot.label : selectedTimeSlot,
-        totalAmount: item.price * item.quantity,
-        expiryDate: item.expiryDate // Store the actual expiry date
-      };
-      
-      // Store in localStorage for PickupCoordination to access
-      const existingOrders = JSON.parse(localStorage.getItem('pickupOrders') || '[]');
-      existingOrders.push(orderData);
-      localStorage.setItem('pickupOrders', JSON.stringify(existingOrders));
-      
-      // Add to customer's order history for reviews and feedback
-      const orderHistoryData = {
-        id: Date.now(),
-        orderNumber,
-        date: new Date().toISOString().split('T')[0],
-        type: item.price > 0 ? 'purchase' : 'donation',
-        status: 'completed', // Set as completed for testing review functionality
-        items: [
-          {
-            id: item.id,
-            title: item.name,
-            image: item.image,
-            provider: item.provider?.businessName || item.provider?.business_name || 'Provider',
-            quantity: item.quantity,
-            price: item.price
-          }
-        ],
-        total: item.price * item.quantity,
-        provider: item.provider?.businessName || item.provider?.business_name || 'Provider',
-        pickupTime: selectedSlot ? selectedSlot.label : selectedTimeSlot,
-        pickupAddress: item.provider?.business_address || item.provider?.address || 'Pickup Address',
-        confirmationCode,
-        impact: {
-          mealsSaved: item.quantity,
-          co2Reduced: item.quantity * 0.4 // Rough estimate
-        }
-      };
-      
-      // Store in customer's order history
-      const existingOrderHistory = JSON.parse(localStorage.getItem('customerOrderHistory') || '[]');
-      existingOrderHistory.push(orderHistoryData);
-      localStorage.setItem('customerOrderHistory', JSON.stringify(existingOrderHistory));
-      
-      navigate('/pickup', {
-        state: {
-          itemName: item.name,
-          itemDescription: item.description,
-          providerName: item.provider?.businessName || item.provider?.business_name || 'Provider',
-          providerAddress: item.provider?.business_address || item.provider?.address || 'Pickup Address',
-          pickupTime: selectedSlot ? selectedSlot.label : selectedTimeSlot,
-          orderNumber,
-          confirmationCode
-        }
+
+      // Get the item corresponding to the selected slot
+      const item = cartItems.find(cartItem => {
+        const cartListingId = cartItem.food_listing_id || cartItem.listingId || cartItem.listing_id || cartItem.id;
+        return cartListingId === selectedSlot.listingId;
       });
+
+      if (!item) {
+        setError('Item not found for selected time slot');
+        return;
+      }
+
+      console.log('Starting checkout process...');
+      
+      // Step 1: Process checkout and create order
+      const checkoutData = {
+       
+        paymentMethod: "card",
+        paymentDetails: {
+          cardNumber: paymentDetails.card_number,
+          expiryDate: paymentDetails.expiry_date,
+          cvv: paymentDetails.cvv,
+          cardholderName: "Customer" // You can get this from user profile
+        },
+        specialInstructions: "Order from web app"
+      };
+
+      const checkoutResponse = await schedulingAPI.checkoutCart(checkoutData);
+      
+      if (!checkoutResponse.success) {
+        setError(`Checkout failed: ${checkoutResponse.error}`);
+        return;
+      }
+
+      console.log('Checkout successful:', checkoutResponse.data);
+      
+      // Extract order information from checkout response
+      const order = checkoutResponse.data.orders[0]; // Assuming single order for now
+      if (!order) {
+        setError('No order created during checkout');
+        return;
+      }
+
+      // Step 2: Get detailed slot information before scheduling
+      console.log('Fetching detailed slot information...');
+      const detailedSlotsResponse = await schedulingAPI.getAvailableTimeSlots(selectedSlot.listingId);
+      
+      if (!detailedSlotsResponse.success) {
+        setError('Failed to fetch detailed slot information');
+        return;
+      }
+
+      // Find the specific slot with full details
+      const detailedSlot = detailedSlotsResponse.data.available_slots.find(
+        slot => slot.id === selectedSlot.slotData.id
+      );
+
+      if (!detailedSlot) {
+        setError('Selected time slot no longer available');
+        return;
+      }
+
+      // Step 3: Schedule pickup using the order ID and selected slot
+      const scheduleData = {
+        order_id: order.id,
+        food_listing_id: selectedSlot.listingId,
+        time_slot_id: selectedSlot.slotData.id,
+        date: selectedSlot.slotData.date,
+        customer_notes: "Scheduled via web app"
+      };
+
+      console.log('Scheduling pickup with data:', scheduleData);
+      
+      const scheduleResponse = await schedulingAPI.schedulePickup(scheduleData);
+      
+      if (!scheduleResponse.success) {
+        setError(`Pickup scheduling failed: ${scheduleResponse.error}`);
+        return;
+      }
+
+      console.log('Pickup scheduled successfully:', scheduleResponse.data);
+      
+      // Extract all the real data from API responses
+      const pickup = scheduleResponse.data.pickup;
+      const qrCode = scheduleResponse.data.qr_code;
+      
+      // Navigate to pickup page with comprehensive data
+setTimeout(() => {
+  navigate('/pickup', {
+    state: {
+      // Order information
+      orderId: order.id,
+      orderNumber: order.id,
+      
+      // Pickup confirmation details
+      confirmationCode: pickup.confirmation_code,
+      pickupId: pickup.id,
+      pickupStatus: pickup.status,
+      
+      // Food item details
+      itemName: detailedSlot.food_listing.name,
+      itemDescription: detailedSlot.food_listing.description,
+      pickupWindow: detailedSlot.food_listing.pickup_window,
+      
+      // Business/Provider information
+      businessName: detailedSlot.location.contact_person, 
+      
+      // Location details
+      locationName: detailedSlot.location.name,
+      locationAddress: detailedSlot.location.address,
+      locationInstructions: detailedSlot.location.instructions,
+      contactPerson: detailedSlot.location.contact_person,
+      contactPhone: detailedSlot.location.contact_phone,
+      
+      // Timing information
+      pickupDate: pickup.scheduled_date,
+      pickupStartTime: pickup.scheduled_start_time,
+      pickupEndTime: pickup.scheduled_end_time,
+      formattedPickupTime: `${formatDate(pickup.scheduled_date)} ${formatTime(pickup.scheduled_start_time)} - ${formatTime(pickup.scheduled_end_time)}`,
+      
+      // QR Code data
+      qrCodeData: qrCode,
+      
+      // Additional slot details
+      slotNumber: detailedSlot.slot_number,
+      availableSpots: detailedSlot.available_spots,
+      
+      // Customer notes
+      customerNotes: pickup.customer_notes
+    }
+  });
+}, 500);
     } catch (err) {
-      setError('Failed to process payment');
+      console.error('Checkout error:', err);
+      setError(`Failed to process payment: ${err.message}`);
     }
   };
 
@@ -273,17 +486,28 @@ const YourCart = () => {
     setShowPayment(true);
   };
 
+  const handlePaymentSubmit = (e) => {
+    e.preventDefault();
+    
+    if (!validatePaymentForm()) {
+      return;
+    }
+    
+    handleCheckout(paymentData);
+  };
+
   const total = cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 w-full py-8">
+<div className="min-h-screen bg-gray-50 dark:bg-gray-900 w-full py-8 transition-colors duration-300">
+
         <CustomerNavBar />
-        <div className="max-w-4xl mx-auto px-4">
+        <div className="max-w-4xl mx-auto px-4 pt-4">
           <div className="flex items-center justify-center min-h-[60vh]">
             <div className="text-center">
               <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-600 mx-auto mb-4"></div>
-              <p className="text-gray-600">Loading cart...</p>
+              <p className="text-gray-600 dark:text-gray-300">Loading cart...</p>
             </div>
           </div>
         </div>
@@ -293,14 +517,18 @@ const YourCart = () => {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-gray-50 w-full py-8">
-        <CustomerNavBar />
-        <div className="max-w-4xl mx-auto px-4">
-          <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-md">
+<div className="min-h-screen bg-gray-50 dark:bg-gray-900 w-full py-8 transition-colors duration-300">
+  <CustomerNavBar />
+  <div className="max-w-4xl mx-auto px-4 pt-4">
+    <div className="bg-red-50 dark:bg-red-900 border border-red-200 dark:border-red-800 text-red-600 dark:text-red-300 px-4 py-3 rounded-md">
+
             <p className="font-medium">Error loading cart</p>
             <p className="text-sm">{error}</p>
             <button 
-              onClick={fetchCart}
+              onClick={() => {
+                setError(null);
+                fetchCart();
+              }}
               className="mt-2 text-sm underline hover:no-underline"
             >
               Try again
@@ -312,86 +540,112 @@ const YourCart = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 w-full py-8">
-      <CustomerNavBar />
-      <div className="max-w-4xl mx-auto px-4">
-        <h1 className="text-2xl font-bold mb-8 text-gray-800">Your Cart</h1>
-        
-        {cartItems.length === 0 ? (
-          <div className="text-center py-12">
-            <ShoppingCartIcon size={48} className="mx-auto text-gray-400 mb-4" />
-            <p className="text-xl text-gray-600 mb-4">Your cart is empty</p>
-            <Link to="/food-listing" className="inline-block px-6 py-3 bg-emerald-600 text-white rounded-md hover:bg-emerald-700 transition-colors">
+<div className="bg-gray-50 dark:bg-gray-900 min-h-screen w-full transition-colors duration-300">
+  <CustomerNavBar />
+  <div className="container-responsive max-w-4xl mx-auto px-4 pt-4 sm:pt-6">
+    <h1 className="text-xl sm:text-2xl font-bold mb-6 sm:mb-8 text-gray-800 dark:text-gray-100">Your Cart</h1>
+    
+    {cartItems.length === 0 ? (
+      <div className="text-center py-8 sm:py-12">
+        <ShoppingCartIcon size={40} className="sm:w-12 sm:h-12 mx-auto text-gray-400 dark:text-gray-600 mb-3 sm:mb-4" />
+        <p className="text-lg sm:text-xl text-gray-600 dark:text-gray-300 mb-3 sm:mb-4">Your cart is empty</p>
+        <Link
+          to="/food-listing"
+          className="inline-block px-4 sm:px-6 py-2 sm:py-3 bg-emerald-600 text-white rounded-md hover:bg-emerald-700 dark:bg-emerald-700 dark:hover:bg-emerald-800 transition-colors text-sm sm:text-base touch-target"
+        >
               Browse Food
             </Link>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div className="md:col-span-2">
-              {cartItems.map(item => (
-                <div key={item.id} className="bg-white rounded-lg shadow-sm p-4 mb-4">
-                  <div className="flex items-center">
-                    <img 
-                      src={item.image} 
-                      alt={item.name} 
-                      className="w-20 h-20 object-cover rounded-md" 
-                    />
-                    <div className="ml-4 flex-grow">
-                      <h3 className="font-semibold text-gray-800">
-                        {item.name}
-                      </h3>
-                      <p className="text-sm text-gray-600">{item.provider?.business_name}</p>
-                      <p className="text-emerald-600 font-semibold mt-1">
-                        R{item.price.toFixed(2)}
-                      </p>
-                    </div>
-                    <div className="flex items-center">
-                      <button 
-                        onClick={() => updateQuantity(item.id, item.quantity - 1)} 
-                        className="px-2 py-1 border border-gray-300 rounded-l-md hover:bg-gray-50"
-                      >
-                        -
-                      </button>
-                      <span className="px-4 py-1 border-t border-b border-gray-300">
-                        {item.quantity}
-                      </span>
-                      <button 
-                        onClick={() => updateQuantity(item.id, item.quantity + 1)} 
-                        className="px-2 py-1 border border-gray-300 rounded-r-md hover:bg-gray-50"
-                      >
-                        +
-                      </button>
-                      <button 
-                        onClick={() => removeItem(item.id)} 
-                        className="ml-4 text-gray-400 hover:text-red-500"
-                      >
-                        <TrashIcon size={18} />
-                      </button>
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-8">
+            <div className="lg:col-span-2">
+              {cartItems.map(item => {
+                const listingId = item.food_listing_id || item.listingId || item.listing_id || item.id;
+                const itemSlots = selectedItemSlots[listingId] || [];
+                
+                return (
+<div
+  key={item.id}
+  className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-3 sm:p-4 mb-3 sm:mb-4 card-responsive transition-colors duration-300"
+>
+  <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4">
+
+                      <img 
+                        src={item.image} 
+                        alt={item.name} 
+                        className="w-16 h-16 sm:w-20 sm:h-20 object-cover rounded-md flex-shrink-0" 
+                      />
+<div className="flex-grow min-w-0">
+  <h3 className="font-semibold text-gray-800 dark:text-gray-100 text-sm sm:text-base">
+    {item.name}
+  </h3>
+  <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-300">
+    {item.provider?.business_name}
+  </p>
+  <p className="text-emerald-600 dark:text-emerald-400 font-semibold mt-1 text-sm sm:text-base">
+
+                          R{item.price.toFixed(2)}
+                        </p>
+                        {/* Show available slots for this item */}
+                        <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                          {itemSlots.length > 0 
+                            ? `${itemSlots.length} pickup slots available`
+                            : 'No pickup slots available'
+                          }
+                        </p>
+                      </div>
+<div className="flex items-center justify-between sm:justify-end gap-2 sm:gap-4">
+  <div className="flex items-center border border-gray-300 dark:border-gray-700 rounded-md">
+    <button 
+      onClick={() => updateQuantity(item.id, item.quantity - 1)} 
+      className="px-2 py-1 sm:px-3 sm:py-2 border-r border-gray-300 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 touch-target"
+    >
+      -
+    </button>
+    <span className="px-3 py-1 sm:px-4 sm:py-2 text-sm sm:text-base border-t border-b border-gray-300 dark:border-gray-700">
+      {item.quantity}
+    </span>
+    <button 
+      onClick={() => updateQuantity(item.id, item.quantity + 1)} 
+      className="px-2 py-1 sm:px-3 sm:py-2 border-l border-gray-300 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 touch-target"
+    >
+      +
+    </button>
+  </div>
+  <button 
+    onClick={() => removeItem(item.id)} 
+    className="text-gray-400 dark:text-gray-500 hover:text-red-500 touch-target p-1"
+  >
+
+                        
+                          <TrashIcon size={16} className="sm:w-5 sm:h-5" />
+                        </button>
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
 
             <div className="md:col-span-1">
-              <div className="bg-white rounded-lg shadow-sm p-6">
-                <h2 className="text-lg font-semibold mb-4">Order Summary</h2>
+              <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6 transition-colors duration-300">
+                <h2 className="text-lg font-semibold mb-4 text-gray-800 dark:text-gray-100">Order Summary</h2>
                 <div className="space-y-2 mb-4">
                   {cartItems.map(item => (
                     <div key={item.id} className="flex justify-between text-sm">
-                      <span className="text-gray-600">
+                      <span className="text-gray-600 dark:text-gray-300">
                         {item.name} (x{item.quantity})
                       </span>
-                      <span className="text-gray-800">
+                      <span className="text-gray-800 dark:text-gray-100">
                         R{(item.price * item.quantity).toFixed(2)}
                       </span>
                     </div>
                   ))}
                 </div>
-                <div className="border-t border-gray-200 pt-4 mb-6">
+                <div className="border-t border-gray-200 dark:border-gray-700 pt-4 mb-6">
                   <div className="flex justify-between">
-                    <span className="font-semibold">Total</span>
-                    <span className="font-semibold text-emerald-600">
+                    <span className="font-semibold text-gray-800 dark:text-gray-100">Total</span>
+                    <span className="font-semibold text-emerald-600 dark:text-emerald-400">
                       R{total.toFixed(2)}
                     </span>
                   </div>
@@ -399,52 +653,54 @@ const YourCart = () => {
 
                 {/* Pickup Time Selection */}
                 <div className="mb-6">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                     <ClockIcon size={16} className="inline mr-1" />
                     Select Pickup Time
                   </label>
                   {slotsLoading ? (
                     <div className="flex items-center justify-center py-4">
                       <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-emerald-600"></div>
-                      <span className="ml-2 text-sm text-gray-600">Loading available times...</span>
+                      <span className="ml-2 text-sm text-gray-600 dark:text-gray-300">Loading available times...</span>
                     </div>
                   ) : (
                     <select
                       value={selectedTimeSlot}
                       onChange={(e) => setSelectedTimeSlot(e.target.value)}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                      className="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-100"
                       required
                     >
                       <option value="">Choose a time slot...</option>
                       {timeSlots.map((slot) => (
                         <option key={slot.value} value={slot.value}>
-                          {slot.label}
+                          {slot.itemName}: {slot.label}
                         </option>
                       ))}
                     </select>
                   )}
                   {selectedTimeSlot && (
-                    <p className="text-xs text-gray-500 mt-1">
-                      Your order will be ready for pickup at the selected time
-                    </p>
+                    <div className="text-xs text-gray-500 dark:text-gray-400 mt-2 p-2 bg-gray-50 dark:bg-gray-700 rounded">
+                      <p><strong>Location:</strong> {timeSlots.find(s => s.value === selectedTimeSlot)?.location?.address}</p>
+                      <p><strong>Contact:</strong> {timeSlots.find(s => s.value === selectedTimeSlot)?.location?.contact_person}</p>
+                      <p><strong>Instructions:</strong> {timeSlots.find(s => s.value === selectedTimeSlot)?.location?.instructions}</p>
+                    </div>
                   )}
                   {timeSlots.length === 0 && !slotsLoading && (
-                    <p className="text-xs text-orange-600 mt-1">
-                      No pickup slots available. Please try again later.
+                    <p className="text-xs text-orange-600 dark:text-orange-400 mt-1">
+                      No pickup slots available for items in cart.
                     </p>
                   )}
                 </div>
 
                 <button 
                   onClick={handleProceedToPayment} 
-                  className="w-full py-3 bg-emerald-600 text-white rounded-md hover:bg-emerald-700 transition-colors flex items-center justify-center disabled:bg-gray-400 disabled:cursor-not-allowed"
+                  className="w-full py-3 bg-emerald-600 text-white rounded-md hover:bg-emerald-700 dark:bg-emerald-700 dark:hover:bg-emerald-800 transition-colors flex items-center justify-center disabled:bg-gray-400 dark:disabled:bg-gray-700 disabled:cursor-not-allowed"
                   disabled={!selectedTimeSlot || slotsLoading}
                 >
                   <CreditCardIcon size={20} className="mr-2" />
                   Proceed to Payment
                 </button>
                 {!selectedTimeSlot && (
-                  <p className="text-xs text-red-500 mt-1 text-center">
+                  <p className="text-xs text-red-500 dark:text-red-400 mt-1 text-center">
                     Please select a pickup time to continue
                   </p>
                 )}
@@ -454,77 +710,107 @@ const YourCart = () => {
         )}
 
         {showPayment && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4">
-            <div className="bg-white rounded-lg p-6 max-w-md w-full">
-              <h2 className="text-xl font-semibold mb-4">Payment Details</h2>
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+            <div className="bg-white dark:bg-gray-800 rounded-lg p-6 max-w-md w-full transition-colors duration-300">
+              <h2 className="text-xl font-semibold mb-4 text-gray-800 dark:text-gray-100">Payment Details</h2>
               {selectedTimeSlot && (
-                <div className="mb-4 p-3 bg-emerald-50 border border-emerald-200 rounded-md">
-                  <p className="text-sm text-emerald-800">
+                <div className="mb-4 p-3 bg-emerald-50 dark:bg-emerald-900 border border-emerald-200 dark:border-emerald-800 rounded-md">
+                  <p className="text-sm text-emerald-800 dark:text-emerald-200">
                     <ClockIcon size={14} className="inline mr-1" />
                     Pickup: {timeSlots.find(slot => slot.value === selectedTimeSlot)?.label}
                   </p>
+                  <p className="text-xs text-emerald-700 dark:text-emerald-300 mt-1">
+                    {timeSlots.find(slot => slot.value === selectedTimeSlot)?.location?.address}
+                    </p>
                 </div>
               )}
               <form 
-                onSubmit={(e) => {
-                  e.preventDefault();
-                  const formData = new FormData(e.target);
-                  handleCheckout({
-                    card_number: formData.get('card_number'),
-                    expiry_date: formData.get('expiry_date'),
-                    cvv: formData.get('cvv')
-                  });
-                }} 
+                onSubmit={handlePaymentSubmit}
                 className="space-y-4"
               >
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                     Card Number
                   </label>
                   <input 
                     type="text" 
-                    name="card_number"
-                    className="w-full px-4 py-2 border border-gray-300 rounded-md" 
+                    value={paymentData.card_number}
+                    onChange={(e) => handlePaymentInputChange('card_number', e.target.value)}
+                    className={`w-full px-4 py-2 border rounded-md bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-100 ${
+                      paymentErrors.card_number 
+                        ? 'border-red-500 dark:border-red-400' 
+                        : 'border-gray-300 dark:border-gray-700'
+                    }`}
                     placeholder="1234 5678 9012 3456" 
-                    required
+                    maxLength="23"
                   />
+                  {paymentErrors.card_number && (
+                    <p className="text-red-500 dark:text-red-400 text-xs mt-1">
+                      {paymentErrors.card_number}
+                    </p>
+                  )}
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                       Expiry Date
                     </label>
                     <input 
                       type="text" 
-                      name="expiry_date"
-                      className="w-full px-4 py-2 border border-gray-300 rounded-md" 
+                      value={paymentData.expiry_date}
+                      onChange={(e) => handlePaymentInputChange('expiry_date', e.target.value)}
+                      className={`w-full px-4 py-2 border rounded-md bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-100 ${
+                        paymentErrors.expiry_date 
+                          ? 'border-red-500 dark:border-red-400' 
+                          : 'border-gray-300 dark:border-gray-700'
+                      }`}
                       placeholder="MM/YY" 
-                      required
+                      maxLength="5"
                     />
+                    {paymentErrors.expiry_date && (
+                      <p className="text-red-500 dark:text-red-400 text-xs mt-1">
+                        {paymentErrors.expiry_date}
+                      </p>
+                    )}
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                       CVV
                     </label>
                     <input 
                       type="text" 
-                      name="cvv"
-                      className="w-full px-4 py-2 border border-gray-300 rounded-md" 
+                      value={paymentData.cvv}
+                      onChange={(e) => handlePaymentInputChange('cvv', e.target.value)}
+                      className={`w-full px-4 py-2 border rounded-md bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-100 ${
+                        paymentErrors.cvv 
+                          ? 'border-red-500 dark:border-red-400' 
+                          : 'border-gray-300 dark:border-gray-700'
+                      }`}
                       placeholder="123" 
-                      required
+                      maxLength="3"
                     />
+                    {paymentErrors.cvv && (
+                      <p className="text-red-500 dark:text-red-400 text-xs mt-1">
+                        {paymentErrors.cvv}
+                      </p>
+                    )}
                   </div>
                 </div>
                 <button 
                   type="submit" 
-                  className="w-full py-3 bg-emerald-600 text-white rounded-md hover:bg-emerald-700 transition-colors"
+                  className="w-full py-3 bg-emerald-600 text-white rounded-md hover:bg-emerald-700 dark:bg-emerald-700 dark:hover:bg-emerald-800 transition-colors disabled:bg-gray-400 dark:disabled:bg-gray-600 disabled:cursor-not-allowed"
+                  disabled={!paymentData.card_number || !paymentData.expiry_date || !paymentData.cvv}
                 >
                   Pay R{total.toFixed(2)}
                 </button>
                 <button 
                   type="button" 
-                  onClick={() => setShowPayment(false)} 
-                  className="w-full py-3 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors"
+                  onClick={() => {
+                    setShowPayment(false);
+                    setPaymentData({ card_number: '', expiry_date: '', cvv: '' });
+                    setPaymentErrors({});
+                  }} 
+                  className="w-full py-3 border border-gray-300 dark:border-gray-700 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors text-gray-800 dark:text-gray-100"
                 >
                   Cancel
                 </button>

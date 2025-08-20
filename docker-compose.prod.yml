@@ -1,0 +1,47 @@
+# docker-compose.prod.yml
+version: '3.8'
+
+services:
+
+  # Django Backend
+  backend:
+    build:
+      context: ./save-n-bite-backend
+      dockerfile: Dockerfile.prod
+    ports:
+      - "8000:8000"
+    environment:
+      - DEBUG=0
+      - SECRET_KEY=your_django_secret_key
+      - DB_HOST=host.docker.internal 
+      - DB_NAME=savenbite
+      - DB_USER=postgres
+      - DB_PASSWORD=Capleton@112004
+      - DB_PORT=5432
+    volumes:
+      - static_volume:/app/staticfiles
+      - media_volume:/app/media
+    restart: unless-stopped
+    command: >
+      sh -c "python manage.py migrate &&
+             python manage.py collectstatic --noinput &&
+             gunicorn --bind 0.0.0.0:8000 --workers 3 backend.wsgi:application"
+
+  # React Frontend
+  frontend:
+    build:
+      context: ./save-n-bite-frontend
+      dockerfile: Dockerfile.prod
+    ports:
+      - "8080:80"
+    volumes:
+      - static_volume:/usr/share/nginx/html/static
+    depends_on:
+      - backend
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+  static_volume:
+  media_volume:
+  redis_data:

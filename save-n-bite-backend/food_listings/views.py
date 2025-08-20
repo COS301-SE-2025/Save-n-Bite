@@ -9,6 +9,7 @@ from django.db.models import Q, Min, Max
 from django.db import models
 from django.shortcuts import get_object_or_404
 from datetime import datetime, date
+from django.utils import timezone
 
 from .models import FoodListing
 from .serializers import (
@@ -164,6 +165,189 @@ def update_food_listing(request, listing_id):
             'details': [{'field': field, 'message': errors[0]} for field, errors in serializer.errors.items()]
         }
     }, status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['DELETE'])
+@permission_classes([IsAuthenticated])
+def delete_food_listing(request, listing_id):
+    """Delete a food listing (provider only) - Simplified version"""
+    
+    # Check if user is a provider
+    if request.user.user_type != 'provider':
+        return Response({
+            'error': {
+                'code': 'FORBIDDEN',
+                'message': 'Only food providers can delete listings'
+            }
+        }, status=status.HTTP_403_FORBIDDEN)
+    
+    # Get the listing and verify ownership
+    try:
+        listing = FoodListing.objects.get(id=listing_id, provider=request.user)
+    except FoodListing.DoesNotExist:
+        return Response({
+            'error': {
+                'code': 'NOT_FOUND',
+                'message': 'Listing not found or you do not have permission to delete it'
+            }
+        }, status=status.HTTP_404_NOT_FOUND)
+    
+    # Check if listing is already deleted
+    if listing.status == 'removed':
+        return Response({
+            'error': {
+                'code': 'ALREADY_DELETED',
+                'message': 'This listing has already been deleted'
+            }
+        }, status=status.HTTP_400_BAD_REQUEST)
+    
+    try:
+        # Store listing details for response
+        listing_data = {
+            'id': str(listing.id),
+            'name': listing.name,
+            'created_at': listing.created_at.isoformat()
+        }
+        
+        # Clean up images if they exist
+        deleted_images_count = 0
+        if isinstance(listing.images, list) and len(listing.images) > 0:
+            try:
+                for image_url in listing.images[:]:
+                    success = listing.remove_image(image_url)
+                    if success:
+                        deleted_images_count += 1
+            except Exception as e:
+                # Log error but don't fail deletion
+                import logging
+                logger = logging.getLogger(__name__)
+                logger.warning(f"Failed to delete some images for listing {listing.id}: {str(e)}")
+        
+        # Check if hard delete is requested
+        hard_delete = request.query_params.get('hard_delete', 'false').lower() == 'true'
+        
+        if hard_delete:
+            # Permanently delete
+            listing.delete()
+            message = 'Listing permanently deleted'
+            deletion_type = 'permanent'
+        else:
+            # Soft delete
+            listing.status = 'removed'
+            listing.admin_removal_reason = f"Deleted by provider on {timezone.now().isoformat()}"
+            listing.removed_by = request.user
+            listing.removed_at = timezone.now()
+            listing.save()
+            message = 'Listing deleted successfully'
+            deletion_type = 'soft'
+        
+        return Response({
+            'message': message,
+            'deleted_listing': {
+                **listing_data,
+                'deleted_at': timezone.now().isoformat(),
+                'deletion_type': deletion_type,
+                'deleted_images_count': deleted_images_count,
+                'can_be_restored': not hard_delete
+            }
+        }, status=status.HTTP_200_OK)
+        
+    except Exception as e:
+        return Response({
+            'error': {
+                'code': 'DELETION_ERROR',
+                'message': 'Failed to delete listing',
+                'details': [{'field': 'general', 'message': str(e)}]
+            }
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def restore_food_listing(request, listing_id):
+    """Restore a soft-deleted food listing - Simplified version"""
+    
+    if request.user.user_type != 'provider':
+        return Response({
+            'error': {
+                'code': 'FORBIDDEN',
+                'message': 'Only food providers can restore listings'
+            }
+        }, status=status.HTTP_403_FORBIDDEN)
+    
+    try:
+        listing = FoodListing.objects.get(
+            id=listing_id, 
+            provider=request.user,
+            status='removed'
+        )
+    except FoodListing.DoesNotExist:
+        return Response({
+            'error': {
+                'code': 'NOT_FOUND',
+                'message': 'Removed listing not found or you do not have permission to restore it'
+            }
+        }, status=status.HTTP_404_NOT_FOUND)
+    
+    try:
+        # Check if listing is expired
+        if listing.is_expired:
+            return Response({
+                'error': {
+                    'code': 'EXPIRED_LISTING',
+                    'message': 'Cannot restore expired listing. Please create a new listing instead.'
+                }
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
+        # Restore the listing using the existing model method
+        listing.admin_restore()
+        
+        return Response({
+            'message': 'Listing restored successfully',
+            'restored_listing': {
+                'id': str(listing.id),
+                'name': listing.name,
+                'status': listing.status,
+                'restored_at': timezone.now().isoformat()
+            }
+        }, status=status.HTTP_200_OK)
+        
+    except Exception as e:
+        return Response({
+            'error': {
+                'code': 'RESTORATION_ERROR',
+                'message': 'Failed to restore listing',
+                'details': [{'field': 'general', 'message': str(e)}]
+            }
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_deleted_listings(request):
+    """Get all soft-deleted listings for the authenticated provider - Simplified version"""
+    
+    if request.user.user_type != 'provider':
+        return Response({
+            'error': {
+                'code': 'FORBIDDEN',
+                'message': 'Only food providers can access this endpoint'
+            }
+        }, status=status.HTTP_403_FORBIDDEN)
+    
+    deleted_listings = FoodListing.objects.filter(
+        provider=request.user,
+        status='removed'
+    ).order_by('-removed_at')
+    
+    # Use existing serializer
+    from .serializers import FoodListingSerializer
+    serializer = FoodListingSerializer(deleted_listings, many=True)
+    
+    return Response({
+        'deleted_listings': serializer.data,
+        'count': deleted_listings.count(),
+        'message': 'Use the restore endpoint to recover any of these listings'
+    }, status=status.HTTP_200_OK)
 
 
 # =============== CUSTOMER VIEWS ===============

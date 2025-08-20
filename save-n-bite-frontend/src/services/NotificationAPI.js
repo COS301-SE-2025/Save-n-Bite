@@ -202,6 +202,7 @@ class NotificationAPI {
       createdAt: apiNotification.created_at || apiNotification.timestamp,
       actionUrl: apiNotification.action_url || null,
       metadata: apiNotification.metadata || {},
+      data: apiNotification.data || {},
       priority: apiNotification.priority || 'normal'
     };
   }

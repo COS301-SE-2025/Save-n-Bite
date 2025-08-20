@@ -1,24 +1,109 @@
 # Food Listings Service Contract
 
 ## Overview
-API for managing food listings, allowing providers to create, update, and manage their food offerings, and customers to browse available listings.
+RESTful API service for managing food listings in the Save n Bite platform. Enables food providers to create and manage surplus food listings, and allows customers to discover and browse available food items.
 
-**Base URL:** `https://127.0.0.1:8000`
+**Protocol:** REST API  
+**Data Format:** JSON  
+**Base URL:** `https://127.0.0.1:8000/api`  
+**Authentication:** JWT Bearer Token  
+
+---
+
+## Service Architecture
+
+### Communication Protocol
+- **Type:** Synchronous HTTP REST API
+- **Transport:** HTTPS
+- **Content-Type:** `application/json`
+- **Authentication:** JWT tokens via `Authorization: Bearer <token>` header
+- **Timeout:** 30 seconds for standard operations
+
+### Error Handling
+All error responses follow a consistent format:
+```json
+{
+  "error": {
+    "code": "ERROR_CODE",
+    "message": "Human readable message",
+    "details": [
+      {
+        "field": "field_name",
+        "message": "Field-specific error message"
+      }
+    ]
+  }
+}
+```
 
 ---
 
 ## Provider Endpoints
-*Requires provider authentication*
+*Requires provider authentication and verification*
 
-### 1. Create Food Listing
+### 1. Get Provider's Listings
+**GET** `/api/provider/listings/`
+
+Retrieves all food listings for the authenticated provider with business insights.
+
+**Headers:**
+```
+Authorization: Bearer <provider_jwt_token>
+```
+
+**Response (200 - Success):**
+```json
+{
+  "listings": [
+    {
+      "id": "06426c4f-4adc-4fea-9000-585457559ca1",
+      "name": "Fresh Sandwiches",
+      "description": "Assorted sandwiches from lunch service",
+      "food_type": "ready_to_eat",
+      "original_price": 8.99,
+      "discounted_price": 3.99,
+      "savings": 5.00,
+      "discount_percentage": 56,
+      "quantity": 15,
+      "quantity_available": 15,
+      "expiry_date": "2025-01-15",
+      "pickup_window": "17:00-19:00",
+      "imageUrl": "base64_or_url_string",
+      "allergens": ["gluten", "dairy"],
+      "dietary_info": ["vegetarian_options"],
+      "status": "active",
+      "is_available": true,
+      "provider": {
+        "id": "provider-uuid",
+        "business_name": "Arthur's Restaurant",
+        "business_address": "123 Test St, Test City",
+        "logo": "/media/provider_logos/logo.png"
+      },
+      "created_at": "2025-01-15T17:36:58.842134+00:00",
+      "updated_at": "2025-01-15T17:36:58.842134+00:00"
+    }
+  ],
+  "totalCount": 1,
+  "followerCount": 25,
+  "insights": {
+    "total_followers": 25,
+    "active_listings": 3,
+    "sold_out_listings": 1
+  }
+}
+```
+
+---
+
+### 2. Create Food Listing
 **POST** `/api/provider/listings/create/`
 
-Creates a new food listing for a registered and logged-in business provider.
+Creates a new food listing for verified providers.
 
 **Headers:**
 ```
 Content-Type: application/json
-Authorization: Bearer YOUR_PROVIDER_TOKEN_HERE
+Authorization: Bearer <provider_jwt_token>
 ```
 
 **Request Body:**
@@ -32,24 +117,26 @@ Authorization: Bearer YOUR_PROVIDER_TOKEN_HERE
   "quantity": 15,
   "expiry_date": "2025-01-15",
   "pickup_window": "17:00-19:00",
+  "imageUrl": "base64_encoded_image_or_url",
   "allergens": ["gluten", "dairy"],
   "dietary_info": ["vegetarian_options"]
 }
 ```
 
 **Request Parameters:**
-| Field | Type | Required | Description |
-|-------|------|----------|-------------|
-| name | string | Yes | Name of the food item |
-| description | string | Yes | Detailed description of the food |
-| food_type | string | Yes | Type of food (e.g., "ready_to_eat", "baked_goods") |
-| original_price | number | Yes | Original price of the item |
-| discounted_price | number | Yes | Discounted selling price |
-| quantity | integer | Yes | Number of items available |
-| expiry_date | string | Yes | Expiry date (YYYY-MM-DD format) |
-| pickup_window | string | Yes | Time window for pickup (HH:MM-HH:MM format) |
-| allergens | array | No | List of allergens present |
-| dietary_info | array | No | Dietary information (e.g., vegetarian, vegan options) |
+| Field | Type | Required | Validation |
+|-------|------|----------|------------|
+| name | string | Yes | Max 255 characters |
+| description | string | Yes | Non-empty text |
+| food_type | string | Yes | One of: `ready_to_eat`, `ingredients`, `baked_goods` |
+| original_price | decimal | Yes | Positive number, max 10 digits |
+| discounted_price | decimal | Yes | Positive number ≤ original_price |
+| quantity | integer | Yes | Positive integer |
+| expiry_date | string | Yes | YYYY-MM-DD format, future date |
+| pickup_window | string | Yes | HH:MM-HH:MM format |
+| imageUrl | string | No | Base64 encoded image or URL |
+| allergens | array | No | List of allergen strings |
+| dietary_info | array | No | List of dietary info strings |
 
 **Response (201 - Success):**
 ```json
@@ -61,73 +148,37 @@ Authorization: Bearer YOUR_PROVIDER_TOKEN_HERE
     "quantity": 15,
     "price": 3.99,
     "status": "active",
-    "createdAt": "2025-05-26T17:36:58.842134+00:00"
+    "createdAt": "2025-01-15T17:36:58.842134+00:00"
   }
 }
 ```
 
 ---
 
-### 2. Get Provider's Listings
-**GET** `/api/provider/listings/`
+### 3.1 Update Food Listing
+**PUT** `/api/provider/listings/{listing_id}/`
 
-Retrieves all existing food listings for the authenticated business provider.
-
-**Headers:**
-```
-Authorization: Bearer YOUR_PROVIDER_TOKEN_HERE
-```
-
-**Response (200 - Success):**
-```json
-{
-  "listings": [
-    {
-      "id": "06426c4f-4adc-4fea-9000-585457559ca1",
-      "name": "Fresh Sandwiches",
-      "description": "Assorted sandwiches from lunch service",
-      "food_type": "ready_to_eat",
-      "original_price": 8.99,
-      "discounted_price": 3.99,
-      "quantity": 15,
-      "expiry_date": "2025-01-15",
-      "pickup_window": "17:00-19:00",
-      "allergens": ["gluten", "dairy"],
-      "dietary_info": ["vegetarian_options"],
-      "status": "active",
-      "createdAt": "2025-05-26T17:36:58.842134+00:00",
-      "updatedAt": "2025-05-26T17:36:58.842134+00:00"
-    }
-  ],
-  "count": 1
-}
-```
-
----
-
-### 3. Update Food Listing
-**PUT** `/api/provider/listings/{LISTING_ID}/`
-
-Updates an existing food listing for the authenticated provider.
+Updates an existing food listing owned by the authenticated provider.
 
 **Headers:**
 ```
 Content-Type: application/json
-Authorization: Bearer YOUR_PROVIDER_TOKEN_HERE
+Authorization: Bearer <provider_jwt_token>
 ```
 
 **URL Parameters:**
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| LISTING_ID | UUID | The unique identifier of the listing to update |
+| listing_id | UUID | Unique identifier of the listing |
 
-**Request Body:** *(All fields are optional - only include fields you want to update)*
+**Request Body:** *(All fields optional - partial updates supported)*
 ```json
 {
   "name": "Updated Sandwich Pack",
-  "description": "Updated description with more variety",
+  "description": "Updated description",
   "quantity": 10,
-  "discounted_price": 2.99
+  "discounted_price": 2.99,
+  "status": "active"
 }
 ```
 
@@ -138,7 +189,240 @@ Authorization: Bearer YOUR_PROVIDER_TOKEN_HERE
   "listing": {
     "id": "06426c4f-4adc-4fea-9000-585457559ca1",
     "name": "Updated Sandwich Pack",
-    "updatedAt": "2025-05-26T17:38:59.544705+00:00"
+    "updatedAt": "2025-01-15T18:45:12.123456+00:00"
+  }
+}
+```
+
+---
+
+### 3.2. Delete Food Listing
+**DELETE** `/api/provider/listings/{listing_id}/delete/`
+
+Deletes an existing food listing owned by the authenticated provider. Supports both soft delete (default) and permanent deletion.
+
+**Headers:**
+```
+Content-Type: application/json
+Authorization: Bearer <provider_jwt_token>
+```
+
+**URL Parameters:**
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| listing_id | UUID | Unique identifier of the listing to delete |
+
+**Query Parameters:**
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| hard_delete | boolean | false | Set to `true` for permanent deletion |
+
+**Request Body:** *(Optional)*
+```json
+{
+  "confirm_deletion": true,
+  "deletion_reason": "No longer available"
+}
+```
+
+**Response (200 - Success - Soft Delete):**
+```json
+{
+  "message": "Listing deleted successfully",
+  "deleted_listing": {
+    "id": "06426c4f-4adc-4fea-9000-585457559ca1",
+    "name": "Fresh Sandwich Pack",
+    "created_at": "2025-01-15T10:30:00.123456+00:00",
+    "deleted_at": "2025-01-15T18:45:12.123456+00:00",
+    "deletion_type": "soft",
+    "deleted_images_count": 2,
+    "can_be_restored": true
+  }
+}
+```
+
+**Response (200 - Success - Hard Delete):**
+```json
+{
+  "message": "Listing permanently deleted",
+  "deleted_listing": {
+    "id": "06426c4f-4adc-4fea-9000-585457559ca1",
+    "name": "Fresh Sandwich Pack",
+    "created_at": "2025-01-15T10:30:00.123456+00:00",
+    "deleted_at": "2025-01-15T18:45:12.123456+00:00",
+    "deletion_type": "permanent",
+    "deleted_images_count": 2,
+    "can_be_restored": false
+  }
+}
+```
+
+**Response (400 - Already Deleted):**
+```json
+{
+  "error": {
+    "code": "ALREADY_DELETED",
+    "message": "This listing has already been deleted"
+  }
+}
+```
+
+**Response (400 - Has Active Orders):**
+```json
+{
+  "error": {
+    "code": "HAS_ACTIVE_ORDERS",
+    "message": "Cannot delete listing with active orders. Please complete or cancel all orders first.",
+    "details": [
+      {
+        "field": "orders",
+        "message": "Active orders exist for this listing"
+      }
+    ]
+  }
+}
+```
+
+**Response (403 - Forbidden):**
+```json
+{
+  "error": {
+    "code": "FORBIDDEN",
+    "message": "Only food providers can delete listings"
+  }
+}
+```
+
+**Response (404 - Not Found):**
+```json
+{
+  "error": {
+    "code": "NOT_FOUND",
+    "message": "Listing not found or you do not have permission to delete it"
+  }
+}
+```
+
+---
+
+### 3.3. Restore Food Listing
+**POST** `/api/provider/listings/{listing_id}/restore/`
+
+Restores a previously soft-deleted food listing owned by the authenticated provider.
+
+**Headers:**
+```
+Content-Type: application/json
+Authorization: Bearer <provider_jwt_token>
+```
+
+**URL Parameters:**
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| listing_id | UUID | Unique identifier of the deleted listing |
+
+**Request Body:** *(No body required)*
+
+**Response (200 - Success):**
+```json
+{
+  "message": "Listing restored successfully",
+  "restored_listing": {
+    "id": "06426c4f-4adc-4fea-9000-585457559ca1",
+    "name": "Fresh Sandwich Pack",
+    "status": "active",
+    "restored_at": "2025-01-15T19:00:00.123456+00:00"
+  }
+}
+```
+
+**Response (400 - Expired Listing):**
+```json
+{
+  "error": {
+    "code": "EXPIRED_LISTING",
+    "message": "Cannot restore expired listing. Please create a new listing instead."
+  }
+}
+```
+
+**Response (403 - Forbidden):**
+```json
+{
+  "error": {
+    "code": "FORBIDDEN",
+    "message": "Only food providers can restore listings"
+  }
+}
+```
+
+**Response (404 - Not Found):**
+```json
+{
+  "error": {
+    "code": "NOT_FOUND",
+    "message": "Removed listing not found or you do not have permission to restore it"
+  }
+}
+```
+
+---
+
+### 3.4. Get Deleted Listings
+**GET** `/api/provider/listings/deleted/`
+
+Retrieves all soft-deleted food listings for the authenticated provider.
+
+**Headers:**
+```
+Authorization: Bearer <provider_jwt_token>
+```
+
+**Response (200 - Success):**
+```json
+{
+  "deleted_listings": [
+    {
+      "id": "06426c4f-4adc-4fea-9000-585457559ca1",
+      "name": "Fresh Sandwich Pack",
+      "description": "Healthy sandwich pack with fresh ingredients",
+      "food_type": "ready_to_eat",
+      "original_price": "4.99",
+      "discounted_price": "2.99",
+      "quantity": 5,
+      "quantity_available": 5,
+      "expiry_date": "2025-01-16",
+      "pickup_window": "17:00-19:00",
+      "status": "removed",
+      "created_at": "2025-01-15T10:30:00.123456+00:00",
+      "updated_at": "2025-01-15T18:45:12.123456+00:00",
+      "provider": {
+        "id": "12345678-1234-1234-1234-123456789012",
+        "business_name": "Fresh Eats Cafe",
+        "business_address": "123 Main St, City"
+      }
+    }
+  ],
+  "count": 1,
+  "message": "Use the restore endpoint to recover any of these listings"
+}
+```
+
+**Response (200 - No Deleted Listings):**
+```json
+{
+  "deleted_listings": [],
+  "count": 0,
+  "message": "Use the restore endpoint to recover any of these listings"
+}
+```
+
+**Response (403 - Forbidden):**
+```json
+{
+  "error": {
+    "code": "FORBIDDEN",
+    "message": "Only food providers can access this endpoint"
   }
 }
 ```
@@ -148,24 +432,27 @@ Authorization: Bearer YOUR_PROVIDER_TOKEN_HERE
 ## Customer Endpoints
 *Public access - no authentication required*
 
-### 4. Get All Food Listings
+### 4. Browse Food Listings
 **GET** `/api/food-listings/`
 
-Returns all available food listings from all food providers with pagination and filtering information.
+Browse available food listings with filtering, searching, and pagination.
 
-**Query Parameters:** *(Optional)*
+**Query Parameters:** *(All optional)*
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| page | integer | Page number for pagination (default: 1) |
-| limit | integer | Number of items per page (default: 20) |
-| food_type | string | Filter by food type |
-| min_price | number | Minimum price filter |
-| max_price | number | Maximum price filter |
+| page | integer | Page number (default: 1) |
+| limit | integer | Items per page (default: 10, max: 50) |
+| search | string | Search in name, description, business name |
+| store | string | Filter by business name |
+| priceMin | decimal | Minimum price filter |
+| priceMax | decimal | Maximum price filter |
+| type | string | `ready_to_eat`, `baked_goods`, `ingredients`, `discount`, `donation` |
 | area | string | Filter by pickup area |
+| sort | string | Sort order (default: `-created_at`) |
 
 **Example Request:**
 ```
-GET /api/food-listings/?page=1&limit=10&food_type=ready_to_eat&max_price=5.00
+GET /api/food-listings/?page=1&limit=10&type=ready_to_eat&priceMax=5.00&search=pizza
 ```
 
 **Response (200 - Success):**
@@ -179,41 +466,49 @@ GET /api/food-listings/?page=1&limit=10&food_type=ready_to_eat&max_price=5.00
       "food_type": "ready_to_eat",
       "original_price": 8.99,
       "discounted_price": 3.99,
+      "savings": 5.00,
+      "discount_percentage": 56,
       "quantity": 15,
+      "quantity_available": 15,
       "expiry_date": "2025-01-15",
       "pickup_window": "17:00-19:00",
+      "imageUrl": "base64_or_url_string",
       "allergens": ["gluten", "dairy"],
       "dietary_info": ["vegetarian_options"],
+      "status": "active",
+      "is_available": true,
       "provider": {
         "id": "provider-uuid",
         "business_name": "Arthur's Restaurant",
-        "area": "downtown"
+        "business_address": "123 Test St, Test City",
+        "logo": "/media/provider_logos/logo.png",
+        "is_following": false,
+        "follower_count": 25
       },
-      "status": "active",
-      "createdAt": "2025-05-26T17:36:58.842134+00:00"
+      "created_at": "2025-01-15T17:36:58.842134+00:00",
+      "updated_at": "2025-01-15T17:36:58.842134+00:00"
     }
   ],
   "pagination": {
     "currentPage": 1,
-    "totalPages": 1,
-    "totalItems": 12,
-    "hasNext": false,
+    "totalPages": 3,
+    "totalItems": 28,
+    "hasNext": true,
     "hasPrev": false
   },
   "filters": {
     "availableTypes": [
-      "baked_goods",
       "ready_to_eat",
-      "prepared_meals",
-      "beverages"
+      "baked_goods", 
+      "ingredients"
     ],
     "priceRange": {
-      "min": 2.99,
-      "max": 7.50
+      "min": 0.99,
+      "max": 25.00
     },
     "availableAreas": [
       "downtown",
-      "suburbs", 
+      "suburbs",
       "north_end"
     ]
   }
@@ -222,15 +517,15 @@ GET /api/food-listings/?page=1&limit=10&food_type=ready_to_eat&max_price=5.00
 
 ---
 
-### 5. Get Specific Food Listing
+### 5. Get Food Listing Details
 **GET** `/api/food-listings/{listing_id}/`
 
-Retrieves detailed information about a specific food listing.
+Retrieve detailed information about a specific food listing.
 
 **URL Parameters:**
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| listing_id | UUID | The unique identifier of the listing |
+| listing_id | UUID | Unique identifier of the listing |
 
 **Response (200 - Success):**
 ```json
@@ -242,99 +537,148 @@ Retrieves detailed information about a specific food listing.
     "food_type": "ready_to_eat",
     "original_price": 8.99,
     "discounted_price": 3.99,
+    "savings": 5.00,
+    "discount_percentage": 56,
     "quantity": 15,
+    "quantity_available": 15,
     "expiry_date": "2025-01-15",
     "pickup_window": "17:00-19:00",
+    "imageUrl": "base64_or_url_string",
+    "images": [
+      "base64_image_1",
+      "base64_image_2"
+    ],
     "allergens": ["gluten", "dairy"],
     "dietary_info": ["vegetarian_options"],
+    "status": "active",
+    "is_available": true,
     "provider": {
       "id": "provider-uuid",
       "business_name": "Arthur's Restaurant",
-      "business_contact": "+1234567890",
-      "business_address": {
-        "street": "456 Food St",
-        "city": "Downtown",
-        "province": "Gauteng",
-        "postal_code": "2000"
-      },
-      "area": "downtown",
-      "logo": "/media/provider_logos/provider_logo.png"
+      "business_address": "123 Test St, Test City",
+      "logo": "/media/provider_logos/logo.png",
+      "is_following": false,
+      "follower_count": 25
     },
-    "images": [
-      "/media/listings/listing_image_1.jpg",
-      "/media/listings/listing_image_2.jpg"
-    ],
-    "status": "active",
-    "createdAt": "2025-05-26T17:36:58.842134+00:00",
-    "updatedAt": "2025-05-26T17:36:58.842134+00:00"
+    "created_at": "2025-01-15T17:36:58.842134+00:00",
+    "updated_at": "2025-01-15T17:36:58.842134+00:00"
   }
 }
 ```
 
 ---
 
-## Data Types & Enums
+## Data Models & Enums
 
 ### Food Types
 - `ready_to_eat` - Prepared meals ready for consumption
+- `ingredients` - Raw ingredients for cooking
 - `baked_goods` - Bread, pastries, cakes, etc.
-- `prepared_meals` - Cooked meals requiring minimal preparation
-- `beverages` - Drinks and liquid refreshments
 
 ### Listing Status
-- `active` - Available for purchase
-- `inactive` - Temporarily unavailable
+- `active` - Available for purchase/pickup
 - `sold_out` - All quantities sold
 - `expired` - Past expiry date
+- `inactive` - Temporarily unavailable
+- `removed` - Removed by admin
+- `flagged` - Flagged for admin review
+
+### Filter Types (Special)
+- `discount` - Items with original_price > discounted_price
+- `donation` - Items with discounted_price = 0
 
 ### Common Allergens
-- `gluten`
-- `dairy`
-- `nuts`
-- `shellfish`
-- `eggs`
-- `soy`
-- `fish`
+`["gluten", "dairy", "nuts", "shellfish", "eggs", "soy", "fish"]`
 
 ### Dietary Information
-- `vegetarian_options`
-- `vegan_options`
-- `gluten_free`
-- `dairy_free`
-- `low_sodium`
-- `organic`
+`["vegetarian_options", "vegan_options", "gluten_free", "dairy_free", "low_sodium", "organic"]`
 
 ---
 
 ## Error Responses
 
-| Status Code | Description | Example Response |
-|-------------|-------------|------------------|
-| 400 | Bad Request | `{"error": "Invalid price value"}` |
-| 401 | Unauthorized | `{"error": "Authentication required"}` |
-| 403 | Forbidden | `{"error": "Provider verification required"}` |
-| 404 | Not Found | `{"error": "Listing not found"}` |
-| 422 | Validation Error | `{"error": "Expiry date must be in the future", "field": "expiry_date"}` |
+| Status Code | Error Code | Description |
+|-------------|------------|-------------|
+| 400 | `VALIDATION_ERROR` | Request validation failed |
+| 400 | `CREATION_ERROR` | Failed to create listing |
+| 400 | `UPDATE_ERROR` | Failed to update listing |
+| 401 | `AUTHENTICATION_REQUIRED` | JWT token required |
+| 403 | `FORBIDDEN` | User type not authorized |
+| 403 | `VERIFICATION_REQUIRED` | Provider verification required |
+| 404 | `NOT_FOUND` | Listing not found |
+
+**Example Error Response:**
+```json
+{
+  "error": {
+    "code": "VALIDATION_ERROR",
+    "message": "Request validation failed",
+    "details": [
+      {
+        "field": "expiry_date",
+        "message": "Expiry date must be in the future"
+      },
+      {
+        "field": "quantity",
+        "message": "Quantity must be a positive integer"
+      }
+    ]
+  }
+}
+```
 
 ---
 
-## Authentication
+## Integration Dependencies
 
-Provider endpoints require JWT authentication. Include the token in the Authorization header:
+### Authentication Service
+- **Dependency:** JWT tokens from authentication service
+- **Required Claims:** `user_type`, `user_id`
+- **Provider Verification:** Must have verified `provider_profile`
 
-```
-Authorization: Bearer <your-provider-jwt-token>
-```
+### Notifications Service
+- **Trigger:** New listing creation
+- **Method:** Signal-based integration
+- **Payload:** Listing data for follower notifications
 
-Customer endpoints (browsing listings) are publicly accessible and do not require authentication.
+### Business Follow Service
+- **Integration:** Follower count and follow status
+- **Models:** `BusinessFollower` model dependency
 
 ---
 
-## Notes
+## Rate Limiting & Performance
 
-- All timestamps are in ISO 8601 format with UTC timezone
-- Prices are in the local currency (assume your local currency)
-- Images are stored as relative URLs from the media server
-- Pickup windows use 24-hour format (HH:MM-HH:MM)
-- Expiry dates are in YYYY-MM-DD format
-- UUIDs are used for all entity identifiers
+### Request Limits
+- **Provider Endpoints:** 100 requests/hour per provider
+- **Public Endpoints:** 1000 requests/hour per IP
+- **Listing Creation:** 50 listings/day per provider
+
+### Response Times (SLA)
+- **Browse Listings:** < 200ms (95th percentile)
+- **Listing Details:** < 100ms (95th percentile) 
+- **Create/Update:** < 500ms (95th percentile)
+
+---
+
+## Versioning & Compatibility
+
+**Current Version:** v1  
+**Versioning Strategy:** URL-based (`/api/v1/`)  
+**Backward Compatibility:** Maintained for 6 months after version deprecation  
+**Breaking Changes:** Communicated 30 days in advance
+
+---
+
+## Testing & Validation
+
+### Contract Testing
+- **Provider Endpoints:** Requires verified provider account
+- **Public Endpoints:** Accessible without authentication
+- **Data Validation:** All request/response schemas validated
+- **Error Scenarios:** All error codes tested and documented
+
+### Health Checks
+- **Endpoint:** `/api/food-listings/health/` (if implemented)
+- **Response Time:** < 50ms
+- **Dependencies:** Database connectivity, cache availability

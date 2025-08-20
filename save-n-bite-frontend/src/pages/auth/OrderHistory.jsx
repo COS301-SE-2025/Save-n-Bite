@@ -1,278 +1,381 @@
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import CustomerNavBar from '../../components/auth/CustomerNavBar';
 import OrderCard from '../../components/auth/OrderCard';
 import ImpactSummary from '../../components/auth/ImpactSummary';
-import OrderFilters from '../../components/auth/OrderFilters';
-import { CheckCircleIcon, LeafIcon, ClockIcon, MapPinIcon, AlertCircleIcon } from 'lucide-react'
+import schedulingAPI from '../../services/schedulingAPI'; // Keep using schedulingAPI for pickups
+import donationsAPI from '../../services/DonationsAPI'; // Add donationsAPI
+import reviewsAPI from '../../services/reviewsAPI'; // Use reviewsAPI only for interaction status
+import {
+  CheckCircleIcon,
+  LeafIcon,
+  ClockIcon,
+  MapPinIcon,
+  AlertCircleIcon,
+  QrCodeIcon,
+  PhoneIcon,
+  XIcon,
+  InfoIcon,
+  StoreIcon,
+  FilterIcon,
+  RotateCcwIcon,
+  HeartIcon,
+  GiftIcon
+} from 'lucide-react';
+import { Toast } from '../../components/ui/Toast';
+import { ConfirmDialog } from '../../components/ui/ConfirmDialog';
 
-// Mock order data for customers (only purchases)
-const mockCustomerOrders = [
-  {
-    id: 1,
-    orderNumber: 'ORD-2024-001',
-    date: '2024-05-20',
-    type: 'purchase',
-    status: 'completed',
-    items: [
-      {
-        id: 1,
-        title: 'Assorted Pastries Box',
-        image: 'https://images.unsplash.com/photo-1609950547346-a4f431435b2b?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80',
-        provider: 'Sweet Bakery',
-        quantity: 1,
-        price: 7.99
-      }
-    ],
-    total: 7.99,
-    provider: 'Sweet Bakery',
-    pickupTime: '14:30',
-    pickupAddress: '123 Main St, Cape Town',
-    impact: {
-      mealsSaved: 1,
-      co2Reduced: 0.5
-    }
-  },
-  {
-    id: 2,
-    orderNumber: 'ORD-2024-002',
-    date: '2024-05-18',
-    type: 'purchase',
-    status: 'completed',
-    items: [
-      {
-        id: 2,
-        title: 'Vegetarian Lunch Box',
-        image: 'https://images.unsplash.com/photo-1512621776951-a57141f2eefd?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80',
-        provider: 'Green Cafe',
-        quantity: 2,
-        price: 5.50
-      },
-      {
-        id: 3,
-        title: 'Fresh Bread Assortment',
-        image: 'https://images.unsplash.com/photo-1549931319-a545dcf3bc73?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80',
-        provider: 'Green Cafe',
-        quantity: 1,
-        price: 3.00
-      }
-    ],
-    total: 14.00,
-    provider: 'Green Cafe',
-    pickupTime: '12:00',
-    pickupAddress: '456 Oak Ave, Cape Town',
-    impact: {
-      mealsSaved: 3,
-      co2Reduced: 1.2
-    }
-  },
-  {
-    id: 3,
-    orderNumber: 'ORD-2024-003',
-    date: '2024-05-15',
-    type: 'purchase',
-    status: 'confirmed',
-    items: [
-      {
-        id: 4,
-        title: 'Surplus Produce Box',
-        image: 'https://images.unsplash.com/photo-1542838132-92c53300491e?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80',
-        provider: 'Local Grocery',
-        quantity: 1,
-        price: 8.50
-      }
-    ],
-    total: 8.50,
-    provider: 'Local Grocery',
-    pickupTime: '16:00',
-    pickupAddress: '789 Pine St, Cape Town',
-    pickupWindow: 'Today, 4 PM - 6 PM',
-    impact: {
-      mealsSaved: 2,
-      co2Reduced: 0.8
-    }
-  }
-];
+// Simple inline OrderFilters to avoid import issues
+const SimpleOrderFilters = ({ filters, setFilters, orders = [], userType, onResetFilters }) => {
+  const safeOrders = Array.isArray(orders) ? orders : [];
+  const uniqueProviders = [...new Set(safeOrders.map(order => {
+    // Handle both pickup and donation provider names
+    return order.business?.business_name || order.order?.providerName || order.providerName;
+  }).filter(Boolean))];
 
-// Mock order data for NGOs (both purchases and donations)
-const mockNGOOrders = [
-  // NGO Purchase Orders
-  {
-    id: 1,
-    orderNumber: 'ORD-2024-NGO-001',
-    date: '2024-05-21',
-    type: 'purchase',
-    status: 'completed',
-    items: [
-      {
-        id: 1,
-        title: 'Bulk Meal Kits',
-        image: 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80',
-        provider: 'Community Kitchen',
-        quantity: 20,
-        price: 4.50
+  return (
+    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6 transition-colors duration-300">
+      <div className="flex items-center justify-between mb-4">
+        <h3 className="font-semibold text-gray-800 dark:text-gray-100 flex items-center">
+          <FilterIcon size={16} className="mr-2" />
+          Filters
+        </h3>
+        <button
+          onClick={onResetFilters}
+          className="text-sm text-gray-500 dark:text-gray-300 hover:text-gray-700 dark:hover:text-gray-100 flex items-center"
+        >
+          <RotateCcwIcon size={14} className="mr-1" />
+          Reset
+        </button>
+      </div>
+
+      <div className="space-y-4">
+        <div>
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">Type</label>
+          <select
+            value={filters.type}
+            onChange={(e) => setFilters(prev => ({ ...prev, type: e.target.value }))}
+            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md text-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-100"
+          >
+            <option value="all">All Types</option>
+            <option value="pickup">Pickups</option>
+            <option value="donation">Donations</option>
+          </select>
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">Status</label>
+          <select
+            value={filters.status}
+            onChange={(e) => setFilters(prev => ({ ...prev, status: e.target.value }))}
+            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md text-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-100"
+          >
+            <option value="all">All Statuses</option>
+            <option value="confirmed">Active/Ready</option>
+            <option value="completed">Completed</option>
+            <option value="cancelled">Cancelled</option>
+            <option value="rejected">Rejected</option>
+          </select>
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">Date Range</label>
+          <select
+            value={filters.dateRange}
+            onChange={(e) => setFilters(prev => ({ ...prev, dateRange: e.target.value }))}
+            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md text-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-100"
+          >
+            <option value="all">All Time</option>
+            <option value="week">Last Week</option>
+            <option value="month">Last Month</option>
+            <option value="year">Last Year</option>
+          </select>
+        </div>
+
+        {uniqueProviders.length > 0 && (
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">Provider</label>
+            <select
+              value={filters.provider}
+              onChange={(e) => setFilters(prev => ({ ...prev, provider: e.target.value }))}
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md text-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-100"
+            >
+              <option value="all">All Providers</option>
+              {uniqueProviders.map(provider => (
+                <option key={provider} value={provider}>{provider}</option>
+              ))}
+            </select>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+// Detailed Pickup Modal Component
+const PickupDetailsModal = ({ order, isOpen, onClose, onStatusUpdate }) => {
+  if (!isOpen || !order) return null;
+
+  // Check if this is a donation or pickup
+  const isDonation = order.interaction_type === 'Donation';
+
+  // Generate QR code URL - use pickup code for pickups, verification code for donations
+  const codeToShow = isDonation ? order.verification_code : order.confirmation_code;
+  const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=${codeToShow}`;
+
+  // Add handleCancel function inside modal
+  const handleCancel = async (reason) => {
+    try {
+      let response;
+      if (isDonation) {
+        response = await donationsAPI.cancelDonationRequest(order.id, reason);
+      } else {
+        response = await schedulingAPI.cancelPickup(order.id, reason, true);
       }
-    ],
-    total: 90.00,
-    provider: 'Community Kitchen',
-    pickupTime: '11:00',
-    pickupAddress: '555 Helper Ave, Cape Town',
-    beneficiaries: 20,
-    impact: {
-      mealsSaved: 20,
-      co2Reduced: 10.0
-    }
-  },
-  {
-    id: 2,
-    orderNumber: 'ORD-2024-NGO-002',
-    date: '2024-05-19',
-    type: 'purchase',
-    status: 'confirmed',
-    items: [
-      {
-        id: 2,
-        title: 'Fresh Produce Box',
-        image: 'https://images.unsplash.com/photo-1542838132-92c53300491e?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80',
-        provider: 'Local Farm',
-        quantity: 5,
-        price: 15.00
+
+      if (response.success) {
+        showToast(response.data.message || `${isDonation ? 'Donation' : 'Pickup'} cancelled successfully`, 'success');
+        if (!isDonation && response.data.refund_eligible) {
+          showToast('You may be eligible for a refund. Please check your account.', 'info');
+        }
+        onStatusUpdate();
+        onClose();
+      } else {
+        showToast(`Failed to cancel ${isDonation ? 'donation' : 'pickup'}: ${response.error}`, 'error');
       }
-    ],
-    total: 75.00,
-    provider: 'Local Farm',
-    pickupTime: '09:00',
-    pickupAddress: '888 Farm Road, Cape Town',
-    pickupWindow: 'Tomorrow, 9 AM - 11 AM',
-    beneficiaries: 15,
-    impact: {
-      mealsSaved: 15,
-      co2Reduced: 7.5
+    } catch (error) {
+      showToast(`Failed to cancel ${isDonation ? 'donation' : 'pickup'}. Please try again.`, 'error');
     }
-  },
-  // NGO Donation Requests
-  {
-    id: 4,
-    orderNumber: 'DON-2024-001',
-    date: '2024-05-22',
-    type: 'donation',
-    status: 'confirmed',
-    items: [
-      {
-        id: 5,
-        title: 'Donated Meal Kits',
-        image: 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80',
-        provider: 'Community Restaurant',
-        quantity: 25,
-        price: 0
-      }
-    ],
-    total: 0,
-    provider: 'Community Restaurant',
-    pickupTime: '10:00',
-    pickupAddress: '321 Community Rd, Cape Town',
-    pickupWindow: 'Today, 10 AM - 12 PM',
-    beneficiaries: 25,
-    impact: {
-      mealsSaved: 25,
-      co2Reduced: 12.5
-    }
-  },
-  {
-    id: 5,
-    orderNumber: 'DON-2024-002',
-    date: '2024-05-19',
-    type: 'donation',
-    status: 'completed',
-    items: [
-      {
-        id: 6,
-        title: 'Fresh Vegetables',
-        image: 'https://images.unsplash.com/photo-1540420773420-3366772f4999?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80',
-        provider: 'Farmers Market',
-        quantity: 50,
-        price: 0
-      },
-      {
-        id: 7,
-        title: 'Bread Loaves',
-        image: 'https://images.unsplash.com/photo-1549931319-a545dcf3bc73?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80',
-        provider: 'Local Bakery',
-        quantity: 30,
-        price: 0
-      }
-    ],
-    total: 0,
-    provider: 'Multiple Providers',
-    pickupTime: '08:00',
-    pickupAddress: 'Multiple Locations',
-    beneficiaries: 80,
-    impact: {
-      mealsSaved: 80,
-      co2Reduced: 40.0
-    }
-  },
-  {
-    id: 6,
-    orderNumber: 'DON-2024-003',
-    date: '2024-05-16',
-    type: 'donation',
-    status: 'pending',
-    items: [
-      {
-        id: 8,
-        title: 'Canned Goods Assortment',
-        image: 'https://images.unsplash.com/photo-1586201375761-83865001e31c?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80',
-        provider: 'Wholesale Distributor',
-        quantity: 100,
-        price: 0
-      }
-    ],
-    total: 0,
-    provider: 'Wholesale Distributor',
-    pickupTime: 'TBD',
-    pickupAddress: '654 Industrial Ave, Cape Town',
-    beneficiaries: 100,
-    impact: {
-      mealsSaved: 100,
-      co2Reduced: 30.0
-    }
-  },
-  {
-    id: 7,
-    orderNumber: 'DON-2024-004',
-    date: '2024-05-14',
-    type: 'donation',
-    status: 'pending',
-    items: [
-      {
-        id: 9,
-        title: 'Surplus Sandwiches',
-        image: 'https://images.unsplash.com/photo-1553909489-cd47e0ef937f?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80',
-        provider: 'Deli Corner',
-        quantity: 40,
-        price: 0
-      }
-    ],
-    total: 0,
-    provider: 'Deli Corner',
-    pickupTime: 'TBD',
-    pickupAddress: '123 Deli Street, Cape Town',
-    beneficiaries: 40,
-    impact: {
-      mealsSaved: 40,
-      co2Reduced: 20.0
-    }
-  }
-];
+  };
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+      <div className="bg-white dark:bg-gray-800 rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto transition-colors duration-300">
+        <div className="sticky top-0 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 p-4 flex justify-between items-center">
+          <h2 className="text-xl font-semibold text-gray-800 dark:text-gray-100">
+            {isDonation ? 'Donation Details' : 'Pickup Details'}
+          </h2>
+          <button
+            onClick={onClose}
+            className="text-gray-400 dark:text-gray-300 hover:text-gray-600 dark:hover:text-gray-100"
+          >
+            <XIcon size={24} />
+          </button>
+        </div>
+
+        <div className="p-6 space-y-6">
+          {/* Order Header */}
+          <div className="text-center border-b border-gray-100 dark:border-gray-700 pb-4">
+            <div className="flex items-center justify-center mb-2">
+              {isDonation ? (
+                <HeartIcon size={20} className="mr-2 text-red-500" />
+              ) : (
+                <QrCodeIcon size={20} className="mr-2 text-emerald-600" />
+              )}
+              <p className="text-sm text-emerald-700 dark:text-emerald-400">
+                {isDonation ? 'Donation Request' : 'Pickup Order'}
+              </p>
+            </div>
+            <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-100 mt-2">
+              {isDonation ? order.items?.[0]?.name : order.food_listing?.name}
+            </h3>
+            <p className="text-gray-600 dark:text-gray-300 text-sm flex items-center justify-center mt-1">
+              <StoreIcon size={16} className="mr-1" />
+              {isDonation ? (order.order?.providerName || 'Provider') : order.business?.business_name}
+            </p>
+            {isDonation && (
+              <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                Quantity: {order.quantity || order.items?.[0]?.quantity || 1}
+              </p>
+            )}
+          </div>
+
+          {/* QR Code Section */}
+          {codeToShow && (
+            <div className="text-center bg-gray-50 dark:bg-gray-900 rounded-lg p-6">
+              <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-4 flex items-center justify-center">
+                <QrCodeIcon size={20} className="mr-2 text-emerald-600 dark:text-emerald-400" />
+                {isDonation ? 'Show for Collection' : 'Show at Pickup'}
+              </h3>
+
+              <div className="flex flex-col items-center space-y-4">
+                <img
+                  src={qrCodeUrl}
+                  alt={isDonation ? "Collection QR Code" : "Pickup QR Code"}
+                  className="w-40 h-40 border border-gray-200 dark:border-gray-700 rounded-lg"
+                  onError={(e) => {
+                    // Fallback if QR service fails
+                    e.target.style.display = 'none';
+                  }}
+                />
+
+                <div className="text-center">
+                  <p className="text-sm text-gray-600 dark:text-gray-300 mb-1">
+                    {isDonation ? 'Verification Code' : 'Confirmation Code'}
+                  </p>
+                  <p className="text-2xl font-bold text-emerald-600 dark:text-emerald-400 tracking-wider">
+                    {codeToShow}
+                  </p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
+                    Show this code or QR code to the provider
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Information Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Timing Details */}
+            <div className="space-y-3">
+              <h4 className="font-semibold text-gray-800 dark:text-gray-100 flex items-center">
+                <ClockIcon size={18} className="mr-2 text-emerald-600 dark:text-emerald-400" />
+                {isDonation ? 'Collection Window' : 'Pickup Time'}
+              </h4>
+              <div className="text-sm space-y-1">
+                {isDonation ? (
+                  <>
+                    <p className="text-gray-700 dark:text-gray-300">
+                      {new Date(order.created_at).toLocaleDateString('en-US', {
+                        weekday: 'long',
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric'
+                      })}
+                    </p>
+                    {order.order?.pickupWindow && (
+                      <p className="text-gray-600 dark:text-gray-400 font-medium">
+                        {order.order.pickupWindow}
+                      </p>
+                    )}
+                    <p className="text-gray-500 dark:text-gray-400 text-xs">
+                      Requested: {new Date(order.created_at).toLocaleTimeString()}
+                    </p>
+                  </>
+                ) : (
+                  <>
+                    <p className="text-gray-700 dark:text-gray-300">
+                      {new Date(order.scheduled_date).toLocaleDateString('en-US', {
+                        weekday: 'long',
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric'
+                      })}
+                    </p>
+                    <p className="text-gray-600 dark:text-gray-400 font-medium">
+                      {order.scheduled_start_time} - {order.scheduled_end_time}
+                    </p>
+                    {order.food_listing?.pickup_window && (
+                      <p className="text-gray-500 dark:text-gray-400 text-xs">
+                        Window: {order.food_listing.pickup_window}
+                      </p>
+                    )}
+                  </>
+                )}
+              </div>
+            </div>
+
+            {/* Location Details or Expiry Info */}
+            <div className="space-y-3">
+              <h4 className="font-semibold text-gray-800 dark:text-gray-100 flex items-center">
+                {isDonation ? (
+                  <>
+                    <InfoIcon size={18} className="mr-2 text-emerald-600 dark:text-emerald-400" />
+                    Item Details
+                  </>
+                ) : (
+                  <>
+                    <MapPinIcon size={18} className="mr-2 text-emerald-600 dark:text-emerald-400" />
+                    Location
+                  </>
+                )}
+              </h4>
+              <div className="text-sm space-y-1">
+                {isDonation ? (
+                  <>
+                    {order.items?.[0]?.expiry_date && (
+                      <p className="text-gray-600 dark:text-gray-400">
+                        Expires: {new Date(order.items[0].expiry_date).toLocaleDateString()}
+                      </p>
+                    )}
+                    <p className="text-gray-500 dark:text-gray-400 text-xs">
+                      Total Amount: ${order.total_amount || '0.00'}
+                    </p>
+                    {order.special_instructions && (
+                      <p className="text-gray-500 dark:text-gray-400 text-xs">
+                        Instructions: {order.special_instructions}
+                      </p>
+                    )}
+                  </>
+                ) : (
+                  <>
+                    <p className="font-medium">{order.location?.name}</p>
+                    <p className="text-gray-600 dark:text-gray-400">{order.location?.address}</p>
+                    {order.location?.contact_phone && (
+                      <p className="text-gray-500 dark:text-gray-400 text-xs">{order.location.contact_phone}</p>
+                    )}
+                  </>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* Status Information */}
+          {order.status !== 'completed' && (
+            <div className="bg-blue-50 dark:bg-blue-900 rounded-lg p-4">
+              <h4 className="font-semibold text-blue-800 dark:text-blue-300 mb-2 flex items-center">
+                <InfoIcon size={16} className="mr-1" />
+                {isDonation ? 'Donation Status' : 'Pickup Status'}
+              </h4>
+              <p className="text-blue-700 dark:text-blue-200 text-sm">
+                {order.status === 'ready' && (isDonation ? 'Your donation is ready for collection' : 'Your pickup is ready for collection')}
+                {order.status === 'confirmed' && (isDonation ? 'Your donation has been confirmed by the provider' : 'Your pickup has been confirmed by the provider')}
+                {order.status === 'cancelled' && (isDonation ? 'This donation has been cancelled' : 'This pickup has been cancelled')}
+                {order.status === 'rejected' && 'This request has been rejected'}
+                {order.status === 'scheduled' && 'Your pickup is confirmed and ready to collect'}
+                {order.status === 'missed' && (isDonation ? 'This donation was missed' : 'This pickup was missed')}
+              </p>
+            </div>
+          )}
+
+          {/* Action Buttons */}
+          <div className="flex gap-3 pt-4 border-t border-gray-100 dark:border-gray-700">
+            {((isDonation && order.status === 'ready') || (!isDonation && order.can_cancel && order.status === 'scheduled')) && (
+              <button
+                onClick={() => {
+                  // Open a custom dialog or use the handleCancel directly
+                  handleCancel('Cancelled by customer');
+                }}
+                className="px-4 py-2 border border-red-300 dark:border-red-700 text-red-600 dark:text-red-400 rounded-lg hover:bg-red-50 dark:hover:bg-red-900 transition-colors"
+              >
+                Cancel {isDonation ? 'Donation' : 'Pickup'}
+              </button>
+            )}
+
+            <button
+              onClick={onClose}
+              className="flex-1 px-6 py-2 border border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-100 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
 
 const OrderHistory = () => {
   const navigate = useNavigate();
-  const [userType, setUserType] = useState('customer'); // 'customer' or 'ngo'
   const [orders, setOrders] = useState([]);
   const [filteredOrders, setFilteredOrders] = useState([]);
-  const [loading, setLoading] = useState(false);
-  
+  const [loading, setLoading] = useState(true);
+  const [selectedOrder, setSelectedOrder] = useState(null);
+  const [showPickupModal, setShowPickupModal] = useState(false);
+  const [error, setError] = useState(null);
+  const [toast, setToast] = useState(null);
+
   const [filters, setFilters] = useState({
     status: 'all',
     type: 'all',
@@ -280,56 +383,149 @@ const OrderHistory = () => {
     provider: 'all'
   });
 
-  // Simulate getting user type from authentication or local storage
+  // Add state for confirmation dialog
+  const [showConfirmCancel, setShowConfirmCancel] = useState(false);
+  const [orderToCancel, setOrderToCancel] = useState(null);
+
+  // Load orders from API - both pickups and donations
   useEffect(() => {
-    const storedUserType = localStorage.getItem('userType') || 'customer';
-    setUserType(storedUserType);
-    
-    // Load orders from localStorage for customers, or use mock data for NGOs
-    if (storedUserType === 'customer') {
-      const customerOrders = JSON.parse(localStorage.getItem('customerOrderHistory') || '[]');
-      setOrders(customerOrders);
-      setFilteredOrders(customerOrders);
-    } else {
-      // For NGOs, still use mock data for now
-      setOrders(mockNGOOrders);
-      setFilteredOrders(mockNGOOrders);
-    }
+    loadOrders();
   }, []);
 
-  // Listen for order completion events
-  useEffect(() => {
-    const handleOrderCompleted = () => {
-      if (userType === 'customer') {
-        const customerOrders = JSON.parse(localStorage.getItem('customerOrderHistory') || '[]');
-        setOrders(customerOrders);
-        setFilteredOrders(customerOrders);
-      }
-    };
+  const loadOrders = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      // Load both pickups and donations concurrently
+      const [pickupsResponse, donationsResponse] = await Promise.all([
+        schedulingAPI.getMyPickups(),
+        donationsAPI.getMyDonationRequests()
+      ]);
 
-    window.addEventListener('orderCompleted', handleOrderCompleted);
-    return () => window.removeEventListener('orderCompleted', handleOrderCompleted);
-  }, [userType]);
+      const allOrders = [];
+
+      // Add pickups if successful
+      if (pickupsResponse.success) {
+        const pickups = pickupsResponse.data.results?.pickups || pickupsResponse.data.results || [];
+        const normalizedPickups = pickups.map(pickup => ({
+          ...pickup,
+          interaction_type: 'Pickup',
+          order_type: 'pickup'
+        }));
+        allOrders.push(...normalizedPickups);
+      }
+
+      // Add donations if successful
+      if (donationsResponse.success) {
+        const donations = donationsResponse.data.results || [];
+        const normalizedDonations = donations.map(donation => ({
+          ...donation,
+          interaction_type: 'Donation',
+          order_type: 'donation'
+        }));
+        allOrders.push(...normalizedDonations);
+      }
+
+      // Sort by creation date (most recent first)
+      allOrders.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+
+      // Check for completed orders and sync interaction status
+      await syncCompletedInteractions(allOrders);
+
+      setOrders(allOrders);
+      setFilteredOrders(allOrders);
+
+      // Set error only if both requests failed
+      if (!pickupsResponse.success && !donationsResponse.success) {
+        setError('Failed to load order history');
+      }
+    } catch (error) {
+      console.error('Error loading orders:', error);
+      setError('Failed to load orders');
+      setOrders([]);
+      setFilteredOrders([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Sync interaction status for completed orders
+  const syncCompletedInteractions = async (allOrders) => {
+    const completedOrders = allOrders.filter(order => order.status === 'completed');
+
+    for (const order of completedOrders) {
+      try {
+        if (order.interaction_id) {
+          // Check if interaction is already marked as completed by checking review status
+          const reviewStatus = await reviewsAPI.checkReviewStatus(order.interaction_id);
+
+          if (reviewStatus.success && reviewStatus.data.interaction_status !== 'completed') {
+            // Interaction not yet marked as completed, so update it
+            const updateResult = await reviewsAPI.markAsCompleted(
+              order.interaction_id,
+              'Order completed by food provider'
+            );
+
+            if (updateResult.success) {
+              console.log(`Interaction ${order.interaction_id} marked as completed`);
+            } else {
+              console.error(`Failed to mark interaction ${order.interaction_id} as completed:`, updateResult.error);
+            }
+          }
+        }
+      } catch (error) {
+        console.error(`Error syncing interaction for order ${order.id}:`, error);
+      }
+    }
+  };
 
   // Apply filters
   useEffect(() => {
-    let filtered = [...orders];
-
-    // Filter by status
-    if (filters.status !== 'all') {
-      filtered = filtered.filter(order => order.status === filters.status);
+    // Ensure orders is an array before filtering
+    if (!Array.isArray(orders)) {
+      setFilteredOrders([]);
+      return;
     }
+
+    let filtered = [...orders];
 
     // Filter by type
     if (filters.type !== 'all') {
-      filtered = filtered.filter(order => order.type === filters.type);
+      filtered = filtered.filter(order => {
+        if (filters.type === 'pickup') {
+          return order.order_type === 'pickup' || order.interaction_type === 'Pickup';
+        } else if (filters.type === 'donation') {
+          return order.order_type === 'donation' || order.interaction_type === 'Donation';
+        }
+        return true;
+      });
+    }
+
+    // Filter by status
+    if (filters.status !== 'all') {
+      filtered = filtered.filter(order => {
+        switch (filters.status) {
+          case 'completed':
+            return order.status === 'completed';
+          case 'confirmed':
+            return order.status === 'scheduled' || order.status === 'confirmed' || order.status === 'ready';
+          case 'pending':
+            return order.status === 'pending';
+          case 'cancelled':
+            return order.status === 'cancelled';
+          case 'rejected':
+            return order.status === 'rejected';
+          default:
+            return true;
+        }
+      });
     }
 
     // Filter by date range
     if (filters.dateRange !== 'all') {
       const now = new Date();
       const filterDate = new Date();
-      
+
       switch (filters.dateRange) {
         case 'week':
           filterDate.setDate(now.getDate() - 7);
@@ -341,13 +537,19 @@ const OrderHistory = () => {
           filterDate.setFullYear(now.getFullYear() - 1);
           break;
       }
-      
-      filtered = filtered.filter(order => new Date(order.date) >= filterDate);
+
+      filtered = filtered.filter(order => {
+        const orderDate = new Date(order.scheduled_date || order.created_at);
+        return orderDate >= filterDate;
+      });
     }
 
-    // Filter by provider
+    // Filter by business/provider
     if (filters.provider !== 'all') {
-      filtered = filtered.filter(order => order.provider === filters.provider);
+      filtered = filtered.filter(order => {
+        const providerName = order.business?.business_name || order.order?.providerName;
+        return providerName === filters.provider;
+      });
     }
 
     setFilteredOrders(filtered);
@@ -363,169 +565,302 @@ const OrderHistory = () => {
     });
   };
 
-  // Handle order actions
-  const handleOrderAction = (orderId, action) => {
-    console.log(`Performing ${action} on order ${orderId}`);
-    
-    switch (action) {
-      case 'reorder':
-        navigate('/food-item');
-        break;
-      case 'cancel':
-        setOrders(prev => prev.map(order => 
-          order.id === orderId ? { ...order, status: 'cancelled' } : order
-        ));
-        break;
-      case 'track':
-        // Navigate to tracking page or show tracking modal
-        console.log('Tracking order:', orderId);
-        break;
-      default:
-        break;
-    }
+  const handleOrderClick = (order) => {
+ 
+  if (order.status === 'scheduled' || order.status === 'confirmed' || order.status === 'ready') {
+    setSelectedOrder(order);
+    setShowPickupModal(true);
+  }
+
+};
+
+  // Handle status update
+  const handleStatusUpdate = async () => {
+    loadOrders(); // Refresh orders after status update
+  };
+
+  // Show toast message
+  const showToast = (message, type = 'info') => {
+    setToast({ message, type });
   };
 
   // Calculate impact summary
   const calculateImpact = () => {
-    return filteredOrders.reduce((acc, order) => ({
-      mealsSaved: acc.mealsSaved + (order.impact?.mealsSaved || 0),
-      co2Reduced: acc.co2Reduced + (order.impact?.co2Reduced || 0),
-      totalSpent: acc.totalSpent + (order.type === 'purchase' ? order.total : 0),
-      totalDonationsReceived: acc.totalDonationsReceived + (order.type === 'donation' ? (order.beneficiaries || order.items.reduce((sum, item) => sum + item.quantity, 0)) : 0),
-      ordersCount: filteredOrders.length
-    }), {
+    // Ensure filteredOrders is an array before using reduce
+    if (!Array.isArray(filteredOrders) || filteredOrders.length === 0) {
+      return {
+        mealsSaved: 0,
+        co2Reduced: 0,
+        ordersCount: 0,
+        donationsCount: 0,
+        pickupsCount: 0
+      };
+    }
+
+    return filteredOrders.reduce((acc, order) => {
+      const isDonation = order.interaction_type === 'Donation';
+      const quantity = isDonation ? (order.quantity || 1) : 1;
+
+      return {
+        mealsSaved: acc.mealsSaved + quantity,
+        co2Reduced: acc.co2Reduced + (quantity * 0.5),
+        ordersCount: filteredOrders.length,
+        donationsCount: isDonation ? acc.donationsCount + 1 : acc.donationsCount,
+        pickupsCount: !isDonation ? acc.pickupsCount + 1 : acc.pickupsCount
+      };
+    }, {
       mealsSaved: 0,
       co2Reduced: 0,
-      totalSpent: 0,
-      totalDonationsReceived: 0,
-      ordersCount: 0
+      ordersCount: 0,
+      donationsCount: 0,
+      pickupsCount: 0
     });
   };
 
   const impactData = calculateImpact();
 
-  if (loading) {
+  // Loading state - matches FoodProvidersPage pattern
+  if (loading && filteredOrders.length === 0) {
     return (
-      <div className="bg-gray-50 min-h-screen w-full">
+      <div className="bg-gray-50 dark:bg-gray-900 min-h-screen w-full transition-colors duration-300">
         <CustomerNavBar />
         <div className="flex items-center justify-center min-h-[60vh]">
           <div className="text-center">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-600 mx-auto mb-4"></div>
-            <p className="text-gray-600">Loading order history...</p>
+            <p className="text-gray-600 dark:text-gray-200">Loading order history...</p>
           </div>
         </div>
       </div>
     );
   }
 
-  // Updated status color function to handle pending status
-  const getStatusColor = (status) => {
-    switch (status) {
+  // Error state
+  if (error) {
+    return (
+      <div className="bg-gray-50 dark:bg-gray-900 min-h-screen w-full transition-colors duration-300">
+        <CustomerNavBar />
+        <div className="max-w-6xl mx-auto px-4 py-8">
+          <div className="mb-8">
+            <h1 className="text-2xl font-bold text-gray-800 dark:text-gray-100 mb-2">
+              Order History
+            </h1>
+            <p className="text-red-600 dark:text-red-400">{error}</p>
+          </div>
+          
+          <div className="text-center py-12">
+            <p className="text-xl text-gray-600 dark:text-gray-300 mb-4">Unable to load order history</p>
+            <button 
+              onClick={loadOrders} 
+              className="px-4 py-2 bg-emerald-600 text-white rounded-md hover:bg-emerald-700 transition-colors"
+            >
+              Try Again
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Get status color based on order status
+  const getStatusColor = (order) => {
+    switch (order.status) {
       case 'completed':
-        return 'bg-emerald-100 text-emerald-800';
+        return 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900 dark:text-emerald-300';
+      case 'ready':
+      case 'scheduled':
       case 'confirmed':
-        return 'bg-blue-100 text-blue-800';
-      case 'pending':
-        return 'bg-yellow-100 text-yellow-800';
+        return 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300';
+      case 'cancelled':
+        return 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300';
+      case 'rejected':
+        return 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-300';
+      case 'missed':
+        return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300';
       default:
-        return 'bg-gray-100 text-gray-800';
+        return 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300';
     }
   };
 
-  // Updated action button function to handle all statuses
+  // Get status text
+  const getStatusText = (order) => {
+    switch (order.status) {
+      case 'completed':
+        return 'Completed';
+      case 'ready':
+        return 'Ready';
+      case 'scheduled':
+        return 'Scheduled';
+      case 'confirmed':
+        return 'Confirmed';
+      case 'cancelled':
+        return 'Cancelled';
+      case 'rejected':
+        return 'Rejected';
+      case 'missed':
+        return 'Missed';
+      default:
+        return order.status || 'Unknown';
+    }
+  };
+
+  // Get action button based on status and type
   const getActionButton = (order) => {
+    const isDonation = order.interaction_type === 'Donation';
+
     switch (order.status) {
       case 'completed':
         return (
           <button
-            onClick={() => navigate(`/reviews/${order.id}`)}
+            onClick={(e) => {
+              e.stopPropagation();
+              if (order.interaction_id) {
+                navigate(`/reviews/${order.interaction_id}`);
+              }
+            }}
             className="px-4 py-2 text-emerald-600 hover:text-emerald-700 font-medium"
           >
             Leave a Review
           </button>
         );
+      case 'ready':
+      case 'scheduled':
       case 'confirmed':
         return (
-          <div className="space-y-2">
+          <div className="flex flex-col gap-2">
             <button
-              onClick={() => navigate(`/pickup`)}
-              className="px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 w-full"
+              onClick={(e) => {
+                e.stopPropagation();
+                handleOrderClick(order);
+              }}
+              className="px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 text-sm"
             >
-              View Pickup Instructions
+              View Details
             </button>
-            <button
-              onClick={() => navigate(`/reviews/${order.id}`)}
-              className="px-4 py-2 text-emerald-600 hover:text-emerald-700 font-medium w-full"
-            >
-              Leave a Review
-            </button>
+
+            {((isDonation && order.status === 'ready') || (!isDonation && (order.can_cancel || order.status === 'scheduled'))) && (
+              <button
+                onClick={(e) => handleCancelClick(order, e)}
+                className="px-4 py-2 border border-red-300 text-red-600 rounded-lg hover:bg-red-50 text-sm"
+              >
+                Cancel {isDonation ? 'Donation' : 'Pickup'}
+              </button>
+            )}
           </div>
         );
-      case 'pending':
+      case 'cancelled':
+      case 'rejected':
+      case 'missed':
         return (
-          <div className="px-4 py-2 text-yellow-600 font-medium flex items-center">
-            <AlertCircleIcon size={16} className="mr-1" />
-            Awaiting Pickup
+          <div className="px-4 py-2 text-gray-500 font-medium text-sm">
+            {order.status === 'cancelled' ? 'Cancelled' :
+              order.status === 'rejected' ? 'Rejected' : 'Missed'}
           </div>
         );
       default:
-        return null;
+        return (
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              handleOrderClick(order);
+            }}
+            className="px-4 py-2 text-gray-600 hover:text-gray-700 font-medium text-sm"
+          >
+            View Details
+          </button>
+        );
     }
   };
 
-  // Get status description for better UX
-  const getStatusDescription = (order) => {
-    switch (order.status) {
-      case 'pending':
-        return order.type === 'donation' 
-          ? 'Donation request submitted, waiting for provider approval'
-          : 'Order submitted, waiting for pickup confirmation';
-      case 'confirmed':
-        return order.type === 'donation'
-          ? 'Donation approved, ready for pickup'
-          : 'Order confirmed, ready for pickup';
-      case 'completed':
-        return order.type === 'donation'
-          ? 'Donation collected successfully'
-          : 'Order completed - you can now leave a review';
-      default:
-        return '';
+  // Add handleCancelClick function
+  const handleCancelClick = (order, e) => {
+    e.stopPropagation();
+    setOrderToCancel(order);
+    setShowConfirmCancel(true);
+  };
+
+  // Add handleConfirmCancel function
+  const handleConfirmCancel = async () => {
+    if (!orderToCancel) return;
+
+    const isDonation = orderToCancel.interaction_type === 'Donation';
+    try {
+      let response;
+      if (isDonation) {
+        response = await donationsAPI.cancelDonationRequest(orderToCancel.id, 'Cancelled by customer');
+      } else {
+        response = await schedulingAPI.cancelPickup(orderToCancel.id, 'Cancelled by customer', true);
+      }
+
+      if (response.success) {
+        showToast(`${isDonation ? 'Donation' : 'Pickup'} cancelled successfully`, 'success');
+        handleStatusUpdate();
+      } else {
+        showToast(`Failed to cancel ${isDonation ? 'donation' : 'pickup'}: ${response.error}`, 'error');
+      }
+    } catch (error) {
+      showToast(`Failed to cancel ${isDonation ? 'donation' : 'pickup'}. Please try again.`, 'error');
+    } finally {
+      setShowConfirmCancel(false);
+      setOrderToCancel(null);
     }
   };
 
   return (
-    <div className="bg-gray-50 min-h-screen w-full">
+    <div className="bg-gray-50 dark:bg-gray-900 min-h-screen w-full transition-colors duration-300">
       <CustomerNavBar />
-      
+
       <div className="max-w-6xl mx-auto px-4 py-8">
         <div className="flex items-center justify-between mb-8">
-          <h1 className="text-2xl font-bold text-gray-800">
-            {userType === 'ngo' ? 'Order & Donation History' : 'Order History'}
-          </h1>
-          {userType === 'ngo' && (
-            <div className="text-sm text-gray-600">
-              <span className="inline-flex items-center px-2 py-1 rounded-full text-xs bg-blue-100 text-blue-800 mr-2">
-                NGO Account
-              </span>
-              Purchases & Donation Requests
-            </div>
-          )}
+          <h1 className="text-2xl font-bold text-gray-800 dark:text-gray-100">Order History</h1>
+          <div className="text-sm text-gray-600 dark:text-gray-300">
+            {impactData.pickupsCount} pickups • {impactData.donationsCount} donations
+          </div>
         </div>
 
-        {/* Impact Summary */}
-        <ImpactSummary 
-          impact={impactData}
-          userType={userType}
-        />
+        {/* Enhanced Impact Summary */}
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6 mb-8 transition-colors duration-300">
+          <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-4 flex items-center">
+            <LeafIcon size={20} className="mr-2 text-emerald-600 dark:text-emerald-400" />
+            Your Impact Summary
+          </h2>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+            <div className="text-center">
+              <div className="text-2xl font-bold text-emerald-600 dark:text-emerald-400">{impactData.mealsSaved}</div>
+              <div className="text-sm text-gray-600 dark:text-gray-300">Meals Saved</div>
+            </div>
+            <div className="text-center">
+              <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">{impactData.co2Reduced.toFixed(1)}kg</div>
+              <div className="text-sm text-gray-600 dark:text-gray-300">CO₂ Reduced</div>
+            </div>
+            <div className="text-center">
+              <div className="text-2xl font-bold text-purple-600 dark:text-purple-400">{impactData.pickupsCount}</div>
+              <div className="text-sm text-gray-600 dark:text-gray-300">Pickups</div>
+            </div>
+            <div className="text-center">
+              <div className="text-2xl font-bold text-red-600 dark:text-red-400">{impactData.donationsCount}</div>
+              <div className="text-sm text-gray-600 dark:text-gray-300">Donations</div>
+            </div>
+          </div>
+        </div>
+
+        {/* Show loading indicator while orders are being updated (similar to FoodProvidersPage) */}
+        {loading && filteredOrders.length > 0 && (
+          <div className="mb-4 text-center">
+            <div className="inline-flex items-center px-3 py-2 sm:px-4 sm:py-2 bg-emerald-50 dark:bg-emerald-900 text-emerald-600 dark:text-emerald-200 rounded-md text-sm transition-colors duration-300">
+              <div className="animate-spin rounded-full h-3 w-3 sm:h-4 sm:w-4 border-b-2 border-emerald-600 mr-2"></div>
+              Updating orders...
+            </div>
+          </div>
+        )}
 
         <div className="flex flex-col lg:flex-row gap-6">
           {/* Filters Sidebar */}
           <div className="lg:w-64">
-            <OrderFilters
+            <SimpleOrderFilters
               filters={filters}
               setFilters={setFilters}
               orders={orders}
-              userType={userType}
+              userType="customer"
               onResetFilters={handleResetFilters}
             />
           </div>
@@ -533,113 +868,177 @@ const OrderHistory = () => {
           {/* Orders List */}
           <div className="flex-1">
             <div className="flex items-center justify-between mb-6">
-              <div className="text-sm text-gray-600">
-                {filteredOrders.length} {userType === 'ngo' ? 'items' : 'orders'} found
+              <div className="text-sm text-gray-600 dark:text-gray-300">
+                {Array.isArray(filteredOrders) ? filteredOrders.length : 0} orders found
               </div>
             </div>
 
-            {filteredOrders.length === 0 ? (
-              <div className="text-center py-12">
-                <div className="text-gray-500 mb-4">
+            {!Array.isArray(filteredOrders) || filteredOrders.length === 0 ? (
+              <div className="text-center py-12 bg-white dark:bg-gray-800 rounded-lg shadow-sm transition-colors duration-300">
+                <div className="text-gray-500 dark:text-gray-400 mb-4">
                   <svg className="mx-auto h-12 w-12" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
                   </svg>
                 </div>
-                <p className="text-xl text-gray-600 mb-4">
-                  No {userType === 'ngo' ? 'orders or donations' : 'orders'} found
-                </p>
-                <button
-                  onClick={() => navigate('/browse')}
-                  className="inline-block px-6 py-3 bg-emerald-600 text-white rounded-md hover:bg-emerald-700 transition-colors"
-                >
-                  {userType === 'ngo' ? 'Browse Food & Donations' : 'Browse Food'}
-                </button>
+                <p className="text-xl text-gray-600 dark:text-gray-300 mb-4">No orders found</p>
+                <div className="flex gap-4 justify-center">
+                  <button
+                    onClick={() => navigate('/food-listing')}
+                    className="inline-block px-6 py-3 bg-emerald-600 text-white rounded-md hover:bg-emerald-700 dark:bg-emerald-700 dark:hover:bg-emerald-800 transition-colors"
+                  >
+                    Browse Food
+                  </button>
+                  <button
+                    onClick={() => navigate('/donations')}
+                    className="inline-block px-6 py-3 bg-red-600 text-white rounded-md hover:bg-red-700 dark:bg-red-700 dark:hover:bg-red-800 transition-colors"
+                  >
+                    Request Donations
+                  </button>
+                </div>
               </div>
             ) : (
               /* Orders List */
-              <div className="bg-white rounded-lg shadow-sm">
-                {filteredOrders.map((order, index) => (
-                  <div
-                    key={order.id}
-                    className={`p-6 ${index !== filteredOrders.length - 1 ? 'border-b border-gray-100' : ''}`}
-                  >
-                    <div className="flex justify-between items-start mb-4">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2 mb-2">
-                          <h3 className="font-semibold text-gray-800">
-                            {order.items.map(item => item.title).join(', ')}
-                          </h3>
-                          <span
-                            className={`text-xs px-2 py-1 rounded-full ${getStatusColor(order.status)}`}
-                          >
-                            {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
-                          </span>
-                          {order.type === 'donation' && (
-                            <span className="text-xs px-2 py-1 rounded-full bg-purple-100 text-purple-800">
-                              Donation
-                            </span>
-                          )}
+              <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm transition-colors duration-300">
+                {filteredOrders.map((order, index) => {
+                  const isDonation = order.interaction_type === 'Donation';
+                  return (
+                    <div
+                      key={order.id}
+                      className={`p-6 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors ${index !== filteredOrders.length - 1 ? 'border-b border-gray-100 dark:border-gray-700' : ''
+                        }`}
+                      onClick={() => handleOrderClick(order)}
+                    >
+                      <div className="flex justify-between items-start mb-4">
+                        <div className="flex-1 flex items-start space-x-4">
+                          {/* Order Type Icon */}
+                          <div className="w-16 h-16 rounded-lg bg-gray-200 dark:bg-gray-900 flex items-center justify-center">
+                            {isDonation ? (
+                              <HeartIcon size={24} className="text-red-500" />
+                            ) : (
+                              <GiftIcon size={24} className="text-emerald-500" />
+                            )}
+                          </div>
+
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2 mb-2">
+                              <h3 className="font-semibold text-gray-800 dark:text-gray-100">
+                                {isDonation ? order.items?.[0]?.name : order.food_listing?.name}
+                              </h3>
+                              <span className={`text-xs px-2 py-1 rounded-full ${getStatusColor(order)}`}>
+                                {getStatusText(order)}
+                              </span>
+                            </div>
+
+                            <p className="text-sm text-gray-600 dark:text-gray-300 mb-2 flex items-center">
+                              <StoreIcon size={14} className="mr-1" />
+                              {isDonation ? (order.order?.providerName || 'Provider') : order.business?.business_name}
+                            </p>
+
+                            <div className="flex items-center text-sm text-gray-500 dark:text-gray-400 gap-4 mb-2">
+                              <span className="flex items-center">
+                                <ClockIcon size={16} className="mr-1" />
+                                {new Date(isDonation ? order.created_at : order.scheduled_date).toLocaleDateString()}
+                              </span>
+                              {!isDonation && order.location?.name && (
+                                <span className="flex items-center">
+                                  <MapPinIcon size={16} className="mr-1" />
+                                  {order.location.name}
+                                </span>
+                              )}
+                              {isDonation && (
+                                <span className="flex items-center">
+                                  <InfoIcon size={16} className="mr-1" />
+                                  Qty: {order.quantity || order.items?.[0]?.quantity || 1}
+                                </span>
+                              )}
+                            </div>
+
+                            {!isDonation && (
+                              <p className="text-xs text-gray-500 dark:text-gray-400">
+                                Pickup: {order.scheduled_start_time} - {order.scheduled_end_time}
+                              </p>
+                            )}
+
+                            {isDonation && order.order?.pickupWindow && (
+                              <p className="text-xs text-gray-500 dark:text-gray-400">
+                                Collection: {order.order.pickupWindow}
+                              </p>
+                            )}
+
+                            {!isDonation && order.is_upcoming && (
+                              <p className="text-xs text-emerald-600 dark:text-emerald-400 mt-1">
+                                {order.is_today ? 'Today' : 'Upcoming pickup'}
+                              </p>
+                            )}
+                          </div>
                         </div>
-                        <p className="text-sm text-gray-600 mb-2">
-                          {order.provider}
-                        </p>
-                        <div className="flex items-center text-sm text-gray-500 gap-4 mb-2">
-                          <span className="flex items-center">
-                            <ClockIcon size={16} className="mr-1" />
-                            {new Date(order.date).toLocaleDateString()}
-                          </span>
-                          <span className="flex items-center">
-                            <MapPinIcon size={16} className="mr-1" />
-                            {order.status === 'pending' ? 'Pickup TBD' : 'Local pickup'}
-                          </span>
-                          {userType === 'ngo' && order.beneficiaries && (
-                            <span className="flex items-center">
-                              <LeafIcon size={16} className="mr-1" />
-                              {order.beneficiaries} beneficiaries
-                            </span>
-                          )}
+
+                        <div className="text-right ml-4">
+                          {getActionButton(order)}
                         </div>
-                        <p className="text-xs text-gray-500 italic">
-                          {getStatusDescription(order)}
-                        </p>
                       </div>
-                      <div className="text-right ml-4">
-                        <p className="font-semibold text-emerald-600 mb-2">
-                          {order.type === 'purchase' ? `R${order.total.toFixed(2)}` : 'Free'}
-                        </p>
-                        {getActionButton(order)}
-                      </div>
+
+                      {/* Code Preview */}
+                      {((isDonation && order.verification_code) || (!isDonation && order.confirmation_code)) &&
+                        (order.status === 'scheduled' || order.status === 'confirmed' || order.status === 'ready') && (
+                          <div className={`mt-4 p-3 rounded-lg ${isDonation ? 'bg-red-50 dark:bg-red-900' : 'bg-emerald-50 dark:bg-emerald-900'
+                            }`}>
+                            <p className={`text-sm flex items-center ${isDonation ? 'text-red-800 dark:text-red-200' : 'text-emerald-800 dark:text-emerald-200'
+                              }`}>
+                              <QrCodeIcon size={16} className="mr-2" />
+                              {isDonation ? 'Verification Code: ' : 'Confirmation Code: '}
+                              <span className="font-mono font-bold ml-1">
+                                {isDonation ? order.verification_code : order.confirmation_code}
+                              </span>
+                            </p>
+                            <p className={`text-xs mt-1 ${isDonation ? 'text-red-600 dark:text-red-300' : 'text-emerald-600 dark:text-emerald-300'
+                              }`}>
+                              Click to view QR code and full {isDonation ? 'collection' : 'pickup'} details
+                            </p>
+                          </div>
+                        )}
                     </div>
-                    {order.status === 'confirmed' && order.pickupWindow && (
-                      <div className="mt-4 p-4 bg-blue-50 rounded-lg">
-                        <p className="text-sm text-blue-800">
-                          <strong>Pickup window:</strong> {order.pickupWindow}
-                        </p>
-                        {/* <p className="text-sm text-blue-600 mt-1">
-                          {order.pickupAddress}
-                        </p> */}
-                      </div>
-                    )}
-                    {order.status === 'pending' && order.type === 'donation' && (
-                      <div className="mt-4 p-4 bg-yellow-50 rounded-lg">
-                        <p className="text-sm text-yellow-800">
-                          <strong>Donation Request:</strong> Waiting for {order.provider} to approve your request
-                        </p>
-                        <p className="text-sm text-yellow-600 mt-1">
-                          You'll be notified once the provider confirms availability
-                        </p>
-                      </div>
-                    )}
-                    <div className="mt-4 text-sm text-gray-600">
-                      <strong>Impact:</strong> {order.impact.mealsSaved} meals saved.
-                    </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             )}
           </div>
         </div>
       </div>
+
+      {/* Details Modal */}
+      <PickupDetailsModal
+        order={selectedOrder}
+        isOpen={showPickupModal}
+        onClose={() => {
+          setShowPickupModal(false);
+          setSelectedOrder(null);
+        }}
+        onStatusUpdate={handleStatusUpdate}
+      />
+
+      {/* Confirmation Dialog */}
+      <ConfirmDialog
+        isOpen={showConfirmCancel}
+        onClose={() => {
+          setShowConfirmCancel(false);
+          setOrderToCancel(null);
+        }}
+        onConfirm={handleConfirmCancel}
+        title="Cancel Order"
+        message={`Are you sure you want to cancel this ${orderToCancel?.interaction_type === 'Donation' ? 'donation' : 'pickup'}? This action cannot be undone.`}
+        confirmText="Yes, Cancel"
+        cancelText="No, Keep It"
+      />
+
+      {/* Toast Notification */}
+      {toast && (
+        <Toast
+          message={toast.message}
+          type={toast.type}
+          onClose={() => setToast(null)}
+        />
+      )}
     </div>
   );
 };

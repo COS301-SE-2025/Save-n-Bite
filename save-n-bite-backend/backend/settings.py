@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 
 from pathlib import Path
+from django.core.management.utils import get_random_secret_key
 
 import os
 from dotenv import load_dotenv
@@ -27,17 +28,20 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = os.getenv("SECRET_KEY")
-
+SECRET_KEY = os.getenv("SECRET_KEY", get_random_secret_key())
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.getenv("DEBUG") == "True"
+DEBUG = os.getenv("DEBUG") == "false"
+#DEBUG = os.getenv("DEBUG", "True").lower() == "true"
 
 
-ALLOWED_HOSTS = ['localhost', '127.0.0.1']
+ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", "localhost,127.0.0.1,169.254.134.3,savenbiteservice-hzghg8gcgddtcfg7.southafricanorth-01.azurewebsites.net").split(",")
 
 
-
+CSRF_TRUSTED_ORIGINS = [
+    'https://savenbiteservice-hzghg8gcgddtcfg7.southafricanorth-01.azurewebsites.net',
+    'https://savenbiteportal-f5ggcpczf5f2f8b4.southafricanorth-01.azurewebsites.net',  # Add this line
+]
 # Application definition
 
 INSTALLED_APPS = [
@@ -58,6 +62,7 @@ INSTALLED_APPS = [
     'analytics',
     'scheduling',
     'reviews',
+    'admin_system',
 ]
 
 MIDDLEWARE = [
@@ -69,6 +74,8 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'authentication.middleware.PasswordChangeMiddleware',  
+
 ]
 
 ROOT_URLCONF = 'backend.urls'
@@ -101,7 +108,7 @@ DATABASES = {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': os.environ.get('DB_NAME'),
         'USER': os.environ.get('DB_USER'),
-        'PASSWORD': os.environ.get('DB_USER_PASSWORD'),  
+        'PASSWORD': os.getenv('DB_PASSWORD', '').strip('"').strip("'"),  
         'HOST': os.environ.get('DB_HOST'),
         'PORT': os.environ.get('DB_PORT'),
     }
@@ -163,7 +170,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'authentication.jwt_auth.CustomJWTAuthentication',  # Use your custom JWT auth
-        'rest_framework.authentication.SessionAuthentication',
+        #'rest_framework.authentication.SessionAuthentication',
     ),
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.IsAuthenticated',
@@ -175,20 +182,46 @@ REST_FRAMEWORK = {
     'PAGE_SIZE': 20
 }
 
-from rest_framework_simplejwt.settings import api_settings
+#from rest_framework_simplejwt.settings import api_settings
 
 # JWT Configuration
 SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(minutes=60),
     'REFRESH_TOKEN_LIFETIME': timedelta(days=7),
-    'ROTATE_REFRESH_TOKENS': True,
-    'BLACKLIST_AFTER_ROTATION': True,
+    'ROTATE_REFRESH_TOKENS': False,
+    'BLACKLIST_AFTER_ROTATION': False,
     'UPDATE_LAST_LOGIN': False,
+    
     'ALGORITHM': 'HS256',
     'SIGNING_KEY': SECRET_KEY,
+    'VERIFYING_KEY': None,
+    'AUDIENCE': None,
+    'ISSUER': None,
+    'JWK_URL': None,
+    'LEEWAY': 0,
+    
     'AUTH_HEADER_TYPES': ('Bearer',),
-    'USER_ID_FIELD': 'UserID',  # This tells JWT to use UserID when creating tokens
-    'USER_ID_CLAIM': 'user_id',
+    'AUTH_HEADER_NAME': 'HTTP_AUTHORIZATION',
+    'USER_ID_FIELD': 'UserID',  # Use UserID field from your User model
+    'USER_ID_CLAIM': 'user_id', # Claim name in the token
+    
+    'AUTH_TOKEN_CLASSES': ('rest_framework_simplejwt.tokens.AccessToken',),
+    'TOKEN_TYPE_CLAIM': 'token_type',
+    'TOKEN_USER_CLASS': 'rest_framework_simplejwt.models.TokenUser',
+    
+    'JTI_CLAIM': 'jti',
+    
+    'SLIDING_TOKEN_REFRESH_EXP_CLAIM': 'refresh_exp',
+    'SLIDING_TOKEN_LIFETIME': timedelta(minutes=60),
+    'SLIDING_TOKEN_REFRESH_LIFETIME': timedelta(days=7),
+    
+    # Important: Ensure token validation doesn't fail
+    'TOKEN_OBTAIN_SERIALIZER': 'rest_framework_simplejwt.serializers.TokenObtainPairSerializer',
+    'TOKEN_REFRESH_SERIALIZER': 'rest_framework_simplejwt.serializers.TokenRefreshSerializer',
+    'TOKEN_VERIFY_SERIALIZER': 'rest_framework_simplejwt.serializers.TokenVerifySerializer',
+    'TOKEN_BLACKLIST_SERIALIZER': 'rest_framework_simplejwt.serializers.TokenBlacklistSerializer',
+    'SLIDING_TOKEN_OBTAIN_SERIALIZER': 'rest_framework_simplejwt.serializers.TokenObtainSlidingSerializer',
+    'SLIDING_TOKEN_REFRESH_SERIALIZER': 'rest_framework_simplejwt.serializers.TokenRefreshSlidingSerializer',
 }
 
 # CORS settings
@@ -210,3 +243,141 @@ EMAIL_HOST_USER = config('EMAIL_HOST_USER', default='savenbite@gmail.com')  # Yo
 EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD', default='oozb ystb pzir gflo')  # Your Gmail app password
 
 DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL', default='noreply@savenbite.com')
+
+# ===========================================
+# AZURE BLOB STORAGE CONFIGURATION
+# ===========================================
+
+# Check if we're in production (Azure) or development
+ENVIRONMENT = config('ENVIRONMENT', default='development')
+IS_AZURE_DEPLOYMENT = config('WEBSITE_SITE_NAME', default='') != ''  # Azure sets this
+
+if IS_AZURE_DEPLOYMENT or ENVIRONMENT == 'production':
+    # ============ PRODUCTION - Azure Blob Storage ============
+    
+    AZURE_ACCOUNT_NAME = config('AZURE_ACCOUNT_NAME')
+    AZURE_ACCOUNT_KEY = config('AZURE_ACCOUNT_KEY')
+    AZURE_CONTAINER_NAME = config('AZURE_CONTAINER_NAME', default='savenbite-media')
+    
+    # Connection string for Azure Blob Storage
+    AZURE_STORAGE_CONNECTION_STRING = (
+        f"DefaultEndpointsProtocol=https;"
+        f"AccountName={AZURE_ACCOUNT_NAME};"
+        f"AccountKey={AZURE_ACCOUNT_KEY};"
+        f"EndpointSuffix=core.windows.net"
+    )
+    
+    # Optional: Custom domain if you have one
+    AZURE_CUSTOM_DOMAIN = config('AZURE_CUSTOM_DOMAIN', default=None)
+    
+    # URL for account
+    AZURE_ACCOUNT_URL = f"https://{AZURE_ACCOUNT_NAME}.blob.core.windows.net"
+    
+    print(f"🔵 Using Azure Blob Storage in production")
+
+else:
+    # ============ DEVELOPMENT - Azurite Emulator ============
+    
+    # Azurite (Azure Storage Emulator) connection string
+    AZURE_ACCOUNT_NAME = config('AZURE_ACCOUNT_NAME', default='devstoreaccount1')
+    AZURE_ACCOUNT_KEY = config('AZURE_ACCOUNT_KEY', default='Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==')
+    AZURE_CONTAINER_NAME = config('AZURE_CONTAINER_NAME', default='savenbite-media')
+    
+    # Azurite connection string (default Azurite ports)
+    AZURE_STORAGE_CONNECTION_STRING = (
+        "DefaultEndpointsProtocol=http;"
+        "AccountName=devstoreaccount1;"
+        "AccountKey=Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==;"
+        "BlobEndpoint=http://127.0.0.1:10000/devstoreaccount1;"
+    )
+    
+    AZURE_ACCOUNT_URL = "http://127.0.0.1:10000/devstoreaccount1"
+    AZURE_CUSTOM_DOMAIN = None
+    
+    print(f"🟡 Using Azurite emulator for development")
+
+# ===========================================
+# FILE STORAGE CONFIGURATION
+# ===========================================
+
+# Use Azure Blob Storage as default storage
+DEFAULT_FILE_STORAGE = 'blob_storage.AzureBlobStorage'
+
+# Static files (CSS, JavaScript, Images) - Keep these local for development
+STATIC_URL = '/static/'
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+
+# Media files URL (for blob storage)
+if IS_AZURE_DEPLOYMENT or ENVIRONMENT == 'production':
+    MEDIA_URL = f"https://{AZURE_ACCOUNT_NAME}.blob.core.windows.net/{AZURE_CONTAINER_NAME}/"
+else:
+    MEDIA_URL = f"http://127.0.0.1:10000/devstoreaccount1/{AZURE_CONTAINER_NAME}/"
+
+# File upload settings
+FILE_UPLOAD_MAX_MEMORY_SIZE = 5 * 1024 * 1024  # 5MB
+DATA_UPLOAD_MAX_MEMORY_SIZE = 5 * 1024 * 1024  # 5MB
+
+# Allowed file types for uploads
+ALLOWED_IMAGE_EXTENSIONS = ['.jpg', '.jpeg', '.png', '.gif', '.webp']
+ALLOWED_DOCUMENT_EXTENSIONS = ['.pdf', '.doc', '.docx']
+
+# Maximum file sizes (in bytes)
+MAX_IMAGE_SIZE = 5 * 1024 * 1024  # 5MB
+MAX_DOCUMENT_SIZE = 10 * 1024 * 1024  # 10MB
+
+# ===========================================
+# LOGGING CONFIGURATION (Add blob storage logging)
+# ===========================================
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'verbose': {
+            'format': '{levelname} {asctime} {module} {process:d} {thread:d} {message}',
+            'style': '{',
+        },
+        'simple': {
+            'format': '{levelname} {message}',
+            'style': '{',
+        },
+    },
+    'handlers': {
+        'file': {
+            'level': 'INFO',
+            'class': 'logging.FileHandler',
+            'filename': os.path.join(BASE_DIR, 'logs', 'django.log'),
+            'formatter': 'verbose',
+        },
+        'console': {
+            'level': 'DEBUG',
+            'class': 'logging.StreamHandler',
+            'formatter': 'simple',
+        },
+    },
+    'loggers': {
+        'django': {
+            'handlers': ['file', 'console'],
+            'level': 'INFO',
+            'propagate': True,
+        },
+        'blob_storage': {  # Add specific logger for blob storage
+            'handlers': ['file', 'console'],
+            'level': 'DEBUG',
+            'propagate': False,
+        },
+        'authentication': {
+            'handlers': ['file', 'console'],
+            'level': 'DEBUG',
+            'propagate': False,
+        },
+        'food_listings': {
+            'handlers': ['file', 'console'],
+            'level': 'DEBUG',
+            'propagate': False,
+        },
+    },
+}
+
+# Ensure logs directory exists
+os.makedirs(os.path.join(BASE_DIR, 'logs'), exist_ok=True)

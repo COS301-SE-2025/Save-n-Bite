@@ -12,17 +12,18 @@ const NotificationBell = () => {
     fetchRecentNotifications,
     markAsRead,
     markAllAsRead,
-    deleteNotification 
+    deleteNotification
   } = useNotifications();
-  
+
   const dropdownRef = useRef(null);
   const bellRef = useRef(null);
   const [showPopup, setShowPopup] = useState(false);
-  // Close dropdown when clicking outside
+
+  // Separate useEffect for click outside handler
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (
-        dropdownRef.current && 
+        dropdownRef.current &&
         !dropdownRef.current.contains(event.target) &&
         bellRef.current &&
         !bellRef.current.contains(event.target)
@@ -32,42 +33,30 @@ const NotificationBell = () => {
     };
 
     document.addEventListener('mousedown', handleClickOutside);
-    // Listen for custom event to show popup
-    const handleShowUnreadPopup = (e) => {
-      if (unreadCount > 0) {
-        setShowPopup(true);
-        setTimeout(() => setShowPopup(false), 4000);
-      }
-    };
-    window.addEventListener('show-unread-popup', handleShowUnreadPopup);
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
-      window.removeEventListener('show-unread-popup', handleShowUnreadPopup);
     };
-  }, [unreadCount]);
+  }, []);
 
-  // Fetch notifications when opening dropdown
+  // Separate useEffect for fetching notifications
   useEffect(() => {
     if (isOpen) {
       fetchRecentNotifications();
-      if (unreadCount > 0) {
-        setShowPopup(true);
-        setTimeout(() => {
-          setShowPopup(false);
-        }, 4000); // Hide popup after 4 seconds
-      }
     }
-  }, [isOpen, fetchRecentNotifications]);
+  }, [isOpen]); // Only depend on isOpen
 
   const handleBellClick = () => {
     setIsOpen(!isOpen);
+    if (!isOpen) {
+      fetchRecentNotifications(); // Only fetch when opening the dropdown
+    }
   };
 
   const handleNotificationClick = async (notification) => {
     if (!notification.isRead) {
       await markAsRead(notification.id);
     }
-    
+
     // Navigate to action URL if available
     if (notification.actionUrl) {
       window.location.href = notification.actionUrl;
@@ -102,7 +91,7 @@ const NotificationBell = () => {
     const now = new Date();
     const notificationTime = new Date(timestamp);
     const diffInMinutes = Math.floor((now - notificationTime) / (1000 * 60));
-    
+
     if (diffInMinutes < 1) return 'Just now';
     if (diffInMinutes < 60) return `${diffInMinutes}m ago`;
     if (diffInMinutes < 1440) return `${Math.floor(diffInMinutes / 60)}h ago`;
@@ -111,10 +100,9 @@ const NotificationBell = () => {
 
   return (
     <div className="relative">
-
       <button
         ref={bellRef}
-        onClick={handleBellClick}
+        onClick={() => setIsOpen(!isOpen)}
         className="relative p-2 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-full transition-colors duration-200"
         aria-label="Notifications"
       >
@@ -126,11 +114,19 @@ const NotificationBell = () => {
         )}
       </button>
 
-      {/* Notification Dropdown */}
+      {/* Notification Dropdown - Mobile Responsive Positioning */}
       {isOpen && (
         <div
           ref={dropdownRef}
-          className="absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-lg border border-gray-200 z-50 max-h-96 overflow-hidden"
+          className="absolute mt-2 bg-white rounded-lg shadow-lg border border-gray-200 z-50 max-h-96 overflow-hidden
+                     /* Mobile: Center dropdown and make it wider */
+                     right-0 w-80
+                     sm:right-0 sm:w-80
+                     /* On very small screens, position it better */
+                     max-[480px]:right-[-50px] max-[480px]:w-[300px]
+                     max-[360px]:right-[-80px] max-[360px]:w-[280px]
+                     /* Ensure it doesn't go off screen */
+                     max-[320px]:right-[-100px] max-[320px]:w-[260px]"
         >
           {/* Header */}
           <div className="px-4 py-3 border-b border-gray-200 flex items-center justify-between">
@@ -143,7 +139,8 @@ const NotificationBell = () => {
                   title="Mark all as read"
                 >
                   <CheckCheck size={16} />
-                  <span>Mark all read</span>
+                  <span className="hidden sm:inline">Mark all read</span>
+                  <span className="sm:hidden">Read all</span>
                 </button>
               )}
               <button
@@ -172,15 +169,13 @@ const NotificationBell = () => {
                   <div
                     key={notification.id || notification.createdAt || Math.random()}
                     onClick={() => handleNotificationClick(notification)}
-                    className={`px-3 py-2 cursor-pointer hover:bg-gray-100 transition-colors duration-150 border-b last:border-b-0 ${
-                      !notification.isRead ? 'bg-blue-50 border-l-2 border-l-blue-500' : ''
-                    } flex items-start gap-2`}
+                    className={`px-3 py-2 cursor-pointer hover:bg-gray-100 transition-colors duration-150 border-b last:border-b-0 ${!notification.isRead ? 'bg-blue-50 border-l-2 border-l-blue-500' : ''
+                      } flex items-start gap-2`}
                   >
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center justify-between">
-                        <p className={`text-xs font-semibold truncate ${
-                          !notification.isRead ? 'text-gray-900' : 'text-gray-700'
-                        }`}>
+                        <p className={`text-xs font-semibold truncate ${!notification.isRead ? 'text-gray-900' : 'text-gray-700'
+                          }`}>
                           {notification.title}
                         </p>
                         <div className="flex items-center space-x-1">

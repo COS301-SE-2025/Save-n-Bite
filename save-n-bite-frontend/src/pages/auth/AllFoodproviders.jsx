@@ -1,0 +1,352 @@
+
+
+import React, { useState, useEffect } from 'react'
+import { Link } from 'react-router-dom'
+import { SearchIcon, StarIcon, MapPinIcon } from 'lucide-react'
+import CustomerNavBar from '../../components/auth/CustomerNavBar'
+import FoodProvidersAPI, { getApiBaseUrl } from '../../services/FoodProvidersAPI'
+import reviewsAPI from '../../services/reviewsAPI'
+
+const FoodProvidersPage = () => {
+  const [providers, setProviders] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
+  const [searchQuery, setSearchQuery] = useState('')
+  const [selectedCategory, setSelectedCategory] = useState('All')
+  const [providersWithReviews, setProvidersWithReviews] = useState([])
+
+  // Load providers from API
+  useEffect(() => {
+    const loadProviders = async () => {
+      try {
+        setLoading(true)
+        const result = await FoodProvidersAPI.getAllProviders()
+        
+        if (result.success && result.data?.providers) {
+          setProviders(result.data.providers)
+          setError(null)
+          
+          // Load review data for each provider
+          await loadProvidersReviewData(result.data.providers)
+        } else {
+          setError(result.error || 'Failed to load providers')
+        }
+      } catch (err) {
+        setError('An unexpected error occurred while loading providers')
+        console.error('Error loading providers:', err)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    loadProviders()
+  }, [])
+
+  // Load review data for all providers
+  const loadProvidersReviewData = async (providersList) => {
+    try {
+      // Create an array to store providers with their review data
+      const providersWithReviewData = await Promise.all(
+        providersList.map(async (provider) => {
+          try {
+            // Fetch review data for this provider
+            const reviewResult = await reviewsAPI.getProviderReviews(provider.id, {
+              page: 1,
+              page_size: 1 // We only need summary data, not individual reviews
+            })
+            
+            if (reviewResult.success && reviewResult.data?.results) {
+              const { reviews_summary } = reviewResult.data.results
+              
+              return {
+                ...provider,
+                rating: reviews_summary?.average_rating || provider.rating || 0,
+                total_reviews: reviews_summary?.total_reviews || 0,
+                rating_distribution: reviews_summary?.rating_distribution || null
+              }
+            } else {
+              // If API fails, keep original provider data with fallback rating
+              return {
+                ...provider,
+                rating: provider.rating || 0,
+                total_reviews: 0,
+                rating_distribution: null
+              }
+            }
+          } catch (error) {
+            console.error(`Error loading reviews for provider ${provider.business_name}:`, error)
+            // Return provider with fallback data on error
+            return {
+              ...provider,
+              rating: provider.rating || 0,
+              total_reviews: 0,
+              rating_distribution: null
+            }
+          }
+        })
+      )
+      
+      setProvidersWithReviews(providersWithReviewData)
+    } catch (error) {
+      console.error('Error loading providers review data:', error)
+      // Fallback to original providers if review loading fails
+      setProvidersWithReviews(providersList.map(provider => ({
+        ...provider,
+        rating: provider.rating || 0,
+        total_reviews: 0,
+        rating_distribution: null
+      })))
+    }
+  }
+
+  // Helper function to get provider image with full URL
+  const getProviderImage = (provider) => {
+    const baseUrl = getApiBaseUrl()
+    
+    if (provider.banner) {
+      if (provider.banner.startsWith('http')) {
+        return provider.banner
+      }
+      return `${baseUrl}${provider.banner}`
+    }
+    
+    if (provider.logo) {
+      if (provider.logo.startsWith('http')) {
+        return provider.logo
+      }
+      return `${baseUrl}${provider.logo}`
+    }
+    
+    // Fallback to a generic food provider image
+    return 'src/assets/images/SnB_leaf_icon.png'
+  }
+
+  // Use providers with review data for filtering if available, otherwise use original providers
+  const dataToFilter = providersWithReviews.length > 0 ? providersWithReviews : providers
+
+  // Extract all unique categories from business_tags
+  const allCategories = [
+    'All',
+    ...new Set(
+      dataToFilter
+        .filter(provider => provider.business_tags && provider.business_tags.length > 0)
+        .flatMap(provider => provider.business_tags)
+    )
+  ]
+
+  // Filter providers based on search and category
+  const filteredProviders = dataToFilter.filter((provider) => {
+    const matchesSearch =
+      provider.business_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (provider.business_description && provider.business_description.toLowerCase().includes(searchQuery.toLowerCase())) ||
+      (provider.business_tags && provider.business_tags.some(tag => 
+        tag.toLowerCase().includes(searchQuery.toLowerCase())
+      ))
+    
+    const matchesCategory =
+      selectedCategory === 'All' ||
+      (provider.business_tags && provider.business_tags.includes(selectedCategory))
+    
+    return matchesSearch && matchesCategory
+  })
+
+  // Helper function to format rating display
+  const formatRating = (rating) => {
+    if (typeof rating === 'number') {
+      return rating.toFixed(1)
+    }
+    return '0' // Fallback
+  }
+
+  // Helper function to get review count text
+  const getReviewCountText = (totalReviews) => {
+    if (totalReviews === 0) {
+      return 'No reviews yet'
+    } else if (totalReviews === 1) {
+      return '1 review'
+    } else {
+      return `${totalReviews} reviews`
+    }
+  }
+
+  // Loading state - matches FoodListings pattern
+  if (loading && filteredProviders.length === 0) {
+    return (
+      <div className="bg-gray-50 dark:bg-gray-900 min-h-screen w-full transition-colors duration-300">
+        <CustomerNavBar />
+        <div className="flex items-center justify-center min-h-[60vh]">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-600 mx-auto mb-4"></div>
+            <p className="text-gray-600 dark:text-gray-200">Loading food providers...</p>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  // Error state
+  if (error) {
+    return (
+      <div className="bg-gray-50 dark:bg-gray-900 min-h-screen w-full transition-colors duration-300">
+        <CustomerNavBar />
+        <div className="max-w-6xl mx-auto p-4 md:p-6">
+          <div className="mb-8">
+            <h1 className="text-3xl font-bold text-gray-800 dark:text-gray-100 mb-2">
+              Food Providers
+            </h1>
+            <p className="text-red-600 dark:text-red-400">{error}</p>
+          </div>
+          
+          <div className="text-center py-12">
+            <p className="text-xl text-gray-600 dark:text-gray-300 mb-4">Unable to load providers</p>
+            <button 
+              onClick={() => window.location.reload()} 
+              className="px-4 py-2 bg-emerald-600 text-white rounded-md hover:bg-emerald-700 transition-colors"
+            >
+              Try Again
+            </button>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  return (
+    <div className="bg-gray-50 dark:bg-gray-900 min-h-screen w-full transition-colors duration-300">
+      <CustomerNavBar />
+      <div className="max-w-6xl mx-auto p-4 md:p-6">
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold text-gray-800 dark:text-gray-100 mb-2">
+            Food Providers
+          </h1>
+          <p className="text-gray-600 dark:text-gray-300">
+            Discover local businesses committed to reducing food waste
+          </p>
+        </div>
+
+        {/* Search and Filter */}
+        <div className="mb-8">
+          <div className="flex flex-col md:flex-row gap-4">
+            <div className="relative flex-grow">
+              <input
+                type="text"
+                placeholder="Search providers..."
+                className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md focus:ring-emerald-500 focus:border-emerald-500 bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-100"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
+              <SearchIcon
+                size={20}
+                className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-gray-500"
+              />
+            </div>
+            <div className="md:w-64">
+              <select
+                className="w-full p-2 border border-gray-300 dark:border-gray-700 rounded-md focus:ring-emerald-500 focus:border-emerald-500 bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-100"
+                value={selectedCategory}
+                onChange={(e) => setSelectedCategory(e.target.value)}
+              >
+                {allCategories.map((category) => (
+                  <option key={category} value={category}>
+                    {category}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+        </div>
+
+        {/* Show loading indicator while providers are being updated */}
+        {loading && filteredProviders.length > 0 && (
+          <div className="mb-4 text-center">
+            <div className="inline-flex items-center px-3 py-2 sm:px-4 sm:py-2 bg-emerald-50 dark:bg-emerald-900 text-emerald-600 dark:text-emerald-200 rounded-md text-sm transition-colors duration-300">
+              <div className="animate-spin rounded-full h-3 w-3 sm:h-4 sm:w-4 border-b-2 border-emerald-600 mr-2"></div>
+              Updating providers...
+            </div>
+          </div>
+        )}
+
+        {/* Providers Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {filteredProviders.map((provider) => (
+            <Link
+              to={`/provider/${provider.id}`}
+              key={provider.id}
+              className="bg-white dark:bg-gray-800 rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow"
+            >
+              <div className="relative h-48">
+                <img
+                  src={getProviderImage(provider)}
+                  alt={provider.business_name}
+                  className="w-full h-full object-cover"
+                  onError={(e) => {
+                    e.target.src = 'src/assets/images/SnB_leaf_icon.png'
+                  }}
+                />
+              </div>
+              <div className="p-4">
+                <h3 className="font-semibold text-lg text-gray-800 dark:text-gray-100">
+                  {provider.business_name}
+                </h3>
+                <p className="text-gray-600 dark:text-gray-300 text-sm mt-1 line-clamp-2">
+                  {provider.business_description || 'Local food provider committed to reducing waste'}
+                </p>
+
+                <div className="flex items-center mt-2">
+                  <div className="flex items-center text-amber-500">
+                    <StarIcon size={16} className="fill-current" />
+                    <span className="ml-1 text-sm">{formatRating(provider.rating)}</span>
+                  </div>
+                  <span className="mx-2 text-gray-300 dark:text-gray-700">•</span>
+                  <span className="text-sm text-gray-600 dark:text-gray-300">
+                    {getReviewCountText(provider.total_reviews)}
+                  </span>
+                </div>
+                
+                {provider.business_address && (
+                  <div className="flex items-center mt-2 text-gray-600 dark:text-gray-300">
+                    <MapPinIcon size={14} className="mr-1" />
+                    <span className="text-xs truncate">{provider.business_address}</span>
+                  </div>
+                )}
+                
+                <div className="flex flex-wrap gap-1 mt-3">
+                  {provider.business_tags && provider.business_tags.slice(0, 3).map((tag) => (
+                    <span
+                      key={tag}
+                      className="px-2 py-1 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 text-xs rounded-full"
+                    >
+                      {tag}
+                    </span>
+                  ))}
+                  {(!provider.business_tags || provider.business_tags.length === 0) && (
+                    <span className="px-2 py-1 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 text-xs rounded-full">
+                      Food Provider
+                    </span>
+                  )}
+                </div>
+                <div className="mt-3 text-sm text-gray-600 dark:text-gray-300">
+                  {provider.active_listings_count || 0} items available
+                </div>
+              </div>
+            </Link>
+          ))}
+        </div>
+
+        {/* Empty state */}
+        {filteredProviders.length === 0 && !loading && (
+          <div className="text-center py-12 bg-white dark:bg-gray-800 rounded-lg shadow-sm transition-colors duration-300">
+            <p className="text-xl text-gray-600 dark:text-gray-300 mb-4">
+              No providers found
+            </p>
+            <p className="text-gray-500 dark:text-gray-400">
+              Try adjusting your search or filter
+            </p>
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}
+
+export default FoodProvidersPage

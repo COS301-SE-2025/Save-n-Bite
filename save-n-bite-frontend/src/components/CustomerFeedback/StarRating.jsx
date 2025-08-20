@@ -13,7 +13,7 @@ const StarRating = ({ rating, setRating, size = 32 }) => {
           <Star
             size={size}
             className={`transition-colors duration-200 ${
-              star <= rating ? 'fill-yellow-400 text-yellow-400' : 'text-gray-300'
+              star <= rating ? 'fill-yellow-400 text-yellow-400 dark:fill-yellow-400 dark:text-yellow-400' : 'text-gray-300 dark:text-gray-600'
             }`}
           />
         </button>

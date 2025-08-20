@@ -1,43 +1,94 @@
-import React, { useState, useEffect } from 'react';
-import { CalendarIcon, ImageIcon, ClockIcon } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import { Toast } from '../../components/ui/Toast';
+import {
+  CalendarIcon,
+  ImageIcon,
+  ClockIcon,
+  MapPinIcon,
+  PhoneIcon,
+  UserIcon,
+} from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import foodListingsAPI from '../../services/foodListingsAPI';
 import schedulingAPI from '../../services/schedulingAPI';
 
-export function ListingForm() {
+export function ListingForm({
+  editMode = false,
+  initialData = null,
+  listingId = null,
+}) {
   const navigate = useNavigate();
+  const formRef = useRef(null);
   const [isDonation, setIsDonation] = useState(false);
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [userData, setUserData] = useState(null);
+  const [toast, setToast] = useState(null);
+
+  // Fields that can be edited according to the API
+  const editableFields = [
+    'name',
+    'description',
+    'quantity',
+    'discounted_price',
+  ];
 
   useEffect(() => {
-    // Check if user is a verified provider
-    const storedUserData = localStorage.getItem('userData');
+    if (errors.submit && formRef.current) {
+      formRef.current.scrollIntoView({
+        behavior: 'smooth',
+        block: 'start',
+      });
+    }
+  }, [errors.submit]);
+
+  useEffect(() => {
+    // Get user data for initial form population
+    const storedUserData =
+      localStorage.getItem('userData') || localStorage.getItem('user');
     console.log('Stored user data:', storedUserData); // Debug log
+
     if (storedUserData) {
-      const user = JSON.parse(storedUserData);
-      setUserData(user);
-      
-      // Check provider status
-      if (user.user_type !== 'provider') {
-        setErrors(prev => ({
-          ...prev,
-          submit: 'Only verified providers can create listings. Please contact support if you believe this is an error.'
-        }));
-      } else if (user.profile?.status === 'pending_verification') {
-        setErrors(prev => ({
-          ...prev,
-          submit: 'Your provider account is pending verification. You will be able to create listings once your account is verified.'
-        }));
+      try {
+        const user = JSON.parse(storedUserData);
+        setUserData(user);
+
+        // Check provider status for new listings
+        if (!editMode) {
+          if (user.user_type !== 'provider') {
+            setErrors((prev) => ({
+              ...prev,
+              submit:
+                'Only verified providers can create listings. Please contact support if you believe this is an error.',
+            }));
+          } else if (user.profile?.status === 'pending_verification') {
+            setErrors((prev) => ({
+              ...prev,
+              submit:
+                'Your provider account is pending verification. You will be able to create listings once your account is verified.',
+            }));
+          }
+        }
+      } catch (parseError) {
+        console.error('Error parsing user data:', parseError);
+        if (!editMode) {
+          setErrors((prev) => ({
+            ...prev,
+            submit: 'Invalid user data. Please log in again.',
+          }));
+        }
       }
-    } else {
-      setErrors(prev => ({
+    } else if (!editMode) {
+      setErrors((prev) => ({
         ...prev,
-        submit: 'Please log in as a provider to create listings.'
+        submit: 'Please log in as a provider to create listings.',
       }));
     }
-  }, []);
+  }, [editMode]);
+
+  const showToast = (message, type = 'info') => {
+    setToast({ message, type });
+  };
 
   const [formData, setFormData] = useState({
     name: '',
@@ -46,21 +97,67 @@ export function ListingForm() {
     original_price: '',
     discounted_price: '',
     expiry_date: '',
-    pickup_window: '',
-    image: null
+    pickup_start_time: '',
+    pickup_end_time: '',
+    image: null,
+    // Pickup location fields
+    pickup_address: '',
+    pickup_instructions: 'Collect at the main counter',
+    pickup_contact_person: '',
+    pickup_contact_phone: '',
+    pickup_latitude: '',
+    pickup_longitude: '',
+    // Scheduling fields
+    total_slots: '4',
+    max_orders_per_slot: '2',
+    slot_buffer_minutes: '10',
   });
 
   const [imagePreview, setImagePreview] = useState(null);
 
-  const validateField = (name, value) => {
-    if (!value) {
-      setErrors(prev => ({
+  useEffect(() => {
+    if (editMode && initialData) {
+      // Populate form with existing listing data
+      setFormData(initialData);
+      setIsDonation(
+        initialData.original_price === 0 && initialData.discounted_price === 0,
+      );
+
+      // Set image preview if image exists
+      if (initialData.imageUrl) {
+        setImagePreview(initialData.imageUrl);
+      }
+    } else if (!editMode && userData) {
+      console.log('Auto-filling form for new listing with userData:', userData); // Debug log
+
+      // Auto-fill business address for new listings - Updated to match API response structure
+      const businessAddress =
+        userData.profile_details?.business_address ||
+        userData.profile?.business_address ||
+        userData.business_address ||
+        '';
+
+      console.log('Extracted values:', { businessAddress }); // Debug log
+
+      setFormData((prev) => ({
         ...prev,
-        [name]: 'This field is required'
+        pickup_address: businessAddress,
+        pickup_contact_person: '', // Manual entry
+        pickup_contact_phone: '', // Manual entry
+      }));
+    }
+  }, [editMode, initialData, userData]);
+
+  const validateField = (name, value) => {
+    // Don't require coordinates as they're optional
+    if (!value && !['pickup_latitude', 'pickup_longitude'].includes(name)) {
+      setErrors((prev) => ({
+        ...prev,
+        [name]: 'This field is required',
       }));
       return false;
     } else {
-      setErrors(prev => {
+      setErrors((prev) => {
         const newErrors = { ...prev };
         delete newErrors[name];
         return newErrors;
@@ -72,9 +169,9 @@ export function ListingForm() {
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     console.log('Input changed:', name, value); // Debug log
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [name]: value
+      [name]: value,
     }));
     validateField(name, value);
   };
@@ -84,25 +181,25 @@ export function ListingForm() {
     if (file) {
       // Validate file type
       if (!file.type.startsWith('image/')) {
-        setErrors(prev => ({
+        setErrors((prev) => ({
           ...prev,
-          image: 'Please select an image file'
+          image: 'Please select an image file',
         }));
         return;
       }
 
       // Validate file size (5MB limit)
       if (file.size > 5 * 1024 * 1024) {
-        setErrors(prev => ({
+        setErrors((prev) => ({
           ...prev,
-          image: 'Image size should be less than 5MB'
+          image: 'Image size should be less than 5MB',
         }));
         return;
       }
 
-      setFormData(prev => ({
+      setFormData((prev) => ({
         ...prev,
-        image: file
+        image: file,
       }));
 
       // Create preview URL
@@ -113,7 +210,7 @@ export function ListingForm() {
       reader.readAsDataURL(file);
 
       // Clear any previous image errors
-      setErrors(prev => {
+      setErrors((prev) => {
         const newErrors = { ...prev };
         delete newErrors.image;
         return newErrors;
@@ -123,392 +220,868 @@ export function ListingForm() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log('Form submitted'); // Debug log
-    console.log('Form data:', formData); // Debug log
-    console.log('User data:', userData); // Debug log
-    
+    console.log('=== SUBMIT STARTED ===');
     setIsSubmitting(true);
 
-    // Check if user is a verified provider
-    if (!userData || userData.user_type !== 'provider') {
-      console.log('User is not a provider'); // Debug log
-      setErrors(prev => ({
-        ...prev,
-        submit: 'Only verified providers can create listings. Please contact support if you believe this is an error.'
-      }));
-      setIsSubmitting(false);
-      return;
-    }
-
-    // Check provider verification status
-    if (userData.profile?.status === 'pending_verification') {
-      setErrors(prev => ({
-        ...prev,
-        submit: 'Your provider account is pending verification. You will be able to create listings once your account is verified.'
-      }));
-      setIsSubmitting(false);
-      return;
-    }
-
-    // Validate all required fields
-    const requiredFields = ['name', 'description', 'quantity', 'expiry_date', 'pickup_window'];
-    const isValid = requiredFields.every(field => validateField(field, formData[field]));
-    console.log('Form validation:', isValid); // Debug log
-
-    if (!isValid) {
-      setIsSubmitting(false);
-      return;
-    }
-
     try {
-      // Format the date to YYYY-MM-DD
-      const expiryDate = new Date(formData.expiry_date);
-      const formattedDate = expiryDate.toISOString().split('T')[0];
+      // Clear previous errors
+      setErrors({});
 
-      // Format the data according to the API's expected structure
-      const listingData = {
-        name: formData.name,
-        description: formData.description,
-        food_type: 'ready_to_eat',
-        original_price: isDonation ? 0 : parseFloat(formData.original_price),
-        discounted_price: isDonation ? 0 : parseFloat(formData.discounted_price),
-        quantity: parseInt(formData.quantity),
-        expiry_date: formattedDate,
-        pickup_window: formData.pickup_window,
-        allergens: [],
-        dietary_info: [],
-        is_available: true,
-        status: 'active'
-      };
-
-      // If there's an image, convert it to base64
-      if (formData.image) {
-        const reader = new FileReader();
-        reader.readAsDataURL(formData.image);
-        reader.onloadend = async () => {
-          const base64data = reader.result;
-          listingData.imageUrl = base64data;
-          
-          console.log('Sending listing data:', listingData); // Debug log
-          const response = await foodListingsAPI.createListing(listingData);
-          console.log('API response:', response); // Debug log
-          
-          if (response.success) {
-            // Create pickup location after listing is created
-            const locationData = {
-              name: `${formData.name} Pickup Location`,
-              address: userData?.profile?.business_address || 'Unknown Address',
-              instructions: 'Collect at the main counter',
-              contact_person: userData?.profile?.business_name || 'Business Staff',
-              contact_phone: '+27123456789', // Mocked phone
-              latitude: '-26.2041', // Mocked latitude
-              longitude: '28.0473' // Mocked longitude
-            };
-            try {
-              const locationResponse = await schedulingAPI.createPickupLocation(locationData);
-              console.log('Pickup location creation response:', locationResponse);
-            } catch (err) {
-              console.error('Failed to create pickup location:', err);
-            }
-            navigate('/listings-overview');
-          } else {
-            setErrors(prev => ({
-              ...prev,
-              submit: response.error || 'Failed to create listing. Please try again.'
-            }));
+      if (editMode) {
+        // Handle edit mode - only send editable fields
+        const updateData = {};
+        editableFields.forEach((field) => {
+          if (formData[field] !== undefined && formData[field] !== '') {
+            updateData[field] =
+              field === 'quantity'
+                ? parseInt(formData[field])
+                : field === 'discounted_price'
+                ? parseFloat(formData[field])
+                : formData[field];
           }
-          setIsSubmitting(false);
-        };
+        });
+
+        console.log('=== UPDATING LISTING ===', updateData);
+        const response = await foodListingsAPI.updateListing(
+          listingId,
+          updateData,
+        );
+
+        if (!response.success) {
+          throw new Error(response.error || 'Failed to update listing');
+        }
+
+        showToast('Listing updated successfully!', 'success');
+        setTimeout(() => {
+          navigate('/listings-overview');
+        }, 500);
       } else {
-        console.log('Sending listing data:', listingData); // Debug log
-        const response = await foodListingsAPI.createListing(listingData);
-        console.log('API response:', response); // Debug log
-        
-        if (response.success) {
-          // Create pickup location after listing is created
+        // Handle create mode - existing logic
+        if (!userData || userData.user_type !== 'provider') {
+          throw new Error(
+            'Only verified providers can create listings. Please contact support if you believe this is an error.',
+          );
+        }
+
+        if (userData.verification_status === 'pending_verification') {
+          throw new Error(
+            'Your provider account is pending verification. You will be able to create listings once your account is verified.',
+          );
+        }
+
+        // Validate all required fields
+        const requiredFields = [
+          'name',
+          'description',
+          'quantity',
+          'expiry_date',
+          'pickup_start_time',
+          'pickup_end_time',
+          'pickup_address',
+          'pickup_contact_person',
+          'pickup_contact_phone',
+        ];
+
+        if (!isDonation) {
+          requiredFields.push('original_price', 'discounted_price');
+        }
+
+        const validationErrors = {};
+        requiredFields.forEach((field) => {
+          if (!formData[field] || formData[field].toString().trim() === '') {
+            validationErrors[field] = 'This field is required';
+          }
+        });
+
+        if (Object.keys(validationErrors).length > 0) {
+          setErrors(validationErrors);
+          throw new Error('Please fill in all required fields');
+        }
+
+        // Validate pickup time range
+        if (formData.pickup_start_time >= formData.pickup_end_time) {
+          setErrors((prev) => ({
+            ...prev,
+            pickup_end_time: 'End time must be after start time',
+          }));
+          throw new Error('Invalid pickup time range');
+        }
+
+        console.log('=== VALIDATION PASSED ===');
+
+        // Create pickup_window from start and end times
+        const pickup_window = `${formData.pickup_start_time}-${formData.pickup_end_time}`;
+
+        // Format the date to YYYY-MM-DD
+        const expiryDate = new Date(formData.expiry_date);
+        const formattedDate = expiryDate.toISOString().split('T')[0];
+
+        // Format the data according to the API's expected structure
+        const listingData = {
+          name: formData.name,
+          description: formData.description,
+          food_type: 'ready_to_eat',
+          original_price: isDonation
+            ? 0
+            : parseFloat(formData.original_price) || 0,
+          discounted_price: isDonation
+            ? 0
+            : parseFloat(formData.discounted_price) || 0,
+          quantity: parseInt(formData.quantity),
+          expiry_date: formattedDate,
+          pickup_window: pickup_window,
+          allergens: [],
+          dietary_info: [],
+          is_available: true,
+          status: 'active',
+        };
+
+        console.log('=== CREATING LISTING ===', listingData);
+
+        // Process the listing creation
+        let finalListingData = { ...listingData };
+
+        // If there's an image, convert it to base64
+        if (formData.image) {
+          try {
+            const base64data = await new Promise((resolve, reject) => {
+              const reader = new FileReader();
+              reader.onloadend = () => resolve(reader.result);
+              reader.onerror = reject;
+              reader.readAsDataURL(formData.image);
+            });
+            finalListingData.imageUrl = base64data;
+          } catch (imageError) {
+            console.error('Error processing image:', imageError);
+            showToast(
+              'Image upload failed, but listing will be created without image',
+              'warning',
+            );
+          }
+        }
+
+        // Create the listing
+        const response = await foodListingsAPI.createListing(finalListingData);
+        console.log('=== LISTING API RESPONSE ===', response);
+
+        if (!response.success) {
+          throw new Error(response.error || 'Failed to create listing');
+        }
+
+        // Get the created listing ID
+        const createdListingId =
+          response.data?.listing?.id || response.data?.id;
+
+        if (!createdListingId) {
+          console.warn('No listing ID returned, proceeding without scheduling');
+          showToast('Listing created successfully!', 'success');
+          setTimeout(() => {
+            navigate('/listings-overview');
+          }, 500);
+          return;
+        }
+
+        console.log('=== LISTING CREATED WITH ID ===', createdListingId);
+
+        // Try to create pickup location and schedule (optional)
+        try {
           const locationData = {
             name: `${formData.name} Pickup Location`,
-            address: userData?.profile?.business_address || 'Unknown Address',
-            instructions: 'Collect at the main counter',
-            contact_person: userData?.profile?.business_name || 'Business Staff',
-            contact_phone: '+27123456789', // Mocked phone
-            latitude: '-26.2041', // Mocked latitude
-            longitude: '28.0473' // Mocked longitude
+            address: formData.pickup_address,
+            instructions: formData.pickup_instructions,
+            contact_person: formData.pickup_contact_person,
+            contact_phone: formData.pickup_contact_phone,
+            latitude: formData.pickup_latitude || '-26.2041',
+            longitude: formData.pickup_longitude || '28.0473',
           };
-          try {
-            const locationResponse = await schedulingAPI.createPickupLocation(locationData);
-            console.log('Pickup location creation response:', locationResponse);
-          } catch (err) {
-            console.error('Failed to create pickup location:', err);
+
+          console.log('=== CREATING PICKUP LOCATION ===', locationData);
+          const locationResponse = await schedulingAPI.createPickupLocation(
+            locationData,
+          );
+
+          if (locationResponse.success) {
+            const createdLocationId = locationResponse.data?.location?.id;
+
+            if (createdLocationId) {
+              const scheduleData = {
+                food_listing_id: createdListingId,
+                location_id: createdLocationId,
+                pickup_window: pickup_window,
+                total_slots: parseInt(formData.total_slots),
+                max_orders_per_slot: parseInt(formData.max_orders_per_slot),
+                slot_buffer_minutes: parseInt(formData.slot_buffer_minutes),
+              };
+
+              console.log('=== CREATING PICKUP SCHEDULE ===', scheduleData);
+              await schedulingAPI.createPickupSchedule(scheduleData);
+              console.log('=== SCHEDULE CREATED SUCCESSFULLY ===');
+            }
           }
-          navigate('/listings-overview');
-        } else {
-          setErrors(prev => ({
-            ...prev,
-            submit: response.error || 'Failed to create listing. Please try again.'
-          }));
+        } catch (schedulingError) {
+          console.error('Scheduling failed (non-critical):', schedulingError);
+          showToast(
+            'Listing created, but there was an issue setting up pickup scheduling',
+            'warning',
+          );
         }
-        setIsSubmitting(false);
+
+        showToast('Listing created successfully!', 'success');
+        setTimeout(() => {
+          navigate('/listings-overview');
+        }, 500);
       }
     } catch (error) {
-      console.error('Error creating listing:', error);
-      setErrors(prev => ({
+      console.error('=== SUBMIT ERROR ===', error);
+      showToast(
+        error.message || 'Failed to process listing. Please try again.',
+        'error',
+      );
+      setErrors((prev) => ({
         ...prev,
-        submit: error.response?.data?.message || 'Failed to create listing. Please try again.'
+        submit: error.message || 'Failed to process listing. Please try again.',
       }));
+    } finally {
+      console.log('=== SUBMIT FINISHED ===');
       setIsSubmitting(false);
     }
   };
 
-  // Format price to display with R symbol
-  const formatPrice = (price) => {
-    if (price === undefined || price === null) return 'R0.00';
-    return `R${parseFloat(price).toFixed(2)}`;
-  };
-
-  // Format date to display in South African format
-  const formatDate = (dateString) => {
-    if (!dateString) return 'No date';
-    const date = new Date(dateString);
-    if (isNaN(date.getTime())) return 'Invalid date';
-    return date.toLocaleDateString('en-ZA', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric'
-    });
+  // Helper function to check if a field is disabled
+  const isFieldDisabled = (fieldName) => {
+    return editMode && !editableFields.includes(fieldName);
   };
 
   return (
-    <form onSubmit={handleSubmit} className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 max-w-3xl">
-      {errors.submit && (
-        <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg">
-          <p className="text-red-600">{errors.submit}</p>
-        </div>
-      )}
-      <div className="space-y-6">
-        {/* Food Name */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Food Name
-          </label>
-          <input
-            type="text"
-            name="name"
-            value={formData.name}
-            onChange={handleInputChange}
-            className={`w-full p-2 border rounded-lg ${errors.name ? 'border-red-500' : 'border-gray-300'}`}
-            placeholder="e.g., Fresh Baked Bread"
-          />
-          {errors.name && <p className="text-red-500 text-sm mt-1">{errors.name}</p>}
-        </div>
+    <div className="relative">
+      <form
+        ref={formRef}
+        onSubmit={handleSubmit}
+        className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6 max-w-3xl transition-colors duration-300"
+      >
+        {errors.submit && (
+          <div className="mb-4 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
+            <p className="text-red-600 dark:text-red-400">{errors.submit}</p>
+          </div>
+        )}
 
-        {/* Description */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Description
-          </label>
-          <textarea
-            name="description"
-            value={formData.description}
-            onChange={handleInputChange}
-            className={`w-full p-2 border rounded-lg ${errors.description ? 'border-red-500' : 'border-gray-300'}`}
-            placeholder="Describe your food item..."
-          />
-          {errors.description && <p className="text-red-500 text-sm mt-1">{errors.description}</p>}
-        </div>
+        {/* {editMode && (
+          <div className="mb-6 p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
+            <p className="text-blue-600 dark:text-blue-400 text-sm">
+              <strong>Edit Mode:</strong> You can only modify the name, description, quantity, and discounted price. Other fields are read-only.
+            </p>
+          </div>
+        )} */}
 
-        {/* Quantity and Price/Donation Row */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="space-y-6">
+          {/* Food Name */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Quantity
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
+              Food Name *
             </label>
             <input
-              type="number"
-              name="quantity"
-              value={formData.quantity}
+              type="text"
+              name="name"
+              value={formData.name}
               onChange={handleInputChange}
-              className={`w-full p-2 border rounded-lg ${errors.quantity ? 'border-red-500' : 'border-gray-300'}`}
-              placeholder="Number of items"
+              disabled={isFieldDisabled('name')}
+              className={`w-full p-2 border rounded-lg ${
+                errors.name
+                  ? 'border-red-500'
+                  : 'border-gray-300 dark:border-gray-700'
+              } bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 ${
+                isFieldDisabled('name') ? 'opacity-60 cursor-not-allowed' : ''
+              }`}
+              placeholder="e.g., Fresh Baked Bread"
+              required
             />
-            {errors.quantity && <p className="text-red-500 text-sm mt-1">{errors.quantity}</p>}
+            {errors.name && (
+              <p className="text-red-500 dark:text-red-400 text-sm mt-1">
+                {errors.name}
+              </p>
+            )}
           </div>
+
+          {/* Description */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Price Setting
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
+              Description *
             </label>
-            <div className="flex items-center space-x-4">
-              <label className="flex items-center">
-                <input
-                  type="checkbox"
-                  checked={isDonation}
-                  onChange={e => setIsDonation(e.target.checked)}
-                  className="w-4 h-4 text-blue-600"
-                />
-                <span className="ml-2 text-sm text-gray-600">
-                  Mark as Donation
-                </span>
+            <textarea
+              name="description"
+              value={formData.description}
+              onChange={handleInputChange}
+              disabled={isFieldDisabled('description')}
+              className={`w-full p-2 border rounded-lg ${
+                errors.description
+                  ? 'border-red-500'
+                  : 'border-gray-300 dark:border-gray-700'
+              } bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 ${
+                isFieldDisabled('description')
+                  ? 'opacity-60 cursor-not-allowed'
+                  : ''
+              }`}
+              placeholder="Describe your food item..."
+              rows="3"
+              required
+            />
+            {errors.description && (
+              <p className="text-red-500 dark:text-red-400 text-sm mt-1">
+                {errors.description}
+              </p>
+            )}
+          </div>
+
+          {/* Quantity and Price/Donation Row */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
+                Quantity *
               </label>
-              {!isDonation && (
+              <input
+                type="number"
+                name="quantity"
+                value={formData.quantity}
+                onChange={handleInputChange}
+                disabled={isFieldDisabled('quantity')}
+                className={`w-full p-2 border rounded-lg ${
+                  errors.quantity
+                    ? 'border-red-500'
+                    : 'border-gray-300 dark:border-gray-700'
+                } bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 ${
+                  isFieldDisabled('quantity')
+                    ? 'opacity-60 cursor-not-allowed'
+                    : ''
+                }`}
+                placeholder="Number of items"
+                min="1"
+                required
+              />
+              {errors.quantity && (
+                <p className="text-red-500 dark:text-red-400 text-sm mt-1">
+                  {errors.quantity}
+                </p>
+              )}
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
+                Price Setting
+              </label>
+              <div className="flex items-center space-x-4 mt-2">
+                <label className="flex items-center">
+                  <input
+                    type="checkbox"
+                    checked={isDonation}
+                    onChange={(e) => setIsDonation(e.target.checked)}
+                    disabled={editMode} // Disable donation toggle in edit mode
+                    className={`w-4 h-4 text-blue-600 ${
+                      editMode ? 'opacity-60 cursor-not-allowed' : ''
+                    }`}
+                  />
+                  <span
+                    className={`ml-2 text-sm text-gray-600 dark:text-gray-300 ${
+                      editMode ? 'opacity-60' : ''
+                    }`}
+                  >
+                    Mark as Donation {editMode && '(cannot be changed)'}
+                  </span>
+                </label>
+              </div>
+            </div>
+          </div>
+
+          {/* Price Fields */}
+          {!isDonation && (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
+                  Original Price (R) *
+                </label>
                 <input
                   type="number"
                   name="original_price"
                   value={formData.original_price}
                   onChange={handleInputChange}
-                  className={`w-full p-2 border rounded-lg ${errors.original_price ? 'border-red-500' : 'border-gray-300'}`}
+                  disabled={isFieldDisabled('original_price')}
+                  className={`w-full p-2 border rounded-lg ${
+                    errors.original_price
+                      ? 'border-red-500'
+                      : 'border-gray-300 dark:border-gray-700'
+                  } bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 ${
+                    isFieldDisabled('original_price')
+                      ? 'opacity-60 cursor-not-allowed'
+                      : ''
+                  }`}
                   placeholder="0.00"
-                  step="0.00"
+                  step="0.01"
                   min="0"
+                  required={!isDonation}
                 />
-              )}
+                {errors.original_price && (
+                  <p className="text-red-500 dark:text-red-400 text-sm mt-1">
+                    {errors.original_price}
+                  </p>
+                )}
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
+                  Discounted Price (R) *
+                </label>
+                <input
+                  type="number"
+                  name="discounted_price"
+                  value={formData.discounted_price}
+                  onChange={handleInputChange}
+                  disabled={isFieldDisabled('discounted_price')}
+                  className={`w-full p-2 border rounded-lg ${
+                    errors.discounted_price
+                      ? 'border-red-500'
+                      : 'border-gray-300 dark:border-gray-700'
+                  } bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 ${
+                    isFieldDisabled('discounted_price')
+                      ? 'opacity-60 cursor-not-allowed'
+                      : ''
+                  }`}
+                  placeholder="0.00"
+                  step="0.01"
+                  min="0"
+                  required={!isDonation}
+                />
+                {errors.discounted_price && (
+                  <p className="text-red-500 dark:text-red-400 text-sm mt-1">
+                    {errors.discounted_price}
+                  </p>
+                )}
+              </div>
             </div>
-          </div>
-        </div>
+          )}
 
-        {/* Price Fields */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Original Price (R)
-            </label>
-            <input
-              type="number"
-              name="original_price"
-              value={formData.original_price}
-              onChange={handleInputChange}
-              className={`w-full p-2 border rounded-lg ${errors.original_price ? 'border-red-500' : 'border-gray-300'}`}
-              placeholder="0.00"
-              step="0.01"
-              min="0"
-              disabled={isDonation}
-            />
-            {errors.original_price && <p className="text-red-500 text-sm mt-1">{errors.original_price}</p>}
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Discounted Price (R)
-            </label>
-            <input
-              type="number"
-              name="discounted_price"
-              value={formData.discounted_price}
-              onChange={handleInputChange}
-              className={`w-full p-2 border rounded-lg ${errors.discounted_price ? 'border-red-500' : 'border-gray-300'}`}
-              placeholder="0.00"
-              step="0.01"
-              min="0"
-              disabled={isDonation}
-            />
-            {errors.discounted_price && <p className="text-red-500 text-sm mt-1">{errors.discounted_price}</p>}
-          </div>
-        </div>
-
-        {/* Expiration Date and Pickup Time Row */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Expiration Date
-            </label>
-            <div className="relative">
+          {/* Expiration Date and Pickup Time Row */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
+                Expiration Date *
+              </label>
               <input
                 type="date"
                 name="expiry_date"
                 value={formData.expiry_date}
                 onChange={handleInputChange}
-                className={`w-full p-2 border rounded-lg ${errors.expiry_date ? 'border-red-500' : 'border-gray-300'}`}
-                min={new Date().toISOString().split('T')[0]} // Set minimum date to today
+                disabled={isFieldDisabled('expiry_date')}
+                className={`w-full p-2 border rounded-lg ${
+                  errors.expiry_date
+                    ? 'border-red-500'
+                    : 'border-gray-300 dark:border-gray-700'
+                } bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 ${
+                  isFieldDisabled('expiry_date')
+                    ? 'opacity-60 cursor-not-allowed'
+                    : ''
+                }`}
+                min={new Date().toISOString().split('T')[0]}
+                required
               />
-              <CalendarIcon className="absolute right-3 top-2.5 w-5 h-5 text-gray-400" />
+              {errors.expiry_date && (
+                <p className="text-red-500 dark:text-red-400 text-sm mt-1">
+                  {errors.expiry_date}
+                </p>
+              )}
             </div>
-            {errors.expiry_date && <p className="text-red-500 text-sm mt-1">{errors.expiry_date}</p>}
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Pickup Time Range
-            </label>
-            <div className="relative">
-              <input
-                type="text"
-                name="pickup_window"
-                value={formData.pickup_window}
-                onChange={handleInputChange}
-                className={`w-full p-2 border rounded-lg ${errors.pickup_window ? 'border-red-500' : 'border-gray-300'}`}
-                placeholder="e.g., 9:00 AM - 12:00 PM"
-              />
-              <ClockIcon className="absolute right-3 top-2.5 w-5 h-5 text-gray-400" />
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
+                Pickup Time Range *
+              </label>
+              <div className="grid grid-cols-2 gap-2">
+                <input
+                  type="time"
+                  name="pickup_start_time"
+                  value={formData.pickup_start_time}
+                  onChange={handleInputChange}
+                  disabled={isFieldDisabled('pickup_start_time')}
+                  className={`w-full p-2 border rounded-lg ${
+                    errors.pickup_start_time
+                      ? 'border-red-500'
+                      : 'border-gray-300 dark:border-gray-700'
+                  } bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 ${
+                    isFieldDisabled('pickup_start_time')
+                      ? 'opacity-60 cursor-not-allowed'
+                      : ''
+                  }`}
+                  required
+                />
+                <input
+                  type="time"
+                  name="pickup_end_time"
+                  value={formData.pickup_end_time}
+                  onChange={handleInputChange}
+                  disabled={isFieldDisabled('pickup_end_time')}
+                  className={`w-full p-2 border rounded-lg ${
+                    errors.pickup_end_time
+                      ? 'border-red-500'
+                      : 'border-gray-300 dark:border-gray-700'
+                  } bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 ${
+                    isFieldDisabled('pickup_end_time')
+                      ? 'opacity-60 cursor-not-allowed'
+                      : ''
+                  }`}
+                  required
+                />
+              </div>
+              {formData.pickup_start_time && formData.pickup_end_time && (
+                <p className="text-sm text-gray-600 dark:text-gray-300 mt-1">
+                  Pickup window: {formData.pickup_start_time}-
+                  {formData.pickup_end_time}
+                </p>
+              )}
+              {(errors.pickup_start_time || errors.pickup_end_time) && (
+                <p className="text-red-500 dark:text-red-400 text-sm mt-1">
+                  {errors.pickup_start_time || errors.pickup_end_time}
+                </p>
+              )}
             </div>
-            {errors.pickup_window && <p className="text-red-500 text-sm mt-1">{errors.pickup_window}</p>}
           </div>
-        </div>
 
-        {/* Image Upload */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Upload Image
-          </label>
-          <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center">
-            <input
-              type="file"
-              accept="image/*"
-              onChange={handleImageChange}
-              className="hidden"
-              id="image-upload"
-            />
-            <label
-              htmlFor="image-upload"
-              className="flex flex-col items-center cursor-pointer"
-            >
-              {imagePreview ? (
-                <div className="relative w-full max-w-xs">
-                  <img
-                    src={imagePreview}
-                    alt="Preview"
-                    className="w-full h-48 object-cover rounded-lg"
-                  />
-                  <button
-                    type="button"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      setImagePreview(null);
-                      setFormData(prev => ({ ...prev, image: null }));
-                    }}
-                    className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600"
-                  >
-                    ×
-                  </button>
-                </div>
-              ) : (
-                <>
-                  <ImageIcon className="w-8 h-8 text-gray-400 mb-2" />
-                  <p className="text-sm text-gray-600">
-                    Drag and drop an image, or{' '}
-                    <span className="text-blue-600">browse</span>
+          {/* Pickup Location Section */}
+          <div className="border-t pt-6">
+            <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4 flex items-center">
+              <MapPinIcon className="w-5 h-5 mr-2 text-blue-600 dark:text-blue-400" />
+              Pickup Location Details
+              {editMode && (
+                <span className="ml-2 text-sm text-gray-500 dark:text-gray-400">
+                  (Editing is not available for this section.)
+                </span>
+              )}
+            </h3>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
+                  Pickup Address *
+                </label>
+                <input
+                  type="text"
+                  name="pickup_address"
+                  value={formData.pickup_address}
+                  onChange={handleInputChange}
+                  disabled={isFieldDisabled('pickup_address')}
+                  className={`w-full p-2 border rounded-lg ${
+                    errors.pickup_address
+                      ? 'border-red-500'
+                      : 'border-gray-300 dark:border-gray-700'
+                  } bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 ${
+                    isFieldDisabled('pickup_address')
+                      ? 'opacity-60 cursor-not-allowed'
+                      : ''
+                  }`}
+                  placeholder="Complete pickup address"
+                  required
+                />
+                {errors.pickup_address && (
+                  <p className="text-red-500 dark:text-red-400 text-sm mt-1">
+                    {errors.pickup_address}
                   </p>
-                  <p className="text-xs text-gray-500 mt-1">PNG, JPG up to 5MB</p>
-                </>
+                )}
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
+                  Pickup Instructions
+                </label>
+                <textarea
+                  name="pickup_instructions"
+                  value={formData.pickup_instructions}
+                  onChange={handleInputChange}
+                  disabled={isFieldDisabled('pickup_instructions')}
+                  className={`w-full p-2 border rounded-lg border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 ${
+                    isFieldDisabled('pickup_instructions')
+                      ? 'opacity-60 cursor-not-allowed'
+                      : ''
+                  }`}
+                  placeholder="Special instructions for pickup (e.g., 'Use back entrance', 'Ask at counter')"
+                  rows="2"
+                />
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
+                    Contact Person *
+                  </label>
+                  <div className="relative">
+                    <input
+                      type="text"
+                      name="pickup_contact_person"
+                      value={formData.pickup_contact_person}
+                      onChange={handleInputChange}
+                      disabled={isFieldDisabled('pickup_contact_person')}
+                      className={`w-full p-2 border rounded-lg ${
+                        errors.pickup_contact_person
+                          ? 'border-red-500'
+                          : 'border-gray-300 dark:border-gray-700'
+                      } bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 ${
+                        isFieldDisabled('pickup_contact_person')
+                          ? 'opacity-60 cursor-not-allowed'
+                          : ''
+                      }`}
+                      placeholder="Contact person name"
+                      required
+                    />
+                    <UserIcon className="absolute right-3 top-2.5 w-5 h-5 text-gray-400 dark:text-gray-500" />
+                  </div>
+                  {errors.pickup_contact_person && (
+                    <p className="text-red-500 dark:text-red-400 text-sm mt-1">
+                      {errors.pickup_contact_person}
+                    </p>
+                  )}
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
+                    Contact Phone *
+                  </label>
+                  <div className="relative">
+                    <input
+                      type="tel"
+                      name="pickup_contact_phone"
+                      value={formData.pickup_contact_phone}
+                      onChange={handleInputChange}
+                      disabled={isFieldDisabled('pickup_contact_phone')}
+                      className={`w-full p-2 border rounded-lg ${
+                        errors.pickup_contact_phone
+                          ? 'border-red-500'
+                          : 'border-gray-300 dark:border-gray-700'
+                      } bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 ${
+                        isFieldDisabled('pickup_contact_phone')
+                          ? 'opacity-60 cursor-not-allowed'
+                          : ''
+                      }`}
+                      placeholder="+27123456789"
+                      required
+                    />
+                    <PhoneIcon className="absolute right-3 top-2.5 w-5 h-5 text-gray-400 dark:text-gray-500" />
+                  </div>
+                  {errors.pickup_contact_phone && (
+                    <p className="text-red-500 dark:text-red-400 text-sm mt-1">
+                      {errors.pickup_contact_phone}
+                    </p>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Scheduling Section */}
+          <div className="border-t pt-6">
+            <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4 flex items-center">
+              <ClockIcon className="w-5 h-5 mr-2 text-blue-600 dark:text-blue-400" />
+              Scheduling Settings
+              {editMode && (
+                <span className="ml-2 text-sm text-gray-500 dark:text-gray-400">
+                  (Editing is not available for this section.)
+                </span>
+              )}
+            </h3>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
+                  Total Time Slots
+                </label>
+                <select
+                  name="total_slots"
+                  value={formData.total_slots}
+                  onChange={handleInputChange}
+                  disabled={isFieldDisabled('total_slots')}
+                  className={`w-full p-2 border rounded-lg border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 ${
+                    isFieldDisabled('total_slots')
+                      ? 'opacity-60 cursor-not-allowed'
+                      : ''
+                  }`}
+                >
+                  <option value="2">2 slots</option>
+                  <option value="3">3 slots</option>
+                  <option value="4">4 slots</option>
+                  <option value="5">5 slots</option>
+                  <option value="6">6 slots</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
+                  Max Orders per Slot
+                </label>
+                <select
+                  name="max_orders_per_slot"
+                  value={formData.max_orders_per_slot}
+                  onChange={handleInputChange}
+                  disabled={isFieldDisabled('max_orders_per_slot')}
+                  className={`w-full p-2 border rounded-lg border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 ${
+                    isFieldDisabled('max_orders_per_slot')
+                      ? 'opacity-60 cursor-not-allowed'
+                      : ''
+                  }`}
+                >
+                  <option value="1">1 order</option>
+                  <option value="2">2 orders</option>
+                  <option value="3">3 orders</option>
+                  <option value="5">5 orders</option>
+                  <option value="10">10 orders</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
+                  Buffer Time (minutes)
+                </label>
+                <select
+                  name="slot_buffer_minutes"
+                  value={formData.slot_buffer_minutes}
+                  onChange={handleInputChange}
+                  disabled={isFieldDisabled('slot_buffer_minutes')}
+                  className={`w-full p-2 border rounded-lg border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 ${
+                    isFieldDisabled('slot_buffer_minutes')
+                      ? 'opacity-60 cursor-not-allowed'
+                      : ''
+                  }`}
+                >
+                  <option value="5">5 minutes</option>
+                  <option value="10">10 minutes</option>
+                  <option value="15">15 minutes</option>
+                  <option value="20">20 minutes</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          {/* Image Upload */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
+              Upload Image (Optional)
+              {editMode && (
+                <span className="ml-2 text-sm text-gray-500 dark:text-gray-400">
+                  (Editing is not available for this section.)
+                </span>
               )}
             </label>
-            {errors.image && <p className="text-red-500 text-sm mt-1">{errors.image}</p>}
+            <div
+              className={`border-2 border-dashed border-gray-300 dark:border-gray-700 rounded-lg p-8 text-center bg-white dark:bg-gray-900 transition-colors duration-300 ${
+                editMode ? 'opacity-60' : ''
+              }`}
+            >
+              {!editMode && (
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleImageChange}
+                  className="hidden"
+                  id="image-upload"
+                />
+              )}
+              <label
+                htmlFor={editMode ? undefined : 'image-upload'}
+                className={`flex flex-col items-center ${
+                  editMode ? 'cursor-default' : 'cursor-pointer'
+                }`}
+              >
+                {imagePreview ? (
+                  <div className="relative w-full max-w-xs">
+                    <img
+                      src={imagePreview}
+                      alt="Preview"
+                      className="w-full h-48 object-cover rounded-lg"
+                    />
+                    {!editMode && (
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          setImagePreview(null);
+                          setFormData((prev) => ({ ...prev, image: null }));
+                        }}
+                        className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 dark:hover:bg-red-700"
+                      >
+                        ×
+                      </button>
+                    )}
+                  </div>
+                ) : (
+                  <>
+                    <ImageIcon className="w-8 h-8 text-gray-400 dark:text-gray-500 mb-2" />
+                    <p className="text-sm text-gray-600 dark:text-gray-300">
+                      {editMode ? (
+                        'Image cannot be changed in edit mode'
+                      ) : (
+                        <>
+                          Drag and drop an image, or{' '}
+                          <span className="text-blue-600 dark:text-blue-400">
+                            browse
+                          </span>
+                        </>
+                      )}
+                    </p>
+                    {!editMode && (
+                      <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                        PNG, JPG up to 5MB
+                      </p>
+                    )}
+                  </>
+                )}
+              </label>
+              {errors.image && (
+                <p className="text-red-500 dark:text-red-400 text-sm mt-1">
+                  {errors.image}
+                </p>
+              )}
+            </div>
+          </div>
+
+          {/* Action Buttons */}
+          <div className="flex justify-end space-x-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+            <button
+              type="button"
+              onClick={() => navigate('/listings-overview')}
+              className="px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg text-gray-700 dark:text-gray-100 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+              disabled={isSubmitting}
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={isSubmitting}
+              className="px-6 py-2 bg-blue-600 dark:bg-blue-700 text-white rounded-lg hover:bg-blue-700 dark:hover:bg-blue-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center"
+            >
+              {isSubmitting ? (
+                <>
+                  <svg
+                    className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                  >
+                    <circle
+                      className="opacity-25"
+                      cx="12"
+                      cy="12"
+                      r="10"
+                      stroke="currentColor"
+                      strokeWidth="4"
+                    ></circle>
+                    <path
+                      className="opacity-75"
+                      fill="currentColor"
+                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                    ></path>
+                  </svg>
+                  {editMode ? 'Updating...' : 'Creating...'}
+                </>
+              ) : editMode ? (
+                'Update Listing'
+              ) : (
+                'Publish Listing'
+              )}
+            </button>
           </div>
         </div>
-
-        {/* Action Buttons */}
-        <div className="flex justify-end space-x-4 pt-4 border-t">
-          <button
-            type="button"
-            className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50"
-          >
-            Save Draft
-          </button>
-          <button
-            type="submit"
-            disabled={isSubmitting}
-            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50"
-          >
-            {isSubmitting ? 'Creating...' : 'Publish Listing'}
-          </button>
-        </div>
-      </div>
-    </form>
+      </form>
+      {toast && (
+        <Toast
+          message={toast.message}
+          type={toast.type}
+          onClose={() => setToast(null)}
+        />
+      )}
+    </div>
   );
 }

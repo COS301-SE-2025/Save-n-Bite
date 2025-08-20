@@ -21,6 +21,9 @@ urlpatterns = [
     path('business/reviews/', views.get_business_reviews, name='get_business_reviews'),
     path('business/reviews/stats/', views.get_business_review_stats, name='get_business_review_stats'),
     
+    # Public reviews endpoint - Updated to accept both UUID and integer
+    path('reviews/provider/<str:food_provider_id>/', views.get_reviews_by_provider, name='get_reviews_by_provider'),
+ 
     # Admin moderation endpoints
     path('admin/reviews/', views.get_all_reviews_admin, name='get_all_reviews_admin'),
     path('admin/reviews/<uuid:review_id>/moderate/', views.moderate_review, name='moderate_review'),

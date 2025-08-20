@@ -1,9 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { authAPI } from '../../services/authAPI';
 import { validateEmail, validateRequired } from '../../utils/validators';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 
-const LoginForm = ({ onSuccess, onError }) => {
+const LoginForm = ({ onSuccess, onError, onEmailChange }) => {
     const [formData, setFormData] = useState({
         email: '',
         password: ''
@@ -35,6 +35,12 @@ const LoginForm = ({ onSuccess, onError }) => {
             ...prev,
             [name]: value
         }));
+        
+        // Track email changes and pass to parent
+        if (name === 'email' && onEmailChange) {
+            onEmailChange(value);
+        }
+        
         if (errors[name]) {
             setErrors(prev => ({
                 ...prev,
@@ -42,6 +48,13 @@ const LoginForm = ({ onSuccess, onError }) => {
             }));
         }
     };
+
+    // Also update parent when component mounts with any existing email
+    useEffect(() => {
+        if (onEmailChange && formData.email) {
+            onEmailChange(formData.email);
+        }
+    }, []);
 
     const validateForm = () => {
         const newErrors = {};
@@ -90,6 +103,13 @@ const LoginForm = ({ onSuccess, onError }) => {
             // Store user data and tokens
             localStorage.setItem('authToken', response.token);
             localStorage.setItem('userData', JSON.stringify(response.user));
+
+            if (response.user.admin_rights === true || 
+                response.user.user_type === 'admin' || 
+                response.user.is_superuser === true) {
+                localStorage.setItem('adminToken', response.token);
+                console.log('Admin token stored for admin user');
+            }
             
             // Store user's email for pickup coordination
             localStorage.setItem('userEmail', formData.email);
@@ -113,13 +133,28 @@ const LoginForm = ({ onSuccess, onError }) => {
             // Navigate based on user type
             const userType = response.user.user_type;
             if (userType === 'provider') {
-                navigate('/create-listing');
-            } else {
+                navigate('/dashboard');
+            } 
+            else if (userType === 'ngo'|| userType === 'customer')
+            {
                 // Both customers and NGOs go to food listings
                 navigate('/food-listing');
             }
         } catch (error) {
-            onError(error?.message || 'Login failed. Please check your credentials.');
+            // Improved error handling
+            let errorMsg = 'Login failed. Please check your credentials.';
+            if (error?.response?.data?.detail) {
+                errorMsg = error.response.data.detail;
+            } else if (error?.message) {
+                errorMsg = error.message;
+            } else if (typeof error === 'string') {
+                errorMsg = error;
+            }
+            // Specific field errors (example: backend returns {field: "email", message: "Email not found"})
+            if (error?.response?.data?.field && error?.response?.data?.message) {
+                errorMsg = `${error.response.data.message}`;
+            }
+            onError(errorMsg);
         } finally {
             setIsLoading(false);
         }
@@ -128,7 +163,7 @@ const LoginForm = ({ onSuccess, onError }) => {
     return (
         <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-                <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
+                <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                     Email
                 </label>
                 <input
@@ -144,7 +179,7 @@ const LoginForm = ({ onSuccess, onError }) => {
             </div>
 
             <div>
-                <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
+                <label htmlFor="password" className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                     Password
                 </label>
                 <input

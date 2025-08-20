@@ -2,7 +2,6 @@ import React from 'react';
 import { Filter, RotateCcw } from 'lucide-react';
 
 const OrderFilters = ({ filters, setFilters, orders, userType, onResetFilters }) => {
-  // Get unique providers from orders
   const uniqueProviders = [...new Set(orders.map(order => order.provider))];
   
   const handleFilterChange = (filterType, value) => {
@@ -41,16 +40,16 @@ const OrderFilters = ({ filters, setFilters, orders, userType, onResetFilters })
   const hasActiveFilters = Object.values(filters).some(value => value !== 'all');
 
   return (
-    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6 transition-colors">
       <div className="flex items-center justify-between mb-4">
-        <h3 className="font-semibold text-gray-800 flex items-center">
+        <h3 className="font-semibold text-gray-800 dark:text-gray-100 flex items-center">
           <Filter size={18} className="mr-2" />
           Filters
         </h3>
         {hasActiveFilters && (
           <button
             onClick={onResetFilters}
-            className="text-sm text-gray-600 hover:text-gray-800 flex items-center"
+            className="text-sm text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-gray-100 flex items-center"
           >
             <RotateCcw size={14} className="mr-1" />
             Reset
@@ -61,13 +60,13 @@ const OrderFilters = ({ filters, setFilters, orders, userType, onResetFilters })
       <div className="space-y-6">
         {/* Status Filter */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
             Status
           </label>
           <select
             value={filters.status}
             onChange={(e) => handleFilterChange('status', e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 dark:bg-gray-900 dark:text-gray-100 transition-colors"
           >
             {statusOptions.map(option => (
               <option key={option.value} value={option.value}>
@@ -79,13 +78,13 @@ const OrderFilters = ({ filters, setFilters, orders, userType, onResetFilters })
 
         {/* Type Filter */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
             Type
           </label>
           <select
             value={filters.type}
             onChange={(e) => handleFilterChange('type', e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 dark:bg-gray-900 dark:text-gray-100 transition-colors"
           >
             {typeOptions.map(option => (
               <option key={option.value} value={option.value}>
@@ -97,13 +96,13 @@ const OrderFilters = ({ filters, setFilters, orders, userType, onResetFilters })
 
         {/* Date Range Filter */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
             Date Range
           </label>
           <select
             value={filters.dateRange}
             onChange={(e) => handleFilterChange('dateRange', e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 dark:bg-gray-900 dark:text-gray-100 transition-colors"
           >
             {dateRangeOptions.map(option => (
               <option key={option.value} value={option.value}>
@@ -116,13 +115,13 @@ const OrderFilters = ({ filters, setFilters, orders, userType, onResetFilters })
         {/* Provider Filter */}
         {uniqueProviders.length > 0 && (
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
               Provider
             </label>
             <select
               value={filters.provider}
               onChange={(e) => handleFilterChange('provider', e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 dark:bg-gray-900 dark:text-gray-100 transition-colors"
             >
               <option value="all">All Providers</option>
               {uniqueProviders.map(provider => (
@@ -136,37 +135,37 @@ const OrderFilters = ({ filters, setFilters, orders, userType, onResetFilters })
 
         {/* Filter Summary */}
         {hasActiveFilters && (
-          <div className="border-t border-gray-200 pt-4">
-            <h4 className="text-sm font-medium text-gray-700 mb-2">Active Filters:</h4>
+          <div className="border-t border-gray-200 dark:border-gray-700 pt-4">
+            <h4 className="text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">Active Filters:</h4>
             <div className="space-y-1">
               {filters.status !== 'all' && (
                 <div className="flex items-center justify-between">
-                  <span className="text-xs text-gray-600">Status:</span>
-                  <span className="text-xs font-medium text-emerald-600 capitalize">
+                  <span className="text-xs text-gray-600 dark:text-gray-300">Status:</span>
+                  <span className="text-xs font-medium text-emerald-600 dark:text-emerald-400 capitalize">
                     {filters.status}
                   </span>
                 </div>
               )}
               {filters.type !== 'all' && (
                 <div className="flex items-center justify-between">
-                  <span className="text-xs text-gray-600">Type:</span>
-                  <span className="text-xs font-medium text-emerald-600 capitalize">
+                  <span className="text-xs text-gray-600 dark:text-gray-300">Type:</span>
+                  <span className="text-xs font-medium text-emerald-600 dark:text-emerald-400 capitalize">
                     {filters.type}
                   </span>
                 </div>
               )}
               {filters.dateRange !== 'all' && (
                 <div className="flex items-center justify-between">
-                  <span className="text-xs text-gray-600">Date:</span>
-                  <span className="text-xs font-medium text-emerald-600">
+                  <span className="text-xs text-gray-600 dark:text-gray-300">Date:</span>
+                  <span className="text-xs font-medium text-emerald-600 dark:text-emerald-400">
                     {dateRangeOptions.find(opt => opt.value === filters.dateRange)?.label}
                   </span>
                 </div>
               )}
               {filters.provider !== 'all' && (
                 <div className="flex items-center justify-between">
-                  <span className="text-xs text-gray-600">Provider:</span>
-                  <span className="text-xs font-medium text-emerald-600">
+                  <span className="text-xs text-gray-600 dark:text-gray-300">Provider:</span>
+                  <span className="text-xs font-medium text-emerald-600 dark:text-emerald-400">
                     {filters.provider}
                   </span>
                 </div>

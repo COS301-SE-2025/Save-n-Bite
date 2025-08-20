@@ -18,6 +18,8 @@ from .models import (
 from food_listings.models import FoodListing
 from interactions.models import Order
 
+from notifications.services import NotificationService
+
 # Import services
 from .services import PickupSchedulingService, PickupOptimizationService, PickupAnalyticsService
 
@@ -478,6 +480,13 @@ def complete_pickup(request, pickup_id):
         
         completed_pickup = PickupSchedulingService.complete_pickup(pickup)
         
+        # NEW: Send order completion notification
+        try:
+            NotificationService.send_order_completion_notification(completed_pickup)
+        except Exception as e:
+            logger.error(f"Failed to send order completion notification: {str(e)}")
+            # Don't fail the request if notification fails
+        
         # Create simple response to avoid serializer issues
         return Response({
             'message': 'Pickup completed successfully',
@@ -573,7 +582,7 @@ def available_pickup_slots(request):
 @permission_classes([IsAuthenticated])
 def schedule_pickup(request):
     """Schedule a pickup for a customer"""
-    if request.user.user_type != 'customer':
+    if request.user.user_type != 'customer' and request.user.user_type != 'ngo':
         return Response({
             'error': {
                 'code': 'FORBIDDEN',
@@ -603,6 +612,13 @@ def schedule_pickup(request):
             scheduled_pickup, qr_code = PickupSchedulingService.schedule_pickup(
                 order, serializer.validated_data
             )
+            
+            # NEW: Send order preparation notification
+            try:
+                NotificationService.send_order_preparation_notification(scheduled_pickup)
+            except Exception as e:
+                logger.error(f"Failed to send order preparation notification: {str(e)}")
+                # Don't fail the request if notification fails
             
             # Return simple response without using the problematic serializer
             return Response({
@@ -650,11 +666,11 @@ def schedule_pickup(request):
 @permission_classes([IsAuthenticated])
 def customer_pickups(request):
     """Get customer's scheduled pickups"""
-    if request.user.user_type != 'customer':
+    if request.user.user_type not in ['customer', 'ngo']:
         return Response({
             'error': {
                 'code': 'FORBIDDEN',
-                'message': 'Only customers can view their pickups'
+                'message': 'Only customers and NGOs can view their pickups'
             }
         }, status=status.HTTP_403_FORBIDDEN)
 
@@ -664,7 +680,7 @@ def customer_pickups(request):
     
     pickups = ScheduledPickup.objects.filter(
         order__interaction__user=request.user
-    ).select_related('food_listing', 'location', 'order').order_by('-scheduled_date', '-scheduled_start_time')
+    ).select_related('food_listing', 'location', 'order', 'order__interaction').order_by('-scheduled_date', '-scheduled_start_time')
     
     if status_filter:
         pickups = pickups.filter(status=status_filter)
@@ -683,6 +699,7 @@ def customer_pickups(request):
     for pickup in paginated_pickups:
         pickup_data.append({
             'id': str(pickup.id),
+            'interaction_id': str(pickup.order.interaction.id),  # Added this line
             'scheduled_date': pickup.scheduled_date,
             'scheduled_start_time': pickup.scheduled_start_time,
             'scheduled_end_time': pickup.scheduled_end_time,
@@ -798,7 +815,7 @@ def pickup_details(request, pickup_id):
         }, status=status.HTTP_404_NOT_FOUND)
 
 
-@api_view(['POST'])
+@api_view(['DELETE'])
 @permission_classes([IsAuthenticated])
 def cancel_pickup(request, pickup_id):
     """Cancel a scheduled pickup"""

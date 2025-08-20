@@ -1,6 +1,7 @@
 import axios from 'axios';
 
-const API_BASE_URL = 'http://localhost:8000';
+//const API_BASE_URL = process.env.REACT_APP_API_URL || 'https://savenbiteservice-hzghg8gcgddtcfg7.southafricanorth-01.azurewebsites.net';
+const API_BASE_URL = 'http://localhost:8000' ;
 
 const apiClient = axios.create({
     baseURL: API_BASE_URL,
@@ -73,39 +74,47 @@ apiClient.interceptors.response.use(
 
 
 const transformListingData = (backendListing) => {
+    // Handle both response structures:
+    // 1. Direct listing data: { id, name, description, ... }
+    // 2. Wrapped response: { message, listing: { id, name, ... } }
+    
+    const listing = backendListing.listing || backendListing;
+    
     return {
-        id: backendListing.id,
-        name: backendListing.name,
-        title: backendListing.name, // Map name to title for compatibility
-        description: backendListing.description,
-        image: backendListing.imageUrl || 'https://images.unsplash.com/photo-1546833999-b9f581a1996d?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80', // fallback image
-        imageUrl: backendListing.imageUrl,
+        id: listing.id,
+        name: listing.name,
+        title: listing.name, // Map name to title for compatibility
+        description: listing.description,
+        image: listing.imageUrl && listing.imageUrl.trim() !== '' 
+            ? listing.imageUrl 
+            : 'https://images.unsplash.com/photo-1546833999-b9f581a1996d?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80',
+        imageUrl: listing.imageUrl,
         provider: {
-            id: backendListing.provider?.id,
-            business_name: backendListing.provider?.business_name || 'Unknown Provider',
+            id: listing.provider?.id,
+            business_name: listing.provider?.business_name || 'Unknown Provider',
         },
-        provider_name: backendListing.provider?.business_name,
-        provider_address: backendListing.provider?.business_address,
-        provider_logo: backendListing.provider?.logo,
-        originalPrice: parseFloat(backendListing.original_price || 0),
-        discountPrice: parseFloat(backendListing.discounted_price || 0),
-        discountedPrice: parseFloat(backendListing.discounted_price || 0),
-        savings: backendListing.savings || 0,
-        discountPercentage: backendListing.discount_percentage || 0,
-        quantity: backendListing.quantity || 0,
-        quantityAvailable: backendListing.quantity_available || 0,
-        expiryDate: backendListing.expiry_date,
-        expirationTime: formatExpirationTime(backendListing.expiry_date),
-        pickupWindow: backendListing.pickup_window,
-        allergens: backendListing.allergens || [],
-        dietaryInfo: backendListing.dietary_info || [],
-        foodType: backendListing.food_type,
-        status: backendListing.status,
-        isAvailable: backendListing.is_available,
-        type: backendListing.discounted_price > 0 ? 'Discount' : 'Donation',
+        provider_name: listing.provider?.business_name,
+        provider_address: listing.provider?.business_address,
+        provider_logo: listing.provider?.logo,
+        originalPrice: parseFloat(listing.original_price || listing.price || 0),
+        discountPrice: parseFloat(listing.discounted_price || listing.price || 0),
+        discountedPrice: parseFloat(listing.discounted_price || listing.price || 0),
+        savings: listing.savings || 0,
+        discountPercentage: listing.discount_percentage || 0,
+        quantity: listing.quantity || 0,
+        quantityAvailable: listing.quantity_available || listing.quantity || 0,
+        expiryDate: listing.expiry_date,
+        expirationTime: formatExpirationTime(listing.expiry_date),
+        pickupWindow: listing.pickup_window,
+        allergens: listing.allergens || [],
+        dietaryInfo: listing.dietary_info || [],
+        foodType: listing.food_type,
+        status: listing.status,
+        isAvailable: listing.is_available,
+        type: (listing.discounted_price || listing.price) > 0 ? 'Discount' : 'Donation',
         distance: '0.5 km', // This would come from geolocation calculation
-        createdAt: backendListing.created_at,
-        updatedAt: backendListing.updated_at
+        createdAt: listing.created_at || listing.createdAt,
+        updatedAt: listing.updated_at || listing.updatedAt
     };
 };
 
@@ -145,97 +154,86 @@ const formatExpirationTime = (expiryDate) => {
     }
 };
 
-// const getUserType = () => {
-//     try {
-//         const storedUser = localStorage.getItem('user');
-//         if (!storedUser) return 'customer';
-        
-//         const user = JSON.parse(storedUser);
-        
-//         // Check if user has organisation_name (NGO)
-//         if (user.organisation_name || user.representative_name) {
-//             return 'ngo';
-//         }
-        
-//         // Check if user has business_name (Provider)
-//         if (user.business_name) {
-//             return 'provider';
-//         }
-        
-//         // Default to customer
-//         return 'customer';
-//     } catch (error) {
-//         console.error('Error determining user type:', error);
-//         return 'customer';
-//     }
-// };
-
 const getUserType = () => {
     try {
-        const keysToCheck = ['user', 'userData', 'currentUser', 'authUser', 'profile'];
-
-        for (const key of keysToCheck) {
+        // Check multiple possible storage keys
+        const possibleKeys = ['user', 'userData', 'currentUser', 'authUser', 'profile'];
+        
+        for (const key of possibleKeys) {
             const item = localStorage.getItem(key);
             if (item) {
-                const user = JSON.parse(item);
-                if (user.user_type) {
-                    return user.user_type; 
+                try {
+                    const user = JSON.parse(item);
+                    
+                    // Check for explicit user_type field
+                    if (user.user_type) {
+                        return user.user_type;
+                    }
+                    
+                    // Fallback: determine from user properties
+                    if (user.organisation_name || user.representative_name) {
+                        return 'ngo';
+                    }
+                    if (user.business_name) {
+                        return 'provider';
+                    }
+                } catch (parseError) {
+                    console.warn(`Failed to parse ${key} from localStorage:`, parseError);
                 }
             }
         }
-
-        return 'customer'; 
-    } catch (err) {
-        console.error("Error reading user type:", err);
+        
+        // Default fallback
+        return 'customer';
+    } catch (error) {
+        console.error('Error determining user type:', error);
         return 'customer';
     }
 };
 
-
-
-
-
 const buildQueryParams = (filters = {}, searchQuery = '', sortBy = '') => {
     const params = new URLSearchParams();
     
+    // Search query
     if (searchQuery.trim()) {
         params.append('search', searchQuery.trim());
     }
     
+    // Sorting
     if (sortBy) {
         const sortMapping = {
-            'price_asc': 'discounted_price',
-            'price_desc': '-discounted_price',
-            'expiry_asc': 'expiry_date',
-            'distance': 'created_at' // Fallback to created_at since distance sorting is not implemented yet
+            'price-low': 'discounted_price',
+            'price-high': '-discounted_price',
+            'expiry': 'expiry_date',
+            'name': 'name',
+            'newest': '-created_at'
         };
-        params.append('sort', sortMapping[sortBy] || sortBy);
+        params.append('ordering', sortMapping[sortBy] || sortBy);
     }
     
-    // Filter by price range
-    if (filters.priceRange && filters.priceRange[1] < 20) {
-        params.append('priceMin', filters.priceRange[0]);
-        params.append('priceMax', filters.priceRange[1]);
+    // Price range filter - only add if not at maximum
+    if (filters.priceRange && filters.priceRange[1] < 1000) {
+        params.append('min_price', filters.priceRange[0]);
+        params.append('max_price', filters.priceRange[1]);
     }
     
-    // Filter by type
+    // Type filter
     if (filters.type && filters.type !== 'all') {
         params.append('type', filters.type);
     }
     
-    // Filter by provider
+    // Provider filter
     if (filters.provider && filters.provider !== 'all') {
-        params.append('store', filters.provider);
+        params.append('provider', filters.provider);
     }
     
-    // Filter by expiration
+    // Expiration filter
     if (filters.expiration && filters.expiration !== 'all') {
-        params.append('expiry_filter', filters.expiration);
+        params.append('expiration', filters.expiration);
     }
     
     return params.toString();
 };
-
 
 const foodListingsAPI = {
     // Get all food listings for browsing (customer view)
@@ -244,10 +242,14 @@ const foodListingsAPI = {
             const queryParams = buildQueryParams(filters, searchQuery, sortBy);
             const url = `/api/food-listings/${queryParams ? `?${queryParams}` : ''}`;
             
+            console.log('API Request URL:', url); // Debug log
+            
             const response = await apiClient.get(url);
             
             // Transform the data to match your frontend format
             const transformedListings = response.data.listings?.map(transformListingData) || [];
+            
+            console.log('Transformed listings:', transformedListings); // Debug log
             
             return {
                 success: true,
@@ -263,18 +265,19 @@ const foodListingsAPI = {
             console.error('Error fetching food listings:', error);
             return {
                 success: false,
-                error: error.response?.data?.message || 'Failed to fetch food listings'
+                error: error.response?.data?.message || error.message || 'Failed to fetch food listings'
             };
         }
     },
 
-     async getFoodListingDetails(listingId) {
+    // Get food listing details by ID
+    async getFoodListingDetails(listingId) {
         try {
             const response = await apiClient.get(`/api/food-listings/${listingId}/`);
             
             return {
                 success: true,
-                data: transformListingData(response.data)
+                data: response.data
             };
         } catch (error) {
             console.error('Error fetching food listing details:', error);
@@ -285,11 +288,7 @@ const foodListingsAPI = {
         }
     },
 
-
-    
-
-
-
+    // Get provider's own listings
     async getProviderListings() {
         try {
             const response = await apiClient.get('/api/provider/listings/');
@@ -299,6 +298,7 @@ const foodListingsAPI = {
             let listings = [];
             if (response.data.listings) {
                 listings = response.data.listings;
+                console.log('Listings from response.data.listings:', listings); // Debug log
             } else if (Array.isArray(response.data)) {
                 listings = response.data;
             } else if (response.data.results) {
@@ -318,23 +318,38 @@ const foodListingsAPI = {
         }
     },
 
-    async createFoodListing(listingData) {
+    // Create new listing (provider functionality)
+    async createListing(listingData) {
         try {
-            const response = await apiClient.post('/api/provider/listings/create/', listingData);
+            // If listingData is FormData, don't set Content-Type header
+            const config = listingData instanceof FormData ? {
+                headers: {
+                    'Content-Type': 'multipart/form-data'
+                }
+            } : {};
+
+            const response = await apiClient.post('/api/provider/listings/create/', listingData, config);
             
+            console.log('=== RAW BACKEND RESPONSE ===');
+            console.log('Raw response.data:', response.data);
+            console.log('Raw response.data.listing:', response.data.listing);
+            
+            // Don't transform the data here - return the raw backend response
+            // so we can access response.data.listing.id in the frontend
             return {
                 success: true,
-                data: transformListingData(response.data)
+                data: response.data, // Return the raw backend response structure
             };
         } catch (error) {
             console.error('Error creating food listing:', error);
             return {
                 success: false,
-                error: error.response?.data || 'Failed to create listing'
+                error: error.response?.data?.message || 'Failed to create listing'
             };
         }
     },
 
+    // Update existing listing
     async updateFoodListing(listingId, listingData) {
         try {
             const response = await apiClient.put(`/food-listings/provider/listings/${listingId}/`, listingData);
@@ -352,6 +367,7 @@ const foodListingsAPI = {
         }
     },
 
+    // Delete food listing
     async deleteFoodListing(listingId) {
         try {
             await apiClient.delete(`/food-listings/provider/listings/${listingId}/`);
@@ -369,7 +385,7 @@ const foodListingsAPI = {
         }
     },
 
-
+    // Get unique providers for filtering
     async getUniqueProviders() {
         try {
             const response = await this.getFoodListings();
@@ -410,8 +426,25 @@ const foodListingsAPI = {
             };
         }
     },
+async getListingForEdit(listingId) {
+        try {
+            const response = await apiClient.get(`/api/food-listings/${listingId}/`);
+            
+            return {
+                success: true,
+                data: response.data.listing || response.data
+            };
+        } catch (error) {
+            console.error('Error fetching listing for edit:', error);
+            return {
+                success: false,
+                error: error.response?.data?.message || 'Failed to fetch listing details'
+            };
+        }
+    },
 
-    async createListing(listingData) {
+    // Update existing listing
+    async updateListing(listingId, listingData) {
         try {
             // If listingData is FormData, don't set Content-Type header
             const config = listingData instanceof FormData ? {
@@ -420,47 +453,55 @@ const foodListingsAPI = {
                 }
             } : {};
 
-            const response = await apiClient.post('/api/provider/listings/create/', listingData, config);
-            return {
-                success: true,
-                data: transformListingData(response.data)
-            };
-        } catch (error) {
-            console.error('Error creating food listing:', error);
-            return {
-                success: false,
-                error: error.response?.data?.message || 'Failed to create listing'
-            };
-        }
-    },
-
-    async deleteListing(id) {
-        try {
-            const response = await apiClient.delete(`/food-listings/${id}/`);
+            const response = await apiClient.put(`/api/provider/listings/${listingId}/`, listingData, config);
+            
             return {
                 success: true,
                 data: response.data
             };
         } catch (error) {
+            console.error('Error updating listing:', error);
             return {
                 success: false,
-                error: error.response?.data?.message || 'Failed to delete listing'
+                error: error.response?.data?.message || error.response?.data?.error || 'Failed to update listing'
             };
         }
     },
 
+    // Delete listing - updated to match your endpoint structure
+    async deleteListing(listingId) {
+        try {
+            const response = await apiClient.delete(`/api/provider/listings/${listingId}/delete/`);
+            
+            return {
+                success: true,
+                data: response.data,
+                message: response.data?.message || 'Listing deleted successfully'
+            };
+        } catch (error) {
+            console.error('Error deleting listing:', error);
+            return {
+                success: false,
+                error: error.response?.data?.message || error.response?.data?.error || 'Failed to delete listing'
+            };
+        }
+    },
+
+    // Alternative delete method (keeping both for compatibility)
+    async deleteFoodListing(listingId) {
+        return this.deleteListing(listingId);
+    },
+    // Get user type with debug logging
     getUserType: () => {
-    console.log("=== getUserType Debug ===");
+        console.log("=== getUserType Debug ===");
 
-    const userTypeFromStorage = getUserType();
-    console.log("User type from localStorage:", userTypeFromStorage);
+        const userTypeFromStorage = getUserType();
+        console.log("User type from localStorage:", userTypeFromStorage);
 
-    console.log("========================");
-    return userTypeFromStorage;
-}
-
+        console.log("========================");
+        return userTypeFromStorage;
+    }
 };
 
-// Export for use
 export { getUserType };
 export default foodListingsAPI;
