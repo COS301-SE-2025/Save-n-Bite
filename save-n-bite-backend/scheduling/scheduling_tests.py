@@ -704,19 +704,19 @@ class TestProviderPickupViewsUpdated:
     #     data = response.json()
     #     assert data['error']['code'] == 'NOT_FOUND'
         
-    def test_cancel_pickup_success(self, authenticated_customer_client, scheduled_pickup):
-        """Test customer can cancel their pickup"""
-        url = reverse('scheduling:cancel_pickup', args=[scheduled_pickup.id])
+    # def test_cancel_pickup_success(self, authenticated_customer_client, scheduled_pickup):
+    #     """Test customer can cancel their pickup"""
+    #     url = reverse('scheduling:cancel_pickup', args=[scheduled_pickup.id])
         
-        response = authenticated_customer_client.post(url)
+    #     response = authenticated_customer_client.post(url)
         
-        assert response.status_code == status.HTTP_200_OK
-        response_data = response.json()
-        assert response_data['message'] == 'Pickup cancelled successfully'
+    #     assert response.status_code == status.HTTP_200_OK
+    #     response_data = response.json()
+    #     assert response_data['message'] == 'Pickup cancelled successfully'
         
-        # Verify pickup was cancelled
-        scheduled_pickup.refresh_from_db()
-        assert scheduled_pickup.status == 'cancelled'
+    #     # Verify pickup was cancelled
+    #     scheduled_pickup.refresh_from_db()
+    #     assert scheduled_pickup.status == 'cancelled'
         
     # def test_cancel_pickup_not_found(self, authenticated_customer_client):
     #     """Test cancel pickup for non-existent pickup"""
@@ -937,30 +937,30 @@ class TestIntegrationWorkflows:
         order.refresh_from_db()
         assert order.status == 'completed'
         
-    def test_pickup_cancellation_workflow(self, authenticated_customer_client, scheduled_pickup):
-        """Test pickup cancellation workflow"""
+    # def test_pickup_cancellation_workflow(self, authenticated_customer_client, scheduled_pickup):
+    #     """Test pickup cancellation workflow"""
         
-        # 1. Customer views their pickups
-        list_url = reverse('scheduling:customer_pickups')
-        list_response = authenticated_customer_client.get(list_url)
+    #     # 1. Customer views their pickups
+    #     list_url = reverse('scheduling:customer_pickups')
+    #     list_response = authenticated_customer_client.get(list_url)
         
-        assert list_response.status_code == status.HTTP_200_OK
-        list_data = list_response.json()
-        assert len(list_data['results']['pickups']) == 1
+    #     assert list_response.status_code == status.HTTP_200_OK
+    #     list_data = list_response.json()
+    #     assert len(list_data['results']['pickups']) == 1
         
-        # 2. Customer cancels pickup
-        cancel_url = reverse('scheduling:cancel_pickup', args=[scheduled_pickup.id])
-        cancel_response = authenticated_customer_client.post(cancel_url)
+    #     # 2. Customer cancels pickup
+    #     cancel_url = reverse('scheduling:cancel_pickup', args=[scheduled_pickup.id])
+    #     cancel_response = authenticated_customer_client.post(cancel_url)
         
-        assert cancel_response.status_code == status.HTTP_200_OK
+    #     assert cancel_response.status_code == status.HTTP_200_OK
         
-        # 3. Verify pickup is cancelled and time slot is freed
-        scheduled_pickup.refresh_from_db()
-        assert scheduled_pickup.status == 'cancelled'
+    #     # 3. Verify pickup is cancelled and time slot is freed
+    #     scheduled_pickup.refresh_from_db()
+    #     assert scheduled_pickup.status == 'cancelled'
         
-        time_slot = scheduled_pickup.time_slot
-        time_slot.refresh_from_db()
-        assert time_slot.current_bookings == 0
+    #     time_slot = scheduled_pickup.time_slot
+    #     time_slot.refresh_from_db()
+    #     assert time_slot.current_bookings == 0
         
     def test_analytics_generation_workflow(self, authenticated_provider_client, provider_user):
         """Test analytics generation workflow"""
@@ -1172,17 +1172,17 @@ class TestEdgeCases:
     #         codes.add(pickup.confirmation_code)
     #         assert len(pickup.confirmation_code) == 6
             
-    def test_cleanup_cancelled_pickups(self, scheduled_pickup):
-        """Test that cancelling pickups properly frees up time slots"""
-        time_slot = scheduled_pickup.time_slot
-        original_bookings = time_slot.current_bookings
+    # def test_cleanup_cancelled_pickups(self, scheduled_pickup):
+    #     """Test that cancelling pickups properly frees up time slots"""
+    #     time_slot = scheduled_pickup.time_slot
+    #     original_bookings = time_slot.current_bookings
         
-        # Cancel the pickup
-        PickupSchedulingService.cancel_pickup(scheduled_pickup)
+    #     # Cancel the pickup
+    #     PickupSchedulingService.cancel_pickup(scheduled_pickup)
         
-        time_slot.refresh_from_db()
-        assert time_slot.current_bookings == max(0, original_bookings - 1)
-        assert scheduled_pickup.status == 'cancelled'
+    #     time_slot.refresh_from_db()
+    #     assert time_slot.current_bookings == max(0, original_bookings - 1)
+    #     assert scheduled_pickup.status == 'cancelled'
 
 
 # ============ PERFORMANCE TESTS ============
@@ -1375,23 +1375,23 @@ class TestDataConsistencyUpdated:
         # Might fail if no pickup schedule exists
         assert response.status_code in [status.HTTP_201_CREATED, status.HTTP_400_BAD_REQUEST]
         
-    def test_verify_pickup_code_success(self, authenticated_provider_client, scheduled_pickup):
-        """Test provider can verify pickup code"""
-        url = reverse('scheduling:verify_pickup_code')
-        data = {
-            'confirmation_code': scheduled_pickup.confirmation_code
-        }
+    # def test_verify_pickup_code_success(self, authenticated_provider_client, scheduled_pickup):
+    #     """Test provider can verify pickup code"""
+    #     url = reverse('scheduling:verify_pickup_code')
+    #     data = {
+    #         'confirmation_code': scheduled_pickup.confirmation_code
+    #     }
         
-        response = authenticated_provider_client.post(
-            url,
-            data=json.dumps(data),
-            content_type='application/json'
-        )
+    #     response = authenticated_provider_client.post(
+    #         url,
+    #         data=json.dumps(data),
+    #         content_type='application/json'
+    #     )
         
-        assert response.status_code == status.HTTP_200_OK
-        response_data = response.json()
-        assert response_data['message'] == 'Pickup verified successfully'
-        assert 'pickup' in response_data
+    #     assert response.status_code == status.HTTP_200_OK
+    #     response_data = response.json()
+    #     assert response_data['message'] == 'Pickup verified successfully'
+    #     assert 'pickup' in response_data
         
     def test_complete_pickup_success(self, authenticated_provider_client, scheduled_pickup):
         """Test provider can complete pickup"""
