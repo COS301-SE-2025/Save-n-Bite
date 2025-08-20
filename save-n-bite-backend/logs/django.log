@@ -1,4 +1,5 @@
 
+
 INFO 2025-08-18 11:13:53,035 autoreload 10388 11340 C:\Users\Capleton\Desktop\COS214\practical\Save-n-Bite\save-n-bite-backend\backend\settings.py changed, reloading.
 INFO 2025-08-18 11:13:58,231 blob_storage 12348 6616 Updated existing container to public access: customer-profiles
 INFO 2025-08-18 11:13:58,259 blob_storage 12348 6616 Updated existing container to public access: ngo-documents
@@ -902,7 +903,8 @@ INFO 2025-08-19 14:25:35,290 basehttp 22864 3556 "OPTIONS /api/provider/listings
 INFO 2025-08-19 14:25:35,908 signals 22864 3556 Notified followers about new listing: Cakey from JoyfulFood
 INFO 2025-08-19 14:25:36,083 blob_storage 22864 3556 Updated existing container to public access: food-listings
 INFO 2025-08-19 14:25:36,606 blob_storage 22864 3556 Successfully uploaded blob with public access: food_listings/9a29c5ef-c774-439b-9ff9-25cbc40642b0.jpeg
-INFO 2025-08-19 14:25:36,616 serializers 22864 3556 Successfully uploaded image for food listing Cakey: http://127.0.0.1:10000/devstoreaccount1/food-listings/food_listings/9a29c5ef-c774-439b-9ff9-25cbc40642b0.jpeg
+INFO 2025-08-19 14:25:36,616 serializers 22864 3556 Successfully uploaded image for food listing Cakey: http://127.0.0.1:10000/
+storeaccount1/food-listings/food_listings/9a29c5ef-c774-439b-9ff9-25cbc40642b0.jpeg
 INFO 2025-08-19 14:25:36,618 basehttp 22864 3556 "POST /api/provider/listings/create/ HTTP/1.1" 201 205
 INFO 2025-08-19 14:25:36,630 basehttp 22864 3556 "OPTIONS /api/scheduling/pickup-locations/ HTTP/1.1" 200 0
 INFO 2025-08-19 14:25:36,777 basehttp 22864 3556 "POST /api/scheduling/pickup-locations/ HTTP/1.1" 201 432
@@ -1592,348 +1594,23 @@ INFO 2025-08-19 21:38:45,724 basehttp 7276 17392 "GET /api/notifications/unread-
 INFO 2025-08-19 21:38:45,727 basehttp 7276 8156 "GET /api/notifications/preferences/ HTTP/1.1" 200 132
 INFO 2025-08-19 21:38:45,787 basehttp 7276 13708 "GET /api/admin/dashboard/ HTTP/1.1" 200 560
 INFO 2025-08-19 21:38:45,868 basehttp 7276 13708 "GET /api/admin/dashboard/ HTTP/1.1" 200 560
-INFO 2025-08-20 07:45:51,264 blob_storage 14856 2824 Updated existing container to public access: customer-profiles
-INFO 2025-08-20 07:45:51,297 blob_storage 14856 2824 Updated existing container to public access: ngo-documents
-INFO 2025-08-20 07:45:51,321 blob_storage 14856 2824 Updated existing container to public access: ngo-logos
-INFO 2025-08-20 07:45:51,352 blob_storage 14856 2824 Updated existing container to public access: provider-documents
-INFO 2025-08-20 07:45:51,375 blob_storage 14856 2824 Updated existing container to public access: provider-logos
-INFO 2025-08-20 07:45:51,408 blob_storage 14856 2824 Updated existing container to public access: provider-banners
-INFO 2025-08-20 07:45:53,239 blob_storage 19656 35580 Updated existing container to public access: customer-profiles
-INFO 2025-08-20 07:45:53,271 blob_storage 19656 35580 Updated existing container to public access: ngo-documents
-INFO 2025-08-20 07:45:53,302 blob_storage 19656 35580 Updated existing container to public access: ngo-logos
-INFO 2025-08-20 07:45:53,338 blob_storage 19656 35580 Updated existing container to public access: provider-documents
-INFO 2025-08-20 07:45:53,370 blob_storage 19656 35580 Updated existing container to public access: provider-logos
-INFO 2025-08-20 07:45:53,407 blob_storage 19656 35580 Updated existing container to public access: provider-banners
-INFO 2025-08-20 07:45:53,501 autoreload 19656 35580 Watching for file changes with StatReloader
-INFO 2025-08-20 07:45:54,387 blob_storage 19656 33316 Updated existing container to public access: customer-profiles
-INFO 2025-08-20 07:45:54,409 blob_storage 19656 33316 Updated existing container to public access: provider-banners
-INFO 2025-08-20 07:45:54,447 blob_storage 19656 33316 Updated existing container to public access: provider-documents
-INFO 2025-08-20 07:45:54,480 blob_storage 19656 33316 Updated existing container to public access: provider-logos
-INFO 2025-08-20 07:45:54,501 blob_storage 19656 33316 Updated existing container to public access: ngo-documents
-INFO 2025-08-20 07:45:54,522 blob_storage 19656 33316 Updated existing container to public access: ngo-logos
-WARNING 2025-08-20 07:46:36,908 log 19656 31916 Unauthorized: /api/notifications/preferences/
-WARNING 2025-08-20 07:46:36,908 log 19656 8128 Unauthorized: /api/notifications/unread-count/
-WARNING 2025-08-20 07:46:36,911 basehttp 19656 31916 "GET /api/notifications/preferences/ HTTP/1.1" 401 58
-WARNING 2025-08-20 07:46:36,912 basehttp 19656 8128 "GET /api/notifications/unread-count/ HTTP/1.1" 401 58
-WARNING 2025-08-20 07:46:36,916 log 19656 31916 Unauthorized: /api/notifications/preferences/
-WARNING 2025-08-20 07:46:36,918 log 19656 8128 Unauthorized: /api/notifications/unread-count/
-WARNING 2025-08-20 07:46:36,920 basehttp 19656 31916 "GET /api/notifications/preferences/ HTTP/1.1" 401 58
-WARNING 2025-08-20 07:46:36,921 basehttp 19656 8128 "GET /api/notifications/unread-count/ HTTP/1.1" 401 58
-INFO 2025-08-20 07:47:10,912 basehttp 19656 7840 "OPTIONS /auth/login/ HTTP/1.1" 200 0
-INFO 2025-08-20 07:47:13,263 basehttp 19656 7840 "POST /auth/login/ HTTP/1.1" 200 1253
-INFO 2025-08-20 07:47:13,281 basehttp 19656 7840 "OPTIONS /api/notifications/unread-count/ HTTP/1.1" 200 0
-INFO 2025-08-20 07:47:13,314 basehttp 19656 26952 "OPTIONS /api/food-listings/ HTTP/1.1" 200 0
-INFO 2025-08-20 07:47:13,317 basehttp 19656 26952 "OPTIONS /api/food-listings/ HTTP/1.1" 200 0
-INFO 2025-08-20 07:47:13,384 basehttp 19656 7840 "GET /api/notifications/unread-count/ HTTP/1.1" 200 18
-INFO 2025-08-20 07:47:13,543 basehttp 19656 26952 "GET /api/food-listings/ HTTP/1.1" 200 7883
-INFO 2025-08-20 07:47:13,726 basehttp 19656 7840 "GET /api/food-listings/ HTTP/1.1" 200 7883
-INFO 2025-08-20 07:47:13,769 basehttp 19656 7840 "OPTIONS /auth/providers/?complete_profiles_only=true HTTP/1.1" 200 0
-INFO 2025-08-20 07:47:13,770 basehttp 19656 26952 "OPTIONS /auth/providers/?complete_profiles_only=true HTTP/1.1" 200 0
-INFO 2025-08-20 07:47:13,937 basehttp 19656 26952 "GET /auth/providers/?complete_profiles_only=true HTTP/1.1" 200 2198
-INFO 2025-08-20 07:47:13,948 basehttp 19656 26952 "OPTIONS /api/reviews/provider/9e76e2fb-aac2-460f-9031-32b44be71b1e/?page=1&page_size=1 HTTP/1.1" 200 0
-INFO 2025-08-20 07:47:13,950 basehttp 19656 15448 "OPTIONS /api/reviews/provider/4c75e316-de48-4a81-852b-d557f412d9a1/?page=1&page_size=1 HTTP/1.1" 200 0
-INFO 2025-08-20 07:47:14,106 basehttp 19656 7840 "GET /auth/providers/?complete_profiles_only=true HTTP/1.1" 200 2198
-INFO 2025-08-20 07:47:14,109 basehttp 19656 26952 "GET /api/reviews/provider/9e76e2fb-aac2-460f-9031-32b44be71b1e/?page=1&page_size=1 HTTP/1.1" 200 440
-INFO 2025-08-20 07:47:14,151 basehttp 19656 15448 "GET /api/reviews/provider/4c75e316-de48-4a81-852b-d557f412d9a1/?page=1&page_size=1 HTTP/1.1" 200 735
-INFO 2025-08-20 07:47:14,280 basehttp 19656 7840 "GET /api/reviews/provider/9e76e2fb-aac2-460f-9031-32b44be71b1e/?page=1&page_size=1 HTTP/1.1" 200 440
-INFO 2025-08-20 07:47:14,317 basehttp 19656 26952 "GET /api/reviews/provider/4c75e316-de48-4a81-852b-d557f412d9a1/?page=1&page_size=1 HTTP/1.1" 200 735
-INFO 2025-08-20 07:47:31,460 basehttp 19656 10068 "GET /api/food-listings/ HTTP/1.1" 200 7883
-INFO 2025-08-20 07:47:31,702 basehttp 19656 28520 "GET /api/food-listings/ HTTP/1.1" 200 7883
-INFO 2025-08-20 07:47:31,805 basehttp 19656 10068 "GET /auth/providers/?complete_profiles_only=true HTTP/1.1" 200 2198
-INFO 2025-08-20 07:47:31,973 basehttp 19656 28520 "GET /auth/providers/?complete_profiles_only=true HTTP/1.1" 200 2198
-INFO 2025-08-20 07:47:31,979 basehttp 19656 10068 "GET /api/reviews/provider/9e76e2fb-aac2-460f-9031-32b44be71b1e/?page=1&page_size=1 HTTP/1.1" 200 440
-INFO 2025-08-20 07:47:32,149 basehttp 19656 28520 "GET /api/reviews/provider/4c75e316-de48-4a81-852b-d557f412d9a1/?page=1&page_size=1 HTTP/1.1" 200 735
-INFO 2025-08-20 07:47:32,166 basehttp 19656 10068 "GET /api/reviews/provider/9e76e2fb-aac2-460f-9031-32b44be71b1e/?page=1&page_size=1 HTTP/1.1" 200 440
-INFO 2025-08-20 07:47:32,317 basehttp 19656 11072 "GET /api/reviews/provider/4c75e316-de48-4a81-852b-d557f412d9a1/?page=1&page_size=1 HTTP/1.1" 200 735
-INFO 2025-08-20 07:47:35,119 basehttp 19656 11072 "OPTIONS /auth/providers/ HTTP/1.1" 200 0
-INFO 2025-08-20 07:47:35,119 basehttp 19656 10068 "OPTIONS /auth/providers/ HTTP/1.1" 200 0
-INFO 2025-08-20 07:47:35,241 basehttp 19656 10068 "GET /auth/providers/ HTTP/1.1" 200 2198
-INFO 2025-08-20 07:47:35,439 basehttp 19656 11072 "GET /auth/providers/ HTTP/1.1" 200 2198
-INFO 2025-08-20 07:47:35,451 basehttp 19656 10068 "GET /api/reviews/provider/9e76e2fb-aac2-460f-9031-32b44be71b1e/?page=1&page_size=1 HTTP/1.1" 200 440
-INFO 2025-08-20 07:47:35,473 basehttp 19656 28520 "GET /api/reviews/provider/4c75e316-de48-4a81-852b-d557f412d9a1/?page=1&page_size=1 HTTP/1.1" 200 735
-INFO 2025-08-20 07:47:35,619 basehttp 19656 11072 "GET /api/reviews/provider/9e76e2fb-aac2-460f-9031-32b44be71b1e/?page=1&page_size=1 HTTP/1.1" 200 440
-INFO 2025-08-20 07:47:35,639 basehttp 19656 10068 "GET /api/reviews/provider/4c75e316-de48-4a81-852b-d557f412d9a1/?page=1&page_size=1 HTTP/1.1" 200 735
-INFO 2025-08-20 07:47:37,289 basehttp 19656 11072 "OPTIONS /cart/ HTTP/1.1" 200 0
-INFO 2025-08-20 07:47:37,289 basehttp 19656 10068 "OPTIONS /cart/ HTTP/1.1" 200 0
-INFO 2025-08-20 07:47:37,498 basehttp 19656 10068 "GET /cart/ HTTP/1.1" 200 102
-INFO 2025-08-20 07:47:37,649 basehttp 19656 11072 "GET /cart/ HTTP/1.1" 200 102
-INFO 2025-08-20 07:47:39,567 basehttp 19656 28520 "OPTIONS /api/scheduling/my-pickups/ HTTP/1.1" 200 0
-INFO 2025-08-20 07:47:39,568 basehttp 19656 11072 "OPTIONS /api/scheduling/my-pickups/ HTTP/1.1" 200 0
-INFO 2025-08-20 07:47:39,569 basehttp 19656 10068 "OPTIONS /cart/ngo/history/ HTTP/1.1" 200 0
-INFO 2025-08-20 07:47:39,571 basehttp 19656 7460 "OPTIONS /cart/ngo/history/ HTTP/1.1" 200 0
-INFO 2025-08-20 07:47:39,719 basehttp 19656 7460 "GET /api/scheduling/my-pickups/ HTTP/1.1" 200 64
-INFO 2025-08-20 07:47:39,747 basehttp 19656 10068 "GET /cart/ngo/history/ HTTP/1.1" 200 912
-INFO 2025-08-20 07:47:39,841 basehttp 19656 11072 "GET /api/scheduling/my-pickups/ HTTP/1.1" 200 64
-INFO 2025-08-20 07:47:39,878 basehttp 19656 7460 "GET /cart/ngo/history/ HTTP/1.1" 200 912
-WARNING 2025-08-20 07:48:11,602 log 19656 26616 Unauthorized: /api/notifications/unread-count/
-WARNING 2025-08-20 07:48:11,606 log 19656 6388 Unauthorized: /api/notifications/preferences/
-WARNING 2025-08-20 07:48:11,607 basehttp 19656 26616 "GET /api/notifications/unread-count/ HTTP/1.1" 401 58
-WARNING 2025-08-20 07:48:11,609 basehttp 19656 6388 "GET /api/notifications/preferences/ HTTP/1.1" 401 58
-WARNING 2025-08-20 07:48:11,615 log 19656 26616 Unauthorized: /api/notifications/unread-count/
-WARNING 2025-08-20 07:48:11,619 log 19656 6388 Unauthorized: /api/notifications/preferences/
-WARNING 2025-08-20 07:48:11,622 basehttp 19656 26616 "GET /api/notifications/unread-count/ HTTP/1.1" 401 58
-WARNING 2025-08-20 07:48:11,623 basehttp 19656 6388 "GET /api/notifications/preferences/ HTTP/1.1" 401 58
-INFO 2025-08-20 07:48:28,560 basehttp 19656 6388 "OPTIONS /auth/login/ HTTP/1.1" 200 0
-INFO 2025-08-20 07:48:30,773 basehttp 19656 6388 "POST /auth/login/ HTTP/1.1" 200 1431
-INFO 2025-08-20 07:48:30,785 basehttp 19656 6388 "OPTIONS /api/notifications/unread-count/ HTTP/1.1" 200 0
-INFO 2025-08-20 07:48:30,801 basehttp 19656 26616 "OPTIONS /api/business/ HTTP/1.1" 200 0
-INFO 2025-08-20 07:48:30,801 basehttp 19656 26300 "OPTIONS /api/business/ HTTP/1.1" 200 0
-INFO 2025-08-20 07:48:30,879 basehttp 19656 6388 "GET /api/notifications/unread-count/ HTTP/1.1" 200 18
-INFO 2025-08-20 07:48:30,959 basehttp 19656 26300 "GET /api/business/ HTTP/1.1" 200 863
-INFO 2025-08-20 07:48:31,102 basehttp 19656 26300 "GET /api/business/ HTTP/1.1" 200 863
-INFO 2025-08-20 07:48:36,574 basehttp 19656 26300 "OPTIONS /api/scheduling/schedule-overview/?date=2025-08-20 HTTP/1.1" 200 0
-INFO 2025-08-20 07:48:36,574 basehttp 19656 6388 "OPTIONS /api/scheduling/schedule-overview/?date=2025-08-20 HTTP/1.1" 200 0
-INFO 2025-08-20 07:48:36,720 basehttp 19656 6388 "GET /api/scheduling/schedule-overview/?date=2025-08-20 HTTP/1.1" 200 175
-INFO 2025-08-20 07:48:36,837 basehttp 19656 6388 "GET /api/scheduling/schedule-overview/?date=2025-08-20 HTTP/1.1" 200 175
-INFO 2025-08-20 07:48:44,875 basehttp 19656 6388 "GET /api/scheduling/schedule-overview/?date=2025-08-20 HTTP/1.1" 200 175
-INFO 2025-08-20 07:48:48,094 basehttp 19656 6388 "OPTIONS /cart/business/history/ HTTP/1.1" 200 0
-INFO 2025-08-20 07:48:48,094 basehttp 19656 26300 "OPTIONS /cart/business/history/ HTTP/1.1" 200 0
-INFO 2025-08-20 07:48:48,248 basehttp 19656 26300 "GET /cart/business/history/ HTTP/1.1" 200 1107
-INFO 2025-08-20 07:48:48,403 basehttp 19656 26300 "GET /cart/business/history/ HTTP/1.1" 200 1107
-INFO 2025-08-20 07:49:05,196 basehttp 19656 16976 "OPTIONS /api/notifications/?limit=5&ordering=-created_at HTTP/1.1" 200 0
-INFO 2025-08-20 07:49:05,317 basehttp 19656 16976 "GET /api/notifications/?limit=5&ordering=-created_at HTTP/1.1" 200 1725
-INFO 2025-08-20 07:49:12,024 basehttp 19656 16976 "GET /auth/providers/ HTTP/1.1" 200 2198
-INFO 2025-08-20 07:49:12,161 basehttp 19656 32580 "GET /auth/providers/ HTTP/1.1" 200 2198
-INFO 2025-08-20 07:49:12,167 basehttp 19656 16976 "GET /api/reviews/provider/9e76e2fb-aac2-460f-9031-32b44be71b1e/?page=1&page_size=1 HTTP/1.1" 200 440
-INFO 2025-08-20 07:49:12,305 basehttp 19656 32580 "GET /api/reviews/provider/4c75e316-de48-4a81-852b-d557f412d9a1/?page=1&page_size=1 HTTP/1.1" 200 735
-INFO 2025-08-20 07:49:12,316 basehttp 19656 16976 "GET /api/reviews/provider/9e76e2fb-aac2-460f-9031-32b44be71b1e/?page=1&page_size=1 HTTP/1.1" 200 440
-INFO 2025-08-20 07:49:12,477 basehttp 19656 32580 "GET /api/reviews/provider/4c75e316-de48-4a81-852b-d557f412d9a1/?page=1&page_size=1 HTTP/1.1" 200 735
-INFO 2025-08-20 07:49:13,608 basehttp 19656 32580 "OPTIONS /auth/providers/9e76e2fb-aac2-460f-9031-32b44be71b1e/ HTTP/1.1" 200 0
-INFO 2025-08-20 07:49:13,609 basehttp 19656 16976 "OPTIONS /auth/providers/9e76e2fb-aac2-460f-9031-32b44be71b1e/ HTTP/1.1" 200 0
-INFO 2025-08-20 07:49:13,824 basehttp 19656 16976 "GET /auth/providers/9e76e2fb-aac2-460f-9031-32b44be71b1e/ HTTP/1.1" 200 1116
-INFO 2025-08-20 07:49:13,845 basehttp 19656 16976 "OPTIONS /api/reviews/provider/9e76e2fb-aac2-460f-9031-32b44be71b1e/?page=1&page_size=20&sort=newest HTTP/1.1" 200 0
-INFO 2025-08-20 07:49:13,982 basehttp 19656 32580 "GET /auth/providers/9e76e2fb-aac2-460f-9031-32b44be71b1e/ HTTP/1.1" 200 1116
-INFO 2025-08-20 07:49:14,009 basehttp 19656 16976 "GET /api/reviews/provider/9e76e2fb-aac2-460f-9031-32b44be71b1e/?page=1&page_size=20&sort=newest HTTP/1.1" 200 440
-INFO 2025-08-20 07:49:14,136 basehttp 19656 32580 "GET /api/reviews/provider/9e76e2fb-aac2-460f-9031-32b44be71b1e/?page=1&page_size=20&sort=newest HTTP/1.1" 200 440
-INFO 2025-08-20 07:49:14,205 basehttp 19656 18576 "GET /api/food-listings/ HTTP/1.1" 200 7883
-INFO 2025-08-20 07:49:14,383 basehttp 19656 32580 "GET /api/food-listings/ HTTP/1.1" 200 7883
-INFO 2025-08-20 07:49:23,165 basehttp 19656 32580 "GET /auth/providers/ HTTP/1.1" 200 2198
-INFO 2025-08-20 07:49:23,287 basehttp 19656 18576 "GET /auth/providers/ HTTP/1.1" 200 2198
-INFO 2025-08-20 07:49:23,294 basehttp 19656 32580 "GET /api/reviews/provider/9e76e2fb-aac2-460f-9031-32b44be71b1e/?page=1&page_size=1 HTTP/1.1" 200 440
-INFO 2025-08-20 07:49:23,311 basehttp 19656 16976 "GET /api/reviews/provider/4c75e316-de48-4a81-852b-d557f412d9a1/?page=1&page_size=1 HTTP/1.1" 200 735
-INFO 2025-08-20 07:49:23,420 basehttp 19656 32580 "GET /api/reviews/provider/4c75e316-de48-4a81-852b-d557f412d9a1/?page=1&page_size=1 HTTP/1.1" 200 735
-INFO 2025-08-20 07:49:23,541 basehttp 19656 18576 "GET /api/reviews/provider/9e76e2fb-aac2-460f-9031-32b44be71b1e/?page=1&page_size=1 HTTP/1.1" 200 440
-INFO 2025-08-20 07:54:23,585 blob_storage 34960 1700 Updated existing container to public access: customer-profiles
-INFO 2025-08-20 07:54:23,617 blob_storage 34960 1700 Updated existing container to public access: ngo-documents
-INFO 2025-08-20 07:54:23,648 blob_storage 34960 1700 Updated existing container to public access: ngo-logos
-INFO 2025-08-20 07:54:23,680 blob_storage 34960 1700 Updated existing container to public access: provider-documents
-INFO 2025-08-20 07:54:23,701 blob_storage 34960 1700 Updated existing container to public access: provider-logos
-INFO 2025-08-20 07:54:23,732 blob_storage 34960 1700 Updated existing container to public access: provider-banners
-INFO 2025-08-20 07:54:25,601 blob_storage 2876 19912 Updated existing container to public access: customer-profiles
-INFO 2025-08-20 07:54:25,640 blob_storage 2876 19912 Updated existing container to public access: ngo-documents
-INFO 2025-08-20 07:54:25,673 blob_storage 2876 19912 Updated existing container to public access: ngo-logos
-INFO 2025-08-20 07:54:25,723 blob_storage 2876 19912 Updated existing container to public access: provider-documents
-INFO 2025-08-20 07:54:25,749 blob_storage 2876 19912 Updated existing container to public access: provider-logos
-INFO 2025-08-20 07:54:25,781 blob_storage 2876 19912 Updated existing container to public access: provider-banners
-INFO 2025-08-20 07:54:25,863 autoreload 2876 19912 Watching for file changes with StatReloader
-INFO 2025-08-20 07:54:26,361 blob_storage 2876 16264 Updated existing container to public access: customer-profiles
-INFO 2025-08-20 07:54:26,390 blob_storage 2876 16264 Updated existing container to public access: provider-banners
-INFO 2025-08-20 07:54:26,437 blob_storage 2876 16264 Updated existing container to public access: provider-documents
-INFO 2025-08-20 07:54:26,453 blob_storage 2876 16264 Updated existing container to public access: provider-logos
-INFO 2025-08-20 07:54:26,469 blob_storage 2876 16264 Updated existing container to public access: ngo-documents
-INFO 2025-08-20 07:54:26,481 blob_storage 2876 16264 Updated existing container to public access: ngo-logos
-WARNING 2025-08-20 07:54:44,205 log 2876 30488 Unauthorized: /api/notifications/preferences/
-WARNING 2025-08-20 07:54:44,205 log 2876 33540 Unauthorized: /api/notifications/unread-count/
-WARNING 2025-08-20 07:54:44,206 basehttp 2876 30488 "GET /api/notifications/preferences/ HTTP/1.1" 401 58
-WARNING 2025-08-20 07:54:44,207 basehttp 2876 33540 "GET /api/notifications/unread-count/ HTTP/1.1" 401 58
-WARNING 2025-08-20 07:54:44,210 log 2876 33540 Unauthorized: /api/notifications/preferences/
-WARNING 2025-08-20 07:54:44,211 log 2876 30488 Unauthorized: /api/notifications/unread-count/
-WARNING 2025-08-20 07:54:44,212 basehttp 2876 33540 "GET /api/notifications/preferences/ HTTP/1.1" 401 58
-WARNING 2025-08-20 07:54:44,212 basehttp 2876 30488 "GET /api/notifications/unread-count/ HTTP/1.1" 401 58
-WARNING 2025-08-20 07:54:44,394 log 2876 9052 Unauthorized: /api/notifications/unread-count/
-WARNING 2025-08-20 07:54:44,398 log 2876 31192 Unauthorized: /api/notifications/preferences/
-WARNING 2025-08-20 07:54:44,400 basehttp 2876 9052 "GET /api/notifications/unread-count/ HTTP/1.1" 401 58
-WARNING 2025-08-20 07:54:44,402 basehttp 2876 31192 "GET /api/notifications/preferences/ HTTP/1.1" 401 58
-WARNING 2025-08-20 07:54:44,409 log 2876 9052 Unauthorized: /api/notifications/unread-count/
-WARNING 2025-08-20 07:54:44,415 log 2876 31192 Unauthorized: /api/notifications/preferences/
-WARNING 2025-08-20 07:54:44,419 basehttp 2876 9052 "GET /api/notifications/unread-count/ HTTP/1.1" 401 58
-WARNING 2025-08-20 07:54:44,420 basehttp 2876 31192 "GET /api/notifications/preferences/ HTTP/1.1" 401 58
-INFO 2025-08-20 07:55:05,396 basehttp 2876 29304 "POST /auth/login/ HTTP/1.1" 200 1253
-INFO 2025-08-20 07:55:05,568 basehttp 2876 29304 "GET /api/notifications/unread-count/ HTTP/1.1" 200 18
-INFO 2025-08-20 07:55:05,717 basehttp 2876 10512 "GET /api/food-listings/ HTTP/1.1" 200 7883
-INFO 2025-08-20 07:55:05,928 basehttp 2876 29304 "GET /api/food-listings/ HTTP/1.1" 200 7883
-INFO 2025-08-20 07:55:06,072 basehttp 2876 10512 "GET /auth/providers/?complete_profiles_only=true HTTP/1.1" 200 2198
-INFO 2025-08-20 07:55:06,237 basehttp 2876 29304 "GET /auth/providers/?complete_profiles_only=true HTTP/1.1" 200 2198
-INFO 2025-08-20 07:55:06,311 basehttp 2876 10512 "GET /api/reviews/provider/9e76e2fb-aac2-460f-9031-32b44be71b1e/?page=1&page_size=1 HTTP/1.1" 200 440
-INFO 2025-08-20 07:55:06,392 basehttp 2876 29304 "GET /api/reviews/provider/4c75e316-de48-4a81-852b-d557f412d9a1/?page=1&page_size=1 HTTP/1.1" 200 735
-INFO 2025-08-20 07:55:06,548 basehttp 2876 11220 "GET /api/reviews/provider/4c75e316-de48-4a81-852b-d557f412d9a1/?page=1&page_size=1 HTTP/1.1" 200 735
-INFO 2025-08-20 07:55:06,551 basehttp 2876 18212 "POST /auth/login/ HTTP/1.1" 200 1431
-INFO 2025-08-20 07:55:06,580 basehttp 2876 10512 "GET /api/reviews/provider/9e76e2fb-aac2-460f-9031-32b44be71b1e/?page=1&page_size=1 HTTP/1.1" 200 440
-INFO 2025-08-20 07:55:06,684 basehttp 2876 18212 "GET /api/notifications/unread-count/ HTTP/1.1" 200 18
-INFO 2025-08-20 07:55:06,743 basehttp 2876 28568 "GET /api/business/ HTTP/1.1" 200 863
-INFO 2025-08-20 07:55:06,910 basehttp 2876 28568 "GET /api/business/ HTTP/1.1" 200 863
-INFO 2025-08-20 07:55:14,646 basehttp 2876 35208 "GET /api/scheduling/my-pickups/ HTTP/1.1" 200 64
-INFO 2025-08-20 07:55:14,690 basehttp 2876 20852 "GET /cart/ngo/history/ HTTP/1.1" 200 912
-INFO 2025-08-20 07:55:14,786 basehttp 2876 35208 "GET /api/scheduling/my-pickups/ HTTP/1.1" 200 64
-INFO 2025-08-20 07:55:14,848 basehttp 2876 2848 "GET /cart/ngo/history/ HTTP/1.1" 200 912
-INFO 2025-08-20 07:55:18,597 basehttp 2876 18284 "GET /api/scheduling/schedule-overview/?date=2025-08-20 HTTP/1.1" 200 175
-INFO 2025-08-20 07:55:18,714 basehttp 2876 18284 "GET /api/scheduling/schedule-overview/?date=2025-08-20 HTTP/1.1" 200 175
-INFO 2025-08-20 07:55:21,484 basehttp 2876 34080 "GET /cart/business/history/ HTTP/1.1" 200 1107
-INFO 2025-08-20 07:55:21,604 basehttp 2876 34080 "GET /cart/business/history/ HTTP/1.1" 200 1107
-INFO 2025-08-20 07:56:02,008 basehttp 2876 32816 "GET /api/food-listings/ HTTP/1.1" 200 7883
-INFO 2025-08-20 07:56:02,235 basehttp 2876 34656 "GET /api/food-listings/ HTTP/1.1" 200 7883
-INFO 2025-08-20 07:56:02,289 basehttp 2876 32816 "GET /auth/providers/?complete_profiles_only=true HTTP/1.1" 200 2198
-INFO 2025-08-20 07:56:02,437 basehttp 2876 34656 "GET /auth/providers/?complete_profiles_only=true HTTP/1.1" 200 2198
-INFO 2025-08-20 07:56:02,451 basehttp 2876 32816 "GET /api/reviews/provider/9e76e2fb-aac2-460f-9031-32b44be71b1e/?page=1&page_size=1 HTTP/1.1" 200 440
-INFO 2025-08-20 07:56:02,619 basehttp 2876 34656 "GET /api/reviews/provider/4c75e316-de48-4a81-852b-d557f412d9a1/?page=1&page_size=1 HTTP/1.1" 200 735
-INFO 2025-08-20 07:56:02,638 basehttp 2876 32816 "GET /api/reviews/provider/9e76e2fb-aac2-460f-9031-32b44be71b1e/?page=1&page_size=1 HTTP/1.1" 200 440
-INFO 2025-08-20 07:56:02,758 basehttp 2876 3768 "GET /api/reviews/provider/4c75e316-de48-4a81-852b-d557f412d9a1/?page=1&page_size=1 HTTP/1.1" 200 735
-INFO 2025-08-20 07:56:14,183 basehttp 2876 12428 "OPTIONS /api/food-listings/ead0a92a-31a3-4ae9-aea6-2d16c1f802b6/ HTTP/1.1" 200 0
-INFO 2025-08-20 07:56:14,184 basehttp 2876 14488 "OPTIONS /api/food-listings/ead0a92a-31a3-4ae9-aea6-2d16c1f802b6/ HTTP/1.1" 200 0
-INFO 2025-08-20 07:56:14,537 basehttp 2876 14488 "GET /api/food-listings/ead0a92a-31a3-4ae9-aea6-2d16c1f802b6/ HTTP/1.1" 200 719
-INFO 2025-08-20 07:56:14,734 basehttp 2876 12428 "GET /api/food-listings/ead0a92a-31a3-4ae9-aea6-2d16c1f802b6/ HTTP/1.1" 200 719
-INFO 2025-08-20 07:56:27,593 basehttp 2876 24464 "OPTIONS /cart/donation/request/ HTTP/1.1" 200 0
-INFO 2025-08-20 07:56:27,820 basehttp 2876 24464 "POST /cart/donation/request/ HTTP/1.1" 201 236
-INFO 2025-08-20 07:56:33,460 basehttp 2876 11476 "GET /api/scheduling/my-pickups/ HTTP/1.1" 200 64
-INFO 2025-08-20 07:56:33,510 basehttp 2876 17548 "GET /cart/ngo/history/ HTTP/1.1" 200 1759
-INFO 2025-08-20 07:56:33,577 basehttp 2876 11476 "GET /api/scheduling/my-pickups/ HTTP/1.1" 200 64
-INFO 2025-08-20 07:56:33,630 basehttp 2876 17548 "GET /cart/ngo/history/ HTTP/1.1" 200 1759
-INFO 2025-08-20 07:56:44,247 basehttp 2876 34312 "GET /cart/business/history/ HTTP/1.1" 200 1508
-INFO 2025-08-20 07:56:46,430 basehttp 2876 34312 "OPTIONS /cart/donation/e3fa5557-7ba4-455e-86f9-8391f86efa7d/accept/ HTTP/1.1" 200 0
-INFO 2025-08-20 07:56:51,953 basehttp 2876 34312 "POST /cart/donation/e3fa5557-7ba4-455e-86f9-8391f86efa7d/accept/ HTTP/1.1" 200 258
-INFO 2025-08-20 07:56:58,578 basehttp 2876 15380 "GET /api/notifications/?limit=5&ordering=-created_at HTTP/1.1" 200 2921
-INFO 2025-08-20 07:57:00,447 basehttp 2876 15380 "OPTIONS /api/notifications/mark-read/ HTTP/1.1" 200 0
-INFO 2025-08-20 07:57:00,583 basehttp 2876 15380 "POST /api/notifications/mark-read/ HTTP/1.1" 200 78
-INFO 2025-08-20 07:57:11,528 basehttp 2876 2920 "OPTIONS /api/notifications/preferences/ HTTP/1.1" 200 0
-INFO 2025-08-20 07:57:11,529 basehttp 2876 26344 "OPTIONS /api/notifications/preferences/ HTTP/1.1" 200 0
-INFO 2025-08-20 07:57:11,536 basehttp 2876 2920 "OPTIONS /api/notifications/ HTTP/1.1" 200 0
-INFO 2025-08-20 07:57:11,549 basehttp 2876 26344 "OPTIONS /api/notifications/ HTTP/1.1" 200 0
-INFO 2025-08-20 07:57:11,693 basehttp 2876 9564 "GET /api/notifications/unread-count/ HTTP/1.1" 200 18
-INFO 2025-08-20 07:57:11,701 basehttp 2876 2920 "GET /api/notifications/preferences/ HTTP/1.1" 200 132
-INFO 2025-08-20 07:57:11,759 basehttp 2876 26344 "GET /api/notifications/ HTTP/1.1" 200 2945
-INFO 2025-08-20 07:57:11,820 basehttp 2876 8804 "GET /api/notifications/unread-count/ HTTP/1.1" 200 18
-INFO 2025-08-20 07:57:11,843 basehttp 2876 9564 "GET /api/notifications/preferences/ HTTP/1.1" 200 132
-INFO 2025-08-20 07:57:11,900 basehttp 2876 2920 "GET /api/notifications/ HTTP/1.1" 200 2945
-INFO 2025-08-20 07:57:19,439 basehttp 2876 2920 "GET /api/food-listings/ HTTP/1.1" 200 7883
-INFO 2025-08-20 07:57:19,597 basehttp 2876 9564 "GET /api/food-listings/ HTTP/1.1" 200 7883
-INFO 2025-08-20 07:57:19,670 basehttp 2876 2920 "GET /auth/providers/?complete_profiles_only=true HTTP/1.1" 200 2198
-INFO 2025-08-20 07:57:19,830 basehttp 2876 9564 "GET /auth/providers/?complete_profiles_only=true HTTP/1.1" 200 2198
-INFO 2025-08-20 07:57:19,835 basehttp 2876 2920 "GET /api/reviews/provider/9e76e2fb-aac2-460f-9031-32b44be71b1e/?page=1&page_size=1 HTTP/1.1" 200 440
-INFO 2025-08-20 07:57:19,858 basehttp 2876 8804 "GET /api/reviews/provider/4c75e316-de48-4a81-852b-d557f412d9a1/?page=1&page_size=1 HTTP/1.1" 200 735
-INFO 2025-08-20 07:57:19,975 basehttp 2876 9564 "GET /api/reviews/provider/9e76e2fb-aac2-460f-9031-32b44be71b1e/?page=1&page_size=1 HTTP/1.1" 200 440
-INFO 2025-08-20 07:57:20,070 basehttp 2876 2920 "GET /api/reviews/provider/4c75e316-de48-4a81-852b-d557f412d9a1/?page=1&page_size=1 HTTP/1.1" 200 735
-INFO 2025-08-20 07:57:23,620 basehttp 2876 8068 "GET /api/scheduling/my-pickups/ HTTP/1.1" 200 64
-INFO 2025-08-20 07:57:23,673 basehttp 2876 35816 "GET /cart/ngo/history/ HTTP/1.1" 200 1759
-INFO 2025-08-20 07:57:23,768 basehttp 2876 8068 "GET /api/scheduling/my-pickups/ HTTP/1.1" 200 64
-INFO 2025-08-20 07:57:23,835 basehttp 2876 10068 "GET /cart/ngo/history/ HTTP/1.1" 200 1759
-INFO 2025-08-20 07:58:05,630 basehttp 2876 11048 "GET /api/food-listings/ HTTP/1.1" 200 7883
-INFO 2025-08-20 07:58:05,804 basehttp 2876 11048 "GET /api/food-listings/ HTTP/1.1" 200 7883
-INFO 2025-08-20 07:58:06,044 basehttp 2876 21508 "GET /auth/providers/?complete_profiles_only=true HTTP/1.1" 200 2198
-INFO 2025-08-20 07:58:06,196 basehttp 2876 11048 "GET /auth/providers/?complete_profiles_only=true HTTP/1.1" 200 2198
-INFO 2025-08-20 07:58:06,198 basehttp 2876 21508 "GET /api/reviews/provider/9e76e2fb-aac2-460f-9031-32b44be71b1e/?page=1&page_size=1 HTTP/1.1" 200 440
-INFO 2025-08-20 07:58:06,226 basehttp 2876 10980 "GET /api/reviews/provider/4c75e316-de48-4a81-852b-d557f412d9a1/?page=1&page_size=1 HTTP/1.1" 200 735
-INFO 2025-08-20 07:58:06,369 basehttp 2876 21508 "GET /api/reviews/provider/9e76e2fb-aac2-460f-9031-32b44be71b1e/?page=1&page_size=1 HTTP/1.1" 200 440
-INFO 2025-08-20 07:58:06,400 basehttp 2876 11048 "GET /api/reviews/provider/4c75e316-de48-4a81-852b-d557f412d9a1/?page=1&page_size=1 HTTP/1.1" 200 735
-INFO 2025-08-20 07:58:12,551 basehttp 2876 13048 "GET /api/scheduling/schedule-overview/?date=2025-08-20 HTTP/1.1" 200 175
-INFO 2025-08-20 07:58:12,674 basehttp 2876 13048 "GET /api/scheduling/schedule-overview/?date=2025-08-20 HTTP/1.1" 200 175
-INFO 2025-08-20 07:58:14,893 basehttp 2876 13048 "GET /cart/business/history/ HTTP/1.1" 200 1506
-INFO 2025-08-20 07:58:15,019 basehttp 2876 13048 "GET /cart/business/history/ HTTP/1.1" 200 1506
-INFO 2025-08-20 07:58:23,292 basehttp 2876 18656 "GET /api/scheduling/schedule-overview/?date=2025-08-20 HTTP/1.1" 200 175
-INFO 2025-08-20 07:58:23,415 basehttp 2876 18656 "GET /api/scheduling/schedule-overview/?date=2025-08-20 HTTP/1.1" 200 175
-INFO 2025-08-20 07:58:30,061 basehttp 2876 18656 "GET /cart/business/history/ HTTP/1.1" 200 1506
-INFO 2025-08-20 07:58:30,183 basehttp 2876 18656 "GET /cart/business/history/ HTTP/1.1" 200 1506
-INFO 2025-08-20 07:58:49,657 basehttp 2876 21912 "OPTIONS /api/food-listings/0b319c39-4907-4fa8-ab58-3c03cc05800a/ HTTP/1.1" 200 0
-INFO 2025-08-20 07:58:49,658 basehttp 2876 25212 "OPTIONS /api/food-listings/0b319c39-4907-4fa8-ab58-3c03cc05800a/ HTTP/1.1" 200 0
-INFO 2025-08-20 07:58:49,966 basehttp 2876 25212 "GET /api/food-listings/0b319c39-4907-4fa8-ab58-3c03cc05800a/ HTTP/1.1" 200 713
-INFO 2025-08-20 07:58:50,111 basehttp 2876 21912 "GET /api/food-listings/0b319c39-4907-4fa8-ab58-3c03cc05800a/ HTTP/1.1" 200 713
-INFO 2025-08-20 07:58:53,502 basehttp 2876 26232 "POST /cart/donation/request/ HTTP/1.1" 201 237
-INFO 2025-08-20 07:58:56,052 basehttp 2876 26232 "GET /api/scheduling/my-pickups/ HTTP/1.1" 200 64
-INFO 2025-08-20 07:58:56,097 basehttp 2876 26904 "GET /cart/ngo/history/ HTTP/1.1" 200 2598
-INFO 2025-08-20 07:58:56,168 basehttp 2876 26232 "GET /api/scheduling/my-pickups/ HTTP/1.1" 200 64
-INFO 2025-08-20 07:58:56,258 basehttp 2876 26904 "GET /cart/ngo/history/ HTTP/1.1" 200 2598
-INFO 2025-08-20 07:59:01,855 basehttp 2876 30664 "GET /cart/business/history/ HTTP/1.1" 200 1903
-INFO 2025-08-20 08:00:21,772 basehttp 2876 30664 "OPTIONS /cart/donation/d943eda7-7e36-4cac-8580-1da6e8060f6a/accept/ HTTP/1.1" 200 0
-INFO 2025-08-20 08:00:27,000 basehttp 2876 30664 "POST /cart/donation/d943eda7-7e36-4cac-8580-1da6e8060f6a/accept/ HTTP/1.1" 200 258
-INFO 2025-08-20 08:01:34,023 basehttp 2876 17424 "GET /cart/business/history/ HTTP/1.1" 200 1901
-INFO 2025-08-20 08:01:35,322 basehttp 2876 17424 "GET /cart/business/history/ HTTP/1.1" 200 1901
-INFO 2025-08-20 08:01:40,470 basehttp 2876 17424 "GET /cart/business/history/ HTTP/1.1" 200 1901
-INFO 2025-08-20 08:01:48,314 basehttp 2876 18832 "GET /cart/business/history/ HTTP/1.1" 200 1901
-INFO 2025-08-20 08:01:50,297 basehttp 2876 18832 "GET /cart/business/history/ HTTP/1.1" 200 1901
-INFO 2025-08-20 08:01:53,260 basehttp 2876 27364 "GET /cart/business/history/ HTTP/1.1" 200 1901
-INFO 2025-08-20 08:01:54,650 basehttp 2876 27364 "GET /cart/business/history/ HTTP/1.1" 200 1901
-INFO 2025-08-20 08:03:48,599 basehttp 2876 2088 "GET /cart/business/history/ HTTP/1.1" 200 1901
-INFO 2025-08-20 08:04:49,481 autoreload 2876 19912 C:\Users\vanea\Documents\UP Third Year 2025\Year module\COS 301\Save-n-Bite\save-n-bite-backend\interactions\views.py changed, reloading.
-INFO 2025-08-20 08:04:54,060 blob_storage 17372 9296 Updated existing container to public access: customer-profiles
-INFO 2025-08-20 08:04:54,120 blob_storage 17372 9296 Updated existing container to public access: ngo-documents
-INFO 2025-08-20 08:04:54,146 blob_storage 17372 9296 Updated existing container to public access: ngo-logos
-INFO 2025-08-20 08:04:54,172 blob_storage 17372 9296 Updated existing container to public access: provider-documents
-INFO 2025-08-20 08:04:54,194 blob_storage 17372 9296 Updated existing container to public access: provider-logos
-INFO 2025-08-20 08:04:54,219 blob_storage 17372 9296 Updated existing container to public access: provider-banners
-INFO 2025-08-20 08:04:54,781 autoreload 17372 9296 Watching for file changes with StatReloader
-INFO 2025-08-20 08:04:56,196 blob_storage 17372 14480 Updated existing container to public access: customer-profiles
-INFO 2025-08-20 08:04:56,251 blob_storage 17372 14480 Updated existing container to public access: provider-banners
-INFO 2025-08-20 08:04:56,274 blob_storage 17372 14480 Updated existing container to public access: provider-documents
-INFO 2025-08-20 08:04:56,296 blob_storage 17372 14480 Updated existing container to public access: provider-logos
-INFO 2025-08-20 08:04:56,325 blob_storage 17372 14480 Updated existing container to public access: ngo-documents
-INFO 2025-08-20 08:04:56,342 blob_storage 17372 14480 Updated existing container to public access: ngo-logos
-INFO 2025-08-20 08:04:56,827 basehttp 17372 3376 "OPTIONS /api/notifications/preferences/ HTTP/1.1" 200 0
-INFO 2025-08-20 08:04:59,079 basehttp 17372 19480 "GET /api/notifications/preferences/ HTTP/1.1" 200 132
-INFO 2025-08-20 08:04:59,090 basehttp 17372 3376 "GET /api/notifications/unread-count/ HTTP/1.1" 200 18
-INFO 2025-08-20 08:04:59,149 basehttp 17372 25072 "GET /api/notifications/preferences/ HTTP/1.1" 200 132
-INFO 2025-08-20 08:04:59,153 basehttp 17372 19548 "GET /api/notifications/unread-count/ HTTP/1.1" 200 18
-INFO 2025-08-20 08:04:59,184 basehttp 17372 16060 "GET /cart/business/history/ HTTP/1.1" 200 1901
-INFO 2025-08-20 08:04:59,315 basehttp 17372 3376 "GET /api/notifications/unread-count/ HTTP/1.1" 200 18
-INFO 2025-08-20 08:04:59,372 basehttp 17372 25072 "GET /api/notifications/preferences/ HTTP/1.1" 200 132
-INFO 2025-08-20 08:04:59,397 basehttp 17372 19480 "GET /api/notifications/preferences/ HTTP/1.1" 200 132
-INFO 2025-08-20 08:04:59,469 basehttp 17372 16060 "GET /cart/business/history/ HTTP/1.1" 200 1901
-INFO 2025-08-20 08:04:59,477 basehttp 17372 19548 "GET /api/notifications/unread-count/ HTTP/1.1" 200 18
-INFO 2025-08-20 08:04:59,575 basehttp 17372 25072 "GET /api/scheduling/my-pickups/ HTTP/1.1" 200 64
-INFO 2025-08-20 08:04:59,763 basehttp 17372 11948 "GET /cart/ngo/history/ HTTP/1.1" 200 2598
-INFO 2025-08-20 08:04:59,825 basehttp 17372 19548 "GET /api/scheduling/my-pickups/ HTTP/1.1" 200 64
-INFO 2025-08-20 08:05:00,058 basehttp 17372 25072 "GET /cart/ngo/history/ HTTP/1.1" 200 2598
-INFO 2025-08-20 08:06:39,357 autoreload 17372 9296 C:\Users\vanea\Documents\UP Third Year 2025\Year module\COS 301\Save-n-Bite\save-n-bite-backend\interactions\utils.py changed, reloading.
-INFO 2025-08-20 08:06:43,413 blob_storage 23696 19916 Updated existing container to public access: customer-profiles
-INFO 2025-08-20 08:06:43,447 blob_storage 23696 19916 Updated existing container to public access: ngo-documents
-INFO 2025-08-20 08:06:43,494 blob_storage 23696 19916 Updated existing container to public access: ngo-logos
-INFO 2025-08-20 08:06:43,524 blob_storage 23696 19916 Updated existing container to public access: provider-documents
-INFO 2025-08-20 08:06:43,543 blob_storage 23696 19916 Updated existing container to public access: provider-logos
-INFO 2025-08-20 08:06:43,570 blob_storage 23696 19916 Updated existing container to public access: provider-banners
-INFO 2025-08-20 08:06:43,765 autoreload 23696 19916 Watching for file changes with StatReloader
-INFO 2025-08-20 08:06:44,208 blob_storage 23696 6140 Updated existing container to public access: customer-profiles
-INFO 2025-08-20 08:06:44,236 blob_storage 23696 6140 Updated existing container to public access: provider-banners
-INFO 2025-08-20 08:06:44,253 blob_storage 23696 6140 Updated existing container to public access: provider-documents
-INFO 2025-08-20 08:06:44,296 blob_storage 23696 6140 Updated existing container to public access: provider-logos
-INFO 2025-08-20 08:06:44,309 blob_storage 23696 6140 Updated existing container to public access: ngo-documents
-INFO 2025-08-20 08:06:44,333 blob_storage 23696 6140 Updated existing container to public access: ngo-logos
-INFO 2025-08-20 08:06:48,650 basehttp 23696 1484 "GET /api/notifications/unread-count/ HTTP/1.1" 200 18
-INFO 2025-08-20 08:06:48,650 basehttp 23696 18016 "GET /api/notifications/preferences/ HTTP/1.1" 200 132
-INFO 2025-08-20 08:06:48,698 basehttp 23696 15984 "GET /api/notifications/unread-count/ HTTP/1.1" 200 18
-INFO 2025-08-20 08:06:48,721 basehttp 23696 29204 "GET /api/notifications/preferences/ HTTP/1.1" 200 132
-INFO 2025-08-20 08:06:48,742 basehttp 23696 21040 "GET /cart/business/history/ HTTP/1.1" 200 1901
-INFO 2025-08-20 08:06:48,828 basehttp 23696 18016 "GET /api/notifications/preferences/ HTTP/1.1" 200 132
-INFO 2025-08-20 08:06:48,830 basehttp 23696 1484 "GET /api/notifications/unread-count/ HTTP/1.1" 200 18
-INFO 2025-08-20 08:06:49,053 basehttp 23696 15984 "GET /api/scheduling/my-pickups/ HTTP/1.1" 200 64
-INFO 2025-08-20 08:06:49,084 basehttp 23696 29204 "GET /cart/ngo/history/ HTTP/1.1" 200 2598
-INFO 2025-08-20 08:06:49,095 basehttp 23696 30104 "GET /api/notifications/unread-count/ HTTP/1.1" 200 18
-INFO 2025-08-20 08:06:49,123 basehttp 23696 21040 "GET /cart/business/history/ HTTP/1.1" 200 1901
-INFO 2025-08-20 08:06:49,152 basehttp 23696 30080 "GET /api/notifications/preferences/ HTTP/1.1" 200 132
-INFO 2025-08-20 08:06:49,270 basehttp 23696 25576 "GET /api/scheduling/my-pickups/ HTTP/1.1" 200 64
-INFO 2025-08-20 08:06:49,321 basehttp 23696 15984 "GET /cart/ngo/history/ HTTP/1.1" 200 2598
-INFO 2025-08-20 08:08:22,502 autoreload 23696 19916 C:\Users\vanea\Documents\UP Third Year 2025\Year module\COS 301\Save-n-Bite\save-n-bite-backend\interactions\views.py changed, reloading.
-INFO 2025-08-20 08:08:26,554 blob_storage 35420 17852 Updated existing container to public access: customer-profiles
-INFO 2025-08-20 08:08:26,601 blob_storage 35420 17852 Updated existing container to public access: ngo-documents
-INFO 2025-08-20 08:08:26,654 blob_storage 35420 17852 Updated existing container to public access: ngo-logos
-INFO 2025-08-20 08:08:26,688 blob_storage 35420 17852 Updated existing container to public access: provider-documents
-INFO 2025-08-20 08:08:26,730 blob_storage 35420 17852 Updated existing container to public access: provider-logos
-INFO 2025-08-20 08:08:26,758 blob_storage 35420 17852 Updated existing container to public access: provider-banners
-INFO 2025-08-20 08:08:26,904 autoreload 35420 17852 Watching for file changes with StatReloader
-INFO 2025-08-20 08:08:27,315 blob_storage 35420 19176 Updated existing container to public access: customer-profiles
-INFO 2025-08-20 08:08:27,334 blob_storage 35420 19176 Updated existing container to public access: provider-banners
-INFO 2025-08-20 08:08:27,356 blob_storage 35420 19176 Updated existing container to public access: provider-documents
-INFO 2025-08-20 08:08:27,379 blob_storage 35420 19176 Updated existing container to public access: provider-logos
-INFO 2025-08-20 08:08:27,401 blob_storage 35420 19176 Updated existing container to public access: ngo-documents
-INFO 2025-08-20 08:08:27,419 blob_storage 35420 19176 Updated existing container to public access: ngo-logos
-INFO 2025-08-20 08:08:30,366 basehttp 35420 17616 "GET /api/notifications/unread-count/ HTTP/1.1" 200 18
-INFO 2025-08-20 08:08:30,394 basehttp 35420 34604 "GET /api/notifications/preferences/ HTTP/1.1" 200 132
-INFO 2025-08-20 08:08:30,458 basehttp 35420 20092 "GET /api/notifications/unread-count/ HTTP/1.1" 200 18
-INFO 2025-08-20 08:08:30,474 basehttp 35420 9616 "GET /cart/business/history/ HTTP/1.1" 200 1901
-INFO 2025-08-20 08:08:30,520 basehttp 35420 1968 "GET /api/notifications/preferences/ HTTP/1.1" 200 132
-INFO 2025-08-20 08:08:30,639 basehttp 35420 17616 "GET /api/notifications/unread-count/ HTTP/1.1" 200 18
-INFO 2025-08-20 08:08:30,642 basehttp 35420 34604 "GET /api/notifications/preferences/ HTTP/1.1" 200 132
-INFO 2025-08-20 08:08:30,692 basehttp 35420 20092 "GET /api/notifications/unread-count/ HTTP/1.1" 200 18
-INFO 2025-08-20 08:08:30,741 basehttp 35420 1968 "GET /api/notifications/preferences/ HTTP/1.1" 200 132
-INFO 2025-08-20 08:08:30,770 basehttp 35420 9616 "GET /cart/business/history/ HTTP/1.1" 200 1901
-INFO 2025-08-20 08:08:30,808 basehttp 35420 20092 "GET /api/scheduling/my-pickups/ HTTP/1.1" 200 64
-INFO 2025-08-20 08:08:30,887 basehttp 35420 1968 "GET /cart/ngo/history/ HTTP/1.1" 200 2598
-INFO 2025-08-20 08:08:30,910 basehttp 35420 25744 "GET /api/scheduling/my-pickups/ HTTP/1.1" 200 64
-INFO 2025-08-20 08:08:30,985 basehttp 35420 20092 "GET /cart/ngo/history/ HTTP/1.1" 200 2598
+INFO 2025-08-20 08:23:43,919 blob_storage 11372 2476 Updated existing container to public access: customer-profiles
+INFO 2025-08-20 08:23:43,972 blob_storage 11372 2476 Updated existing container to public access: ngo-documents
+INFO 2025-08-20 08:23:44,024 blob_storage 11372 2476 Updated existing container to public access: ngo-logos
+INFO 2025-08-20 08:23:44,073 blob_storage 11372 2476 Updated existing container to public access: provider-documents
+INFO 2025-08-20 08:23:44,129 blob_storage 11372 2476 Updated existing container to public access: provider-logos
+INFO 2025-08-20 08:23:44,183 blob_storage 11372 2476 Updated existing container to public access: provider-banners
+INFO 2025-08-20 08:23:46,991 blob_storage 23620 15420 Updated existing container to public access: customer-profiles
+INFO 2025-08-20 08:23:47,026 blob_storage 23620 15420 Updated existing container to public access: ngo-documents
+INFO 2025-08-20 08:23:47,066 blob_storage 23620 15420 Updated existing container to public access: ngo-logos
+INFO 2025-08-20 08:23:47,120 blob_storage 23620 15420 Updated existing container to public access: provider-documents
+INFO 2025-08-20 08:23:47,157 blob_storage 23620 15420 Updated existing container to public access: provider-logos
+INFO 2025-08-20 08:23:47,213 blob_storage 23620 15420 Updated existing container to public access: provider-banners
+INFO 2025-08-20 08:23:47,486 autoreload 23620 15420 Watching for file changes with StatReloader
+INFO 2025-08-20 08:23:48,840 blob_storage 23620 3836 Updated existing container to public access: customer-profiles
+INFO 2025-08-20 08:23:48,866 blob_storage 23620 3836 Updated existing container to public access: provider-banners
+INFO 2025-08-20 08:23:48,896 blob_storage 23620 3836 Updated existing container to public access: provider-documents
+INFO 2025-08-20 08:23:48,921 blob_storage 23620 3836 Updated existing container to public access: provider-logos
+INFO 2025-08-20 08:23:48,944 blob_storage 23620 3836 Updated existing container to public access: ngo-documents
+INFO 2025-08-20 08:23:48,972 blob_storage 23620 3836 Updated existing container to public access: ngo-logos
+
