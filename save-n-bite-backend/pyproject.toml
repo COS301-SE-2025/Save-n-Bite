@@ -29,6 +29,7 @@ seaborn = "^0.13.0"
 pytest = "^8.4.1"
 pytest-django = "^4.11.1"
 pytest-cov = "^6.2.1"
+azure-storage-blob = "^12.19.0"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.4.0"
