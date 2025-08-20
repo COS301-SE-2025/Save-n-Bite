@@ -1207,13 +1207,8 @@ class AcceptDonationView(APIView):
             food_listing.save()
 
             # Update interaction and order status
-            interaction.status = Interaction.Status.READY_FOR_PICKUP
+            interaction.status = Interaction.Status.COMPLETED
             interaction.save()
-
-            # Update associated order status
-            if hasattr(interaction, 'order'):
-                interaction.order.status = Order.Status.CONFIRMED
-                interaction.order.save()
 
             # Send acceptance notifications
             try:
@@ -1270,11 +1265,6 @@ class RejectDonationView(APIView):
             if hasattr(interaction, 'rejection_reason'):
                 interaction.rejection_reason = rejection_reason
             interaction.save()
-
-            # Update associated order status
-            if hasattr(interaction, 'order'):
-                interaction.order.status = Order.Status.CANCELLED
-                interaction.order.save()
 
             # Send rejection notifications
             try:
