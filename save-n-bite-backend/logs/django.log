@@ -1592,3 +1592,22 @@ INFO 2025-08-19 21:38:45,724 basehttp 7276 17392 "GET /api/notifications/unread-
 INFO 2025-08-19 21:38:45,727 basehttp 7276 8156 "GET /api/notifications/preferences/ HTTP/1.1" 200 132
 INFO 2025-08-19 21:38:45,787 basehttp 7276 13708 "GET /api/admin/dashboard/ HTTP/1.1" 200 560
 INFO 2025-08-19 21:38:45,868 basehttp 7276 13708 "GET /api/admin/dashboard/ HTTP/1.1" 200 560
+INFO 2025-08-20 08:23:43,919 blob_storage 11372 2476 Updated existing container to public access: customer-profiles
+INFO 2025-08-20 08:23:43,972 blob_storage 11372 2476 Updated existing container to public access: ngo-documents
+INFO 2025-08-20 08:23:44,024 blob_storage 11372 2476 Updated existing container to public access: ngo-logos
+INFO 2025-08-20 08:23:44,073 blob_storage 11372 2476 Updated existing container to public access: provider-documents
+INFO 2025-08-20 08:23:44,129 blob_storage 11372 2476 Updated existing container to public access: provider-logos
+INFO 2025-08-20 08:23:44,183 blob_storage 11372 2476 Updated existing container to public access: provider-banners
+INFO 2025-08-20 08:23:46,991 blob_storage 23620 15420 Updated existing container to public access: customer-profiles
+INFO 2025-08-20 08:23:47,026 blob_storage 23620 15420 Updated existing container to public access: ngo-documents
+INFO 2025-08-20 08:23:47,066 blob_storage 23620 15420 Updated existing container to public access: ngo-logos
+INFO 2025-08-20 08:23:47,120 blob_storage 23620 15420 Updated existing container to public access: provider-documents
+INFO 2025-08-20 08:23:47,157 blob_storage 23620 15420 Updated existing container to public access: provider-logos
+INFO 2025-08-20 08:23:47,213 blob_storage 23620 15420 Updated existing container to public access: provider-banners
+INFO 2025-08-20 08:23:47,486 autoreload 23620 15420 Watching for file changes with StatReloader
+INFO 2025-08-20 08:23:48,840 blob_storage 23620 3836 Updated existing container to public access: customer-profiles
+INFO 2025-08-20 08:23:48,866 blob_storage 23620 3836 Updated existing container to public access: provider-banners
+INFO 2025-08-20 08:23:48,896 blob_storage 23620 3836 Updated existing container to public access: provider-documents
+INFO 2025-08-20 08:23:48,921 blob_storage 23620 3836 Updated existing container to public access: provider-logos
+INFO 2025-08-20 08:23:48,944 blob_storage 23620 3836 Updated existing container to public access: ngo-documents
+INFO 2025-08-20 08:23:48,972 blob_storage 23620 3836 Updated existing container to public access: ngo-logos
