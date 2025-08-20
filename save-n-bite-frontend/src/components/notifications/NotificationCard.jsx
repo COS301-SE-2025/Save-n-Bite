@@ -217,7 +217,7 @@ const NotificationCard = ({
   console.log('NotificationCard notification:', notification);
 
   return (
- <div
+    <div
       className={`p-3 sm:p-4 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors ${
         !notification.isRead ? 'bg-emerald-50 dark:bg-emerald-900' : 'bg-white dark:bg-gray-800'
       } ${!isLast ? 'border-b border-gray-100 dark:border-gray-700' : ''}`}
@@ -236,13 +236,13 @@ const NotificationCard = ({
                   <span className="inline-block w-1.5 h-1.5 sm:w-2 sm:h-2 bg-emerald-500 rounded-full flex-shrink-0"></span>
                 )}
                 {notification.priority === 'high' && (
-<span className="inline-block px-1.5 sm:px-2 py-0.5 text-xs font-medium bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-400 rounded-full">
+                  <span className="inline-block px-1.5 sm:px-2 py-0.5 text-xs font-medium bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-400 rounded-full">
                     High Priority
                   </span>
                 )}
               </div>
 
- <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-300 mb-2 leading-relaxed">
+              <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-300 mb-2 leading-relaxed">
                 {notification.message || notification.data?.message || notification.title || JSON.stringify(notification)}
               </p>
 
@@ -264,7 +264,7 @@ const NotificationCard = ({
                 </div>
               )}
 
-<div className="flex flex-col sm:flex-row sm:items-center sm:space-x-4 text-xs text-gray-500 dark:text-gray-400 space-y-1 sm:space-y-0">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-4 text-xs text-gray-500 dark:text-gray-400 space-y-1 sm:space-y-0">
                 <span className="font-medium">{getNotificationTypeText(notification.type)}</span>
                 <span>{getTimeAgo(notification.createdAt)}</span>
                 {notification.sender_name && notification.sender_name !== 'System' && (
@@ -280,7 +280,7 @@ const NotificationCard = ({
                 <button
                   onClick={handleMarkAsRead}
                   title="Mark as read"
- className="p-1 text-emerald-600 dark:text-emerald-400 hover:text-emerald-800 dark:hover:text-emerald-300 hover:bg-emerald-100 dark:hover:bg-emerald-800 rounded transition-colors touch-target"
+                  className="p-1 text-emerald-600 dark:text-emerald-400 hover:text-emerald-800 dark:hover:text-emerald-300 hover:bg-emerald-100 dark:hover:bg-emerald-800 rounded transition-colors touch-target"
                 >
                   <Check size={14} className="sm:w-4 sm:h-4" />
                 </button>
@@ -289,7 +289,7 @@ const NotificationCard = ({
                 <button
                   onClick={handleNavigate}
                   title="View details"
-className="p-1 text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 hover:bg-blue-100 dark:hover:bg-blue-900 rounded transition-colors touch-target"
+                  className="p-1 text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 hover:bg-blue-100 dark:hover:bg-blue-900 rounded transition-colors touch-target"
                 >
                   <ExternalLink size={14} className="sm:w-4 sm:h-4" />
                 </button>
@@ -298,7 +298,7 @@ className="p-1 text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:t
                 onClick={handleDelete}
                 title="Delete notification"
                 disabled={isDeleting}
-className="p-1 text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300 hover:bg-red-100 dark:hover:bg-red-900 rounded transition-colors disabled:opacity-50 touch-target"
+                className="p-1 text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300 hover:bg-red-100 dark:hover:bg-red-900 rounded transition-colors disabled:opacity-50 touch-target"
               >
                 <Trash2 size={14} className="sm:w-4 sm:h-4" />
               </button>

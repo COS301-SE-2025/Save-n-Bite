@@ -1,5 +1,6 @@
 import React from 'react';
 import { ChevronDownIcon } from 'lucide-react';
+import { USER_TYPES } from '../../utils/constants';
 
 const FilterSidebar = ({ 
   showFilters, 
@@ -7,9 +8,14 @@ const FilterSidebar = ({
   setFilters, 
   providerOptions = [], 
   typeOptions = [],
-  onResetFilters 
+  onResetFilters ,
+    userType
 }) => {
   if (!showFilters) return null;
+
+  console.log('FilterSidebar - userType:', userType);
+  console.log('FilterSidebar - USER_TYPES.NGO:', USER_TYPES.NGO);
+  console.log('FilterSidebar - typeOptions:', typeOptions);
 
   const handlePriceRangeChange = (e) => {
     const value = parseInt(e.target.value);
@@ -53,10 +59,10 @@ className="w-full h-2 bg-gray-200 dark:bg-gray-700 rounded-lg appearance-none cu
         </div>
       </div>
       
-      {/* Type Filter - Dynamic based on user permissions */}
-      {typeOptions.length > 0 && (
+       {/* Type Filter - Only show for NGO users */}
+      {userType === USER_TYPES.NGO && typeOptions.length > 0 && (
         <div className="mb-6">
-          <h4 className="font-medium mb-2 dark:text-white">Item Type</h4>
+          <h4 className="font-medium mb-2 text-gray-700 dark:text-white">Item Type</h4>
           <div className="space-y-2">
             {typeOptions.map((option) => (
               <label key={option.value} className="flex items-center cursor-pointer group">
@@ -71,7 +77,7 @@ className="w-full h-2 bg-gray-200 dark:bg-gray-700 rounded-lg appearance-none cu
                   })} 
                   className="mr-2 accent-emerald-600" 
                 />
-                <span className="text-white group-hover:text-gray-900 transition-colors text-sm">
+                <span className="text-gray-700 group-hover:text-gray-900 transition-colors text-sm">
                   {option.label}
                 </span>
               </label>
