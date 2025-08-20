@@ -1693,3 +1693,38 @@ INFO 2025-08-20 06:37:15,413 basehttp 126921 140273254377152 "GET /auth/provider
 INFO 2025-08-20 06:37:15,446 basehttp 126921 140273254377152 "GET /auth/providers/?complete_profiles_only=true HTTP/1.1" 200 1458
 INFO 2025-08-20 06:37:15,449 basehttp 126921 140273659307712 "GET /api/reviews/provider/0a7edef6-f708-4472-86e1-c463a31172a1/?page=1&page_size=1 HTTP/1.1" 200 730
 INFO 2025-08-20 06:37:15,552 basehttp 126921 140273254377152 "GET /api/reviews/provider/0a7edef6-f708-4472-86e1-c463a31172a1/?page=1&page_size=1 HTTP/1.1" 200 730
+INFO 2025-08-20 07:05:57,654 blob_storage 146256 139724306653312 Updated existing container to public access: customer-profiles
+INFO 2025-08-20 07:05:57,677 blob_storage 146256 139724306653312 Updated existing container to public access: ngo-documents
+INFO 2025-08-20 07:05:57,701 blob_storage 146256 139724306653312 Updated existing container to public access: ngo-logos
+INFO 2025-08-20 07:05:57,728 blob_storage 146256 139724306653312 Updated existing container to public access: provider-documents
+INFO 2025-08-20 07:05:57,961 blob_storage 146256 139724306653312 Updated existing container to public access: provider-logos
+INFO 2025-08-20 07:05:58,057 blob_storage 146256 139724306653312 Updated existing container to public access: provider-banners
+INFO 2025-08-20 07:05:58,294 autoreload 146256 139724306653312 Watching for file changes with StatReloader
+INFO 2025-08-20 07:05:59,089 blob_storage 146256 139724224165568 Updated existing container to public access: customer-profiles
+INFO 2025-08-20 07:05:59,116 blob_storage 146256 139724224165568 Updated existing container to public access: provider-banners
+INFO 2025-08-20 07:05:59,142 blob_storage 146256 139724224165568 Updated existing container to public access: provider-documents
+INFO 2025-08-20 07:05:59,171 blob_storage 146256 139724224165568 Updated existing container to public access: provider-logos
+INFO 2025-08-20 07:05:59,206 blob_storage 146256 139724224165568 Updated existing container to public access: ngo-documents
+INFO 2025-08-20 07:05:59,270 blob_storage 146256 139724224165568 Updated existing container to public access: ngo-logos
+WARNING 2025-08-20 07:06:28,218 log 146256 139724119332544 Unauthorized: /api/notifications/preferences/
+WARNING 2025-08-20 07:06:28,219 log 146256 139724110939840 Unauthorized: /api/notifications/preferences/
+WARNING 2025-08-20 07:06:28,219 log 146256 139724127725248 Unauthorized: /api/notifications/unread-count/
+WARNING 2025-08-20 07:06:28,220 log 146256 139724136117952 Unauthorized: /api/notifications/unread-count/
+WARNING 2025-08-20 07:06:28,223 basehttp 146256 139724110939840 "GET /api/notifications/preferences/ HTTP/1.1" 401 58
+WARNING 2025-08-20 07:06:28,223 basehttp 146256 139724119332544 "GET /api/notifications/preferences/ HTTP/1.1" 401 58
+WARNING 2025-08-20 07:06:28,226 basehttp 146256 139724127725248 "GET /api/notifications/unread-count/ HTTP/1.1" 401 58
+WARNING 2025-08-20 07:06:28,226 basehttp 146256 139724136117952 "GET /api/notifications/unread-count/ HTTP/1.1" 401 58
+WARNING 2025-08-20 07:06:28,230 log 146256 139724110939840 Unauthorized: /api/notifications/preferences/
+WARNING 2025-08-20 07:06:28,232 basehttp 146256 139724110939840 "GET /api/notifications/preferences/ HTTP/1.1" 401 58
+WARNING 2025-08-20 07:06:28,243 log 146256 139724136117952 Unauthorized: /api/notifications/unread-count/
+WARNING 2025-08-20 07:06:28,248 log 146256 139724119332544 Unauthorized: /api/notifications/preferences/
+WARNING 2025-08-20 07:06:28,249 basehttp 146256 139724136117952 "GET /api/notifications/unread-count/ HTTP/1.1" 401 58
+WARNING 2025-08-20 07:06:28,253 log 146256 139724127725248 Unauthorized: /api/notifications/unread-count/
+WARNING 2025-08-20 07:06:28,253 basehttp 146256 139724119332544 "GET /api/notifications/preferences/ HTTP/1.1" 401 58
+WARNING 2025-08-20 07:06:28,257 basehttp 146256 139724127725248 "GET /api/notifications/unread-count/ HTTP/1.1" 401 58
+INFO 2025-08-20 07:06:29,504 basehttp 146256 139723725067968 "OPTIONS /api/notifications/preferences/ HTTP/1.1" 200 0
+INFO 2025-08-20 07:06:29,505 basehttp 146256 139723733460672 "OPTIONS /api/notifications/preferences/ HTTP/1.1" 200 0
+INFO 2025-08-20 07:06:29,620 basehttp 146256 139723733460672 "GET /api/notifications/preferences/ HTTP/1.1" 200 132
+INFO 2025-08-20 07:06:29,622 basehttp 146256 139723741853376 "GET /api/notifications/unread-count/ HTTP/1.1" 200 18
+INFO 2025-08-20 07:06:29,666 basehttp 146256 139723741853376 "GET /api/notifications/unread-count/ HTTP/1.1" 200 18
+INFO 2025-08-20 07:06:29,719 basehttp 146256 139723733460672 "GET /api/notifications/preferences/ HTTP/1.1" 200 132
