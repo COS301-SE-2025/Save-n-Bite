@@ -3,9 +3,9 @@ name: Frontend CI/CD Pipeline
 
 on:
   push:
-    branches: [ frontend ]
+    branches: [ dev ]
   pull_request:
-    branches: [  frontend ]
+    branches: [  dev ]
 
 env:
   NODE_VERSION: '20'
