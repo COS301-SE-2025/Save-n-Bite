@@ -84,7 +84,6 @@ jobs:
         DB_PASSWORD=postgres
         DB_HOST=localhost
         DB_PORT=5432
-        REDIS_URL=redis://localhost:6379/0
         ALLOWED_HOSTS=localhost,127.0.0.1
         CORS_ALLOWED_ORIGINS=http://localhost:3000,http://127.0.0.1:3000
         # Disable Azure Storage for testing
@@ -103,14 +102,7 @@ jobs:
           sleep 2
         done
         echo "✅ PostgreSQL is ready"
-        
-        # Wait for Redis
-        echo "Waiting for Redis..."
-        until redis-cli -h localhost -p 6379 ping > /dev/null 2>&1; do
-          echo "Redis not ready, waiting..."
-          sleep 2
-        done
-        echo "✅ Redis is ready"
+      
 
     - name: Verify Django setup
       run: |
