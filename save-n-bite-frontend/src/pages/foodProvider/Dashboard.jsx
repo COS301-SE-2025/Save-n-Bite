@@ -194,10 +194,10 @@ function Dashboard() {
                 </div>
               )}
             </div>
-            <Button variant="secondary" icon={<DownloadIcon className="h-4 w-4" />}>
+            {/* <Button variant="secondary" icon={<DownloadIcon className="h-4 w-4" />}>
               <span className="hidden sm:inline">Export Data</span>
               <span className="sm:hidden">Export</span>
-            </Button>
+            </Button> */}
           </div>
 
           {/* KPI Cards */}

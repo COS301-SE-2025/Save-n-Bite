@@ -665,9 +665,9 @@ function PickupCoordination() {
                   <div className="p-3 sm:p-5">
                     <div className="flex justify-between items-start mb-3">
                       <div>
-                        <h3 className="font-semibold text-gray-900 dark:text-white text-sm sm:text-base">
+                        {/* <h3 className="font-semibold text-gray-900 dark:text-white text-sm sm:text-base">
                           {pickup.orderNumber}
-                        </h3>
+                        </h3> */}
                         <p className="text-gray-600 dark:text-gray-300 text-sm">{pickup.customerName}</p>
                       </div>
                       <div className="flex items-center space-x-2">
@@ -766,7 +766,7 @@ function PickupCoordination() {
                           <p className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Confirmation Code:</p>
                           <div className="bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded-md inline-block">
                             <span className="text-sm font-mono bg-white dark:bg-gray-600 px-2 py-0.5 border border-gray-300 dark:border-gray-500 rounded text-gray-900 dark:text-white">
-                              {pickup.confirmationCode}
+                              xxxxxx
                             </span>
                           </div>
                         </div>
