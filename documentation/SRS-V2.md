@@ -115,32 +115,32 @@ The project will be piloted with **University of Pretoria food outlets** in coll
 ## 3. Use Case Diagrams
 
 ### 3.1 User Management Subsystem
-![Use Case Diagram for User Management](../assets/UseCase_User_Management_Subsystem.png)
+![Use Case Diagram for User Management](UseCase_User.png)
 
 ---
 
 ### 3.2 Food Listings Subsystem
-![Use Case Diagram for Food Listings](../assets/UseCase_Food_Listing_Subsystem.png)
+![Use Case Diagram for Food Listings](UseCase_FoodListing.png)
 
 ---
 
 ### 3.3 Food Discovery and Transactions
-![Use Case Diagram for Food Discovery and Transactions](../assets/UseCase_Food_Discovery_and_Transactions.png)
+![Use Case Diagram for Food Discovery and Transactions](UseCase_FoodDiscovery_Transaction.png)
 
 ---
 
 ### 3.4 Feedback/Reviews, Analytics, and AI Subsystem
-![Use Case Diagram for Feedback, Analytics and AI](../assets/UseCase_Feedback_Analytics_AI.png)
+![Use Case Diagram for Feedback, Analytics and AI](UseCase_Feedback_Analytics_AI.png)
 
 ---
 
 ### 3.5 Logistics Subsystem
-![Use Case Diagram for Logistics](../assets/UseCase_Logistics_Subsystem.png)
+![Use Case Diagram for Logistics](UseCase_Logistics.png)
 
 ---
 
 ### 3.6 Blockchain, Education, and Gamification
-![Use Case Diagram for Blockchain, Education and Gamification](../assets/UseCase_Blockchain_Education_Gamification.png)
+![Use Case Diagram for Blockchain, Education and Gamification](UseCase_Blockchain_Education_Gamification.png)
 
 ---
 
@@ -163,12 +163,12 @@ R2: **Make Listings**
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- Description  
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- Food Type  
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- Original Price  
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- Discounted Price 
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- Discounted Price  
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- Quantity  
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- Expiry Date  
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- Pickup Window
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- Pickup Window  
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- Allergens  
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- Dietery Information 
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- Dietery Information  
 &nbsp;&nbsp;&nbsp;&nbsp;R2.3 Business users should be able to indicate whether the listing is for sale at a discounted price or available as a donation.  
 &nbsp;&nbsp;&nbsp;&nbsp;R2.4 Listings should update real-time availability as items are reserved or claimed.  
 &nbsp;&nbsp;&nbsp;&nbsp;R2.5 Businesses should be able to update food listings.  
@@ -483,9 +483,9 @@ This is a stub section.
 ---
 
 ## 8. Deployment Model
-
+This is a stub section.
 ---
 
 ## 9. Live Deployed System
-
+This is a stub section.
 ---

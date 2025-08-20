@@ -162,6 +162,7 @@ save-n-bite/
 
 ---
 
+<<<<<<< HEAD
 <details open>
 <summary><strong>✅ Demo 3 Deliverables (20 August 2025)</strong></summary>
 
@@ -196,6 +197,16 @@ save-n-bite/
 <summary><strong>✅ Demo 2 Deliverables (27 June 2025)</strong></summary>
 
 1. **Implemented Use Cases:**  
+=======
+## ✅ Demo 2 Deliverables (27 June 2025)
+1. **Coding Standards Document**:  
+   - **[Click Here](documentation/coding_standards_doc.md)**
+     
+2. **User Manual**:  
+   - **[Click Here](documentation/save_n_bite_user_manuals.md)**
+     
+3. **Implemented Use Cases:**   
+>>>>>>> fd1dff37d6cc7d11151ccfbb0e1b5e59d4eb19ed
    - User registration/login (JWT/OAuth2).✅    
    - User themes and profile preferences (React + PostgreSQL).✅  
    - Validation of user input (React + Django validators).✅  
@@ -204,10 +215,17 @@ save-n-bite/
    - Purchase/Request food (React + Django REST, PostgreSQL).✅  
    - Notifications system (Django + WebSocket, Redis for real-time pub/sub).✅  
    - Scheduling and Pickup system (React + Django REST, PostgreSQL + Redis caching).✅  
+<<<<<<< HEAD
    - Feedback and Reviews system (React + Django REST, PostgreSQL + moderation).✅  
    - Business Analytics system (Django + Pandas, Scikit-learn for ML predictions, PostgreSQL + Redis).✅  
 
 2. **SRS Document**:  
+=======
+   - Feedback and Revies system (React + Django REST, PostgreSQL + moderation).✅  
+   - Business Analytics system (Django).✅  
+
+4. **SRS Document**:  
+>>>>>>> fd1dff37d6cc7d11151ccfbb0e1b5e59d4eb19ed
    - **📄 [Software Requirements Specification (SRS)](documentation/SRS-V2.md)**  
    - Introduction  
    - User stories  
@@ -224,8 +242,13 @@ save-n-bite/
 4. **GitHub Project Board**:  
    - **📊 [GitHub Project Board](https://github.com/orgs/COS301-SE-2025/projects/177/views/2)**  
 
+<<<<<<< HEAD
 5. **Demo 2 Video**  
    [Click here!](https://www.canva.com/design/DAGowUskyDY/E8nYEYzEWrMe1D13DkMVFw/watch?utm_content=DAGowUskyDY&utm_campaign=designshare&utm_medium=link2&utm_source=uniquelinks&utlId=h3390ca1771)
+=======
+6. **Demo 2 Video**
+   [Click here!](https://www.canva.com/design/DAGriFQ7F2g/6gApEr2CMYT49InocxWEUQ/watch?utm_content=DAGriFQ7F2g&utm_campaign=designshare&utm_medium=link2&utm_source=uniquelinks&utlId=hc89293d863)
+>>>>>>> fd1dff37d6cc7d11151ccfbb0e1b5e59d4eb19ed
 
 </details>
 
