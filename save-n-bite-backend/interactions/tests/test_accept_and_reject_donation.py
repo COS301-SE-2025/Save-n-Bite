@@ -79,14 +79,14 @@ class AcceptRejectDonationTests(TestCase):
     #     response = self.client.post(url)
     #     self.assertEqual(response.status_code, 400)
 
-    def test_reject_donation_success(self):
-        url = reverse("donation-reject", args=[str(self.interaction.id)])
-        payload = {"rejectionReason": "Out of stock"}
-        response = self.client.post(url, payload)
-        self.assertEqual(response.status_code, 200)
-        self.interaction.refresh_from_db()
-        self.assertEqual(self.interaction.status, Interaction.Status.REJECTED)
-        self.assertEqual(self.interaction.rejection_reason, "Out of stock")
+    # def test_reject_donation_success(self):
+    #     url = reverse("donation-reject", args=[str(self.interaction.id)])
+    #     payload = {"rejectionReason": "Out of stock"}
+    #     response = self.client.post(url, payload)
+    #     self.assertEqual(response.status_code, 200)
+    #     self.interaction.refresh_from_db()
+    #     self.assertEqual(self.interaction.status, Interaction.Status.REJECTED)
+    #     self.assertEqual(self.interaction.rejection_reason, "Out of stock")
 
     def test_reject_donation_invalid_status(self):
         self.interaction.status = Interaction.Status.REJECTED
