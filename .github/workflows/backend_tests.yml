@@ -1,4 +1,4 @@
-name: Backend
+name: Django CI Tests
 
 on:
   push:
@@ -42,6 +42,20 @@ jobs:
         ports:
           - 6379:6379
 
+      azurite:
+        image: mcr.microsoft.com/azure-storage/azurite
+        env:
+          AZURITE_ACCOUNTS: devstoreaccount1:Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==
+        ports:
+          - 10000:10000
+          - 10001:10001
+          - 10002:10002
+        options: >-
+          --health-cmd "nc -z localhost 10000"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
     defaults:
       run:
         working-directory: save-n-bite-backend
@@ -78,8 +92,11 @@ jobs:
     - name: Install dependencies with Poetry
       run: |
         poetry install --with dev
-        # Ensure all test dependencies are properly installed
+        # Ensure all required packages are installed  
+        poetry add azure-storage-blob
         poetry run pip install model_bakery coverage pytest-html
+        # Debug: List installed packages
+        poetry show | grep -E "(azure|blob)" || echo "Azure packages not found"
 
     - name: Create test environment file
       run: |
@@ -94,7 +111,56 @@ jobs:
         REDIS_URL=redis://localhost:6379/0
         ALLOWED_HOSTS=localhost,127.0.0.1
         CORS_ALLOWED_ORIGINS=http://localhost:3000,http://127.0.0.1:3000
+        # Azure Blob Storage (use mock/test values)
+        AZURE_STORAGE_CONNECTION_STRING=DefaultEndpointsProtocol=http;AccountName=devstoreaccount1;AccountKey=Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==;BlobEndpoint=http://127.0.0.1:10000/devstoreaccount1
+        AZURE_CONTAINER_NAME=test-container
+        USE_AZURE_STORAGE=False
+        TESTING=True
         EOF
+
+    - name: Wait for services and setup Azure storage
+      run: |
+        # Wait for PostgreSQL
+        until pg_isready -h localhost -p 5432 -U postgres; do
+          echo "Waiting for PostgreSQL..."
+          sleep 2
+        done
+        
+        # Wait for Redis
+        until redis-cli -h localhost -p 6379 ping; do
+          echo "Waiting for Redis..."
+          sleep 2
+        done
+        
+        # Wait for Azurite and create container
+        sleep 5
+        poetry run python -c "
+        import os
+        from azure.storage.blob import BlobServiceClient
+        try:
+            client = BlobServiceClient.from_connection_string(
+                'DefaultEndpointsProtocol=http;AccountName=devstoreaccount1;AccountKey=Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==;BlobEndpoint=http://127.0.0.1:10000/devstoreaccount1'
+            )
+            try:
+                client.create_container('test-container')
+                print('✅ Azure test container created')
+            except Exception as e:
+                print(f'Container might already exist: {e}')
+        except Exception as e:
+            print(f'⚠️ Azure setup warning: {e}')
+        "
+
+    - name: Verify Django setup
+      run: |
+        poetry run python -c "
+        import django
+        print(f'Django version: {django.get_version()}')
+        try:
+            import azure.storage.blob
+            print('Azure storage blob: Available')
+        except ImportError:
+            print('Azure storage blob: NOT AVAILABLE')
+        "
 
     - name: Run migrations
       run: poetry run python manage.py migrate
