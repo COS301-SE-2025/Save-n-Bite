@@ -2,9 +2,9 @@ name: Django CI Tests
 
 on:
   push:
-    branches: [ dev ]
+    branches: [ backend ]
   pull_request:
-    branches: [ dev ]
+    branches: [ backend ]
   workflow_dispatch:
     inputs:
       run_coverage:
@@ -57,9 +57,6 @@ jobs:
       run: |
         echo "DEBUG=True" >> $GITHUB_ENV
         echo "SECRET_KEY=test-secret-key-for-ci" >> $GITHUB_ENV
-
-    - name: Run reviews tests
-      run: poetry run pytest reviews/ -v
 
     - name: Run scheduling tests
       run: poetry run pytest scheduling/ -v

@@ -7,7 +7,7 @@ sys.path.insert(0, os.path.abspath('.'))
 
 def pytest_configure(config):
     """Configure pytest with Django settings"""
-    os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'truly_final_settings')
+    os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'backend.settings')
     # Django is already configured by pytest-django plugin
     pass
 

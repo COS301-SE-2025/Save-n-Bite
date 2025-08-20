@@ -3,9 +3,9 @@ name: Frontend CI/CD Pipeline
 
 on:
   push:
-    branches: [ frontend ]
+    branches: [ backend ]
   pull_request:
-    branches: [  frontend ]
+    branches: [  backend ]
 
 env:
   NODE_VERSION: '20'
@@ -30,7 +30,7 @@ jobs:
           cache-dependency-path: './save-n-bite-frontend/package-lock.json'
           
       - name: Install dependencies
-        run: npm ci
+        run: npm i
         
       - name: Run Vitest
         run: npm test

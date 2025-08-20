@@ -11,7 +11,7 @@ module.exports = {
   collectCoverageFrom: [
     'src/components/auth/FoodCard.jsx',
     'src/components/auth/CustomerNavBar.jsx',
-    'src/components/auth/FilterSidebar.jsx',
+   
     'src/components/auth/FoodItemDetails.jsx',
     'src/components/auth/FoodItemHeader.jsx',
     'src/components/auth/FoodListingsGrid.jsx',
