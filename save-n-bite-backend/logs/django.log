@@ -1881,3 +1881,31 @@ INFO 2025-08-20 08:04:59,575 basehttp 17372 25072 "GET /api/scheduling/my-pickup
 INFO 2025-08-20 08:04:59,763 basehttp 17372 11948 "GET /cart/ngo/history/ HTTP/1.1" 200 2598
 INFO 2025-08-20 08:04:59,825 basehttp 17372 19548 "GET /api/scheduling/my-pickups/ HTTP/1.1" 200 64
 INFO 2025-08-20 08:05:00,058 basehttp 17372 25072 "GET /cart/ngo/history/ HTTP/1.1" 200 2598
+INFO 2025-08-20 08:06:39,357 autoreload 17372 9296 C:\Users\vanea\Documents\UP Third Year 2025\Year module\COS 301\Save-n-Bite\save-n-bite-backend\interactions\utils.py changed, reloading.
+INFO 2025-08-20 08:06:43,413 blob_storage 23696 19916 Updated existing container to public access: customer-profiles
+INFO 2025-08-20 08:06:43,447 blob_storage 23696 19916 Updated existing container to public access: ngo-documents
+INFO 2025-08-20 08:06:43,494 blob_storage 23696 19916 Updated existing container to public access: ngo-logos
+INFO 2025-08-20 08:06:43,524 blob_storage 23696 19916 Updated existing container to public access: provider-documents
+INFO 2025-08-20 08:06:43,543 blob_storage 23696 19916 Updated existing container to public access: provider-logos
+INFO 2025-08-20 08:06:43,570 blob_storage 23696 19916 Updated existing container to public access: provider-banners
+INFO 2025-08-20 08:06:43,765 autoreload 23696 19916 Watching for file changes with StatReloader
+INFO 2025-08-20 08:06:44,208 blob_storage 23696 6140 Updated existing container to public access: customer-profiles
+INFO 2025-08-20 08:06:44,236 blob_storage 23696 6140 Updated existing container to public access: provider-banners
+INFO 2025-08-20 08:06:44,253 blob_storage 23696 6140 Updated existing container to public access: provider-documents
+INFO 2025-08-20 08:06:44,296 blob_storage 23696 6140 Updated existing container to public access: provider-logos
+INFO 2025-08-20 08:06:44,309 blob_storage 23696 6140 Updated existing container to public access: ngo-documents
+INFO 2025-08-20 08:06:44,333 blob_storage 23696 6140 Updated existing container to public access: ngo-logos
+INFO 2025-08-20 08:06:48,650 basehttp 23696 1484 "GET /api/notifications/unread-count/ HTTP/1.1" 200 18
+INFO 2025-08-20 08:06:48,650 basehttp 23696 18016 "GET /api/notifications/preferences/ HTTP/1.1" 200 132
+INFO 2025-08-20 08:06:48,698 basehttp 23696 15984 "GET /api/notifications/unread-count/ HTTP/1.1" 200 18
+INFO 2025-08-20 08:06:48,721 basehttp 23696 29204 "GET /api/notifications/preferences/ HTTP/1.1" 200 132
+INFO 2025-08-20 08:06:48,742 basehttp 23696 21040 "GET /cart/business/history/ HTTP/1.1" 200 1901
+INFO 2025-08-20 08:06:48,828 basehttp 23696 18016 "GET /api/notifications/preferences/ HTTP/1.1" 200 132
+INFO 2025-08-20 08:06:48,830 basehttp 23696 1484 "GET /api/notifications/unread-count/ HTTP/1.1" 200 18
+INFO 2025-08-20 08:06:49,053 basehttp 23696 15984 "GET /api/scheduling/my-pickups/ HTTP/1.1" 200 64
+INFO 2025-08-20 08:06:49,084 basehttp 23696 29204 "GET /cart/ngo/history/ HTTP/1.1" 200 2598
+INFO 2025-08-20 08:06:49,095 basehttp 23696 30104 "GET /api/notifications/unread-count/ HTTP/1.1" 200 18
+INFO 2025-08-20 08:06:49,123 basehttp 23696 21040 "GET /cart/business/history/ HTTP/1.1" 200 1901
+INFO 2025-08-20 08:06:49,152 basehttp 23696 30080 "GET /api/notifications/preferences/ HTTP/1.1" 200 132
+INFO 2025-08-20 08:06:49,270 basehttp 23696 25576 "GET /api/scheduling/my-pickups/ HTTP/1.1" 200 64
+INFO 2025-08-20 08:06:49,321 basehttp 23696 15984 "GET /cart/ngo/history/ HTTP/1.1" 200 2598
