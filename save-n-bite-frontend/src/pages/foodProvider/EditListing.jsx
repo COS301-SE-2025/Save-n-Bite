@@ -19,22 +19,71 @@ const EditListing = () => {
     }
   }, [listingId]);
 
+  // const fetchListingForEdit = async () => {
+  //   try {
+  //     setLoading(true);
+  //     const response = await foodListingsAPI.getListingForEdit(listingId);
+      
+  //     if (response.success) {
+  //       setListing(response.data);
+  //     } else {
+  //       setError(response.error || 'Failed to load listing');
+  //     }
+  //   } catch (err) {
+  //     setError('Failed to load listing');
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
+
   const fetchListingForEdit = async () => {
     try {
       setLoading(true);
       const response = await foodListingsAPI.getListingForEdit(listingId);
+      console.log('Fetched listing for edit:', response);
       
       if (response.success) {
-        setListing(response.data);
+        // Transform the listing data to match the form structure
+        const listingData = response.data;
+        
+        // Parse pickup window if it exists
+        let pickup_start_time = '';
+        let pickup_end_time = '';
+        if (listingData.pickup_window) {
+          const [start, end] = listingData.pickup_window.split('-');
+          pickup_start_time = start;
+          pickup_end_time = end;
+        }
+
+        // Format the listing data for the form
+        const formattedListing = {
+          ...listingData,
+          pickup_start_time,
+          pickup_end_time,
+          // Ensure these fields exist even if empty
+          pickup_address: listingData.pickup_address || '',
+          pickup_instructions: listingData.pickup_instructions || 'Collect at the main counter',
+          pickup_contact_person: listingData.pickup_contact_person || '',
+          pickup_contact_phone: listingData.pickup_contact_phone || '',
+          pickup_latitude: listingData.pickup_latitude || '',
+          pickup_longitude: listingData.pickup_longitude || '',
+          total_slots: listingData.total_slots || '4',
+          max_orders_per_slot: listingData.max_orders_per_slot || '2',
+          slot_buffer_minutes: listingData.slot_buffer_minutes || '10'
+        };
+
+        setListing(formattedListing);
       } else {
         setError(response.error || 'Failed to load listing');
       }
     } catch (err) {
+      console.error('Error fetching listing:', err);
       setError('Failed to load listing');
     } finally {
       setLoading(false);
     }
   };
+
 
   const toggleMobileSidebar = () => {
     setIsMobileSidebarOpen(!isMobileSidebarOpen);

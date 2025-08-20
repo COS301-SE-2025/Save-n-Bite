@@ -1,3 +1,5 @@
+
+
 import React, { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { SearchIcon, StarIcon, MapPinIcon } from 'lucide-react'
@@ -167,37 +169,15 @@ const FoodProvidersPage = () => {
     }
   }
 
-  // Loading state
-  if (loading) {
+  // Loading state - matches FoodListings pattern
+  if (loading && filteredProviders.length === 0) {
     return (
-      <div className="bg-gray-50 min-h-screen w-full">
+      <div className="bg-gray-50 dark:bg-gray-900 min-h-screen w-full transition-colors duration-300">
         <CustomerNavBar />
-        <div className="max-w-6xl mx-auto p-4 md:p-6">
-          <div className="mb-8">
-            <h1 className="text-3xl font-bold text-gray-800 mb-2">
-              Food Providers
-            </h1>
-            <p className="text-gray-600">
-              Loading providers...
-            </p>
-          </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {[...Array(6)].map((_, index) => (
-              <div key={index} className="bg-white rounded-lg overflow-hidden shadow-sm animate-pulse">
-                <div className="h-48 bg-gray-300"></div>
-                <div className="p-4">
-                  <div className="h-4 bg-gray-300 rounded mb-2"></div>
-                  <div className="h-3 bg-gray-300 rounded mb-2 w-3/4"></div>
-                  <div className="h-3 bg-gray-300 rounded mb-3 w-1/2"></div>
-                  <div className="flex gap-1">
-                    <div className="h-6 bg-gray-300 rounded-full w-16"></div>
-                    <div className="h-6 bg-gray-300 rounded-full w-12"></div>
-                  </div>
-                  <div className="h-3 bg-gray-300 rounded mt-3 w-1/3"></div>
-                </div>
-              </div>
-            ))}
+        <div className="flex items-center justify-center min-h-[60vh]">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-600 mx-auto mb-4"></div>
+            <p className="text-gray-600 dark:text-gray-200">Loading food providers...</p>
           </div>
         </div>
       </div>
@@ -207,18 +187,18 @@ const FoodProvidersPage = () => {
   // Error state
   if (error) {
     return (
-      <div className="bg-gray-50 min-h-screen w-full">
+      <div className="bg-gray-50 dark:bg-gray-900 min-h-screen w-full transition-colors duration-300">
         <CustomerNavBar />
         <div className="max-w-6xl mx-auto p-4 md:p-6">
           <div className="mb-8">
-            <h1 className="text-3xl font-bold text-gray-800 mb-2">
+            <h1 className="text-3xl font-bold text-gray-800 dark:text-gray-100 mb-2">
               Food Providers
             </h1>
-            <p className="text-red-600">{error}</p>
+            <p className="text-red-600 dark:text-red-400">{error}</p>
           </div>
           
           <div className="text-center py-12">
-            <p className="text-xl text-gray-600 mb-4">Unable to load providers</p>
+            <p className="text-xl text-gray-600 dark:text-gray-300 mb-4">Unable to load providers</p>
             <button 
               onClick={() => window.location.reload()} 
               className="px-4 py-2 bg-emerald-600 text-white rounded-md hover:bg-emerald-700 transition-colors"
@@ -232,8 +212,7 @@ const FoodProvidersPage = () => {
   }
 
   return (
-<div className="bg-gray-50 dark:bg-gray-900 min-h-screen w-full transition-colors duration-300">
-
+    <div className="bg-gray-50 dark:bg-gray-900 min-h-screen w-full transition-colors duration-300">
       <CustomerNavBar />
       <div className="max-w-6xl mx-auto p-4 md:p-6">
         <div className="mb-8">
@@ -277,6 +256,16 @@ const FoodProvidersPage = () => {
           </div>
         </div>
 
+        {/* Show loading indicator while providers are being updated */}
+        {loading && filteredProviders.length > 0 && (
+          <div className="mb-4 text-center">
+            <div className="inline-flex items-center px-3 py-2 sm:px-4 sm:py-2 bg-emerald-50 dark:bg-emerald-900 text-emerald-600 dark:text-emerald-200 rounded-md text-sm transition-colors duration-300">
+              <div className="animate-spin rounded-full h-3 w-3 sm:h-4 sm:w-4 border-b-2 border-emerald-600 mr-2"></div>
+              Updating providers...
+            </div>
+          </div>
+        )}
+
         {/* Providers Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredProviders.map((provider) => (
@@ -296,27 +285,26 @@ const FoodProvidersPage = () => {
                 />
               </div>
               <div className="p-4">
-<h3 className="font-semibold text-lg text-gray-800 dark:text-gray-100">
-  {provider.business_name}
-</h3>
-<p className="text-gray-600 dark:text-gray-300 text-sm mt-1 line-clamp-2">
-  {provider.business_description || 'Local food provider committed to reducing waste'}
-</p>
+                <h3 className="font-semibold text-lg text-gray-800 dark:text-gray-100">
+                  {provider.business_name}
+                </h3>
+                <p className="text-gray-600 dark:text-gray-300 text-sm mt-1 line-clamp-2">
+                  {provider.business_description || 'Local food provider committed to reducing waste'}
+                </p>
 
                 <div className="flex items-center mt-2">
                   <div className="flex items-center text-amber-500">
                     <StarIcon size={16} className="fill-current" />
                     <span className="ml-1 text-sm">{formatRating(provider.rating)}</span>
                   </div>
-<span className="mx-2 text-gray-300 dark:text-gray-700">•</span>
-<span className="text-sm text-gray-600 dark:text-gray-300">
-  {getReviewCountText(provider.total_reviews)}
-</span>
-
+                  <span className="mx-2 text-gray-300 dark:text-gray-700">•</span>
+                  <span className="text-sm text-gray-600 dark:text-gray-300">
+                    {getReviewCountText(provider.total_reviews)}
+                  </span>
                 </div>
                 
                 {provider.business_address && (
-                  <div className="flex items-center mt-2 text-gray-600">
+                  <div className="flex items-center mt-2 text-gray-600 dark:text-gray-300">
                     <MapPinIcon size={14} className="mr-1" />
                     <span className="text-xs truncate">{provider.business_address}</span>
                   </div>
@@ -325,23 +313,21 @@ const FoodProvidersPage = () => {
                 <div className="flex flex-wrap gap-1 mt-3">
                   {provider.business_tags && provider.business_tags.slice(0, 3).map((tag) => (
                     <span
-key={tag}
-className="px-2 py-1 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 text-xs rounded-full"
-
+                      key={tag}
+                      className="px-2 py-1 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 text-xs rounded-full"
                     >
                       {tag}
                     </span>
                   ))}
                   {(!provider.business_tags || provider.business_tags.length === 0) && (
-                    <span className="px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded-full">
+                    <span className="px-2 py-1 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 text-xs rounded-full">
                       Food Provider
                     </span>
                   )}
                 </div>
-<div className="mt-3 text-sm text-gray-600 dark:text-gray-300">
-  {provider.active_listings_count || 0} items available
-</div>
-
+                <div className="mt-3 text-sm text-gray-600 dark:text-gray-300">
+                  {provider.active_listings_count || 0} items available
+                </div>
               </div>
             </Link>
           ))}
@@ -349,7 +335,7 @@ className="px-2 py-1 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-3
 
         {/* Empty state */}
         {filteredProviders.length === 0 && !loading && (
-          <div className="text-center py-12">
+          <div className="text-center py-12 bg-white dark:bg-gray-800 rounded-lg shadow-sm transition-colors duration-300">
             <p className="text-xl text-gray-600 dark:text-gray-300 mb-4">
               No providers found
             </p>
