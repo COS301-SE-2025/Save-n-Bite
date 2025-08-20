@@ -17,6 +17,21 @@ jobs:
   test:
     runs-on: ubuntu-latest
 
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_USER: postgres
+          POSTGRES_DB: test_saveNbite
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
     defaults:
       run:
         working-directory: save-n-bite-backend
@@ -52,23 +67,29 @@ jobs:
         poetry run pip install model_bakery
         poetry run pip install celery
         poetry run pip install azure-storage-blob
+        poetry run pip install psycopg2-binary
 
     - name: Set up environment variables
       run: |
         echo "DEBUG=True" >> $GITHUB_ENV
         echo "SECRET_KEY=test-secret-key-for-ci" >> $GITHUB_ENV
+        echo "DATABASE_URL=sqlite:///test.db" >> $GITHUB_ENV
+        echo "AZURE_STORAGE_CONNECTION_STRING=DefaultEndpointsProtocol=http;AccountName=devstoreaccount1;AccountKey=Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==;BlobEndpoint=http://127.0.0.1:10000/devstoreaccount1;" >> $GITHUB_ENV
+
+    - name: Run Django migrations
+      run: poetry run python manage.py migrate --settings=backend.settings
 
     - name: Run reviews tests
-      run: poetry run pytest reviews/ -v
+      run: timeout 300 poetry run pytest reviews/ -v --tb=short
 
-    - name: Run scheduling tests
-      run: poetry run pytest scheduling/ -v
+    - name: Run scheduling tests  
+      run: timeout 300 poetry run pytest scheduling/ -v --tb=short
 
     - name: Run food_listings tests
-      run: poetry run pytest food_listings/ -v
+      run: timeout 300 poetry run pytest food_listings/ -v --tb=short
 
     - name: Run notifications tests
-      run: poetry run pytest notifications/ -v
+      run: timeout 300 poetry run pytest notifications/ -v --tb=short
 
     - name: Run admin_system tests
-      run: poetry run pytest admin_system/ -v
+      run: timeout 300 poetry run pytest admin_system/ -v --tb=short
