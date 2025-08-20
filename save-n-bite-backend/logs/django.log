@@ -1,3 +1,4 @@
+
 INFO 2025-08-18 11:13:53,035 autoreload 10388 11340 C:\Users\Capleton\Desktop\COS214\practical\Save-n-Bite\save-n-bite-backend\backend\settings.py changed, reloading.
 INFO 2025-08-18 11:13:58,231 blob_storage 12348 6616 Updated existing container to public access: customer-profiles
 INFO 2025-08-18 11:13:58,259 blob_storage 12348 6616 Updated existing container to public access: ngo-documents
