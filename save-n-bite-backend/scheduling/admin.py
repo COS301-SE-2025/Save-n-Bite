@@ -5,11 +5,7 @@ from django.utils.html import format_html
 from django.urls import reverse
 from django.utils.safestring import mark_safe
 from django.utils import timezone
-from .models import (
-    PickupLocation, FoodListingPickupSchedule, PickupTimeSlot,
-    ScheduledPickup, PickupOptimization, PickupAnalytics
-)
-
+from .models import PickupLocation, ScheduledPickup, PickupAnalytics
 
 @admin.register(PickupLocation)
 class PickupLocationAdmin(admin.ModelAdmin):
@@ -45,209 +41,57 @@ class PickupLocationAdmin(admin.ModelAdmin):
         return super().get_queryset(request).select_related('business')
 
 
-class PickupTimeSlotInline(admin.TabularInline):
-    model = PickupTimeSlot
-    extra = 0
-    readonly_fields = ['id', 'current_bookings', 'is_available', 'created_at']
-    fields = [
-        'slot_number', 'start_time', 'end_time', 'date', 
-        'max_orders_per_slot', 'current_bookings', 'is_available', 'is_active'
-    ]
-    
-    def is_available(self, obj):
-        if obj.pk:
-            return obj.is_available
-        return True
-    is_available.boolean = True
-    is_available.short_description = 'Available'
-
-
-@admin.register(FoodListingPickupSchedule)
-class FoodListingPickupScheduleAdmin(admin.ModelAdmin):
-    list_display = [
-        'food_listing_name', 'business_name', 'location', 'pickup_window',
-        'total_slots', 'max_orders_per_slot', 'is_active', 'created_at'
-    ]
-    list_filter = ['is_active', 'created_at', 'location__business', 'total_slots']
-    search_fields = [
-        'food_listing__name', 'location__business__business_name', 
-        'location__name', 'pickup_window'
-    ]
-    readonly_fields = [
-        'id', 'created_at', 'updated_at', 'start_time', 'end_time',
-        'window_duration_minutes', 'slot_duration_minutes', 'generated_slots_preview'
-    ]
-    inlines = [PickupTimeSlotInline]
-    
-    fieldsets = (
-        ('Food Listing & Location', {
-            'fields': ('food_listing', 'location')
-        }),
-        ('Schedule Configuration', {
-            'fields': (
-                'pickup_window', 'total_slots', 'max_orders_per_slot', 
-                'slot_buffer_minutes'
-            )
-        }),
-        ('Calculated Information', {
-            'fields': (
-                'start_time', 'end_time', 'window_duration_minutes', 
-                'slot_duration_minutes', 'generated_slots_preview'
-            ),
-            'classes': ('collapse',)
-        }),
-        ('Status', {
-            'fields': ('is_active',)
-        }),
-        ('Metadata', {
-            'fields': ('id', 'created_at', 'updated_at'),
-            'classes': ('collapse',)
-        })
-    )
-    
-    def food_listing_name(self, obj):
-        return obj.food_listing.name
-    food_listing_name.short_description = 'Food Listing'
-    food_listing_name.admin_order_field = 'food_listing__name'
-    
-    def business_name(self, obj):
-        return obj.location.business.business_name
-    business_name.short_description = 'Business'
-    business_name.admin_order_field = 'location__business__business_name'
-    
-    def generated_slots_preview(self, obj):
-        if obj.pk:
-            slots = obj.generate_time_slots()
-            if slots:
-                html = "<ul>"
-                for slot in slots[:5]:  # Show first 5 slots
-                    html += f"<li>Slot {slot['slot_number']}: {slot['start_time']} - {slot['end_time']} (max {slot['max_orders']})</li>"
-                if len(slots) > 5:
-                    html += f"<li>... and {len(slots) - 5} more slots</li>"
-                html += "</ul>"
-                return mark_safe(html)
-        return "Save to see generated slots"
-    generated_slots_preview.short_description = 'Generated Slots Preview'
-    
-    def get_queryset(self, request):
-        return super().get_queryset(request).select_related(
-            'food_listing', 'location', 'location__business'
-        )
-
-
-@admin.register(PickupTimeSlot)
-class PickupTimeSlotAdmin(admin.ModelAdmin):
-    list_display = [
-        'food_listing_name', 'date', 'slot_number', 'start_time', 'end_time',
-        'current_bookings', 'max_orders_per_slot', 'availability_status', 'is_active'
-    ]
-    list_filter = [
-        'date', 'is_active', 'pickup_schedule__location__business',
-        'pickup_schedule__food_listing__status'
-    ]
-    search_fields = [
-        'pickup_schedule__food_listing__name',
-        'pickup_schedule__location__business__business_name'
-    ]
-    readonly_fields = [
-        'id', 'is_available', 'available_spots', 'created_at'
-    ]
-    date_hierarchy = 'date'
-    
-    fieldsets = (
-        ('Schedule Reference', {
-            'fields': ('pickup_schedule',)
-        }),
-        ('Slot Information', {
-            'fields': (
-                'slot_number', 'date', 'start_time', 'end_time', 
-                'max_orders_per_slot'
-            )
-        }),
-        ('Booking Status', {
-            'fields': (
-                'current_bookings', 'is_available', 'available_spots'
-            )
-        }),
-        ('Status', {
-            'fields': ('is_active',)
-        }),
-        ('Metadata', {
-            'fields': ('id', 'created_at'),
-            'classes': ('collapse',)
-        })
-    )
-    
-    def food_listing_name(self, obj):
-        return obj.pickup_schedule.food_listing.name
-    food_listing_name.short_description = 'Food Listing'
-    food_listing_name.admin_order_field = 'pickup_schedule__food_listing__name'
-    
-    def availability_status(self, obj):
-        if obj.is_available:
-            return format_html(
-                '<span style="color: green;">✓ Available ({}/{})</span>',
-                obj.available_spots,
-                obj.max_orders_per_slot
-            )
-        else:
-            return format_html(
-                '<span style="color: red;">✗ Full ({}/{})</span>',
-                obj.current_bookings,
-                obj.max_orders_per_slot
-            )
-    availability_status.short_description = 'Availability'
-    
-    def get_queryset(self, request):
-        return super().get_queryset(request).select_related(
-            'pickup_schedule__food_listing', 'pickup_schedule__location__business'
-        )
-
-
 @admin.register(ScheduledPickup)
 class ScheduledPickupAdmin(admin.ModelAdmin):
     list_display = [
         'confirmation_code', 'food_listing_name', 'customer_name',
-        'scheduled_date', 'scheduled_start_time', 'status_badge', 
-        'location', 'created_at'
+        'pickup_date', 'status_badge', 'location', 'ready_status',
+        'deadline_status', 'created_at'
     ]
     list_filter = [
-        'status', 'scheduled_date', 'location__business', 
-        'food_listing__food_type', 'created_at'
+        'status', 'pickup_date', 'location__business', 
+        'ready_notification_sent', 'reminder_sent', 'created_at'
     ]
     search_fields = [
-        'confirmation_code', 'food_listing__name',
-        'order__interaction__user__email',
-        'order__interaction__user__customer_profile__full_name'
+        'confirmation_code', 'order__interaction__user__email',
+        'order__interaction__user__customer_profile__full_name',
+        'location__business__business_name'
     ]
     readonly_fields = [
         'id', 'confirmation_code', 'qr_code_data', 'is_upcoming', 
-        'is_today', 'created_at', 'updated_at', 'qr_code_display'
+        'is_today', 'is_overdue', 'food_listing_display', 'customer_info',
+        'created_at', 'updated_at', 'qr_code_display'
     ]
-    date_hierarchy = 'scheduled_date'
+    date_hierarchy = 'pickup_date'
     
     fieldsets = (
-        ('Order & Food Listing', {
-            'fields': ('order', 'food_listing', 'time_slot')
+        ('Order Information', {
+            'fields': ('order', 'food_listing_display', 'customer_info')
         }),
-        ('Schedule Details', {
+        ('Pickup Details', {
             'fields': (
-                'location', 'scheduled_date', 'scheduled_start_time', 
-                'scheduled_end_time', 'actual_pickup_time'
+                'location', 'pickup_date', 'estimated_ready_time', 
+                'pickup_deadline', 'actual_ready_time', 'actual_pickup_time'
             )
         }),
         ('Status & Verification', {
             'fields': (
-                'status', 'confirmation_code', 'qr_code_display', 
-                'reminder_sent'
+                'status', 'confirmation_code', 'qr_code_display'
             )
+        }),
+        ('Communication Tracking', {
+            'fields': (
+                'ready_notification_sent', 'ready_notification_sent_at',
+                'reminder_sent', 'reminder_sent_at'
+            ),
+            'classes': ('collapse',)
         }),
         ('Notes', {
             'fields': ('customer_notes', 'business_notes'),
             'classes': ('collapse',)
         }),
-        ('Additional Information', {
-            'fields': ('is_upcoming', 'is_today'),
+        ('Status Checks', {
+            'fields': ('is_upcoming', 'is_today', 'is_overdue'),
             'classes': ('collapse',)
         }),
         ('Metadata', {
@@ -256,28 +100,30 @@ class ScheduledPickupAdmin(admin.ModelAdmin):
         })
     )
     
-    actions = ['mark_as_completed', 'mark_as_missed', 'send_reminder']
+    actions = ['mark_as_ready', 'mark_as_completed', 'mark_as_missed', 'send_reminder']
     
     def food_listing_name(self, obj):
-        return obj.food_listing.name
+        """Get food listing name"""
+        food_listing = obj.food_listing
+        if food_listing:
+            return food_listing.name
+        return 'Unknown'
     food_listing_name.short_description = 'Food Listing'
-    food_listing_name.admin_order_field = 'food_listing__name'
     
     def customer_name(self, obj):
-        user = obj.order.interaction.user
-        if hasattr(user, 'customer_profile'):
-            return user.customer_profile.full_name or user.email
-        return user.email
+        """Get customer name"""
+        from .services import PickupNotificationService
+        return PickupNotificationService._get_customer_name(obj.order.interaction.user)
     customer_name.short_description = 'Customer'
     
     def status_badge(self, obj):
+        """Display status with color coding"""
         colors = {
-            'scheduled': '#17a2b8',  # Blue
-            'confirmed': '#28a745',  # Green
-            'in_progress': '#ffc107',  # Yellow
-            'completed': '#6f42c1',  # Purple
-            'missed': '#dc3545',  # Red
-            'cancelled': '#6c757d',  # Gray
+            'pending': '#ffc107',  # Yellow
+            'ready': '#17a2b8',    # Blue
+            'completed': '#28a745', # Green
+            'missed': '#dc3545',    # Red
+            'cancelled': '#6c757d', # Gray
         }
         color = colors.get(obj.status, '#6c757d')
         return format_html(
@@ -287,7 +133,80 @@ class ScheduledPickupAdmin(admin.ModelAdmin):
         )
     status_badge.short_description = 'Status'
     
+    def ready_status(self, obj):
+        """Show ready notification status"""
+        if obj.ready_notification_sent:
+            return format_html(
+                '<span style="color: green;">✓ Sent</span>'
+            )
+        elif obj.status == 'ready':
+            return format_html(
+                '<span style="color: orange;">⚠ Ready but not notified</span>'
+            )
+        else:
+            return format_html(
+                '<span style="color: gray;">Not ready</span>'
+            )
+    ready_status.short_description = 'Ready Notification'
+    
+    def deadline_status(self, obj):
+        """Show deadline status"""
+        now = timezone.now()
+        deadline = obj.pickup_deadline
+        
+        if obj.status in ['completed', 'cancelled']:
+            return format_html('<span style="color: gray;">-</span>')
+        
+        if deadline < now:
+            return format_html(
+                '<span style="color: red;">⚠ Overdue</span>'
+            )
+        
+        time_left = deadline - now
+        hours_left = int(time_left.total_seconds() // 3600)
+        
+        if hours_left < 2:
+            color = 'orange'
+            icon = '⚠'
+        else:
+            color = 'green'
+            icon = '✓'
+            
+        return format_html(
+            '<span style="color: {};">{} {}h left</span>',
+            color, icon, hours_left
+        )
+    deadline_status.short_description = 'Deadline'
+    
+    def food_listing_display(self, obj):
+        """Display food listing info"""
+        food_listing = obj.food_listing
+        if food_listing:
+            return format_html(
+                '<strong>{}</strong><br>Quantity: {}<br>Expires: {}',
+                food_listing.name,
+                sum(item.quantity for item in obj.order.interaction.items.all()),
+                food_listing.expiry_date
+            )
+        return "Unknown food listing"
+    food_listing_display.short_description = 'Food Listing Details'
+    
+    def customer_info(self, obj):
+        """Display customer info"""
+        user = obj.order.interaction.user
+        from .services import PickupNotificationService
+        name = PickupNotificationService._get_customer_name(user)
+        
+        return format_html(
+            '<strong>{}</strong><br>Email: {}<br>Type: {}',
+            name,
+            user.email,
+            user.user_type.title()
+        )
+    customer_info.short_description = 'Customer Details'
+    
     def qr_code_display(self, obj):
+        """Display QR code data"""
         if obj.qr_code_data:
             return format_html(
                 '<details><summary>View QR Data</summary><pre>{}</pre></details>',
@@ -296,143 +215,140 @@ class ScheduledPickupAdmin(admin.ModelAdmin):
         return "No QR code data"
     qr_code_display.short_description = 'QR Code Data'
     
-    def mark_as_completed(self, request, queryset):
+    # Admin actions
+    def mark_as_ready(self, request, queryset):
+        """Mark selected orders as ready for pickup"""
         count = 0
         for pickup in queryset:
-            if pickup.status in ['scheduled', 'confirmed', 'in_progress']:
-                pickup.status = 'completed'
-                pickup.actual_pickup_time = timezone.now()
-                pickup.save()
-                count += 1
+            if pickup.status == 'pending':
+                try:
+                    pickup.mark_ready_for_pickup()
+                    count += 1
+                except Exception as e:
+                    self.message_user(
+                        request, 
+                        f"Failed to mark pickup {pickup.confirmation_code} as ready: {str(e)}",
+                        level='ERROR'
+                    )
         
-        self.message_user(
-            request, 
-            f"Successfully marked {count} pickup(s) as completed."
-        )
+        if count > 0:
+            self.message_user(
+                request, 
+                f"Successfully marked {count} pickup(s) as ready and sent notifications."
+            )
+    mark_as_ready.short_description = "Mark selected pickups as ready"
+    
+    def mark_as_completed(self, request, queryset):
+        """Mark selected pickups as completed"""
+        count = 0
+        for pickup in queryset:
+            if pickup.status == 'ready':
+                try:
+                    from .services import PickupSchedulingService
+                    PickupSchedulingService.complete_pickup(pickup)
+                    count += 1
+                except Exception as e:
+                    self.message_user(
+                        request, 
+                        f"Failed to complete pickup {pickup.confirmation_code}: {str(e)}",
+                        level='ERROR'
+                    )
+        
+        if count > 0:
+            self.message_user(
+                request, 
+                f"Successfully completed {count} pickup(s)."
+            )
     mark_as_completed.short_description = "Mark selected pickups as completed"
     
     def mark_as_missed(self, request, queryset):
+        """Mark selected pickups as missed"""
         count = 0
         for pickup in queryset:
-            if pickup.status in ['scheduled', 'confirmed']:
+            if pickup.status in ['ready']:
                 pickup.status = 'missed'
                 pickup.save()
-                # Free up the time slot
-                time_slot = pickup.time_slot
-                time_slot.current_bookings = max(0, time_slot.current_bookings - 1)
-                time_slot.save()
+                
+                # Update order status
+                pickup.order.status = 'missed'
+                pickup.order.save()
+                
                 count += 1
         
-        self.message_user(
-            request, 
-            f"Successfully marked {count} pickup(s) as missed."
-        )
+        if count > 0:
+            self.message_user(
+                request, 
+                f"Successfully marked {count} pickup(s) as missed."
+            )
     mark_as_missed.short_description = "Mark selected pickups as missed"
     
     def send_reminder(self, request, queryset):
+        """Send reminders for selected pickups"""
         count = 0
-        from .services import PickupSchedulingService
+        from .services import PickupNotificationService
         
         for pickup in queryset:
-            if pickup.status in ['scheduled', 'confirmed'] and pickup.is_upcoming:
+            if pickup.status == 'ready' and pickup.is_upcoming and not pickup.reminder_sent:
                 try:
-                    PickupSchedulingService._send_pickup_reminder(pickup)
-                    pickup.reminder_sent = True
-                    pickup.save()
+                    PickupNotificationService.send_pickup_reminder(pickup)
                     count += 1
                 except Exception as e:
-                    pass
+                    self.message_user(
+                        request, 
+                        f"Failed to send reminder for pickup {pickup.confirmation_code}: {str(e)}",
+                        level='ERROR'
+                    )
         
-        self.message_user(
-            request, 
-            f"Successfully sent reminders for {count} pickup(s)."
-        )
+        if count > 0:
+            self.message_user(
+                request, 
+                f"Successfully sent reminders for {count} pickup(s)."
+            )
     send_reminder.short_description = "Send reminders for selected pickups"
     
     def get_queryset(self, request):
         return super().get_queryset(request).select_related(
-            'food_listing', 'location', 'order__interaction__user__customer_profile',
-            'time_slot__pickup_schedule'
+            'location', 'order', 'order__interaction', 'order__interaction__user'
         )
-
-
-@admin.register(PickupOptimization)
-class PickupOptimizationAdmin(admin.ModelAdmin):
-    list_display = [
-        'business', 'max_concurrent_pickups', 'auto_optimize', 
-        'auto_send_reminders', 'optimization_score', 'last_optimization'
-    ]
-    list_filter = ['auto_optimize', 'auto_send_reminders', 'last_optimization']
-    search_fields = ['business__business_name']
-    readonly_fields = ['last_optimization', 'optimization_score']
-    
-    fieldsets = (
-        ('Business', {
-            'fields': ('business',)
-        }),
-        ('Capacity Settings', {
-            'fields': (
-                'max_concurrent_pickups', 'optimal_pickup_duration',
-                'peak_hours_start', 'peak_hours_end'
-            )
-        }),
-        ('Automation Settings', {
-            'fields': (
-                'auto_optimize', 'auto_send_reminders', 'reminder_hours_before'
-            )
-        }),
-        ('Analytics', {
-            'fields': ('last_optimization', 'optimization_score'),
-            'classes': ('collapse',)
-        })
-    )
-    
-    def get_queryset(self, request):
-        return super().get_queryset(request).select_related('business')
 
 
 @admin.register(PickupAnalytics)
 class PickupAnalyticsAdmin(admin.ModelAdmin):
     list_display = [
-        'business', 'date', 'total_scheduled', 'total_completed', 
-        'completion_rate_display', 'on_time_percentage', 'efficiency_score'
+        'business', 'date', 'total_orders', 'orders_completed', 
+        'completion_rate_display', 'on_time_pickup_percentage', 'average_prep_time_display'
     ]
     list_filter = ['date', 'business']
     search_fields = ['business__business_name']
-    readonly_fields = ['completion_rate', 'no_show_rate']
+    readonly_fields = ['completion_rate', 'missed_rate']
     date_hierarchy = 'date'
     
     fieldsets = (
         ('Business & Date', {
             'fields': ('business', 'date')
         }),
-        ('Basic Metrics', {
+        ('Order Metrics', {
             'fields': (
-                'total_scheduled', 'total_completed', 'total_missed', 
-                'total_cancelled'
+                'total_orders', 'orders_completed', 'orders_missed', 
+                'orders_cancelled'
             )
         }),
         ('Performance Metrics', {
             'fields': (
-                'on_time_percentage', 'average_pickup_duration',
+                'on_time_pickup_percentage', 'average_preparation_time',
                 'customer_satisfaction_rating'
             )
         }),
-        ('Efficiency Metrics', {
-            'fields': (
-                'slot_utilization_rate', 'peak_hour_efficiency', 
-                'efficiency_score'
-            )
-        }),
         ('Calculated Rates', {
-            'fields': ('completion_rate', 'no_show_rate'),
+            'fields': ('completion_rate', 'missed_rate'),
             'classes': ('collapse',)
         })
     )
     
     def completion_rate_display(self, obj):
-        if obj.total_scheduled > 0:
-            rate = (obj.total_completed / obj.total_scheduled) * 100
+        """Display completion rate with color coding"""
+        if obj.total_orders > 0:
+            rate = (obj.orders_completed / obj.total_orders) * 100
             color = 'green' if rate >= 80 else 'orange' if rate >= 60 else 'red'
             return format_html(
                 '<span style="color: {};">{:.1f}%</span>',
@@ -441,14 +357,30 @@ class PickupAnalyticsAdmin(admin.ModelAdmin):
         return '0%'
     completion_rate_display.short_description = 'Completion Rate'
     
+    def average_prep_time_display(self, obj):
+        """Display average preparation time"""
+        if obj.average_preparation_time:
+            total_seconds = obj.average_preparation_time.total_seconds()
+            hours = int(total_seconds // 3600)
+            minutes = int((total_seconds % 3600) // 60)
+            
+            if hours > 0:
+                return f"{hours}h {minutes}m"
+            else:
+                return f"{minutes}m"
+        return "No data"
+    average_prep_time_display.short_description = 'Avg Prep Time'
+    
     def completion_rate(self, obj):
-        if obj.total_scheduled > 0:
-            return round((obj.total_completed / obj.total_scheduled) * 100, 2)
+        """Calculate completion rate"""
+        if obj.total_orders > 0:
+            return round((obj.orders_completed / obj.total_orders) * 100, 2)
         return 0.0
     
-    def no_show_rate(self, obj):
-        if obj.total_scheduled > 0:
-            return round((obj.total_missed / obj.total_scheduled) * 100, 2)
+    def missed_rate(self, obj):
+        """Calculate missed rate"""
+        if obj.total_orders > 0:
+            return round((obj.orders_missed / obj.total_orders) * 100, 2)
         return 0.0
     
     def get_queryset(self, request):
@@ -456,6 +388,6 @@ class PickupAnalyticsAdmin(admin.ModelAdmin):
 
 
 # Customize admin site header
-admin.site.site_header = "Save n Bite - Pickup Scheduling Admin"
+admin.site.site_header = "Save n Bite - Simplified Pickup Scheduling Admin"
 admin.site.site_title = "Pickup Scheduling"
-admin.site.index_title = "Pickup Scheduling Administration"
+admin.site.index_title = "Simplified Pickup Scheduling Administration"
