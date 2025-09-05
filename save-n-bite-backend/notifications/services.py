@@ -749,6 +749,72 @@ class NotificationService:
             logger.error(f"Error getting follow recommendations: {str(e)}")
             raise ValueError(f"Failed to get recommendations: {str(e)}")
 
+
+    @staticmethod
+    def send_order_received_notification(scheduled_pickup):
+        """Send notification when order is received and being prepared"""
+        try:
+            customer = scheduled_pickup.order.interaction.user
+            business = scheduled_pickup.location.business
+            food_name = scheduled_pickup.food_listing.name if scheduled_pickup.food_listing else 'your order'
+            
+            # Create in-app notification
+            title = "Order Received!"
+            message = f"Great news! {business.business_name} has received your order for '{food_name}' and is now preparing it. You'll get notified when it's ready for pickup."
+            
+            notification = NotificationService.create_notification(
+                recipient=customer,
+                notification_type='order_preparation',
+                title=title,
+                message=message,
+                sender=business.user,
+                business=business,
+                data={
+                    'pickup_id': str(scheduled_pickup.id),
+                    'confirmation_code': scheduled_pickup.confirmation_code,
+                    'food_listing_name': food_name,
+                    'business_name': business.business_name,
+                    'pickup_date': scheduled_pickup.pickup_date.isoformat(),
+                    'pickup_deadline': scheduled_pickup.pickup_deadline.isoformat(),
+                    'location_name': scheduled_pickup.location.name,
+                    'location_address': scheduled_pickup.location.address,
+                    'order_status': 'preparation'
+                }
+            )
+
+            # Send email notification if preferences allow
+            email_context = {
+                'customer_name': NotificationService._get_user_display_name(customer),
+                'business_name': business.business_name,
+                'food_listing_name': food_name,
+                'confirmation_code': scheduled_pickup.confirmation_code,
+                'pickup_date': scheduled_pickup.pickup_date.strftime('%B %d, %Y'),
+                'pickup_deadline': scheduled_pickup.pickup_deadline.strftime('%B %d, %Y at %I:%M %p'),
+                'location_name': scheduled_pickup.location.name,
+                'location_address': scheduled_pickup.location.address,
+                'location_instructions': scheduled_pickup.location.instructions,
+                'contact_person': scheduled_pickup.location.contact_person,
+                'contact_phone': scheduled_pickup.location.contact_phone,
+                'customer_notes': scheduled_pickup.customer_notes,
+                'business_logo': business.logo.url if business.logo else None,
+                'business_hours': business.business_hours or 'Please check with business',
+            }
+            
+            NotificationService.send_email_notification(
+                user=customer,
+                subject=f"Order Received - {business.business_name}",
+                template_name='order_preparation',
+                context=email_context,
+                notification=notification
+            )
+
+            logger.info(f"Sent order received notification to {customer.email} for pickup {scheduled_pickup.confirmation_code}")
+            return notification
+
+        except Exception as e:
+            logger.error(f"Failed to send order received notification for pickup {scheduled_pickup.id}: {str(e)}")
+            return None
+
     @staticmethod
     def send_order_preparation_notification(scheduled_pickup):
         """Send notification when order is scheduled and being prepared"""
@@ -1079,4 +1145,73 @@ class NotificationService:
 
         except Exception as e:
             logger.error(f"Failed to send donation pickup reminder for interaction {interaction.id}: {str(e)}")
+            return None
+        
+    @staticmethod
+    def send_order_ready_notification(scheduled_pickup):
+        """Send notification when order is ready for pickup"""
+        try:
+            customer = scheduled_pickup.order.interaction.user
+            business = scheduled_pickup.location.business
+            food_name = scheduled_pickup.food_listing.name if scheduled_pickup.food_listing else 'your order'
+            
+            # Calculate time until deadline
+            time_until_deadline = scheduled_pickup.pickup_deadline - timezone.now()
+            hours_until_deadline = max(1, int(time_until_deadline.total_seconds() // 3600))
+            
+            # Create in-app notification
+            title = "Order Ready for Pickup!"
+            message = f"🎉 Your order for '{food_name}' from {business.business_name} is now ready! Please collect it from {scheduled_pickup.location.name} before {scheduled_pickup.pickup_deadline.strftime('%I:%M %p')} today. You have {hours_until_deadline} hour(s) remaining."
+            
+            notification = NotificationService.create_notification(
+                recipient=customer,
+                notification_type='order_ready',  # Add this to NOTIFICATION_TYPES if not present
+                title=title,
+                message=message,
+                sender=business.user,
+                business=business,
+                data={
+                    'pickup_id': str(scheduled_pickup.id),
+                    'confirmation_code': scheduled_pickup.confirmation_code,
+                    'food_listing_name': food_name,
+                    'business_name': business.business_name,
+                    'ready_time': scheduled_pickup.actual_ready_time.isoformat() if scheduled_pickup.actual_ready_time else timezone.now().isoformat(),
+                    'pickup_deadline': scheduled_pickup.pickup_deadline.isoformat(),
+                    'location_name': scheduled_pickup.location.name,
+                    'location_address': scheduled_pickup.location.address,
+                    'hours_remaining': hours_until_deadline,
+                    'order_status': 'ready'
+                }
+            )
+
+            # Send email notification if preferences allow
+            email_context = {
+                'customer_name': NotificationService._get_user_display_name(customer),
+                'business_name': business.business_name,
+                'food_listing_name': food_name,
+                'confirmation_code': scheduled_pickup.confirmation_code,
+                'pickup_deadline': scheduled_pickup.pickup_deadline.strftime('%B %d, %Y at %I:%M %p'),
+                'hours_remaining': hours_until_deadline,
+                'location_name': scheduled_pickup.location.name,
+                'location_address': scheduled_pickup.location.address,
+                'location_instructions': scheduled_pickup.location.instructions,
+                'contact_person': scheduled_pickup.location.contact_person,
+                'contact_phone': scheduled_pickup.location.contact_phone,
+                'business_logo': business.logo.url if business.logo else None,
+                'business_hours': business.business_hours or 'Please check with business',
+            }
+            
+            NotificationService.send_email_notification(
+                user=customer,
+                subject=f"Your Order is Ready for Pickup! - {business.business_name}",
+                template_name='order_ready',
+                context=email_context,
+                notification=notification
+            )
+
+            logger.info(f"Sent order ready notification to {customer.email} for pickup {scheduled_pickup.confirmation_code}")
+            return notification
+
+        except Exception as e:
+            logger.error(f"Failed to send order ready notification for pickup {scheduled_pickup.id}: {str(e)}")
             return None

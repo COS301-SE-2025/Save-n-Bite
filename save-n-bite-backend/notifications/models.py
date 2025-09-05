@@ -60,7 +60,8 @@ class Notification(models.Model):
         ('order_preparation', 'Order Preparation'),
         ('order_completion', 'Order Completion'),
         ('donation_request', 'Donation Request'),
-        ('donation_response', 'Donation Response'), 
+        ('donation_response', 'Donation Response'),
+        ('order_ready', 'Order Ready'), 
     ]
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)

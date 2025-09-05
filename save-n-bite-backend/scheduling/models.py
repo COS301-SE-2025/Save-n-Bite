@@ -188,9 +188,15 @@ class ScheduledPickup(models.Model):
         self.actual_ready_time = timezone.now()
         self.save()
         
-        # Send notification via service
-        from .services import PickupNotificationService
-        PickupNotificationService.send_ready_for_pickup_notification(self)
+        # Send notification via notifications app
+        try:
+            from notifications.services import NotificationService
+            NotificationService.send_order_ready_notification(self)
+        except Exception as e:
+            # Log error but don't fail the status update
+            import logging
+            logger = logging.getLogger(__name__)
+            logger.error(f"Failed to send ready notification for pickup {self.id}: {str(e)}")
 
     def __str__(self):
         food_name = self.food_listing.name if self.food_listing else 'Unknown Food'

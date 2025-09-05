@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Your Order is Ready for Pickup!</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f9f9f9;
+        }
+        .container {
+            background-color: white;
+            border-radius: 10px;
+            padding: 30px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .logo {
+            max-width: 150px;
+            height: auto;
+            margin-bottom: 20px;
+        }
+        .title {
+            color: #2d5a27;
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        .subtitle {
+            color: #666;
+            font-size: 16px;
+        }
+        .content {
+            margin: 30px 0;
+        }
+        .highlight-box {
+            background-color: #e8f5e8;
+            border-left: 4px solid #4CAF50;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 5px;
+        }
+        .order-details {
+            background-color: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        .detail-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        .detail-row:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+        .detail-label {
+            font-weight: bold;
+            color: #555;
+        }
+        .detail-value {
+            color: #333;
+        }
+        .pickup-info {
+            background-color: #fff3cd;
+            border: 1px solid #ffeaa7;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        .pickup-info h3 {
+            color: #856404;
+            margin-top: 0;
+            margin-bottom: 15px;
+        }
+        .urgent {
+            color: #d63384;
+            font-weight: bold;
+        }
+        .button {
+            display: inline-block;
+            background-color: #4CAF50;
+            color: white;
+            padding: 12px 30px;
+            text-decoration: none;
+            border-radius: 5px;
+            font-weight: bold;
+            margin: 20px 0;
+            text-align: center;
+        }
+        .footer {
+            margin-top: 40px;
+            text-align: center;
+            color: #666;
+            font-size: 14px;
+            border-top: 1px solid #e0e0e0;
+            padding-top: 20px;
+        }
+        .contact-info {
+            background-color: #f0f8ff;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+        }
+        @media (max-width: 600px) {
+            body {
+                padding: 10px;
+            }
+            .container {
+                padding: 20px;
+            }
+            .detail-row {
+                flex-direction: column;
+            }
+            .detail-label {
+                margin-bottom: 5px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            {% if business_logo %}
+                <img src="{{ business_logo }}" alt="{{ business_name }} Logo" class="logo">
+            {% endif %}
+            <h1 class="title">🎉 Your Order is Ready!</h1>
+            <p class="subtitle">Time to collect your delicious food from {{ business_name }}</p>
+        </div>
+
+        <div class="content">
+            <p>Hi {{ customer_name }},</p>
+            
+            <div class="highlight-box">
+                <p><strong>Great news!</strong> Your order for <strong>"{{ food_listing_name }}"</strong> is now ready for pickup!</p>
+            </div>
+
+            <div class="order-details">
+                <h3>Order Details</h3>
+                <div class="detail-row">
+                    <span class="detail-label">Confirmation Code:</span>
+                    <span class="detail-value"><strong>{{ confirmation_code }}</strong></span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Food Item:</span>
+                    <span class="detail-value">{{ food_listing_name }}</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Business:</span>
+                    <span class="detail-value">{{ business_name }}</span>
+                </div>
+            </div>
+
+            <div class="pickup-info">
+                <h3>⏰ Pickup Information</h3>
+                <p><strong>Pickup Deadline:</strong> <span class="urgent">{{ pickup_deadline }}</span></p>
+                <p><strong>Time Remaining:</strong> {{ hours_remaining }} hour(s)</p>
+                
+                <div class="contact-info">
+                    <p><strong>📍 Pickup Location:</strong> {{ location_name }}</p>
+                    <p><strong>Address:</strong> {{ location_address }}</p>
+                    {% if location_instructions %}
+                        <p><strong>Instructions:</strong> {{ location_instructions }}</p>
+                    {% endif %}
+                    <p><strong>Contact Person:</strong> {{ contact_person }}</p>
+                    <p><strong>Phone:</strong> {{ contact_phone }}</p>
+                </div>
+
+                {% if business_hours %}
+                    <p><strong>Business Hours:</strong> {{ business_hours }}</p>
+                {% endif %}
+            </div>
+
+            <p><strong>Important:</strong> Please bring your confirmation code <strong>{{ confirmation_code }}</strong> when collecting your order. The staff will need this to verify your pickup.</p>
+
+            <p>Thank you for choosing {{ business_name }} and helping us reduce food waste! 🌱</p>
+        </div>
+
+        <div class="footer">
+            <p>This email was sent by Save n Bite - Fighting Food Waste Together</p>
+            <p>If you have any questions about your order, please contact {{ business_name }} directly at {{ contact_phone }}.</p>
+            <p>Having trouble? Contact our support team at <a href="mailto:support@savenbite.com">support@savenbite.com</a></p>
+        </div>
+    </div>
+</body>
+</html>

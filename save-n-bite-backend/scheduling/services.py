@@ -86,8 +86,13 @@ class PickupSchedulingService:
                 # Generate QR code
                 qr_code_image = PickupSchedulingService.generate_qr_code(scheduled_pickup)
                 
-                # Send order received notification
-                PickupNotificationService.send_order_received_notification(scheduled_pickup)
+                # Send order received notification using notifications app
+                try:
+                    from notifications.services import NotificationService
+                    NotificationService.send_order_received_notification(scheduled_pickup)
+                except Exception as e:
+                    # Log error but don't fail the scheduling process
+                    logger.error(f"Failed to send order received notification: {str(e)}")
                 
                 logger.info(f"Scheduled pickup {scheduled_pickup.confirmation_code} for order {order.id}")
                 
