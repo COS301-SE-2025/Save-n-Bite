@@ -1693,3 +1693,129 @@ INFO 2025-08-20 06:37:15,413 basehttp 126921 140273254377152 "GET /auth/provider
 INFO 2025-08-20 06:37:15,446 basehttp 126921 140273254377152 "GET /auth/providers/?complete_profiles_only=true HTTP/1.1" 200 1458
 INFO 2025-08-20 06:37:15,449 basehttp 126921 140273659307712 "GET /api/reviews/provider/0a7edef6-f708-4472-86e1-c463a31172a1/?page=1&page_size=1 HTTP/1.1" 200 730
 INFO 2025-08-20 06:37:15,552 basehttp 126921 140273254377152 "GET /api/reviews/provider/0a7edef6-f708-4472-86e1-c463a31172a1/?page=1&page_size=1 HTTP/1.1" 200 730
+INFO 2025-09-06 19:26:02,444 blob_storage 12508 19508 Updated existing container to public access: customer-profiles
+INFO 2025-09-06 19:26:02,537 blob_storage 12508 19508 Updated existing container to public access: ngo-documents
+INFO 2025-09-06 19:26:02,600 blob_storage 12508 19508 Updated existing container to public access: ngo-logos
+INFO 2025-09-06 19:26:02,666 blob_storage 12508 19508 Updated existing container to public access: provider-documents
+INFO 2025-09-06 19:26:02,823 blob_storage 12508 19508 Updated existing container to public access: provider-logos
+INFO 2025-09-06 19:26:02,872 blob_storage 12508 19508 Updated existing container to public access: provider-banners
+INFO 2025-09-06 19:26:04,592 blob_storage 12508 19508 Updated existing container to public access: customer-profiles
+INFO 2025-09-06 19:26:04,624 blob_storage 12508 19508 Updated existing container to public access: provider-banners
+INFO 2025-09-06 19:26:04,646 blob_storage 12508 19508 Updated existing container to public access: provider-documents
+INFO 2025-09-06 19:26:04,673 blob_storage 12508 19508 Updated existing container to public access: provider-logos
+INFO 2025-09-06 19:26:04,726 blob_storage 12508 19508 Updated existing container to public access: ngo-documents
+INFO 2025-09-06 19:26:04,765 blob_storage 12508 19508 Updated existing container to public access: ngo-logos
+INFO 2025-09-06 19:26:05,326 blob_storage 12508 19508 Updated existing container to public access: customer-profiles
+INFO 2025-09-06 19:26:05,350 blob_storage 12508 19508 Updated existing container to public access: provider-documents
+INFO 2025-09-06 19:26:05,397 blob_storage 12508 19508 Updated existing container to public access: provider-logos
+INFO 2025-09-06 19:26:05,434 blob_storage 12508 19508 Updated existing container to public access: provider-banners
+INFO 2025-09-06 19:26:05,466 blob_storage 12508 19508 Updated existing container to public access: ngo-documents
+INFO 2025-09-06 19:26:05,523 blob_storage 12508 19508 Updated existing container to public access: ngo-logos
+INFO 2025-09-06 19:26:05,657 blob_storage 12508 19508 Updated existing container to public access: customer-profiles
+INFO 2025-09-06 19:26:05,685 blob_storage 12508 19508 Updated existing container to public access: ngo-documents
+INFO 2025-09-06 19:26:05,715 blob_storage 12508 19508 Updated existing container to public access: ngo-logos
+INFO 2025-09-06 19:26:05,749 blob_storage 12508 19508 Updated existing container to public access: provider-documents
+INFO 2025-09-06 19:26:05,775 blob_storage 12508 19508 Updated existing container to public access: provider-logos
+INFO 2025-09-06 19:26:05,813 blob_storage 12508 19508 Updated existing container to public access: provider-banners
+INFO 2025-09-06 19:26:21,239 blob_storage 13632 3208 Updated existing container to public access: customer-profiles
+INFO 2025-09-06 19:26:21,275 blob_storage 13632 3208 Updated existing container to public access: ngo-documents
+INFO 2025-09-06 19:26:21,311 blob_storage 13632 3208 Updated existing container to public access: ngo-logos
+INFO 2025-09-06 19:26:21,349 blob_storage 13632 3208 Updated existing container to public access: provider-documents
+INFO 2025-09-06 19:26:21,392 blob_storage 13632 3208 Updated existing container to public access: provider-logos
+INFO 2025-09-06 19:26:21,421 blob_storage 13632 3208 Updated existing container to public access: provider-banners
+INFO 2025-09-06 19:26:23,871 blob_storage 10816 21256 Updated existing container to public access: customer-profiles
+INFO 2025-09-06 19:26:23,882 blob_storage 10816 21256 Updated existing container to public access: ngo-documents
+INFO 2025-09-06 19:26:23,913 blob_storage 10816 21256 Updated existing container to public access: ngo-logos
+INFO 2025-09-06 19:26:23,950 blob_storage 10816 21256 Updated existing container to public access: provider-documents
+INFO 2025-09-06 19:26:23,996 blob_storage 10816 21256 Updated existing container to public access: provider-logos
+INFO 2025-09-06 19:26:24,021 blob_storage 10816 21256 Updated existing container to public access: provider-banners
+INFO 2025-09-06 19:26:24,193 autoreload 10816 21256 Watching for file changes with StatReloader
+INFO 2025-09-06 19:26:24,901 blob_storage 10816 15588 Updated existing container to public access: customer-profiles
+INFO 2025-09-06 19:26:24,974 blob_storage 10816 15588 Updated existing container to public access: provider-banners
+INFO 2025-09-06 19:26:25,000 blob_storage 10816 15588 Updated existing container to public access: provider-documents
+INFO 2025-09-06 19:26:25,028 blob_storage 10816 15588 Updated existing container to public access: provider-logos
+INFO 2025-09-06 19:26:25,051 blob_storage 10816 15588 Updated existing container to public access: ngo-documents
+INFO 2025-09-06 19:26:25,072 blob_storage 10816 15588 Updated existing container to public access: ngo-logos
+WARNING 2025-09-06 19:27:25,088 log 10816 10536 Unauthorized: /api/notifications/unread-count/
+WARNING 2025-09-06 19:27:25,089 log 10816 13444 Unauthorized: /api/notifications/preferences/
+WARNING 2025-09-06 19:27:25,092 basehttp 10816 10536 "GET /api/notifications/unread-count/ HTTP/1.1" 401 58
+WARNING 2025-09-06 19:27:25,093 basehttp 10816 13444 "GET /api/notifications/preferences/ HTTP/1.1" 401 58
+WARNING 2025-09-06 19:27:25,101 log 10816 13444 Unauthorized: /api/notifications/unread-count/
+WARNING 2025-09-06 19:27:25,108 log 10816 10536 Unauthorized: /api/notifications/preferences/
+WARNING 2025-09-06 19:27:25,110 basehttp 10816 13444 "GET /api/notifications/unread-count/ HTTP/1.1" 401 58
+WARNING 2025-09-06 19:27:25,111 basehttp 10816 10536 "GET /api/notifications/preferences/ HTTP/1.1" 401 58
+INFO 2025-09-06 19:29:45,301 basehttp 10816 10536 "OPTIONS /auth/login/ HTTP/1.1" 200 0
+INFO 2025-09-06 19:29:47,470 basehttp 10816 10536 "POST /auth/login/ HTTP/1.1" 200 1359
+INFO 2025-09-06 19:29:47,481 basehttp 10816 10536 "OPTIONS /api/notifications/unread-count/ HTTP/1.1" 200 0
+INFO 2025-09-06 19:29:47,516 basehttp 10816 13444 "OPTIONS /api/business/ HTTP/1.1" 200 0
+INFO 2025-09-06 19:29:47,522 basehttp 10816 13444 "OPTIONS /api/business/ HTTP/1.1" 200 0
+INFO 2025-09-06 19:29:47,626 basehttp 10816 10536 "GET /api/notifications/unread-count/ HTTP/1.1" 200 19
+INFO 2025-09-06 19:29:47,761 basehttp 10816 13444 "GET /api/business/ HTTP/1.1" 200 866
+INFO 2025-09-06 19:29:47,953 basehttp 10816 13444 "GET /api/business/ HTTP/1.1" 200 866
+INFO 2025-09-06 19:31:54,071 basehttp 10816 13444 "OPTIONS /api/provider/listings/create/ HTTP/1.1" 200 0
+INFO 2025-09-06 19:31:54,454 signals 10816 13444 Notified followers about new listing: Cake from JoyfulFood
+INFO 2025-09-06 19:31:54,509 blob_storage 10816 13444 Updated existing container to public access: food-listings
+INFO 2025-09-06 19:31:54,720 blob_storage 10816 13444 Successfully uploaded blob with public access: food_listings/1ecb0395-7d94-40a8-9b2d-fdcbcf733547.jpeg
+INFO 2025-09-06 19:31:54,743 serializers 10816 13444 Successfully uploaded image for food listing Cake: http://127.0.0.1:10000/devstoreaccount1/food-listings/food_listings/1ecb0395-7d94-40a8-9b2d-fdcbcf733547.jpeg
+INFO 2025-09-06 19:31:54,747 basehttp 10816 13444 "POST /api/provider/listings/create/ HTTP/1.1" 201 205
+INFO 2025-09-06 19:31:54,767 basehttp 10816 13444 "OPTIONS /api/scheduling/pickup-locations/ HTTP/1.1" 200 0
+WARNING 2025-09-06 19:31:55,042 log 10816 13444 Bad Request: /api/scheduling/pickup-locations/
+WARNING 2025-09-06 19:31:55,044 basehttp 10816 13444 "POST /api/scheduling/pickup-locations/ HTTP/1.1" 400 161
+INFO 2025-09-06 19:31:55,580 basehttp 10816 10536 "OPTIONS /api/provider/listings/ HTTP/1.1" 200 0
+INFO 2025-09-06 19:31:55,581 basehttp 10816 13444 "OPTIONS /api/provider/listings/ HTTP/1.1" 200 0
+INFO 2025-09-06 19:31:55,905 basehttp 10816 13444 "GET /api/provider/listings/ HTTP/1.1" 200 27776
+INFO 2025-09-06 19:31:56,379 basehttp 10816 10536 "GET /api/provider/listings/ HTTP/1.1" 200 27776
+INFO 2025-09-06 19:32:57,800 basehttp 10816 10536 "POST /auth/login/ HTTP/1.1" 200 1049
+INFO 2025-09-06 19:32:58,030 basehttp 10816 10536 "GET /api/notifications/unread-count/ HTTP/1.1" 200 18
+INFO 2025-09-06 19:32:59,070 basehttp 10816 10536 "OPTIONS /api/food-listings/ HTTP/1.1" 200 0
+INFO 2025-09-06 19:32:59,071 basehttp 10816 13444 "OPTIONS /api/food-listings/ HTTP/1.1" 200 0
+INFO 2025-09-06 19:32:59,435 basehttp 10816 13444 "GET /api/food-listings/ HTTP/1.1" 200 5035
+INFO 2025-09-06 19:32:59,514 basehttp 10816 10536 "OPTIONS /auth/providers/?complete_profiles_only=true HTTP/1.1" 200 0
+INFO 2025-09-06 19:32:59,517 basehttp 10816 10536 "OPTIONS /auth/providers/?complete_profiles_only=true HTTP/1.1" 200 0
+INFO 2025-09-06 19:32:59,615 basehttp 10816 13444 "GET /api/food-listings/ HTTP/1.1" 200 5035
+INFO 2025-09-06 19:32:59,687 basehttp 10816 10536 "GET /auth/providers/?complete_profiles_only=true HTTP/1.1" 200 5067
+INFO 2025-09-06 19:32:59,796 basehttp 10816 13444 "OPTIONS /api/reviews/provider/813b9e73-40d9-4346-862c-2d13cfba0f5b/?page=1&page_size=1 HTTP/1.1" 200 0
+INFO 2025-09-06 19:32:59,801 basehttp 10816 13444 "OPTIONS /api/reviews/provider/ce83f6ac-2ebb-4f62-a625-ff889a702d83/?page=1&page_size=1 HTTP/1.1" 200 0
+INFO 2025-09-06 19:32:59,804 basehttp 10816 13444 "OPTIONS /api/reviews/provider/f2befc4d-4ab0-4ad0-8e56-f16918bb5d80/?page=1&page_size=1 HTTP/1.1" 200 0
+INFO 2025-09-06 19:32:59,809 basehttp 10816 13444 "OPTIONS /api/reviews/provider/0e0e5a4b-3820-41dd-a001-73755fea0d9e/?page=1&page_size=1 HTTP/1.1" 200 0
+INFO 2025-09-06 19:32:59,812 basehttp 10816 13444 "OPTIONS /api/reviews/provider/18c36b03-b3f9-487b-91eb-ad1be9efaaf6/?page=1&page_size=1 HTTP/1.1" 200 0
+INFO 2025-09-06 19:33:00,037 basehttp 10816 10536 "GET /auth/providers/?complete_profiles_only=true HTTP/1.1" 200 5067
+INFO 2025-09-06 19:33:00,050 basehttp 10816 1988 "GET /api/reviews/provider/ce83f6ac-2ebb-4f62-a625-ff889a702d83/?page=1&page_size=1 HTTP/1.1" 200 413
+INFO 2025-09-06 19:33:00,050 basehttp 10816 15792 "GET /api/reviews/provider/f2befc4d-4ab0-4ad0-8e56-f16918bb5d80/?page=1&page_size=1 HTTP/1.1" 200 416
+INFO 2025-09-06 19:33:00,077 basehttp 10816 13444 "GET /api/reviews/provider/813b9e73-40d9-4346-862c-2d13cfba0f5b/?page=1&page_size=1 HTTP/1.1" 200 829
+INFO 2025-09-06 19:33:00,261 basehttp 10816 10536 "GET /api/reviews/provider/18c36b03-b3f9-487b-91eb-ad1be9efaaf6/?page=1&page_size=1 HTTP/1.1" 200 410
+INFO 2025-09-06 19:33:00,289 basehttp 10816 1988 "GET /api/reviews/provider/0e0e5a4b-3820-41dd-a001-73755fea0d9e/?page=1&page_size=1 HTTP/1.1" 200 410
+INFO 2025-09-06 19:33:00,299 basehttp 10816 15792 "GET /api/reviews/provider/ce83f6ac-2ebb-4f62-a625-ff889a702d83/?page=1&page_size=1 HTTP/1.1" 200 413
+INFO 2025-09-06 19:33:00,300 basehttp 10816 13444 "GET /api/reviews/provider/f2befc4d-4ab0-4ad0-8e56-f16918bb5d80/?page=1&page_size=1 HTTP/1.1" 200 416
+INFO 2025-09-06 19:33:00,328 basehttp 10816 17788 "GET /api/reviews/provider/813b9e73-40d9-4346-862c-2d13cfba0f5b/?page=1&page_size=1 HTTP/1.1" 200 829
+INFO 2025-09-06 19:33:00,431 basehttp 10816 19864 "GET /api/reviews/provider/18c36b03-b3f9-487b-91eb-ad1be9efaaf6/?page=1&page_size=1 HTTP/1.1" 200 410
+INFO 2025-09-06 19:33:00,461 basehttp 10816 10536 "GET /api/reviews/provider/0e0e5a4b-3820-41dd-a001-73755fea0d9e/?page=1&page_size=1 HTTP/1.1" 200 410
+INFO 2025-09-06 19:33:04,196 basehttp 10816 19864 "OPTIONS /api/food-listings/2b0e42d7-ae10-4251-949b-14a6c9ca5251/ HTTP/1.1" 200 0
+INFO 2025-09-06 19:33:04,197 basehttp 10816 10536 "OPTIONS /api/food-listings/2b0e42d7-ae10-4251-949b-14a6c9ca5251/ HTTP/1.1" 200 0
+INFO 2025-09-06 19:33:04,435 basehttp 10816 19864 "GET /api/food-listings/2b0e42d7-ae10-4251-949b-14a6c9ca5251/ HTTP/1.1" 200 937
+INFO 2025-09-06 19:33:04,560 basehttp 10816 19864 "GET /api/food-listings/2b0e42d7-ae10-4251-949b-14a6c9ca5251/ HTTP/1.1" 200 937
+INFO 2025-09-06 19:33:13,334 basehttp 10816 19864 "OPTIONS /cart/add/ HTTP/1.1" 200 0
+INFO 2025-09-06 19:33:15,364 basehttp 10816 19864 "POST /cart/add/ HTTP/1.1" 201 299
+INFO 2025-09-06 19:33:16,981 basehttp 10816 19864 "OPTIONS /cart/ HTTP/1.1" 200 0
+INFO 2025-09-06 19:33:16,982 basehttp 10816 10536 "OPTIONS /cart/ HTTP/1.1" 200 0
+INFO 2025-09-06 19:33:17,265 basehttp 10816 19864 "GET /cart/ HTTP/1.1" 200 760
+INFO 2025-09-06 19:33:17,310 basehttp 10816 10536 "OPTIONS /api/scheduling/available-slots/?food_listing_id=2b0e42d7-ae10-4251-949b-14a6c9ca5251 HTTP/1.1" 200 0
+WARNING 2025-09-06 19:33:17,319 log 10816 10536 Not Found: /api/scheduling/available-slots/
+WARNING 2025-09-06 19:33:17,321 basehttp 10816 10536 "GET /api/scheduling/available-slots/?food_listing_id=2b0e42d7-ae10-4251-949b-14a6c9ca5251 HTTP/1.1" 404 179
+INFO 2025-09-06 19:33:17,483 basehttp 10816 19864 "GET /cart/ HTTP/1.1" 200 760
+WARNING 2025-09-06 19:33:17,530 log 10816 19864 Not Found: /api/scheduling/available-slots/
+WARNING 2025-09-06 19:33:17,532 basehttp 10816 19864 "GET /api/scheduling/available-slots/?food_listing_id=2b0e42d7-ae10-4251-949b-14a6c9ca5251 HTTP/1.1" 404 179
+INFO 2025-09-06 19:55:46,639 autoreload 10816 21256 C:\Users\Capleton\Desktop\COS214\practical\Save-n-Bite\save-n-bite-backend\authentication\views.py changed, reloading.
+INFO 2025-09-06 19:55:52,003 blob_storage 12228 23312 Updated existing container to public access: customer-profiles
+INFO 2025-09-06 19:55:52,040 blob_storage 12228 23312 Updated existing container to public access: ngo-documents
+INFO 2025-09-06 19:55:52,082 blob_storage 12228 23312 Updated existing container to public access: ngo-logos
+INFO 2025-09-06 19:55:52,131 blob_storage 12228 23312 Updated existing container to public access: provider-documents
+INFO 2025-09-06 19:55:52,170 blob_storage 12228 23312 Updated existing container to public access: provider-logos
+INFO 2025-09-06 19:55:52,199 blob_storage 12228 23312 Updated existing container to public access: provider-banners
+INFO 2025-09-06 19:55:52,487 autoreload 12228 23312 Watching for file changes with StatReloader
+INFO 2025-09-06 19:55:53,830 blob_storage 12228 16664 Updated existing container to public access: customer-profiles
+INFO 2025-09-06 19:55:53,863 blob_storage 12228 16664 Updated existing container to public access: provider-banners
+INFO 2025-09-06 19:55:53,892 blob_storage 12228 16664 Updated existing container to public access: provider-documents
+INFO 2025-09-06 19:55:53,926 blob_storage 12228 16664 Updated existing container to public access: provider-logos
+INFO 2025-09-06 19:55:53,956 blob_storage 12228 16664 Updated existing container to public access: ngo-documents
+INFO 2025-09-06 19:55:53,980 blob_storage 12228 16664 Updated existing container to public access: ngo-logos
