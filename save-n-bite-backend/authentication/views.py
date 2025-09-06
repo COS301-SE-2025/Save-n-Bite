@@ -28,7 +28,8 @@ from .serializers import (
     BusinessPublicProfileSerializer,
     BusinessTagSerializer,
     PopularTagsSerializer,
-    DeleteAccountSerializer
+    DeleteAccountSerializer,
+    BusinessHoursSerializer
 )
 from .models import User, FoodProviderProfile, CustomerProfile, NGOProfile
 from interactions.models import Interaction, Order
@@ -2571,3 +2572,49 @@ def delete_account(request):
             {"error": {"code": "DELETE_ERROR", "message": "Account deletion failed."}},
             status=status.HTTP_500_INTERNAL_SERVER_ERROR
         )
+    
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_provider_business_hours(request, provider_id):
+    """Get business hours for any provider (all authenticated users can access)"""
+    try:
+        provider_profile = FoodProviderProfile.objects.get(user__UserID=provider_id)
+        return Response({
+            'business_hours': provider_profile.business_hours,
+            'business_name': provider_profile.business_name
+        }, status=status.HTTP_200_OK)
+        
+    except FoodProviderProfile.DoesNotExist:
+        return Response({
+            'error': 'Provider not found'
+        }, status=status.HTTP_404_NOT_FOUND)
+
+
+@api_view(['PUT'])
+@permission_classes([IsAuthenticated])
+def update_business_hours(request):
+    """Update business hours (only the business owner can update their own hours)"""
+    if request.user.user_type != 'provider':
+        return Response({
+            'error': 'Only providers can update business hours'
+        }, status=status.HTTP_403_FORBIDDEN)
+    
+    try:
+        provider_profile = request.user.provider_profile
+        serializer = BusinessHoursSerializer(provider_profile, data=request.data, partial=True)
+        
+        if serializer.is_valid():
+            serializer.save()
+            return Response({
+                'message': 'Business hours updated successfully',
+                'business_hours': serializer.data['business_hours']
+            }, status=status.HTTP_200_OK)
+        
+        return Response({
+            'error': serializer.errors
+        }, status=status.HTTP_400_BAD_REQUEST)
+            
+    except FoodProviderProfile.DoesNotExist:
+        return Response({
+            'error': 'Provider profile not found'
+        }, status=status.HTTP_404_NOT_FOUND)
