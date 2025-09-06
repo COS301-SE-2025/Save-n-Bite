@@ -41,6 +41,8 @@ urlpatterns = [
     # Business profile endpoints (existing)
     path('auth/business/<uuid:business_id>/', views.get_business_profile, name='get_business_profile'),
     path('auth/businesses/search/', views.search_businesses, name='search_businesses'),
+    path('auth/provider/<uuid:provider_id>/business-hours/', views.get_provider_business_hours, name='get_provider_business_hours'),
+    path('auth/provider/business-hours/update/', views.update_business_hours, name='update_business_hours'),
 
     # Password management endpoints (legacy - might not be used)
     path('login/', views.login_view, name='login'),

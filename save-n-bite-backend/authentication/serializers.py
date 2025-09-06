@@ -720,3 +720,8 @@ class DeleteAccountSerializer(serializers.Serializer):
         if not user.check_password(value):
             raise serializers.ValidationError("Password is incorrect")
         return value
+    
+class BusinessHoursSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = FoodProviderProfile
+        fields = ['business_hours']
