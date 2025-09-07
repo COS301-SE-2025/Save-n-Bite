@@ -1158,9 +1158,10 @@ def get_audience_counts(request):
 @api_view(['GET'])
 @permission_classes([IsSystemAdmin])
 def get_all_listings_admin(request):
-    """Get all listings for admin with FIXED image URLs and proper data"""
+    """Get all listings for admin with FIXED image URLs matching the working food listings API"""
     try:
         from food_listings.models import FoodListing
+        from food_listings.serializers import FoodListingSerializer  # Import the working serializer
         
         # Get query parameters
         search = request.GET.get('search', '')
@@ -1169,8 +1170,8 @@ def get_all_listings_admin(request):
         page = int(request.GET.get('page', 1))
         page_size = int(request.GET.get('page_size', 20))
         
-        # Build query
-        queryset = FoodListing.objects.select_related('provider').all()
+        # Build query - SAME as working food listings
+        queryset = FoodListing.objects.select_related('provider__provider_profile').all()
         
         # Apply filters
         if search:
@@ -1183,7 +1184,7 @@ def get_all_listings_admin(request):
         if status_filter:
             queryset = queryset.filter(status=status_filter)
             
-        if provider:
+        if provider and provider != 'All':
             queryset = queryset.filter(provider__email__icontains=provider)
         
         # Order by creation date
@@ -1193,93 +1194,58 @@ def get_all_listings_admin(request):
         paginator = Paginator(queryset, page_size)
         page_obj = paginator.get_page(page)
         
-        # Serialize with FIXED image URLs
+        # FIXED: Use the SAME serialization approach as working food listings
         listings_data = []
         for listing in page_obj.object_list:
-            try:
-                # Get provider business name - FIXED
-                provider_name = "Unknown Provider"
-                if hasattr(listing.provider, 'provider_profile'):
-                    provider_name = listing.provider.provider_profile.business_name
-                elif hasattr(listing.provider, 'business_name'):
-                    provider_name = listing.provider.business_name
+            # Use the working serializer first
+            serializer = FoodListingSerializer(listing)
+            listing_data = serializer.data
+            
+            # Add admin-specific fields
+            admin_data = {
+                'id': str(listing.id),
+                'name': listing.name,
+                'description': listing.description,
+                'status': listing.status,
+                'provider_email': listing.provider.email,
+                'provider_business_name': listing_data.get('provider', {}).get('business_name', 'Unknown Provider'),
                 
-                # FIXED: Get secure image URLs using the updated BlobStorageHelper
-                main_image_url = None
-                debug_info = {
-                    'listing_id': str(listing.id),
-                    'listing_name': listing.name
-                }
-
-                if listing.image:
-                    debug_info['has_image'] = True
-                    debug_info['image_type'] = type(listing.image).__name__
-                    debug_info['image_value'] = str(listing.image)
-                    
-                    if hasattr(listing.image, 'url'):
-                        debug_info['has_url_attr'] = True
-                        debug_info['raw_url'] = listing.image.url
-                    else:
-                        debug_info['has_url_attr'] = False
-                        
-                    if hasattr(listing.image, 'name'):
-                        debug_info['has_name_attr'] = True
-                        debug_info['image_name'] = listing.image.name
-                    else:
-                        debug_info['has_name_attr'] = False
-                    
-                    # Try to get the URL
-                    try:
-                        main_image_url = BlobStorageHelper.get_secure_image_url(listing.image)
-                        debug_info['generated_url'] = main_image_url
-                        debug_info['url_generation_success'] = True
-                    except Exception as e:
-                        debug_info['url_generation_error'] = str(e)
-                        debug_info['url_generation_success'] = False
-                        
-                    print(f"IMAGE DEBUG: {debug_info}")  # This will show in console
-                    logger.error(f"IMAGE DEBUG: {debug_info}")  # This will show in logs
-                else:
-                    debug_info['has_image'] = False
-                    print(f"IMAGE DEBUG - NO IMAGE: {debug_info}")
-                    logger.error(f"IMAGE DEBUG - NO IMAGE: {debug_info}")
-
-                # Use a fallback image if no URL generated  
-                if not main_image_url:
-                    main_image_url = "https://images.unsplash.com/photo-1546833999-b9f581a1996d?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80"
-                    debug_info['using_fallback'] = True
-                    print(f"IMAGE DEBUG - USING FALLBACK: {debug_info}")
-                    logger.error(f"IMAGE DEBUG - USING FALLBACK: {debug_info}")
+                # FIXED: Use the working serializer's image processing
+                'main_image': listing_data.get('imageUrl'),  # This comes from the working serializer
+                'image': listing_data.get('imageUrl'),       # For backwards compatibility
+                'imageUrl': listing_data.get('imageUrl'),    # Match the working API format
                 
-                # Build listing data
-                listings_data.append({
-                    'id': str(listing.id),
-                    'name': listing.name,
-                    'description': listing.description,
-                    'status': listing.status,
-                    'provider_email': listing.provider.email,
-                    'provider_business_name': provider_name,
-                    'main_image': main_image_url,  # FIXED: Proper image URL
-                    'images': Images,  # FIXED: Additional images
-                    'admin_flagged': getattr(listing, 'admin_flagged', False),
-                    'admin_removal_reason': getattr(listing, 'admin_removal_reason', ''),
-                    'removed_by': str(listing.removed_by.username) if getattr(listing, 'removed_by', None) else None,
-                    'removed_at': listing.removed_at.isoformat() if getattr(listing, 'removed_at', None) else None,
-                    'created_at': listing.created_at.isoformat(),
-                    'updated_at': listing.updated_at.isoformat(),
-                    'price': float(getattr(listing, 'discounted_price', 0)) if getattr(listing, 'discounted_price', None) else None,
-                    'original_price': float(getattr(listing, 'original_price', 0)) if getattr(listing, 'original_price', None) else None,
-                    'quantity': getattr(listing, 'quantity_available', 0),
-                    'location': getattr(listing, 'location', ''),
-                    'category': getattr(listing, 'food_type', ''),
-                    'expiry_date': listing.expiry_date.isoformat() if getattr(listing, 'expiry_date', None) else None,
-                })
+                # Admin moderation fields
+                'admin_flagged': getattr(listing, 'admin_flagged', False),
+                'admin_removal_reason': getattr(listing, 'admin_removal_reason', ''),
+                'removed_by': str(listing.removed_by.username) if getattr(listing, 'removed_by', None) else None,
+                'removed_at': listing.removed_at.isoformat() if getattr(listing, 'removed_at', None) else None,
                 
-            except Exception as e:
-                logger.warning(f"Error processing listing {listing.id}: {e}")
-                continue
+                # Standard fields from working API
+                'created_at': listing.created_at.isoformat(),
+                'updated_at': listing.updated_at.isoformat(),
+                'price': listing_data.get('discounted_price', 0),
+                'original_price': listing_data.get('original_price', 0),
+                'quantity': listing_data.get('quantity_available', 0),
+                'location': getattr(listing, 'location', ''),
+                'category': getattr(listing, 'food_type', ''),
+                'expiry_date': listing.expiry_date.isoformat() if getattr(listing, 'expiry_date', None) else None,
+                
+                # Add all working API fields for compatibility
+                'provider': listing_data.get('provider', {}),
+                'food_type': listing_data.get('food_type', ''),
+                'type': 'Ready To Eat',  # Match your Postman format
+            }
+            
+            # DEBUG: Log image processing
+            print(f"LISTING {listing.id} IMAGE DEBUG:")
+            print(f"  - Raw image field: {getattr(listing, 'image', 'No image field')}")
+            print(f"  - Serializer imageUrl: {listing_data.get('imageUrl', 'No imageUrl')}")
+            print(f"  - Final image URL: {admin_data.get('imageUrl', 'No final URL')}")
+            
+            listings_data.append(admin_data)
         
-        # Get status counts for filters - FIXED
+        # Get status counts for filters
         status_counts = {}
         all_listings = FoodListing.objects.all()
         for status_choice in ['active', 'inactive', 'flagged', 'removed', 'sold_out', 'expired']:
@@ -1308,114 +1274,83 @@ def get_all_listings_admin(request):
                 'message': 'Failed to fetch listings'
             }
         }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
     
 @api_view(['POST'])
 @permission_classes([IsSystemAdmin])
-def moderate_listing(request):
-    """Moderate a food listing - flag, remove, or restore - FIXED PERSISTENCE"""
+def moderate_listing(request, listing_id):
+    """Moderate a listing using the SAME pattern as your working review moderation"""
     try:
         from food_listings.models import FoodListing
         
-        listing_id = request.data.get('listing_id')
-        action = request.data.get('action')
-        reason = request.data.get('reason', '')
+        listing = FoodListing.objects.get(id=listing_id)
+    except FoodListing.DoesNotExist:
+        return Response({
+            'error': {
+                'code': 'NOT_FOUND',
+                'message': 'Listing not found'
+            }
+        }, status=status.HTTP_404_NOT_FOUND)
+    
+    # Use the SAME serializer pattern as reviews
+    from admin_system.serializers import ListingModerationActionSerializer
+    
+    serializer = ListingModerationActionSerializer(data=request.data)
+    
+    if serializer.is_valid():
+        action = serializer.validated_data['action']
+        reason = serializer.validated_data['reason']
+        moderation_notes = serializer.validated_data.get('moderation_notes', '')
         
-        if not listing_id or not action:
-            return Response({
-                'error': {
-                    'code': 'VALIDATION_ERROR',
-                    'message': 'listing_id and action are required'
-                }
-            }, status=status.HTTP_400_BAD_REQUEST)
+        # Store previous status (exactly like reviews)
+        previous_status = listing.status
         
+        # Apply moderation action (exactly like reviews)
+        if action == 'flag':
+            listing.status = 'flagged'
+        elif action == 'remove':
+            listing.status = 'removed'
+        elif action == 'restore':
+            listing.status = 'active'
+        
+        # Update moderation fields (exactly like reviews)
+        if hasattr(listing, 'moderated_by'):
+            listing.moderated_by = request.user
+        if hasattr(listing, 'moderated_at'):
+            listing.moderated_at = timezone.now()
+        if hasattr(listing, 'admin_removal_reason'):
+            listing.admin_removal_reason = f"{action.title()} by admin: {reason}"
+        
+        listing.save()
+        
+        # Log the moderation action (exactly like reviews)
         try:
-            listing = FoodListing.objects.get(id=listing_id)
-        except FoodListing.DoesNotExist:
-            return Response({
-                'error': {
-                    'code': 'NOT_FOUND',
-                    'message': 'Listing not found'
+            AdminService.log_admin_action(
+                admin_user=request.user,
+                action_type='listing_moderation',
+                target_type='listing',
+                target_id=listing_id,
+                description=f'Listing {action}ed: {listing.name}',
+                metadata={
+                    'action': action,
+                    'reason': reason,
+                    'previous_status': previous_status,
+                    'new_status': listing.status
                 }
-            }, status=status.HTTP_404_NOT_FOUND)
-        
-        old_status = listing.status
-        
-        # FIXED: Use database transaction for persistence
-        from django.db import transaction
-        
-        with transaction.atomic():
-            if action == 'flag':
-                listing.status = 'flagged'
-                listing.admin_flagged = True  # FIXED: Set the flag properly
-                listing.admin_removal_reason = f"Flagged by admin: {reason}"
-                description = f"Flagged listing: {listing.name}"
-                
-            elif action == 'remove':
-                listing.status = 'removed'
-                listing.admin_flagged = True  # FIXED: Also set flag for removed items
-                listing.admin_removal_reason = f"Removed by admin: {reason}"
-                listing.removed_by = request.user
-                listing.removed_at = timezone.now()
-                description = f"Removed listing: {listing.name}"
-                
-            elif action == 'restore':
-                listing.status = 'active'
-                listing.admin_flagged = False  # FIXED: Clear the flag when restoring
-                listing.admin_removal_reason = ''
-                listing.removed_by = None
-                listing.removed_at = None
-                description = f"Restored listing: {listing.name}"
-                
-            else:
-                return Response({
-                    'error': {
-                        'code': 'INVALID_ACTION',
-                        'message': 'Invalid action. Must be flag, remove, or restore'
-                    }
-                }, status=status.HTTP_400_BAD_REQUEST)
-            
-            # FIXED: Force save with update_fields for persistence
-            listing.save(update_fields=[
-                'status', 'admin_flagged', 'admin_removal_reason', 
-                'removed_by', 'removed_at'
-            ])
-            
-            # Log the admin action
-            try:
-                AdminService.log_admin_action(
-                    admin_user=request.user,
-                    action_type='listing_moderation',
-                    target_type='listing', 
-                    target_id=listing_id,
-                    description=description,
-                    metadata={
-                        'old_status': old_status,
-                        'new_status': listing.status,
-                        'reason': reason,
-                        'listing_name': listing.name
-                    },
-                    ip_address=get_client_ip(request)
-                )
-            except Exception as log_error:
-                logger.warning(f"Failed to log admin action: {log_error}")
+            )
+        except Exception as log_error:
+            logger.warning(f"Failed to log admin action: {log_error}")
         
         return Response({
             'message': f'Listing {action}ed successfully',
-            'listing': {
-                'id': str(listing.id),
-                'name': listing.name,
-                'status': listing.status,
-                'admin_flagged': listing.admin_flagged,
-                'reason': reason,
-                'admin_removal_reason': listing.admin_removal_reason
-            }
+            'listing_id': str(listing.id),
+            'new_status': listing.status
         }, status=status.HTTP_200_OK)
-        
-    except Exception as e:
-        logger.error(f"Listing moderation error: {str(e)}")
-        return Response({
-            'error': {
-                'code': 'MODERATION_ERROR',
-                'message': f'Failed to moderate listing: {str(e)}'
-            }
-        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    
+    return Response({
+        'error': {
+            'code': 'VALIDATION_ERROR',
+            'message': 'Invalid moderation data',
+            'details': serializer.errors
+        }
+    }, status=status.HTTP_400_BAD_REQUEST)

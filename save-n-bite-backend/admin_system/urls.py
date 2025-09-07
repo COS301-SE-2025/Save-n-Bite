@@ -42,6 +42,6 @@ urlpatterns = [
     
     # ==================== ENHANCED LISTINGS MANAGEMENT ====================
     path('listings/', views.get_all_listings_admin, name='get_all_listings_admin'),
-    path('listings/moderate/', views.moderate_listing, name='moderate_listing'),
+    path('listings/<uuid:listing_id>/moderate/', views.moderate_listing, name='moderate_listing'),
 ]
 

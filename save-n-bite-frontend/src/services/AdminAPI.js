@@ -238,23 +238,58 @@ updateVerificationStatus: async (profileType, profileId, newStatus, reason = '')
 },
 
   // ==================== FOOD LISTINGS MANAGEMENT ====================
-  getAllListings: async (page = 1, search = '', statusFilter = '', providerFilter = '', perPage = 20) => {
+getAllListings: async (page = 1, search = '', typeFilter = '', statusFilter = '', perPage = 20) => {
   try {
     const params = new URLSearchParams({
       page: page.toString(),
-      page_size: perPage.toString()
+      page_size: perPage.toString()  // Match your API
     });
     
     if (search) params.append('search', search);
+    if (typeFilter && typeFilter !== 'All') params.append('type', typeFilter);
     if (statusFilter && statusFilter !== 'All') params.append('status', statusFilter);
-    if (providerFilter && providerFilter !== 'All') params.append('provider', providerFilter);
 
-    // REVERT: Use the working admin endpoint from your URLs
     const response = await apiClient.get(`/api/admin/listings/?${params.toString()}`);
+    
+    // FIXED: Transform the data to match your working food listings format
+    const transformedListings = response.data.listings?.map(listing => ({
+      id: listing.id,
+      name: listing.name,
+      description: listing.description,
+      status: listing.status,
+      provider_email: listing.provider_email || listing.provider?.email,
+      provider_business_name: listing.provider_business_name || listing.provider,
+      
+      // FIXED: Map ALL possible image fields to ensure display
+      image: listing.image || listing.imageUrl || listing.main_image,
+      imageUrl: listing.image || listing.imageUrl || listing.main_image,
+      main_image: listing.image || listing.imageUrl || listing.main_image,
+      
+      // Admin specific fields
+      admin_flagged: listing.admin_flagged,
+      admin_removal_reason: listing.admin_removal_reason,
+      removed_by: listing.removed_by,
+      removed_at: listing.removed_at,
+      
+      // Standard fields
+      created_at: listing.created_at || listing.created,
+      updated_at: listing.updated_at,
+      price: listing.price,
+      original_price: listing.original_price,
+      quantity_available: listing.quantity_available,
+      expiry_date: listing.expiry_date,
+      type: listing.type,
+      
+      // Fallback image if none exists
+      finalImageUrl: listing.image || listing.imageUrl || listing.main_image || 
+                    'https://images.unsplash.com/photo-1546833999-b9f581a1996d?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80'
+    })) || [];
+    
+    console.log('Transformed admin listings with images:', transformedListings); // Debug log
     
     return {
       data: {
-        listings: response.data.listings,
+        listings: transformedListings,
         pagination: response.data.pagination,
         filters: response.data.filters
       },
@@ -270,27 +305,29 @@ updateVerificationStatus: async (profileType, profileId, newStatus, reason = '')
   }
 },
 
-  moderateListing: async (listingId, action, reason = '') => {
-    try {
-      const response = await apiClient.post('/api/admin/listings/moderate/', {
-        listing_id: listingId,
-        action: action, // 'flag', 'unflag', 'remove'
-        reason: reason
-      });
-      
-      return {
-        data: response.data,
-        success: true,
-        error: null
-      };
-    } catch (error) {
-      return {
-        data: null,
-        success: false,
-        error: error.response?.data?.error?.message || "Failed to moderate listing"
-      };
-    }
-  },
+moderateListing: async (listingId, action, reason = '') => {
+  try {
+    // FIX: Use the CORRECT endpoint that matches your working backend
+    const response = await apiClient.post('/api/food-listings/admin/listings/moderate/', {
+      listing_id: listingId,  // Your backend expects 'listing_id' 
+      action: action,         // 'flag', 'unflag', 'remove' (match your backend actions)
+      reason: reason
+    });
+    
+    return {
+      data: response.data,
+      success: true,
+      error: null
+    };
+  } catch (error) {
+    console.error('Listing moderation error:', error);
+    return {
+      data: null,
+      success: false,
+      error: error.response?.data?.error?.message || "Failed to moderate listing"
+    };
+  }
+},
 
   // ==================== TRANSACTION VIEWING ====================
   getAllTransactions: async (page = 1, search = '', typeFilter = '', statusFilter = '', perPage = 20) => {

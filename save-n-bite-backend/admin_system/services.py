@@ -573,6 +573,23 @@ class SystemLogService:
         except SystemLogEntry.DoesNotExist:
             raise ValueError(f"System log with ID {log_id} not found")
         
+    @staticmethod  
+    def create_system_log(severity, category, title, description, error_details=None):
+        """Create system log entry and send notification if critical"""
+        log_entry = SystemLogEntry.objects.create(
+            severity=severity,
+            category=category, 
+            title=title,
+            description=description,
+            error_details=error_details or {}
+        )
+        
+        # Send email notification for critical/error/warning logs
+        if severity in ['critical', 'error', 'warning']:
+            SystemLogService.send_critical_log_notification(log_entry)
+        
+        return log_entry
+        
 class AdminNotificationService:
     """Service for admin-initiated custom notifications using existing notification system"""
     
@@ -914,6 +931,63 @@ class SimpleAnalyticsService:
     
 class AnomalyDetectionService:
     """Enhanced anomaly detection for admin system based on Prac 2 algorithm"""
+
+    @staticmethod
+    def send_critical_anomaly_notifications(anomalies):
+        """Send email notifications for critical/high severity anomalies using existing NotificationService"""
+        try:
+            from notifications.services import NotificationService
+            from django.contrib.auth import get_user_model
+            
+            User = get_user_model()
+            
+            # Get all admin users
+            admin_users = User.objects.filter(admin_rights=True, is_active=True)
+            
+            critical_anomalies = [a for a in anomalies if a['severity'] in ['Critical', 'High']]
+            
+            if not critical_anomalies:
+                return
+                
+            for admin_user in admin_users:
+                try:
+                    # Create one notification per admin for all critical anomalies
+                    title = f"Security Alert: {len(critical_anomalies)} Critical Anomalies Detected"
+                    message = "\n".join([f"• {a['type']}: {a['description']}" for a in critical_anomalies[:3]])
+                    if len(critical_anomalies) > 3:
+                        message += f"\n... and {len(critical_anomalies) - 3} more"
+                    
+                    # Create in-app notification
+                    notification = NotificationService.create_notification(
+                        recipient=admin_user,
+                        notification_type='security_alert',
+                        title=title,
+                        message=message,
+                        data={
+                            'anomaly_count': len(critical_anomalies),
+                            'detection_time': timezone.now().isoformat()
+                        }
+                    )
+                    
+                    # Send email using your existing system
+                    NotificationService.send_email_notification(
+                        user=admin_user,
+                        subject=f"[SECURITY ALERT] Save n Bite - {len(critical_anomalies)} Critical Anomalies",
+                        template_name='security_alert',
+                        context={
+                            'user_name': admin_user.get_full_name() or admin_user.username,
+                            'anomaly_count': len(critical_anomalies),
+                            'anomalies': critical_anomalies,
+                            'detection_time': timezone.now().strftime('%Y-%m-%d %H:%M:%S')
+                        },
+                        notification=notification
+                    )
+                    
+                except Exception as e:
+                    logger.error(f"Failed to send security notification to {admin_user.email}: {e}")
+                    
+        except Exception as e:
+            logger.error(f"Error sending critical anomaly notifications: {e}")
     
     @staticmethod
     def detect_anomalies():
@@ -1070,6 +1144,11 @@ class AnomalyDetectionService:
                 'timestamp': timezone.now(),
                 'affected_resource': f"User Account - {user_data['user__username']}"
             })
+
+        try:
+            AnomalyDetectionService.send_critical_anomaly_notifications(anomalies)
+        except Exception as e:
+            logger.error(f"Failed to send anomaly notifications: {e}")
         
         return anomalies
     
@@ -1091,3 +1170,66 @@ class AnomalyDetectionService:
                 'detection_algorithm': 'Enhanced Prac 2 Algorithm'
             }
         )
+
+@staticmethod
+def send_critical_log_notification(log_entry):
+    """Send email notification for critical/error system logs"""
+    try:
+        from django.core.mail import send_mail
+        from django.conf import settings
+        from django.contrib.auth import get_user_model
+        
+        User = get_user_model()
+        
+        # Only send emails for critical/error/warning logs
+        if log_entry.severity not in ['critical', 'error', 'warning']:
+            return
+        
+        # Get all admin users to notify
+        admin_users = User.objects.filter(
+            admin_rights=True,
+            is_active=True,
+            email__isnull=False
+        ).exclude(email='')
+        
+        if not admin_users.exists():
+            logger.warning("No admin users found to send system log notifications")
+            return
+        
+        # Email content
+        subject = f"[{log_entry.severity.upper()}] System Alert: {log_entry.title}"
+        
+        message = f"""
+A {log_entry.severity} system log has been recorded:
+
+Title: {log_entry.title}
+Category: {log_entry.category}
+Severity: {log_entry.severity.upper()}
+Time: {log_entry.timestamp.strftime('%Y-%m-%d %H:%M:%S')}
+
+Description:
+{log_entry.description}
+
+Error Details:
+{log_entry.error_details if log_entry.error_details else 'None'}
+
+Please review this issue in the admin panel as soon as possible.
+
+---
+Save n Bite System Monitor
+        """
+        
+        admin_emails = [user.email for user in admin_users]
+        
+        send_mail(
+            subject=subject,
+            message=message,
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            recipient_list=admin_emails,
+            fail_silently=False
+        )
+        
+        logger.info(f"Critical log notification sent to {len(admin_emails)} admins")
+        
+    except Exception as e:
+        logger.error(f"Failed to send critical log notification: {e}")
