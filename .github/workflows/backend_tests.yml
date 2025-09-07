@@ -32,30 +32,6 @@ jobs:
         ports:
           - 5432:5432
 
-      redis:
-        image: redis:7
-        options: >-
-          --health-cmd "redis-cli ping"
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-        ports:
-          - 6379:6379
-
-      azurite:
-        image: mcr.microsoft.com/azure-storage/azurite
-        env:
-          AZURITE_ACCOUNTS: devstoreaccount1:Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==
-        ports:
-          - 10000:10000
-          - 10001:10001
-          - 10002:10002
-        options: >-
-          --health-cmd "nc -z localhost 10000"
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-
     defaults:
       run:
         working-directory: save-n-bite-backend
@@ -108,47 +84,25 @@ jobs:
         DB_PASSWORD=postgres
         DB_HOST=localhost
         DB_PORT=5432
-        REDIS_URL=redis://localhost:6379/0
         ALLOWED_HOSTS=localhost,127.0.0.1
         CORS_ALLOWED_ORIGINS=http://localhost:3000,http://127.0.0.1:3000
-        # Azure Blob Storage (use mock/test values)
-        AZURE_STORAGE_CONNECTION_STRING=DefaultEndpointsProtocol=http;AccountName=devstoreaccount1;AccountKey=Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==;BlobEndpoint=http://127.0.0.1:10000/devstoreaccount1
-        AZURE_CONTAINER_NAME=test-container
+        # Disable Azure Storage for testing
         USE_AZURE_STORAGE=False
         TESTING=True
+        AZURE_STORAGE_CONNECTION_STRING=UseDevelopmentStorage=true
+        AZURE_CONTAINER_NAME=test-container
         EOF
 
-    - name: Wait for services and setup Azure storage
+    - name: Wait for services
       run: |
         # Wait for PostgreSQL
+        echo "Waiting for PostgreSQL..."
         until pg_isready -h localhost -p 5432 -U postgres; do
-          echo "Waiting for PostgreSQL..."
+          echo "PostgreSQL not ready, waiting..."
           sleep 2
         done
-        
-        # Wait for Redis
-        until redis-cli -h localhost -p 6379 ping; do
-          echo "Waiting for Redis..."
-          sleep 2
-        done
-        
-        # Wait for Azurite and create container
-        sleep 5
-        poetry run python -c "
-        import os
-        from azure.storage.blob import BlobServiceClient
-        try:
-            client = BlobServiceClient.from_connection_string(
-                'DefaultEndpointsProtocol=http;AccountName=devstoreaccount1;AccountKey=Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==;BlobEndpoint=http://127.0.0.1:10000/devstoreaccount1'
-            )
-            try:
-                client.create_container('test-container')
-                print('✅ Azure test container created')
-            except Exception as e:
-                print(f'Container might already exist: {e}')
-        except Exception as e:
-            print(f'⚠️ Azure setup warning: {e}')
-        "
+        echo "✅ PostgreSQL is ready"
+      
 
     - name: Verify Django setup
       run: |
