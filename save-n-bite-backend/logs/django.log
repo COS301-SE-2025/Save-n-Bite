@@ -4364,3 +4364,17 @@ INFO 2025-09-07 11:11:51,121 blob_storage 3384 2256 Updated existing container t
 INFO 2025-09-07 11:11:51,156 blob_storage 3384 2256 Updated existing container to public access: provider-logos
 INFO 2025-09-07 11:11:51,189 blob_storage 3384 2256 Updated existing container to public access: ngo-documents
 INFO 2025-09-07 11:11:51,218 blob_storage 3384 2256 Updated existing container to public access: ngo-logos
+INFO 2025-09-07 11:13:50,417 autoreload 3384 18396 C:\Users\Capleton\Desktop\COS214\practical\Save-n-Bite\save-n-bite-backend\scheduling\serializers.py changed, reloading.
+INFO 2025-09-07 11:13:57,126 blob_storage 6016 14612 Updated existing container to public access: customer-profiles
+INFO 2025-09-07 11:13:57,171 blob_storage 6016 14612 Updated existing container to public access: ngo-documents
+INFO 2025-09-07 11:13:57,195 blob_storage 6016 14612 Updated existing container to public access: ngo-logos
+INFO 2025-09-07 11:13:57,222 blob_storage 6016 14612 Updated existing container to public access: provider-documents
+INFO 2025-09-07 11:13:57,246 blob_storage 6016 14612 Updated existing container to public access: provider-logos
+INFO 2025-09-07 11:13:57,272 blob_storage 6016 14612 Updated existing container to public access: provider-banners
+INFO 2025-09-07 11:13:57,539 autoreload 6016 14612 Watching for file changes with StatReloader
+INFO 2025-09-07 11:13:58,348 blob_storage 6016 21032 Updated existing container to public access: customer-profiles
+INFO 2025-09-07 11:13:58,381 blob_storage 6016 21032 Updated existing container to public access: provider-banners
+INFO 2025-09-07 11:13:58,416 blob_storage 6016 21032 Updated existing container to public access: provider-documents
+INFO 2025-09-07 11:13:58,447 blob_storage 6016 21032 Updated existing container to public access: provider-logos
+INFO 2025-09-07 11:13:58,476 blob_storage 6016 21032 Updated existing container to public access: ngo-documents
+INFO 2025-09-07 11:13:58,517 blob_storage 6016 21032 Updated existing container to public access: ngo-logos
