@@ -743,7 +743,7 @@ class SimpleAnalyticsService:
     
     @staticmethod
     def get_analytics_data():
-        """Get comprehensive analytics data - FIXED"""
+        """Get comprehensive analytics data - CRASH FIXED"""
         try:
             from food_listings.models import FoodListing
         except ImportError:
@@ -824,7 +824,7 @@ class SimpleAnalyticsService:
         else:
             total_transactions = completed_transactions = success_rate = 0
         
-        # FIXED: Top providers with transaction counts
+        # SIMPLIFIED: Top providers without transactions (avoiding the complex query for now)
         top_providers_data = []
         try:
             # Get verified providers
@@ -836,6 +836,7 @@ class SimpleAnalyticsService:
                 try:
                     listing_count = 0
                     transaction_count = 0
+                    completed_transaction_count = 0
                     
                     # Get listing count
                     if FoodListing:
@@ -843,31 +844,54 @@ class SimpleAnalyticsService:
                             provider=provider.user
                         ).count()
                     
-                    # FIXED: Get transaction count through listings
-                    if Interaction and FoodListing:
-                        # Get all interactions for this provider's listings
-                        provider_listings = FoodListing.objects.filter(provider=provider.user)
-                        transaction_count = Interaction.objects.filter(
-                            food_listing__in=provider_listings
-                        ).count()
+                    # CORRECTED: Query transactions using the FoodProviderProfile instance directly
+                    if Interaction:
+                        try:
+                            # The business field expects a FoodProviderProfile instance, not User
+                            transaction_count = Interaction.objects.filter(
+                                business=provider  # Use the provider (FoodProviderProfile) directly
+                            ).count()
+                            
+                            completed_transaction_count = Interaction.objects.filter(
+                                business=provider,  # Use the provider (FoodProviderProfile) directly
+                                status='completed'
+                            ).count()
+                            
+                            print(f"Provider {provider.business_name}: {transaction_count} transactions, {completed_transaction_count} completed")
+                            
+                        except Exception as transaction_error:
+                            logger.warning(f"Transaction query failed for {provider.business_name}: {transaction_error}")
+                            transaction_count = 0
+                            completed_transaction_count = 0
                     
+                    # Add provider data
                     top_providers_data.append({
                         'name': provider.business_name,
                         'listings': listing_count,
-                        'transactions': transaction_count,  # FIXED: Now includes actual transaction data
-                        'completed_transactions': Interaction.objects.filter(
-                            food_listing__in=provider_listings,
-                            status='completed'
-                        ).count() if Interaction and FoodListing else 0
+                        'transactions': transaction_count,
+                        'completed_transactions': completed_transaction_count
                     })
-                    
+                            
                 except Exception as e:
                     logger.warning(f"Error getting provider stats for {provider.business_name}: {e}")
                     continue
+            
+            # Sort by total activity (listings + transactions) and limit to top 5
+            top_providers_data.sort(key=lambda x: x['listings'] + x['transactions'], reverse=True)
+            top_providers_data = top_providers_data[:5]
                     
         except Exception as e:
             logger.warning(f"Error getting top providers: {e}")
             top_providers_data = []
+
+        # If no providers have data, add a placeholder
+        if not top_providers_data:
+            top_providers_data = [{
+                'name': 'No Active Providers',
+                'listings': 0,
+                'transactions': 0,
+                'completed_transactions': 0
+            }]
         
         return {
             'total_users': total_users,
@@ -884,8 +908,8 @@ class SimpleAnalyticsService:
             'completed_transactions': completed_transactions,
             'transaction_success_rate': round(success_rate, 1),
             
-            'user_distribution': user_distribution,  # FIXED: Now properly populated with percentages
-            'top_providers': top_providers_data  # FIXED: Now includes transaction data
+            'user_distribution': user_distribution,
+            'top_providers': top_providers_data
         }
     
 class AnomalyDetectionService:

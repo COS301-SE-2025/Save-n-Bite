@@ -94,30 +94,75 @@ const Analytics = () => {
    * Transform user distribution data for pie chart
    */
   const getUserTypeData = () => {
-    if (!analyticsData?.user_distribution) return []
-    
-    const distribution = analyticsData.user_distribution
-    return [
-      { name: 'Customers', value: distribution.customer || 0, color: '#3B82F6' },
-      { name: 'Food Providers', value: distribution.provider || 0, color: '#8B5CF6' },
-      { name: 'NGOs', value: distribution.ngo || 0, color: '#10B981' }
-    ]
+  if (!analyticsData?.user_distribution) {
+    console.log('No user distribution data available')
+    return []
   }
+  
+  const distribution = analyticsData.user_distribution
+  console.log('User distribution raw data:', distribution)
+  
+  // Convert percentage strings to numbers
+  const data = []
+  
+  if (distribution.customer) {
+    const value = parseFloat(distribution.customer.replace('%', ''))
+    if (value > 0) {
+      data.push({ name: 'Customers', value: value, color: '#3B82F6' })
+    }
+  }
+  
+  if (distribution.provider) {
+    const value = parseFloat(distribution.provider.replace('%', ''))
+    if (value > 0) {
+      data.push({ name: 'Food Providers', value: value, color: '#8B5CF6' })
+    }
+  }
+  
+  if (distribution.ngo) {
+    const value = parseFloat(distribution.ngo.replace('%', ''))
+    if (value > 0) {
+      data.push({ name: 'NGOs', value: value, color: '#10B981' })
+    }
+  }
+  
+  if (distribution.admin) {
+    const value = parseFloat(distribution.admin.replace('%', ''))
+    if (value > 0) {
+      data.push({ name: 'Admins', value: value, color: '#F59E0B' })
+    }
+  }
+  
+  console.log('Transformed user type data:', data)
+  return data
+}
+
 
   /**
    * Transform top providers data for bar chart
    */
   const getTopProvidersChartData = () => {
-    if (!analyticsData?.top_providers) return []
-    
-    return analyticsData.top_providers.map(provider => ({
-      name: provider.name.length > 20 ? 
-        provider.name.substring(0, 20) + '...' : 
-        provider.name,
-      listings: provider.listings,
-      transactions: provider.completed_transactions
-    }))
+  if (!analyticsData?.top_providers || analyticsData.top_providers.length === 0) {
+    console.log('No top providers data available')
+    // Return sample data if no providers exist
+    return [
+      { name: 'No Data Available', listings: 0, transactions: 0 }
+    ]
   }
+  
+  console.log('Top providers raw data:', analyticsData.top_providers)
+  
+  const transformedData = analyticsData.top_providers.map(provider => ({
+    name: provider.name && provider.name.length > 20 ? 
+          provider.name.substring(0, 20) + '...' : 
+          provider.name || 'Unknown Provider',
+    listings: provider.listings || 0,
+    transactions: provider.completed_transactions || provider.transactions || 0
+  }))
+  
+  console.log('Transformed top providers data:', transformedData)
+  return transformedData
+}
 
   /**
    * Generate time-series data for user growth

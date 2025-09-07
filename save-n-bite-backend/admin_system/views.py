@@ -1206,21 +1206,50 @@ def get_all_listings_admin(request):
                 
                 # FIXED: Get secure image URLs using the updated BlobStorageHelper
                 main_image_url = None
+                debug_info = {
+                    'listing_id': str(listing.id),
+                    'listing_name': listing.name
+                }
+
                 if listing.image:
-                    main_image_url = BlobStorageHelper.get_secure_image_url(listing.image)
-                
-                # Get additional images if they exist - FIXED
-                images = []
-                if hasattr(listing, 'images') and listing.images:
-                    # Handle different image storage formats
-                    if isinstance(listing.images, list):
-                        for img_url in listing.images:
-                            if img_url:
-                                images.append(BlobStorageHelper.get_secure_image_url(img_url))
-                    elif hasattr(listing.images, 'all'):
-                        for img in listing.images.all():
-                            if hasattr(img, 'image') and img.image:
-                                images.append(BlobStorageHelper.get_secure_image_url(img.image))
+                    debug_info['has_image'] = True
+                    debug_info['image_type'] = type(listing.image).__name__
+                    debug_info['image_value'] = str(listing.image)
+                    
+                    if hasattr(listing.image, 'url'):
+                        debug_info['has_url_attr'] = True
+                        debug_info['raw_url'] = listing.image.url
+                    else:
+                        debug_info['has_url_attr'] = False
+                        
+                    if hasattr(listing.image, 'name'):
+                        debug_info['has_name_attr'] = True
+                        debug_info['image_name'] = listing.image.name
+                    else:
+                        debug_info['has_name_attr'] = False
+                    
+                    # Try to get the URL
+                    try:
+                        main_image_url = BlobStorageHelper.get_secure_image_url(listing.image)
+                        debug_info['generated_url'] = main_image_url
+                        debug_info['url_generation_success'] = True
+                    except Exception as e:
+                        debug_info['url_generation_error'] = str(e)
+                        debug_info['url_generation_success'] = False
+                        
+                    print(f"IMAGE DEBUG: {debug_info}")  # This will show in console
+                    logger.error(f"IMAGE DEBUG: {debug_info}")  # This will show in logs
+                else:
+                    debug_info['has_image'] = False
+                    print(f"IMAGE DEBUG - NO IMAGE: {debug_info}")
+                    logger.error(f"IMAGE DEBUG - NO IMAGE: {debug_info}")
+
+                # Use a fallback image if no URL generated  
+                if not main_image_url:
+                    main_image_url = "https://images.unsplash.com/photo-1546833999-b9f581a1996d?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80"
+                    debug_info['using_fallback'] = True
+                    print(f"IMAGE DEBUG - USING FALLBACK: {debug_info}")
+                    logger.error(f"IMAGE DEBUG - USING FALLBACK: {debug_info}")
                 
                 # Build listing data
                 listings_data.append({
@@ -1231,7 +1260,7 @@ def get_all_listings_admin(request):
                     'provider_email': listing.provider.email,
                     'provider_business_name': provider_name,
                     'main_image': main_image_url,  # FIXED: Proper image URL
-                    'images': images,  # FIXED: Additional images
+                    'images': Images,  # FIXED: Additional images
                     'admin_flagged': getattr(listing, 'admin_flagged', False),
                     'admin_removal_reason': getattr(listing, 'admin_removal_reason', ''),
                     'removed_by': str(listing.removed_by.username) if getattr(listing, 'removed_by', None) else None,
@@ -1283,12 +1312,12 @@ def get_all_listings_admin(request):
 @api_view(['POST'])
 @permission_classes([IsSystemAdmin])
 def moderate_listing(request):
-    """Moderate a food listing - flag, remove, or restore"""
+    """Moderate a food listing - flag, remove, or restore - FIXED PERSISTENCE"""
     try:
         from food_listings.models import FoodListing
         
         listing_id = request.data.get('listing_id')
-        action = request.data.get('action')  # 'flag', 'remove', 'restore'
+        action = request.data.get('action')
         reason = request.data.get('reason', '')
         
         if not listing_id or not action:
@@ -1311,50 +1340,64 @@ def moderate_listing(request):
         
         old_status = listing.status
         
-        if action == 'flag':
-            listing.status = 'flagged'
-            listing.admin_removal_reason = f"Flagged by admin: {reason}"
-            description = f"Flagged listing: {listing.name}"
-            
-        elif action == 'remove':
-            listing.status = 'removed'
-            listing.admin_removal_reason = f"Removed by admin: {reason}"
-            listing.removed_by = request.user
-            listing.removed_at = timezone.now()
-            description = f"Removed listing: {listing.name}"
-            
-        elif action == 'restore':
-            listing.status = 'active'
-            listing.admin_removal_reason = ''
-            listing.removed_by = None
-            listing.removed_at = None
-            description = f"Restored listing: {listing.name}"
-            
-        else:
-            return Response({
-                'error': {
-                    'code': 'INVALID_ACTION',
-                    'message': 'Invalid action. Must be flag, remove, or restore'
-                }
-            }, status=status.HTTP_400_BAD_REQUEST)
+        # FIXED: Use database transaction for persistence
+        from django.db import transaction
         
-        listing.save()
-        
-        # Log the admin action
-        AdminService.log_admin_action(
-            admin_user=request.user,
-            action_type='listing_moderation',
-            target_type='listing',
-            target_id=listing_id,
-            description=description,
-            metadata={
-                'old_status': old_status,
-                'new_status': listing.status,
-                'reason': reason,
-                'listing_name': listing.name
-            },
-            ip_address=get_client_ip(request)
-        )
+        with transaction.atomic():
+            if action == 'flag':
+                listing.status = 'flagged'
+                listing.admin_flagged = True  # FIXED: Set the flag properly
+                listing.admin_removal_reason = f"Flagged by admin: {reason}"
+                description = f"Flagged listing: {listing.name}"
+                
+            elif action == 'remove':
+                listing.status = 'removed'
+                listing.admin_flagged = True  # FIXED: Also set flag for removed items
+                listing.admin_removal_reason = f"Removed by admin: {reason}"
+                listing.removed_by = request.user
+                listing.removed_at = timezone.now()
+                description = f"Removed listing: {listing.name}"
+                
+            elif action == 'restore':
+                listing.status = 'active'
+                listing.admin_flagged = False  # FIXED: Clear the flag when restoring
+                listing.admin_removal_reason = ''
+                listing.removed_by = None
+                listing.removed_at = None
+                description = f"Restored listing: {listing.name}"
+                
+            else:
+                return Response({
+                    'error': {
+                        'code': 'INVALID_ACTION',
+                        'message': 'Invalid action. Must be flag, remove, or restore'
+                    }
+                }, status=status.HTTP_400_BAD_REQUEST)
+            
+            # FIXED: Force save with update_fields for persistence
+            listing.save(update_fields=[
+                'status', 'admin_flagged', 'admin_removal_reason', 
+                'removed_by', 'removed_at'
+            ])
+            
+            # Log the admin action
+            try:
+                AdminService.log_admin_action(
+                    admin_user=request.user,
+                    action_type='listing_moderation',
+                    target_type='listing', 
+                    target_id=listing_id,
+                    description=description,
+                    metadata={
+                        'old_status': old_status,
+                        'new_status': listing.status,
+                        'reason': reason,
+                        'listing_name': listing.name
+                    },
+                    ip_address=get_client_ip(request)
+                )
+            except Exception as log_error:
+                logger.warning(f"Failed to log admin action: {log_error}")
         
         return Response({
             'message': f'Listing {action}ed successfully',
@@ -1362,7 +1405,9 @@ def moderate_listing(request):
                 'id': str(listing.id),
                 'name': listing.name,
                 'status': listing.status,
-                'reason': reason
+                'admin_flagged': listing.admin_flagged,
+                'reason': reason,
+                'admin_removal_reason': listing.admin_removal_reason
             }
         }, status=status.HTTP_200_OK)
         
@@ -1371,6 +1416,6 @@ def moderate_listing(request):
         return Response({
             'error': {
                 'code': 'MODERATION_ERROR',
-                'message': 'Failed to moderate listing'
+                'message': f'Failed to moderate listing: {str(e)}'
             }
         }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
