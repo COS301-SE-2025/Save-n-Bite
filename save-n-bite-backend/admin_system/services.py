@@ -324,13 +324,14 @@ class UserManagementService:
         return target_user
 
 class DashboardService:
-    """Generate dashboard statistics and analytics"""
+    """Generate dashboard statistics and analytics with accurate data"""
     
     @staticmethod
     def get_dashboard_stats():
-        """Get comprehensive dashboard statistics"""
+        """Get comprehensive dashboard statistics with actual data"""
         from food_listings.models import FoodListing
         from interactions.models import Interaction
+        from authentication.models import NGOProfile, FoodProviderProfile
         
         # Get date ranges
         now = timezone.now()
@@ -338,41 +339,72 @@ class DashboardService:
         month_ago = now - timedelta(days=30)
         recent = now - timedelta(days=3)
         
-        # User statistics
+        # User statistics with accurate counts
         total_users = User.objects.count()
         active_users = User.objects.filter(is_active=True).count()
         recent_users = User.objects.filter(created_at__gte=week_ago).count()
         
-        # Verification statistics
+        # Calculate previous period for growth
+        prev_month_users = User.objects.filter(
+            created_at__lt=month_ago,
+            created_at__gte=month_ago - timedelta(days=30)
+        ).count()
+        user_growth = ((recent_users - prev_month_users) / max(prev_month_users, 1)) * 100 if prev_month_users > 0 else 100.0
+        
+        # Verification statistics with proper queries
         pending_ngos = NGOProfile.objects.filter(status='pending_verification').count()
         pending_providers = FoodProviderProfile.objects.filter(status='pending_verification').count()
         total_pending = pending_ngos + pending_providers
         
-        # Listing statistics
-        total_listings = FoodListing.objects.count()
-        active_listings = FoodListing.objects.filter(status='active').count()
-        new_listings = FoodListing.objects.filter(created_at__gte=recent).count()
+        # Listing statistics with actual data
+        try:
+            total_listings = FoodListing.objects.count()
+            active_listings = FoodListing.objects.filter(status='active').count()
+            new_listings = FoodListing.objects.filter(created_at__gte=recent).count()
+            
+            # Calculate listing growth
+            prev_week_listings = FoodListing.objects.filter(
+                created_at__lt=recent,
+                created_at__gte=recent - timedelta(days=3)
+            ).count()
+            listing_growth = ((new_listings - prev_week_listings) / max(prev_week_listings, 1)) * 100 if prev_week_listings > 0 else 0.0
+        except Exception as e:
+            logger.warning(f"Error fetching listing stats: {e}")
+            total_listings = active_listings = new_listings = listing_growth = 0
         
-        # Transaction statistics (if available)
+        # Transaction statistics with proper error handling
         try:
             total_transactions = Interaction.objects.count()
             completed_transactions = Interaction.objects.filter(status='completed').count()
             recent_transactions = Interaction.objects.filter(created_at__gte=week_ago).count()
-        except:
-            total_transactions = completed_transactions = recent_transactions = 0
+            
+            # Calculate previous period for growth
+            prev_week_transactions = Interaction.objects.filter(
+                created_at__lt=week_ago,
+                created_at__gte=week_ago - timedelta(days=7)
+            ).count()
+            transaction_growth = ((recent_transactions - prev_week_transactions) / max(prev_week_transactions, 1)) * 100 if prev_week_transactions > 0 else 0.0
+        except Exception as e:
+            logger.warning(f"Error fetching transaction stats: {e}")
+            total_transactions = completed_transactions = recent_transactions = transaction_growth = 0
         
-        # The following is mocked and requires calculations 
-        # Calculate percentage changes (mock data for now)
-        user_growth = 12.5  # calculate this based on previous period
-        listing_growth = 23.1
-        transaction_growth = -4.5
+        # System health with actual issue counts
+        try:
+            open_issues = SystemLogEntry.objects.filter(status='open').count()
+            critical_issues = SystemLogEntry.objects.filter(
+                status='open', 
+                severity='critical'
+            ).count()
+        except Exception as e:
+            logger.warning(f"Error fetching system health: {e}")
+            open_issues = critical_issues = 0
         
         return {
             'users': {
                 'total': total_users,
                 'active': active_users,
                 'recent_signups': recent_users,
-                'growth_percentage': user_growth
+                'growth_percentage': round(user_growth, 1)
             },
             'verifications': {
                 'pending_total': total_pending,
@@ -383,20 +415,17 @@ class DashboardService:
                 'total': total_listings,
                 'active': active_listings,
                 'new_this_week': new_listings,
-                'growth_percentage': listing_growth
+                'growth_percentage': round(listing_growth, 1)
             },
             'transactions': {
                 'total': total_transactions,
                 'completed': completed_transactions,
                 'recent': recent_transactions,
-                'growth_percentage': transaction_growth
+                'growth_percentage': round(transaction_growth, 1)
             },
             'system_health': {
-                'open_issues': SystemLogEntry.objects.filter(status='open').count(),
-                'critical_issues': SystemLogEntry.objects.filter(
-                    status='open', 
-                    severity='critical'
-                ).count()
+                'open_issues': open_issues,
+                'critical_issues': critical_issues
             }
         }
     
@@ -445,17 +474,53 @@ class DashboardService:
         return activities[:10]  # Return last 10 activities
 
 class SystemLogService:
-    """Handle system logging and monitoring"""
+    """Enhanced system logging with anomaly detection"""
     
     @staticmethod
     def create_system_log(severity, category, title, description, error_details=None):
-        """Create a new system log entry"""
-        return SystemLogEntry.objects.create(
+        """Create a new system log entry with anomaly check"""
+        log_entry = SystemLogEntry.objects.create(
             severity=severity,
             category=category,
             title=title,
             description=description,
             error_details=error_details or {}
+        )
+        
+        # Check for anomalies when creating critical/error logs
+        if severity in ['critical', 'error']:
+            SystemLogService.check_for_anomalies_and_alert()
+        
+        return log_entry
+    
+    @staticmethod
+    def check_for_anomalies_and_alert():
+        """Check for anomalies and create alerts"""
+        try:
+            anomalies = AnomalyDetectionService.detect_anomalies()
+            
+            # Create system log entries for detected anomalies
+            for anomaly in anomalies:
+                if anomaly['severity'] in ['Critical', 'High']:
+                    SystemLogService.create_anomaly_alert(anomaly)
+                    
+        except Exception as e:
+            logger.error(f"Error checking anomalies: {e}")
+    
+    @staticmethod
+    def create_anomaly_alert(anomaly):
+        """Create system log alert for detected anomaly"""
+        SystemLogEntry.objects.create(
+            severity='warning' if anomaly['severity'] == 'Medium' else 'critical',
+            category='security',
+            title=f"Anomaly Detected: {anomaly['type']}",
+            description=anomaly['description'],
+            error_details={
+                'anomaly_type': anomaly['type'],
+                'severity': anomaly['severity'],
+                'affected_resource': anomaly.get('affected_resource', 'Unknown'),
+                'detection_time': anomaly.get('timestamp', timezone.now()).isoformat()
+            }
         )
     
     @staticmethod
@@ -650,3 +715,245 @@ class AdminNotificationService:
             'failed_emails': emails_query.filter(status='failed').count(),
             'recent_notifications': notifications_query.order_by('-created_at')[:10]
         }
+    
+class SimpleAnalyticsService:
+    """Enhanced analytics with proper data handling"""
+    
+    @staticmethod
+    def get_analytics_data():
+        """Get comprehensive analytics data"""
+        from food_listings.models import FoodListing
+        from interactions.models import Interaction
+        from authentication.models import NGOProfile, FoodProviderProfile
+        
+        # Calculate date ranges
+        now = timezone.now()
+        week_ago = now - timedelta(days=7)
+        month_ago = now - timedelta(days=30)
+        
+        # User analytics with proper distribution
+        total_users = User.objects.count()
+        new_users_week = User.objects.filter(created_at__gte=week_ago).count()
+        new_users_month = User.objects.filter(created_at__gte=month_ago).count()
+        
+        # Calculate user growth
+        prev_month_users = User.objects.filter(
+            created_at__lt=month_ago,
+            created_at__gte=month_ago - timedelta(days=30)
+        ).count()
+        user_growth = ((new_users_month - prev_month_users) / max(prev_month_users, 1)) * 100
+        
+        # FIXED: User distribution with actual counts
+        user_counts = User.objects.values('user_type').annotate(count=Count('user_type'))
+        user_distribution = {}
+        
+        for item in user_counts:
+            if total_users > 0:
+                percentage = (item['count'] / total_users) * 100
+                user_distribution[item['user_type']] = f"{percentage:.1f}%"
+            else:
+                user_distribution[item['user_type']] = "0.0%"
+        
+        # Ensure all user types are represented
+        for user_type in ['customer', 'provider', 'ngo']:
+            if user_type not in user_distribution:
+                user_distribution[user_type] = "0.0%"
+        
+        # Listing analytics
+        try:
+            total_listings = FoodListing.objects.count()
+            active_listings = FoodListing.objects.filter(status='active').count()
+            new_listings_week = FoodListing.objects.filter(created_at__gte=week_ago).count()
+            
+            prev_week_listings = FoodListing.objects.filter(
+                created_at__lt=week_ago,
+                created_at__gte=week_ago - timedelta(days=7)
+            ).count()
+            listing_growth = ((new_listings_week - prev_week_listings) / max(prev_week_listings, 1)) * 100
+        except:
+            total_listings = active_listings = new_listings_week = listing_growth = 0
+        
+        # Transaction analytics
+        try:
+            total_transactions = Interaction.objects.count()
+            completed_transactions = Interaction.objects.filter(status='completed').count()
+            success_rate = (completed_transactions / max(total_transactions, 1)) * 100
+        except:
+            total_transactions = completed_transactions = success_rate = 0
+        
+        # FIXED: Top providers with transaction counts
+        try:
+            # Get providers with their listing and interaction counts
+            top_providers_data = []
+            providers = FoodProviderProfile.objects.filter(status='verified').select_related('user')[:5]
+            
+            for provider in providers:
+                try:
+                    listing_count = FoodListing.objects.filter(provider=provider.user).count()
+                    # Get transactions through listings
+                    provider_transactions = Interaction.objects.filter(
+                        food_listing__provider=provider.user
+                    ).count()
+                    
+                    top_providers_data.append({
+                        'name': provider.business_name,
+                        'listings': listing_count,
+                        'transactions': provider_transactions  # FIXED: Now includes transactions
+                    })
+                except Exception as e:
+                    logger.warning(f"Error getting provider stats for {provider.business_name}: {e}")
+                    continue
+                    
+        except Exception as e:
+            logger.warning(f"Error getting top providers: {e}")
+            top_providers_data = []
+        
+        return {
+            'total_users': total_users,
+            'new_users_week': new_users_week,
+            'new_users_month': new_users_month,
+            'user_growth_percentage': round(user_growth, 1),
+            
+            'total_listings': total_listings,
+            'active_listings': active_listings,
+            'new_listings_week': new_listings_week,
+            'listing_growth_percentage': round(listing_growth, 1),
+            
+            'total_transactions': total_transactions,
+            'completed_transactions': completed_transactions,
+            'transaction_success_rate': round(success_rate, 1),
+            
+            'user_distribution': user_distribution,  # FIXED: Now properly populated
+            'top_providers': top_providers_data  # FIXED: Now includes transaction data
+        }
+    
+class AnomalyDetectionService:
+    """Enhanced anomaly detection for admin system"""
+    
+    @staticmethod
+    def detect_anomalies():
+        """Advanced rule-based anomaly detection for admin system"""
+        from .models import AccessLog
+        
+        anomalies = []
+        
+        # Get logs for the last 24 hours
+        twenty_four_hours_ago = timezone.now() - timedelta(hours=24)
+        recent_logs = AccessLog.objects.filter(timestamp__gte=twenty_four_hours_ago)
+        
+        # Anomaly 1: Excessive failed admin login attempts from same IP
+        suspicious_ips = recent_logs.filter(
+            endpoint__contains='/admin/',
+            status_code__in=[401, 403]
+        ).values('ip_address').annotate(
+            attempt_count=Count('id')
+        ).filter(attempt_count__gte=5)
+        
+        for ip_data in suspicious_ips:
+            anomalies.append({
+                'type': 'Suspicious Admin Login Activity',
+                'description': f"IP {ip_data['ip_address']} made {ip_data['attempt_count']} failed admin login attempts",
+                'severity': 'Critical' if ip_data['attempt_count'] > 15 else 'High',
+                'timestamp': timezone.now(),
+                'affected_resource': f"Admin Panel from IP {ip_data['ip_address']}"
+            })
+        
+        # Anomaly 2: Unauthorized access to admin endpoints
+        unauthorized_admin_access = recent_logs.filter(
+            endpoint__contains='/admin/',
+            status_code=403,
+            user__isnull=False
+        ).exclude(user__admin_rights=True)
+        
+        if unauthorized_admin_access.exists():
+            user_attempts = unauthorized_admin_access.values('user__username').annotate(
+                attempt_count=Count('id')
+            )
+            
+            for user_data in user_attempts:
+                anomalies.append({
+                    'type': 'Unauthorized Admin Access Attempt',
+                    'description': f"Non-admin user {user_data['user__username']} attempted to access admin panel {user_data['attempt_count']} times",
+                    'severity': 'Critical',
+                    'timestamp': timezone.now(),
+                    'affected_resource': f"Admin Panel - User: {user_data['user__username']}"
+                })
+        
+        # Anomaly 3: High volume admin activity from single user
+        high_activity_admins = recent_logs.filter(
+            endpoint__contains='/admin/',
+            user__isnull=False,
+            user__admin_rights=True
+        ).values('user__username').annotate(
+            request_count=Count('id')
+        ).filter(request_count__gte=100)  # 100+ requests in 24 hours
+        
+        for user_data in high_activity_admins:
+            anomalies.append({
+                'type': 'High Admin Activity Volume',
+                'description': f"Admin user {user_data['user__username']} made {user_data['request_count']} admin requests in 24h",
+                'severity': 'Medium',
+                'timestamp': timezone.now(),
+                'affected_resource': f"Admin Panel - User: {user_data['user__username']}"
+            })
+        
+        # Anomaly 4: Data export activity spike
+        export_activity = recent_logs.filter(
+            endpoint__contains='/admin/export'
+        ).count()
+        
+        if export_activity >= 5:
+            anomalies.append({
+                'type': 'Unusual Data Export Activity',
+                'description': f"{export_activity} data export requests detected in 24h",
+                'severity': 'Medium',
+                'timestamp': timezone.now(),
+                'affected_resource': 'Data Export System'
+            })
+        
+        # Anomaly 5: Failed verification status changes
+        failed_verification_updates = recent_logs.filter(
+            endpoint__contains='/admin/verifications/update',
+            status_code__gte=400
+        ).count()
+        
+        if failed_verification_updates >= 3:
+            anomalies.append({
+                'type': 'Failed Verification Updates',
+                'description': f"{failed_verification_updates} failed verification status update attempts",
+                'severity': 'High',
+                'timestamp': timezone.now(),
+                'affected_resource': 'Verification System'
+            })
+        
+        return anomalies
+    
+    @staticmethod
+    def log_access(request, response_time=None):
+        """Log access to admin endpoints"""
+        from .models import AccessLog
+        
+        # Only log admin-related endpoints
+        if '/admin/' in request.path or '/api/admin/' in request.path:
+            try:
+                AccessLog.objects.create(
+                    user=request.user if request.user.is_authenticated else None,
+                    ip_address=AnomalyDetectionService.get_client_ip(request),
+                    endpoint=request.path,
+                    method=request.method,
+                    status_code=getattr(response_time, 'status_code', 200),
+                    user_agent=request.META.get('HTTP_USER_AGENT', ''),
+                    response_time=response_time
+                )
+            except Exception as e:
+                logger.warning(f"Failed to log access: {e}")
+    
+    @staticmethod
+    def get_client_ip(request):
+        """Get client IP address"""
+        x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
+        if x_forwarded_for:
+            ip = x_forwarded_for.split(',')[0]
+        else:
+            ip = request.META.get('REMOTE_ADDR')
+        return ip

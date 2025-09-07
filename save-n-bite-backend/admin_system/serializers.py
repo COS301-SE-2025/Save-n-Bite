@@ -212,6 +212,8 @@ class CustomNotificationSerializer(serializers.Serializer):
         help_text="Target audience for the notification"
     )
     
+    # REMOVED: scheduling fields
+    
     def validate_subject(self, value):
         """Validate subject line"""
         if not value.strip():
