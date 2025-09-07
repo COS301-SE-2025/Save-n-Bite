@@ -31,6 +31,21 @@ const YourCart = () => {
     cvv: ''
   });
 
+  // Check if cart has items from multiple providers
+  const getCartProviders = () => {
+    const providers = new Set();
+    cartItems.forEach(item => {
+      if (item.provider?.business_name) {
+        providers.add(item.provider.business_name);
+      }
+    });
+    return Array.from(providers);
+  };
+
+  const hasMultipleProviders = () => {
+    return getCartProviders().length > 1;
+  };
+
   useEffect(() => {
     fetchCart();
   }, []);
@@ -218,222 +233,282 @@ const YourCart = () => {
     }
   };
 
+// Replace your getMockTimeSlotForListing function with this simpler version
 const getMockTimeSlotForListing = async (listingId) => {
   try {
-    // First try to get existing slots
+    // Only try to get existing available slots
     const slotsResponse = await schedulingAPI.getAvailableTimeSlots(listingId, MOCK_TIME_SLOT.date);
     
     if (slotsResponse.success && slotsResponse.data.available_slots && slotsResponse.data.available_slots.length > 0) {
-      // Use the first available slot
       console.log(`Found ${slotsResponse.data.available_slots.length} available slots for listing ${listingId}`);
       return slotsResponse.data.available_slots[0];
     } else {
-      // If no slots exist, generate them first
-      console.log(`No slots found for listing ${listingId}, generating slots...`);
-      
-      const generateResponse = await schedulingAPI.generateTimeSlots(listingId, MOCK_TIME_SLOT.date);
-      
-      if (generateResponse.success) {
-        console.log(`Generated ${generateResponse.data.count} time slots for listing ${listingId}`);
-        
-        // Now get the available slots again
-        const newSlotsResponse = await schedulingAPI.getAvailableTimeSlots(listingId, MOCK_TIME_SLOT.date);
-        
-        if (newSlotsResponse.success && newSlotsResponse.data.available_slots && newSlotsResponse.data.available_slots.length > 0) {
-          console.log(`Using generated slot: ${newSlotsResponse.data.available_slots[0].id}`);
-          return newSlotsResponse.data.available_slots[0];
-        } else {
-          throw new Error('Generated slots but none are available');
-        }
-      } else {
-        throw new Error(`Failed to generate slots: ${generateResponse.error}`);
-      }
+      // If no slots available, return a simple mock slot
+      console.log(`No available slots for listing ${listingId}, using fallback mock slot`);
+      return {
+        id: `mock-slot-${listingId}-${Date.now()}`,
+        date: MOCK_TIME_SLOT.date,
+        start_time: MOCK_TIME_SLOT.start,
+        end_time: MOCK_TIME_SLOT.end,
+        available_spots: 999,
+        slot_number: 1
+      };
     }
   } catch (error) {
     console.error('Error getting time slots for listing:', listingId, error);
-    throw new Error(`Failed to get time slots: ${error.message}`);
+    // Return fallback mock slot on any error
+    return {
+      id: `fallback-slot-${listingId}-${Date.now()}`,
+      date: MOCK_TIME_SLOT.date,
+      start_time: MOCK_TIME_SLOT.start,
+      end_time: MOCK_TIME_SLOT.end,
+      available_spots: 999,
+      slot_number: 1
+    };
   }
 };
 
-  const handleCheckoutAllItems = async (paymentDetails) => {
-    setIsProcessingCheckout(true);
-    try {
-      console.log('Starting checkout for all items...');
-      
-      // Step 1: Process checkout for all items
-      const checkoutData = {
-        paymentMethod: "card",
-        paymentDetails: {
-          cardNumber: paymentDetails.card_number,
-          expiryDate: paymentDetails.expiry_date,
-          cvv: paymentDetails.cvv,
-          cardholderName: "Customer"
-        },
-        specialInstructions: "Multi-item order from web app"
-      };
-
-      const checkoutResponse = await schedulingAPI.checkoutCart(checkoutData);
-      
-      if (!checkoutResponse.success) {
-        setError(`Checkout failed: ${checkoutResponse.error}`);
-        return;
-      }
-
-      console.log('Checkout successful:', checkoutResponse.data);
-      
-      const orders = checkoutResponse.data.orders || [];
-      if (orders.length === 0) {
-        setError('No orders created during checkout');
-        return;
-      }
-
-// Step 2: Schedule pickup for each order with mock time slots
-const scheduledPickups = [];
-console.log(`Scheduling pickups for ${orders.length} orders...`);
-
-for (const order of orders) {
+// Process all items in single checkout, then schedule individually
+const handleCheckoutAllItems = async (paymentDetails) => {
+  setIsProcessingCheckout(true);
   try {
-    console.log('Processing order:', order.id, 'with items:', order.items);
+    console.log('Starting checkout for all cart items...');
     
-    // Check if order has items
-    if (!order.items || !Array.isArray(order.items) || order.items.length === 0) {
-      console.warn('Order has no items array:', order);
-      continue;
+    // STEP 1: Store current cart items before processing
+    const originalCartItems = [...cartItems];
+    const cartStorageKey = `cart_backup_${Date.now()}`;
+    localStorage.setItem(cartStorageKey, JSON.stringify(originalCartItems));
+    console.log(`Stored ${originalCartItems.length} items in localStorage with key: ${cartStorageKey}`);
+    
+    const scheduledPickups = [];
+    const failedItems = [];
+    
+    // STEP 2: Single checkout for all items
+    console.log('\n=== PROCESSING ALL CART ITEMS IN SINGLE CHECKOUT ===');
+    
+    const allItemIds = originalCartItems.map(item => item.id);
+    const checkoutData = {
+      items: allItemIds,
+      paymentMethod: "card",
+      paymentDetails: {
+        cardNumber: paymentDetails.card_number,
+        expiryDate: paymentDetails.expiry_date,
+        cvv: paymentDetails.cvv,
+        cardholderName: "Customer"
+      },
+      specialInstructions: `Checkout for ${originalCartItems.length} items: ${originalCartItems.map(item => item.name).join(', ')}`
+    };
+
+    console.log('Checkout data for all items:', JSON.stringify(checkoutData, null, 2));
+    
+    const checkoutResponse = await schedulingAPI.checkoutCart(checkoutData);
+    
+    if (!checkoutResponse.success) {
+      console.error('Checkout failed for all items:', checkoutResponse.error);
+      setError(`Checkout failed: ${checkoutResponse.error}`);
+      return;
     }
+
+    console.log('Checkout successful for all items:', checkoutResponse.data);
     
-    // Process each item in the order
-    for (const orderItem of order.items) {
-      console.log('Processing order item:', orderItem);
+    const orders = checkoutResponse.data.orders || [];
+    if (orders.length === 0) {
+      console.error('No orders created');
+      setError('No orders were created during checkout');
+      return;
+    }
+
+    console.log(`Created ${orders.length} orders for ${originalCartItems.length} items`);
+    
+    // STEP 3: Schedule pickup for each order individually
+    console.log('\n=== SCHEDULING INDIVIDUAL PICKUPS ===');
+    
+    for (let i = 0; i < orders.length; i++) {
+      const order = orders[i];
       
-      // Find the matching cart item by name
-      const cartItem = cartItems.find(item => {
-        console.log(`Comparing cart item "${item.name}" with order item "${orderItem.name}"`);
-        return item.name === orderItem.name;
-      });
+      // Find the corresponding cart item for this order
+      // Orders should be in the same sequence as cart items
+      const cartItem = originalCartItems[i] || originalCartItems.find(item => 
+        order.items?.some(orderItem => orderItem.food_listing_id === (item.food_listing_id || item.listingId || item.listing_id))
+      );
       
       if (!cartItem) {
-        console.warn('Could not find cart item for order item:', orderItem.name);
+        console.warn(`Could not find cart item for order ${order.id}`);
+        failedItems.push({ 
+          item: { name: `Order ${order.id}`, id: order.id }, 
+          error: 'Could not match order to cart item', 
+          stage: 'matching' 
+        });
+        continue;
+      }
+      
+      console.log(`\n--- Scheduling pickup ${i + 1}/${orders.length}: ${cartItem.name} (Order: ${order.id}) ---`);
+      
+      try {
+        // Get listing ID for scheduling
+        const listingId = cartItem.food_listing_id || cartItem.listingId || cartItem.listing_id || cartItem.id;
         
-        // Create a fallback cart item from order item data
-        const fallbackCartItem = {
-          id: orderItem.id || `fallback-${order.id}-${orderItem.name}`,
-          food_listing_id: orderItem.food_listing_id || orderItem.id || `listing-${order.id}-${orderItem.name}`,
-          name: orderItem.name || 'Unknown Item',
-          description: orderItem.description || '',
-          price: parseFloat(orderItem.price || orderItem.unit_price || 0),
-          quantity: orderItem.quantity || 1,
-          provider: {
-            business_name: order.providerName || 'Unknown Provider',
-            id: order.providerId
-          }
+        // Get time slot for this listing
+        const timeSlot = await getMockTimeSlotForListing(listingId);
+        console.log('Time slot for', cartItem.name, ':', JSON.stringify(timeSlot, null, 2));
+        
+        // Schedule pickup with the order ID
+        const scheduleData = {
+          order_id: order.id,
+          food_listing_id: listingId,
+          time_slot_id: timeSlot.id,
+          date: timeSlot.date,
+          customer_notes: `Individual pickup for ${cartItem.name}`
         };
         
-        console.log('Using fallback cart item for:', orderItem.name);
-        await schedulePickupForOrderItem(order, fallbackCartItem, scheduledPickups);
-      } else {
-        console.log('Found matching cart item for:', orderItem.name);
-        await schedulePickupForOrderItem(order, cartItem, scheduledPickups);
+        console.log('Schedule data for', cartItem.name, ':', JSON.stringify(scheduleData, null, 2));
+        
+        const scheduleResponse = await schedulingAPI.schedulePickup(scheduleData);
+        
+        if (scheduleResponse.success) {
+          scheduledPickups.push({
+            order: order,
+            pickup: scheduleResponse.data.pickup,
+            qrCode: scheduleResponse.data.qr_code,
+            cartItem: cartItem,
+            timeSlot: timeSlot
+          });
+          console.log(`✅ Successfully scheduled pickup for ${cartItem.name}`);
+          console.log(`Order ID: ${order.id}, Confirmation: ${scheduleResponse.data.pickup.confirmation_code}`);
+        } else {
+          console.error(`❌ Failed to schedule pickup for ${cartItem.name}:`, scheduleResponse.error);
+          failedItems.push({ item: cartItem, error: scheduleResponse.error, stage: 'scheduling' });
+        }
+        
+      } catch (itemError) {
+        console.error(`💥 Error scheduling pickup for ${cartItem.name}:`, itemError);
+        failedItems.push({ item: cartItem, error: itemError.message, stage: 'scheduling' });
+      }
+      
+      // Add delay between scheduling items
+      if (i < orders.length - 1) {
+        console.log('Waiting 300ms before next scheduling...');
+        await new Promise(resolve => setTimeout(resolve, 300));
       }
     }
-    
-  } catch (orderError) {
-    console.error(`Error processing order ${order.id}:`, orderError);
-    // Continue with other orders
-  }
-}
 
-// Helper function to schedule pickup for a single order item
-async function schedulePickupForOrderItem(order, cartItem, scheduledPickups) {
-  try {
-    const listingId = cartItem.food_listing_id || cartItem.listingId || cartItem.listing_id || cartItem.id;
+    // STEP 4: Handle results and cleanup
+    console.log(`\n=== PROCESSING COMPLETE ===`);
+    console.log(`Successfully processed: ${scheduledPickups.length} items`);
+    console.log(`Failed items: ${failedItems.length} items`);
     
-    // Get mock time slot for this listing
-    const mockTimeSlot = await getMockTimeSlotForListing(listingId);
+    // Clean up localStorage after processing
+    localStorage.removeItem(cartStorageKey);
+    console.log(`Cleaned up localStorage key: ${cartStorageKey}`);
     
-    // Schedule pickup with mock data
-    const scheduleData = {
-      order_id: order.id,
-      food_listing_id: listingId,
-      time_slot_id: mockTimeSlot.id,
-      date: mockTimeSlot.date,
-      customer_notes: `Scheduled via web app - ${cartItem.name} - universal time slot`
-    };
-    
-    console.log('Scheduling pickup for item:', cartItem.name, 'in order:', order.id, 'with data:', scheduleData);
-    
-    const scheduleResponse = await schedulingAPI.schedulePickup(scheduleData);
-    
-    if (scheduleResponse.success) {
-      scheduledPickups.push({
-        order: order,
-        pickup: scheduleResponse.data.pickup,
-        qrCode: scheduleResponse.data.qr_code,
-        cartItem: cartItem,
-        timeSlot: mockTimeSlot
-      });
-      console.log(`Successfully scheduled pickup for ${cartItem.name}`);
-    } else {
-      console.error(`Failed to schedule pickup for ${cartItem.name} in order ${order.id}:`, scheduleResponse.error);
-      // Continue with other items even if one fails
-    }
-  } catch (itemError) {
-    console.error(`Error scheduling pickup for ${cartItem.name}:`, itemError);
-  }
-}
-
-if (scheduledPickups.length === 0) {
-  setError('Failed to schedule any pickups. Please contact support.');
-  return;
-}
-
-console.log(`Successfully scheduled ${scheduledPickups.length} pickups for ${cartItems.length} cart items`);
-
-      console.log(`Successfully scheduled ${scheduledPickups.length} pickups`);
+    if (failedItems.length > 0) {
+      console.error('Failed items:', failedItems);
       
-      // Step 3: Navigate to pickup confirmation page with all pickup data
-      setTimeout(() => {
-        navigate('/pickup', {
-          state: {
-            // Multiple pickups data
-            pickups: scheduledPickups.map(sp => ({
-              orderId: sp.order.id,
-              confirmationCode: sp.pickup.confirmation_code,
-              pickupId: sp.pickup.id,
-              pickupStatus: sp.pickup.status,
-              itemName: sp.cartItem.name,
-              itemDescription: sp.cartItem.description || '',
-              businessName: sp.cartItem.provider?.business_name || 'Business',
-              pickupDate: sp.pickup.scheduled_date,
-              pickupStartTime: sp.pickup.scheduled_start_time,
-              pickupEndTime: sp.pickup.scheduled_end_time,
-              qrCodeData: sp.qrCode,
-              customerNotes: sp.pickup.customer_notes,
-              quantity: sp.cartItem.quantity,
-              price: sp.cartItem.price
-            })),
-            
-            // Summary data
-            totalItems: scheduledPickups.length,
-            totalAmount: cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0),
-            pickupTimeLabel: MOCK_TIME_SLOT.label,
-            pickupDate: MOCK_TIME_SLOT.date,
-            
-            // Success indicators
-            isMultipleItems: scheduledPickups.length > 1,
-            checkoutSuccess: true
-          }
-        });
-      }, 500);
-
-    } catch (err) {
-      console.error('Checkout error:', err);
-      setError(`Failed to process payment: ${err.message}`);
-    } finally {
-      setIsProcessingCheckout(false);
+      // Show detailed error information
+      const failedItemNames = failedItems.map(fi => `${fi.item.name} (${fi.stage})`).join(', ');
+      
+      if (scheduledPickups.length === 0) {
+        setError(`All items failed to process: ${failedItemNames}. Please try again.`);
+        return;
+      } else {
+        // Partial success - show warning but continue
+        setError(`Some items failed: ${failedItemNames}. Successfully processed items will be available for pickup.`);
+      }
     }
-  };
+
+    if (scheduledPickups.length === 0) {
+      setError('No items were successfully processed. Please try again or contact support.');
+      return;
+    }
+
+    console.log(`🎉 Successfully scheduled ${scheduledPickups.length} individual pickups`);
+    
+    // Step 5: Clear the cart UI immediately since items are processed
+    setCartItems([]);
+    
+    // Step 6: Navigate to pickup confirmation page with all pickup data
+    setTimeout(() => {
+      navigate('/pickup', {
+        state: scheduledPickups.length === 1 ? {
+          // Single item - pass data directly in state root
+          orderId: scheduledPickups[0].order.id,
+          orderNumber: scheduledPickups[0].order.id,
+          confirmationCode: scheduledPickups[0].pickup.confirmation_code,
+          pickupId: scheduledPickups[0].pickup.id,
+          pickupStatus: scheduledPickups[0].pickup.status,
+          itemName: scheduledPickups[0].cartItem.name,
+          itemDescription: scheduledPickups[0].cartItem.description || '',
+          businessName: scheduledPickups[0].cartItem.provider?.business_name || 'Business',
+          pickupDate: scheduledPickups[0].pickup.scheduled_date,
+          pickupStartTime: scheduledPickups[0].pickup.scheduled_start_time,
+          pickupEndTime: scheduledPickups[0].pickup.scheduled_end_time,
+          formattedPickupTime: MOCK_TIME_SLOT.label,
+          qrCodeData: scheduledPickups[0].qrCode,
+          customerNotes: scheduledPickups[0].pickup.customer_notes,
+          quantity: scheduledPickups[0].cartItem.quantity,
+          price: scheduledPickups[0].cartItem.price,
+          checkoutSuccess: true,
+          isMultipleItems: false
+        } : {
+          // Multiple items - pass data in pickups array
+          pickups: scheduledPickups.map(sp => ({
+            orderId: sp.order.id,
+            orderNumber: sp.order.id,
+            confirmationCode: sp.pickup.confirmation_code,
+            pickupId: sp.pickup.id,
+            pickupStatus: sp.pickup.status,
+            itemName: sp.cartItem.name,
+            itemDescription: sp.cartItem.description || '',
+            businessName: sp.cartItem.provider?.business_name || 'Business',
+            pickupDate: sp.pickup.scheduled_date,
+            pickupStartTime: sp.pickup.scheduled_start_time,
+            pickupEndTime: sp.pickup.scheduled_end_time,
+            formattedPickupTime: MOCK_TIME_SLOT.label,
+            qrCodeData: sp.qrCode,
+            customerNotes: sp.pickup.customer_notes,
+            quantity: sp.cartItem.quantity,
+            price: sp.cartItem.price
+          })),
+          
+          // Summary data
+          totalItems: scheduledPickups.length,
+          totalAmount: scheduledPickups.reduce((sum, sp) => sum + (sp.cartItem.price * sp.cartItem.quantity), 0),
+          pickupTimeLabel: MOCK_TIME_SLOT.label,
+          pickupDate: MOCK_TIME_SLOT.date,
+          
+          // Success indicators
+          isMultipleItems: true,
+          checkoutSuccess: true,
+          
+          // Individual checkout indicators
+          isIndividualCheckout: true,
+          totalOriginalItems: originalCartItems.length,
+          
+          // Failed items info (if any)
+          failedItems: failedItems.length > 0 ? failedItems.map(fi => ({
+            name: fi.item.name,
+            error: fi.error,
+            stage: fi.stage
+          })) : null,
+          partialSuccess: failedItems.length > 0 && scheduledPickups.length > 0
+        }
+      });
+    }, 500);
+
+  } catch (err) {
+    console.error('💥 Checkout error:', err);
+    setError(`Failed to process items: ${err.message}`);
+  } finally {
+    setIsProcessingCheckout(false);
+  }
+};
 
   const handleProceedToPayment = () => {
+    // Check for multiple providers before proceeding
+    if (hasMultipleProviders()) {
+      setError('Please order from one food provider at a time. Remove items from other providers to continue.');
+      return;
+    }
     setShowPayment(true);
   };
 
@@ -596,11 +671,33 @@ console.log(`Successfully scheduled ${scheduledPickups.length} pickups for ${car
                     <p className="text-sm text-blue-700 dark:text-blue-300">
                       Available during business hours: {MOCK_TIME_SLOT.label}
                     </p>
-                    <p className="text-xs text-blue-600 dark:text-blue-400 mt-1">
-                      You can pick up your order anytime during these hours
+                    <p className="text-xs text-blue-700 dark:text-blue-100 mt-1">
+                      All items will be available for pickup during business hours
                     </p>
                   </div>
                 </div>
+
+                {/* Multiple Provider Warning */}
+                {hasMultipleProviders() && (
+                  <div className="mb-6">
+                    <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg p-4">
+                      <h3 className="text-sm font-medium text-amber-800 dark:text-amber-200 mb-2">
+                        Multiple Food Providers Detected
+                      </h3>
+                      <p className="text-xs text-amber-700 dark:text-amber-100 mb-2">
+                        You can only order from one food provider at a time. Please remove items from other providers to continue.
+                      </p>
+                      <div className="text-xs text-amber-600 dark:text-amber-200">
+                        <strong>Providers in cart:</strong>
+                        <ul className="mt-1 ml-4">
+                          {getCartProviders().map((provider, index) => (
+                            <li key={index} className="list-disc">{provider}</li>
+                          ))}
+                        </ul>
+                      </div>
+                    </div>
+                  </div>
+                )}
 
                 <button 
                   onClick={handleProceedToPayment} 
