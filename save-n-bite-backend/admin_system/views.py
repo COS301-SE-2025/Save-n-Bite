@@ -1,4 +1,5 @@
-# admin_panel/views.py
+# admin_system/views.py - Updated analytics and dashboard views
+
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
@@ -15,7 +16,8 @@ import logging
 from .permissions import IsSystemAdmin, CanModerateContent, CanManageUsers
 from .services import (
     AdminService, VerificationService, PasswordResetService, 
-    UserManagementService, DashboardService, SystemLogService, AdminNotificationService
+    UserManagementService, DashboardService, SystemLogService, 
+    AdminNotificationService, SimpleAnalyticsService, AnomalyDetectionService
 )
 from .serializers import (
     AdminDashboardSerializer, RecentActivitySerializer, UserListSerializer,
@@ -29,6 +31,7 @@ from .serializers import (
 )
 from .models import AdminActionLog, SystemAnnouncement, SystemLogEntry
 from authentication.models import NGOProfile, FoodProviderProfile
+from .blob_utils import BlobStorageHelper
 
 User = get_user_model()
 logger = logging.getLogger(__name__)
@@ -97,13 +100,25 @@ def admin_login_check(request):
 @api_view(['GET'])
 @permission_classes([IsSystemAdmin])
 def admin_dashboard(request):
-    """Get admin dashboard overview with stats and recent activity"""
+    """Get admin dashboard overview with FIXED stats and recent activity"""
     try:
-        # Get dashboard statistics
+        # FIXED: Get accurate dashboard statistics
         stats = DashboardService.get_dashboard_stats()
         
         # Get recent activity
         recent_activity = DashboardService.get_recent_activity()
+        
+        # Check for anomalies and include in dashboard
+        try:
+            anomalies = AnomalyDetectionService.detect_anomalies()
+            critical_anomalies = [a for a in anomalies if a['severity'] in ['Critical', 'High']]
+            
+            # Add anomaly count to system health
+            stats['system_health']['anomalies_detected'] = len(critical_anomalies)
+            
+        except Exception as e:
+            logger.warning(f"Error detecting anomalies: {e}")
+            stats['system_health']['anomalies_detected'] = 0
         
         return Response({
             'dashboard': stats,
@@ -541,7 +556,7 @@ def get_admin_action_logs(request):
 @api_view(['GET'])
 @permission_classes([IsSystemAdmin])
 def get_system_logs(request):
-    """Get system logs with filtering"""
+    """Get system logs with ENHANCED filtering and anomaly integration"""
     try:
         # Get query parameters
         severity = request.GET.get('severity')
@@ -561,6 +576,23 @@ def get_system_logs(request):
         if category:
             queryset = queryset.filter(category=category)
         
+        # Check for new anomalies and create system logs
+        try:
+            anomalies = AnomalyDetectionService.detect_anomalies()
+            for anomaly in anomalies:
+                if anomaly['severity'] in ['Critical', 'High']:
+                    # Check if we already have a recent log for this anomaly type
+                    recent_anomaly_log = SystemLogEntry.objects.filter(
+                        category='security',
+                        title__contains=anomaly['type'],
+                        timestamp__gte=timezone.now() - timedelta(hours=1)
+                    ).exists()
+                    
+                    if not recent_anomaly_log:
+                        SystemLogService.create_anomaly_alert(anomaly)
+        except Exception as e:
+            logger.warning(f"Error processing anomalies: {e}")
+        
         # Paginate
         paginator = Paginator(queryset, per_page)
         page_obj = paginator.get_page(page)
@@ -579,7 +611,8 @@ def get_system_logs(request):
             },
             'summary': {
                 'total_open': SystemLogEntry.objects.filter(status='open').count(),
-                'total_critical': SystemLogEntry.objects.filter(severity='critical', status='open').count()
+                'total_critical': SystemLogEntry.objects.filter(severity='critical', status='open').count(),
+                'security_logs': SystemLogEntry.objects.filter(category='security').count()
             }
         }, status=status.HTTP_200_OK)
         
@@ -642,94 +675,131 @@ def resolve_system_log(request):
 
 # ==================== ANALYTICS VIEWS ====================
 
+# @api_view(['GET'])
+# @permission_classes([IsSystemAdmin])
+# def get_simple_analytics(request):
+#     """Get simple analytics for admin dashboard"""
+#     try:
+#         from food_listings.models import FoodListing
+#         from interactions.models import Interaction
+        
+#         # Calculate date ranges
+#         now = timezone.now()
+#         week_ago = now - timedelta(days=7)
+#         month_ago = now - timedelta(days=30)
+        
+#         # User analytics
+#         total_users = User.objects.count()
+#         new_users_week = User.objects.filter(created_at__gte=week_ago).count()
+#         new_users_month = User.objects.filter(created_at__gte=month_ago).count()
+        
+#         # Calculate user growth (simplified)
+#         prev_month_users = User.objects.filter(
+#             created_at__lt=month_ago,
+#             created_at__gte=month_ago - timedelta(days=30)
+#         ).count()
+#         user_growth = ((new_users_month - prev_month_users) / max(prev_month_users, 1)) * 100
+        
+#         # Listing analytics
+#         try:
+#             total_listings = FoodListing.objects.count()
+#             active_listings = FoodListing.objects.filter(status='active').count()
+#             new_listings_week = FoodListing.objects.filter(created_at__gte=week_ago).count()
+            
+#             prev_week_listings = FoodListing.objects.filter(
+#                 created_at__lt=week_ago,
+#                 created_at__gte=week_ago - timedelta(days=7)
+#             ).count()
+#             listing_growth = ((new_listings_week - prev_week_listings) / max(prev_week_listings, 1)) * 100
+#         except:
+#             total_listings = active_listings = new_listings_week = listing_growth = 0
+        
+#         # Transaction analytics
+#         try:
+#             total_transactions = Interaction.objects.count()
+#             completed_transactions = Interaction.objects.filter(status='completed').count()
+#             success_rate = (completed_transactions / max(total_transactions, 1)) * 100
+#         except:
+#             total_transactions = completed_transactions = success_rate = 0
+        
+#         # User distribution
+#         user_counts = User.objects.values('user_type').annotate(count=Count('user_type'))
+#         user_distribution = {}
+#         for item in user_counts:
+#             percentage = (item['count'] / max(total_users, 1)) * 100
+#             user_distribution[item['user_type']] = f"{percentage:.1f}%"
+        
+#         # Top providers (simplified)
+#         try:
+#             top_providers = FoodProviderProfile.objects.filter(
+#                 status='verified'
+#             ).select_related('user')[:5]
+            
+#             top_providers_data = []
+#             for provider in top_providers:
+#                 listing_count = FoodListing.objects.filter(provider=provider.user).count()
+#                 top_providers_data.append({
+#                     'name': provider.business_name,
+#                     'listings': listing_count
+#                 })
+#         except:
+#             top_providers_data = []
+        
+#         analytics_data = {
+#             'total_users': total_users,
+#             'new_users_week': new_users_week,
+#             'new_users_month': new_users_month,
+#             'user_growth_percentage': round(user_growth, 1),
+            
+#             'total_listings': total_listings,
+#             'active_listings': active_listings,
+#             'new_listings_week': new_listings_week,
+#             'listing_growth_percentage': round(listing_growth, 1),
+            
+#             'total_transactions': total_transactions,
+#             'completed_transactions': completed_transactions,
+#             'transaction_success_rate': round(success_rate, 1),
+            
+#             'user_distribution': user_distribution,
+#             'top_providers': top_providers_data
+#         }
+        
+#         serializer = SimpleAnalyticsSerializer(data=analytics_data)
+#         if serializer.is_valid():
+#             return Response({
+#                 'analytics': serializer.validated_data
+#             }, status=status.HTTP_200_OK)
+#         else:
+#             return Response({
+#                 'analytics': analytics_data  # Return raw data if serializer fails
+#             }, status=status.HTTP_200_OK)
+        
+#     except Exception as e:
+#         logger.error(f"Analytics error: {str(e)}")
+#         return Response({
+#             'error': {
+#                 'code': 'ANALYTICS_ERROR',
+#                 'message': 'Failed to generate analytics'
+#             }
+#         }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
 @api_view(['GET'])
 @permission_classes([IsSystemAdmin])
 def get_simple_analytics(request):
-    """Get simple analytics for admin dashboard"""
+    """Get ENHANCED analytics for admin dashboard with FIXED data"""
     try:
-        from food_listings.models import FoodListing
-        from interactions.models import Interaction
+        # Use the enhanced analytics service
+        analytics_data = SimpleAnalyticsService.get_analytics_data()
         
-        # Calculate date ranges
-        now = timezone.now()
-        week_ago = now - timedelta(days=7)
-        month_ago = now - timedelta(days=30)
-        
-        # User analytics
-        total_users = User.objects.count()
-        new_users_week = User.objects.filter(created_at__gte=week_ago).count()
-        new_users_month = User.objects.filter(created_at__gte=month_ago).count()
-        
-        # Calculate user growth (simplified)
-        prev_month_users = User.objects.filter(
-            created_at__lt=month_ago,
-            created_at__gte=month_ago - timedelta(days=30)
-        ).count()
-        user_growth = ((new_users_month - prev_month_users) / max(prev_month_users, 1)) * 100
-        
-        # Listing analytics
+        # Add anomaly detection data
         try:
-            total_listings = FoodListing.objects.count()
-            active_listings = FoodListing.objects.filter(status='active').count()
-            new_listings_week = FoodListing.objects.filter(created_at__gte=week_ago).count()
-            
-            prev_week_listings = FoodListing.objects.filter(
-                created_at__lt=week_ago,
-                created_at__gte=week_ago - timedelta(days=7)
-            ).count()
-            listing_growth = ((new_listings_week - prev_week_listings) / max(prev_week_listings, 1)) * 100
-        except:
-            total_listings = active_listings = new_listings_week = listing_growth = 0
-        
-        # Transaction analytics
-        try:
-            total_transactions = Interaction.objects.count()
-            completed_transactions = Interaction.objects.filter(status='completed').count()
-            success_rate = (completed_transactions / max(total_transactions, 1)) * 100
-        except:
-            total_transactions = completed_transactions = success_rate = 0
-        
-        # User distribution
-        user_counts = User.objects.values('user_type').annotate(count=Count('user_type'))
-        user_distribution = {}
-        for item in user_counts:
-            percentage = (item['count'] / max(total_users, 1)) * 100
-            user_distribution[item['user_type']] = f"{percentage:.1f}%"
-        
-        # Top providers (simplified)
-        try:
-            top_providers = FoodProviderProfile.objects.filter(
-                status='verified'
-            ).select_related('user')[:5]
-            
-            top_providers_data = []
-            for provider in top_providers:
-                listing_count = FoodListing.objects.filter(provider=provider.user).count()
-                top_providers_data.append({
-                    'name': provider.business_name,
-                    'listings': listing_count
-                })
-        except:
-            top_providers_data = []
-        
-        analytics_data = {
-            'total_users': total_users,
-            'new_users_week': new_users_week,
-            'new_users_month': new_users_month,
-            'user_growth_percentage': round(user_growth, 1),
-            
-            'total_listings': total_listings,
-            'active_listings': active_listings,
-            'new_listings_week': new_listings_week,
-            'listing_growth_percentage': round(listing_growth, 1),
-            
-            'total_transactions': total_transactions,
-            'completed_transactions': completed_transactions,
-            'transaction_success_rate': round(success_rate, 1),
-            
-            'user_distribution': user_distribution,
-            'top_providers': top_providers_data
-        }
+            anomalies = AnomalyDetectionService.detect_anomalies()
+            analytics_data['security_anomalies'] = len(anomalies)
+            analytics_data['critical_anomalies'] = len([a for a in anomalies if a['severity'] == 'Critical'])
+        except Exception as e:
+            logger.warning(f"Error getting anomalies for analytics: {e}")
+            analytics_data['security_anomalies'] = 0
+            analytics_data['critical_anomalies'] = 0
         
         serializer = SimpleAnalyticsSerializer(data=analytics_data)
         if serializer.is_valid():
@@ -737,8 +807,9 @@ def get_simple_analytics(request):
                 'analytics': serializer.validated_data
             }, status=status.HTTP_200_OK)
         else:
+            # Return raw data if serializer fails
             return Response({
-                'analytics': analytics_data  # Return raw data if serializer fails
+                'analytics': analytics_data  
             }, status=status.HTTP_200_OK)
         
     except Exception as e:
@@ -747,6 +818,48 @@ def get_simple_analytics(request):
             'error': {
                 'code': 'ANALYTICS_ERROR',
                 'message': 'Failed to generate analytics'
+            }
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    
+
+@api_view(['GET'])
+@permission_classes([IsSystemAdmin])
+def get_security_anomalies(request):
+    """Get detected security anomalies"""
+    try:
+        anomalies = AnomalyDetectionService.detect_anomalies()
+        
+        # Log the anomaly check action
+        AdminService.log_admin_action(
+            admin_user=request.user,
+            action_type='security_check',
+            target_type='system',
+            target_id='anomaly_detection',
+            description="Checked for security anomalies",
+            metadata={
+                'anomalies_found': len(anomalies),
+                'critical_count': len([a for a in anomalies if a['severity'] == 'Critical'])
+            },
+            ip_address=get_client_ip(request)
+        )
+        
+        return Response({
+            'anomalies': anomalies,
+            'summary': {
+                'total': len(anomalies),
+                'critical': len([a for a in anomalies if a['severity'] == 'Critical']),
+                'high': len([a for a in anomalies if a['severity'] == 'High']),
+                'medium': len([a for a in anomalies if a['severity'] == 'Medium']),
+                'low': len([a for a in anomalies if a['severity'] == 'Low'])
+            }
+        }, status=status.HTTP_200_OK)
+        
+    except Exception as e:
+        logger.error(f"Anomaly detection error: {str(e)}")
+        return Response({
+            'error': {
+                'code': 'ANOMALY_ERROR',
+                'message': 'Failed to detect anomalies'
             }
         }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
@@ -880,7 +993,7 @@ def export_data(request):
 @api_view(['POST'])
 @permission_classes([IsSystemAdmin])
 def send_custom_notification(request):
-    """Send custom notification to specified user groups using existing notification system"""
+    """Send custom notification - REMOVED scheduling functionality"""
     
     serializer = CustomNotificationSerializer(data=request.data)
     
@@ -894,7 +1007,7 @@ def send_custom_notification(request):
         }, status=status.HTTP_400_BAD_REQUEST)
     
     try:
-        # Send the notification using existing system
+        # Send the notification immediately (no scheduling option)
         stats = AdminNotificationService.send_custom_notification(
             admin_user=request.user,
             subject=serializer.validated_data['subject'],
@@ -907,7 +1020,7 @@ def send_custom_notification(request):
         stats_serializer = NotificationStatsSerializer(stats)
         
         return Response({
-            'message': 'Notification sent successfully using existing notification system',
+            'message': 'Notification sent successfully',
             'stats': stats_serializer.data
         }, status=status.HTTP_200_OK)
         
@@ -1013,5 +1126,117 @@ def get_audience_counts(request):
             'error': {
                 'code': 'AUDIENCE_COUNT_ERROR',
                 'message': 'Failed to retrieve audience counts'
+            }
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    
+@api_view(['GET'])
+@permission_classes([IsSystemAdmin])
+def get_all_listings_admin(request):
+    """Get all listings for admin with FIXED image URLs"""
+    try:
+        from food_listings.models import FoodListing
+        
+        # Get query parameters
+        search = request.GET.get('search', '')
+        status_filter = request.GET.get('status', '')
+        provider = request.GET.get('provider', '')
+        page = int(request.GET.get('page', 1))
+        page_size = int(request.GET.get('page_size', 20))
+        
+        # Build query
+        queryset = FoodListing.objects.select_related('provider').all()
+        
+        # Apply filters
+        if search:
+            queryset = queryset.filter(
+                Q(name__icontains=search) |
+                Q(description__icontains=search) |
+                Q(provider__email__icontains=search)
+            )
+        
+        if status_filter:
+            queryset = queryset.filter(status=status_filter)
+            
+        if provider:
+            queryset = queryset.filter(provider__email__icontains=provider)
+        
+        # Order by creation date
+        queryset = queryset.order_by('-created_at')
+        
+        # Paginate
+        paginator = Paginator(queryset, page_size)
+        page_obj = paginator.get_page(page)
+        
+        # Serialize with FIXED image URLs
+        listings_data = []
+        for listing in page_obj.object_list:
+            try:
+                # Get provider business name
+                provider_name = "Unknown Provider"
+                if hasattr(listing.provider, 'provider_profile'):
+                    provider_name = listing.provider.provider_profile.business_name
+                elif hasattr(listing.provider, 'business_name'):
+                    provider_name = listing.provider.business_name
+                
+                # FIXED: Get secure image URLs
+                main_image_url = BlobStorageHelper.get_secure_image_url(listing.image)
+                
+                # Get additional images if they exist
+                images = []
+                if hasattr(listing, 'images') and listing.images:
+                    for img in listing.images.all():
+                        images.append(BlobStorageHelper.get_secure_image_url(img.image))
+                
+                listings_data.append({
+                    'id': str(listing.id),
+                    'name': listing.name,
+                    'description': listing.description,
+                    'status': listing.status,
+                    'provider_email': listing.provider.email,
+                    'provider_business_name': provider_name,
+                    'main_image': main_image_url,  # FIXED: Proper image URL
+                    'images': images,  # FIXED: Additional images
+                    'admin_flagged': getattr(listing, 'admin_flagged', False),
+                    'admin_removal_reason': getattr(listing, 'admin_removal_reason', ''),
+                    'removed_by': None,
+                    'removed_at': None,
+                    'created_at': listing.created_at.isoformat(),
+                    'updated_at': listing.updated_at.isoformat(),
+                    'price': getattr(listing, 'price', None),
+                    'quantity': getattr(listing, 'quantity', None),
+                    'location': getattr(listing, 'location', ''),
+                    'category': getattr(listing, 'category', ''),
+                })
+                
+            except Exception as e:
+                logger.warning(f"Error processing listing {listing.id}: {e}")
+                continue
+        
+        # Get status counts for filters
+        status_counts = {}
+        for status_choice in ['active', 'inactive', 'flagged', 'removed', 'sold_out', 'expired']:
+            status_counts[status_choice] = FoodListing.objects.filter(status=status_choice).count()
+        
+        return Response({
+            'listings': listings_data,
+            'pagination': {
+                'current_page': page,
+                'total_pages': paginator.num_pages,
+                'total_count': paginator.count,
+                'has_next': page_obj.has_next(),
+                'has_previous': page_obj.has_previous(),
+                'page_size': page_size
+            },
+            'filters': {
+                'status_counts': status_counts
+            }
+        }, status=status.HTTP_200_OK)
+        
+    except Exception as e:
+        logger.error(f"Get admin listings error: {str(e)}")
+        return Response({
+            'error': {
+                'code': 'LISTINGS_ERROR',
+                'message': 'Failed to fetch listings'
             }
         }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

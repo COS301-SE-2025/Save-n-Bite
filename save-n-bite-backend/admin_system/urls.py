@@ -1,8 +1,9 @@
-# admin_panel/urls.py
+# admin_system/urls.py - Updated with new endpoints
+
 from django.urls import path
 from . import views
 
-app_name = 'admin_panel'
+app_name = 'admin_system'
 
 urlpatterns = [
     # ==================== ADMIN AUTHENTICATION ====================
@@ -25,15 +26,22 @@ urlpatterns = [
     path('logs/system/', views.get_system_logs, name='get_system_logs'),
     path('logs/system/resolve/', views.resolve_system_log, name='resolve_system_log'),
     
-    # ==================== ANALYTICS ====================
+    # ==================== ENHANCED ANALYTICS ====================
     path('analytics/', views.get_simple_analytics, name='get_simple_analytics'),
+    
+    # ==================== SECURITY & ANOMALY DETECTION ====================
+    path('security/anomalies/', views.get_security_anomalies, name='get_security_anomalies'),
     
     # ==================== DATA EXPORT ====================
     path('export/', views.export_data, name='export_data'),
 
-    # ==================== CUSTOM NOTIFICATIONS ====================
+    # ==================== CUSTOM NOTIFICATIONS (NO SCHEDULING) ====================
     path('notifications/send/', views.send_custom_notification, name='send_custom_notification'),
     path('notifications/analytics/', views.get_notification_analytics, name='get_notification_analytics'),
     path('notifications/audience-counts/', views.get_audience_counts, name='get_audience_counts'),
     
+    # ==================== ENHANCED LISTINGS MANAGEMENT ====================
+    path('listings/', views.get_all_listings_admin, name='get_all_listings_admin'),
+    path('listings/moderate/', views.moderate_listing, name='moderate_listing'),
 ]
+
