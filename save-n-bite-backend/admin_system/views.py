@@ -27,7 +27,8 @@ from .serializers import (
     SimpleAnalyticsSerializer, DataExportSerializer,
     CustomNotificationSerializer, 
     NotificationStatsSerializer,
-    NotificationAnalyticsSerializer
+    NotificationAnalyticsSerializer,
+
 )
 from .models import AdminActionLog, SystemAnnouncement, SystemLogEntry
 from authentication.models import NGOProfile, FoodProviderProfile
@@ -102,13 +103,25 @@ def admin_login_check(request):
 def admin_dashboard(request):
     """Get admin dashboard overview with FIXED stats and recent activity"""
     try:
-        # FIXED: Get accurate dashboard statistics
+        # FIXED: Get accurate dashboard statistics using the updated service
         stats = DashboardService.get_dashboard_stats()
         
         # Get recent activity
         recent_activity = DashboardService.get_recent_activity()
         
-        # Check for anomalies and include in dashboard
+        # Format recent activity for frontend consumption - FIXED
+        formatted_activity = []
+        for activity in recent_activity:
+            formatted_activity.append({
+                'title': activity.get('description', 'Activity'),
+                'description': activity.get('description', ''),
+                'time_ago': 'Just now',  # You can implement proper time formatting
+                'activity_type': activity.get('type', 'info'),
+                'timestamp': activity.get('timestamp', timezone.now()).isoformat(),
+                'icon': activity.get('icon', 'info')
+            })
+        
+        # Check for anomalies and include in dashboard - FIXED
         try:
             anomalies = AnomalyDetectionService.detect_anomalies()
             critical_anomalies = [a for a in anomalies if a['severity'] in ['Critical', 'High']]
@@ -120,9 +133,22 @@ def admin_dashboard(request):
             logger.warning(f"Error detecting anomalies: {e}")
             stats['system_health']['anomalies_detected'] = 0
         
+        # Add additional dashboard stats - FIXED
+        dashboard_stats = {
+            **stats,
+            'dashboard_stats': {
+                'users': stats['users'],
+                'listings': stats['listings'], 
+                'transactions': stats['transactions'],
+                'verifications': stats['verifications'],
+                'system_health': stats['system_health']
+            }
+        }
+        
         return Response({
-            'dashboard': stats,
-            'recent_activity': recent_activity,
+            'dashboard': dashboard_stats['dashboard_stats'],
+            'dashboard_stats': dashboard_stats['dashboard_stats'],  # For backward compatibility
+            'recent_activity': formatted_activity,
             'admin_info': {
                 'name': request.user.get_full_name() or request.user.username,
                 'email': request.user.email,
@@ -1132,7 +1158,7 @@ def get_audience_counts(request):
 @api_view(['GET'])
 @permission_classes([IsSystemAdmin])
 def get_all_listings_admin(request):
-    """Get all listings for admin with FIXED image URLs"""
+    """Get all listings for admin with FIXED image URLs and proper data"""
     try:
         from food_listings.models import FoodListing
         
@@ -1171,22 +1197,32 @@ def get_all_listings_admin(request):
         listings_data = []
         for listing in page_obj.object_list:
             try:
-                # Get provider business name
+                # Get provider business name - FIXED
                 provider_name = "Unknown Provider"
                 if hasattr(listing.provider, 'provider_profile'):
                     provider_name = listing.provider.provider_profile.business_name
                 elif hasattr(listing.provider, 'business_name'):
                     provider_name = listing.provider.business_name
                 
-                # FIXED: Get secure image URLs
-                main_image_url = BlobStorageHelper.get_secure_image_url(listing.image)
+                # FIXED: Get secure image URLs using the updated BlobStorageHelper
+                main_image_url = None
+                if listing.image:
+                    main_image_url = BlobStorageHelper.get_secure_image_url(listing.image)
                 
-                # Get additional images if they exist
+                # Get additional images if they exist - FIXED
                 images = []
                 if hasattr(listing, 'images') and listing.images:
-                    for img in listing.images.all():
-                        images.append(BlobStorageHelper.get_secure_image_url(img.image))
+                    # Handle different image storage formats
+                    if isinstance(listing.images, list):
+                        for img_url in listing.images:
+                            if img_url:
+                                images.append(BlobStorageHelper.get_secure_image_url(img_url))
+                    elif hasattr(listing.images, 'all'):
+                        for img in listing.images.all():
+                            if hasattr(img, 'image') and img.image:
+                                images.append(BlobStorageHelper.get_secure_image_url(img.image))
                 
+                # Build listing data
                 listings_data.append({
                     'id': str(listing.id),
                     'name': listing.name,
@@ -1198,24 +1234,27 @@ def get_all_listings_admin(request):
                     'images': images,  # FIXED: Additional images
                     'admin_flagged': getattr(listing, 'admin_flagged', False),
                     'admin_removal_reason': getattr(listing, 'admin_removal_reason', ''),
-                    'removed_by': None,
-                    'removed_at': None,
+                    'removed_by': str(listing.removed_by.username) if getattr(listing, 'removed_by', None) else None,
+                    'removed_at': listing.removed_at.isoformat() if getattr(listing, 'removed_at', None) else None,
                     'created_at': listing.created_at.isoformat(),
                     'updated_at': listing.updated_at.isoformat(),
-                    'price': getattr(listing, 'price', None),
-                    'quantity': getattr(listing, 'quantity', None),
+                    'price': float(getattr(listing, 'discounted_price', 0)) if getattr(listing, 'discounted_price', None) else None,
+                    'original_price': float(getattr(listing, 'original_price', 0)) if getattr(listing, 'original_price', None) else None,
+                    'quantity': getattr(listing, 'quantity_available', 0),
                     'location': getattr(listing, 'location', ''),
-                    'category': getattr(listing, 'category', ''),
+                    'category': getattr(listing, 'food_type', ''),
+                    'expiry_date': listing.expiry_date.isoformat() if getattr(listing, 'expiry_date', None) else None,
                 })
                 
             except Exception as e:
                 logger.warning(f"Error processing listing {listing.id}: {e}")
                 continue
         
-        # Get status counts for filters
+        # Get status counts for filters - FIXED
         status_counts = {}
+        all_listings = FoodListing.objects.all()
         for status_choice in ['active', 'inactive', 'flagged', 'removed', 'sold_out', 'expired']:
-            status_counts[status_choice] = FoodListing.objects.filter(status=status_choice).count()
+            status_counts[status_choice] = all_listings.filter(status=status_choice).count()
         
         return Response({
             'listings': listings_data,
@@ -1238,5 +1277,100 @@ def get_all_listings_admin(request):
             'error': {
                 'code': 'LISTINGS_ERROR',
                 'message': 'Failed to fetch listings'
+            }
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    
+@api_view(['POST'])
+@permission_classes([IsSystemAdmin])
+def moderate_listing(request):
+    """Moderate a food listing - flag, remove, or restore"""
+    try:
+        from food_listings.models import FoodListing
+        
+        listing_id = request.data.get('listing_id')
+        action = request.data.get('action')  # 'flag', 'remove', 'restore'
+        reason = request.data.get('reason', '')
+        
+        if not listing_id or not action:
+            return Response({
+                'error': {
+                    'code': 'VALIDATION_ERROR',
+                    'message': 'listing_id and action are required'
+                }
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
+        try:
+            listing = FoodListing.objects.get(id=listing_id)
+        except FoodListing.DoesNotExist:
+            return Response({
+                'error': {
+                    'code': 'NOT_FOUND',
+                    'message': 'Listing not found'
+                }
+            }, status=status.HTTP_404_NOT_FOUND)
+        
+        old_status = listing.status
+        
+        if action == 'flag':
+            listing.status = 'flagged'
+            listing.admin_removal_reason = f"Flagged by admin: {reason}"
+            description = f"Flagged listing: {listing.name}"
+            
+        elif action == 'remove':
+            listing.status = 'removed'
+            listing.admin_removal_reason = f"Removed by admin: {reason}"
+            listing.removed_by = request.user
+            listing.removed_at = timezone.now()
+            description = f"Removed listing: {listing.name}"
+            
+        elif action == 'restore':
+            listing.status = 'active'
+            listing.admin_removal_reason = ''
+            listing.removed_by = None
+            listing.removed_at = None
+            description = f"Restored listing: {listing.name}"
+            
+        else:
+            return Response({
+                'error': {
+                    'code': 'INVALID_ACTION',
+                    'message': 'Invalid action. Must be flag, remove, or restore'
+                }
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
+        listing.save()
+        
+        # Log the admin action
+        AdminService.log_admin_action(
+            admin_user=request.user,
+            action_type='listing_moderation',
+            target_type='listing',
+            target_id=listing_id,
+            description=description,
+            metadata={
+                'old_status': old_status,
+                'new_status': listing.status,
+                'reason': reason,
+                'listing_name': listing.name
+            },
+            ip_address=get_client_ip(request)
+        )
+        
+        return Response({
+            'message': f'Listing {action}ed successfully',
+            'listing': {
+                'id': str(listing.id),
+                'name': listing.name,
+                'status': listing.status,
+                'reason': reason
+            }
+        }, status=status.HTTP_200_OK)
+        
+    except Exception as e:
+        logger.error(f"Listing moderation error: {str(e)}")
+        return Response({
+            'error': {
+                'code': 'MODERATION_ERROR',
+                'message': 'Failed to moderate listing'
             }
         }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

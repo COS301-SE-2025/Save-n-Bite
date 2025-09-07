@@ -238,54 +238,36 @@ updateVerificationStatus: async (profileType, profileId, newStatus, reason = '')
 },
 
   // ==================== FOOD LISTINGS MANAGEMENT ====================
-    getAllListings: async (page = 1, search = '', type = 'All', status = 'All', perPage = 20) => {
-        try {
-            const params = new URLSearchParams({
-                page: page.toString(),
-                per_page: perPage.toString()
-            })
-            
-            if (search) params.append('search', search)
-            if (type !== 'All') params.append('type', type)
-            if (status !== 'All') params.append('status', status)
-            
-            const response = await apiClient.get(`/api/food-listings/admin/listings/?${params.toString()}`)
-            
-            // Process listings to fix image URLs
-            if (response.data.listings) {
-                response.data.listings = response.data.listings.map(listing => ({
-                    ...listing,
-                    // Ensure image URLs are properly formatted
-                    images: listing.images ? listing.images.map(img => {
-                        if (img && !img.startsWith('http')) {
-                            const baseUrl = process.env.NODE_ENV === 'production' 
-                                ? 'https://savenbiteblob.blob.core.windows.net/savenbite-media'
-                                : 'http://127.0.0.1:10000/devstoreaccount1/savenbite-media'
-                            return `${baseUrl}/${img}`
-                        }
-                        return img
-                    }) : [],
-                    main_image: listing.main_image && !listing.main_image.startsWith('http')
-                        ? `${process.env.NODE_ENV === 'production' 
-                            ? 'https://savenbiteblob.blob.core.windows.net/savenbite-media'
-                            : 'http://127.0.0.1:10000/devstoreaccount1/savenbite-media'}/${listing.main_image}`
-                        : listing.main_image
-                }))
-            }
-            
-            return {
-                success: true,
-                data: response.data
-            }
-        } catch (error) {
-            console.error('Get listings error:', error)
-            return {
-                success: false,
-                error: error.response?.data?.error?.message || 'Failed to fetch listings'
-            }
-        }
-    },
-    
+  getAllListings: async (page = 1, search = '', typeFilter = '', statusFilter = '', perPage = 20) => {
+    try {
+      const params = new URLSearchParams({
+        page: page.toString(),
+        per_page: perPage.toString()
+      });
+      
+      if (search) params.append('search', search);
+      if (typeFilter && typeFilter !== 'All') params.append('type', typeFilter);
+      if (statusFilter && statusFilter !== 'All') params.append('status', statusFilter);
+
+      const response = await apiClient.get(`/api/admin/listings/?${params.toString()}`);
+      
+      return {
+        data: {
+          listings: response.data.listings,
+          pagination: response.data.pagination
+        },
+        success: true,
+        error: null
+      };
+    } catch (error) {
+      return {
+        data: null,
+        success: false,
+        error: error.response?.data?.error?.message || "Failed to fetch listings"
+      };
+    }
+  },
+
   moderateListing: async (listingId, action, reason = '') => {
     try {
       const response = await apiClient.post('/api/admin/listings/moderate/', {
@@ -406,6 +388,52 @@ updateVerificationStatus: async (profileType, profileId, newStatus, reason = '')
       };
     }
   },
+
+  async getSecurityAnomalies() {
+  try {
+    const response = await apiClient.get('/api/admin/security/anomalies/')
+    
+    if (response.status === 200) {
+      return {
+        success: true,
+        data: response.data
+      }
+    } else {
+      throw new Error(`HTTP ${response.status}: ${response.statusText}`)
+    }
+  } catch (error) {
+    console.error('Security anomalies API error:', error)
+    return {
+      success: false,
+      error: error.response?.data?.error?.message || error.message || 'Failed to fetch security anomalies'
+    }
+  }
+},
+
+async moderateListing(listingId, action, reason = '') {
+  try {
+    const response = await apiClient.post('/api/admin/listings/moderate/', {
+      listing_id: listingId,
+      action: action,
+      reason: reason
+    })
+    
+    if (response.status === 200) {
+      return {
+        success: true,
+        data: response.data
+      }
+    } else {
+      throw new Error(`HTTP ${response.status}: ${response.statusText}`)
+    }
+  } catch (error) {
+    console.error('Listing moderation API error:', error)
+    return {
+      success: false,
+      error: error.response?.data?.error?.message || error.message || 'Failed to moderate listing'
+    }
+  }
+},
 
   // ==================== AUDIT LOGS ====================
   getAdminActionLogs: async (page = 1, search = '', actionType = '', startDate = '', endDate = '', perPage = 20) => {
