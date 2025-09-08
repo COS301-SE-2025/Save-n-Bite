@@ -6,7 +6,7 @@ import { useParams, useNavigate } from 'react-router-dom'
 import StarRating from './StarRating'
 import reviewsAPI from '../../services/reviewsAPI'
 
-const UnifiedReviewForm = ({ providerName, onClose, onComplete, orderData }) => {
+const UnifiedReviewForm = ({ providerName, onClose, onComplete, orderData, source = "popup" }) => {
   const { orderId } = useParams()
   const [providerRating, setProviderRating] = useState(0)
   const [providerComment, setProviderComment] = useState('')
@@ -27,75 +27,44 @@ const UnifiedReviewForm = ({ providerName, onClose, onComplete, orderData }) => 
   }, [providerRating, itemRating])
 
   const handleSubmit = async () => {
-  // Require at least one rating and one comment
-  if (
-    (providerRating === 0 && itemRating === 0) ||
-    (providerComment.trim() === '' && itemComment.trim() === '')
-  ) {
-    alert("Please provide at least one rating and one comment before submitting.");
-    return;
-  }
-
-  setIsSubmitting(true);
-
-  try {
-    // Build payload in the exact shape expected by ReviewCreateSerializer
-    const payload = {
-      interaction_id: orderId,   // pulled from URL params
-      general_rating: overallRating || Math.max(providerRating, itemRating),
-      general_comment: [providerComment.trim(), itemComment.trim()]
-        .filter(Boolean)
-        .join(" | ") || null,
-      business_review: providerComment.trim() || null,
-      food_review: itemComment.trim() || null,
-      review_source: "unified_form"
-    };
-
-    console.log("Submitting review with payload:", payload);
-
-    const response = await reviewsAPI.createReview(payload);
-
-    console.log("Full API response:", response);
-
-    if (response?.data?.review || response?.status === 201) {
-      console.log("✅ Review submitted successfully!");
-      onComplete();
-    } else {
-      console.error("API returned unexpected response:", response);
-      const errorMsg =
-        response?.data?.error?.message ||
-        response?.data?.message ||
-        "Unknown error occurred";
-      alert("Failed to submit review: " + errorMsg);
+    if ((providerRating === 0 && itemRating === 0) ||
+        (providerComment.trim() === "" && itemComment.trim() === "")) {
+      alert("Please provide at least one rating and one comment before submitting.");
+      return;
     }
-  } catch (error) {
-    console.error("❌ Exception during review submission:", error);
 
-    let errorMessage = "Failed to submit review. ";
-    if (error.response) {
-      if (error.response.status === 400) {
-        errorMessage += "Invalid data. Check console for details.";
-        console.error("Validation errors:", error.response.data);
-      } else if (error.response.status === 401) {
-        errorMessage += "You need to be logged in.";
-      } else if (error.response.status === 403) {
-        errorMessage += "You do not have permission to review this order.";
-      } else if (error.response.status === 404) {
-        errorMessage += "Order not found or cannot be reviewed.";
+    setIsSubmitting(true);
+
+    try {
+      const payload = {
+        interaction_id: orderId,
+        general_rating: overallRating || Math.max(providerRating, itemRating),
+        general_comment: [providerComment.trim(), itemComment.trim()].filter(Boolean).join(" | ") || null,
+        business_review: providerComment.trim() || null,
+        food_review: itemComment.trim() || null,
+        review_source: source // use the source prop here
+      };
+
+      const response = await reviewsAPI.createReview(payload);
+
+      if (response?.data?.review || response?.success) {
+        onComplete();
       } else {
-        errorMessage += error.message;
+        const errorMsg =
+          response?.data?.error?.message ||
+          response?.data?.message ||
+          "Unknown error occurred";
+        alert("Failed to submit review: " + errorMsg);
       }
-    } else if (error.request) {
-      errorMessage += "No response from server.";
-    } else {
-      errorMessage += error.message || "Unexpected error.";
+    } catch (error) {
+      console.error("Review submission error:", error);
+      alert("Failed to submit review. Check console for details.");
+    } finally {
+      setIsSubmitting(false);
     }
+  };
 
-    alert(errorMessage);
-  } finally {
-    setIsSubmitting(false);
-  }
-};
+  
 
   const isFormValid = () => {
     return (providerRating > 0 || itemRating > 0) && 
@@ -136,7 +105,7 @@ const UnifiedReviewForm = ({ providerName, onClose, onComplete, orderData }) => 
         {/* Provider Review Section */}
         <div className="space-y-4">
           <div className="flex items-center space-x-2">
-            <div className="text-2xl">🏪</div>
+            
             <h4 className="text-lg font-medium text-gray-800 dark:text-gray-100">
               Food Provider Experience
             </h4>
@@ -164,7 +133,7 @@ const UnifiedReviewForm = ({ providerName, onClose, onComplete, orderData }) => 
         {/* Item Review Section */}
         <div className="space-y-4">
           <div className="flex items-center space-x-2">
-            <div className="text-2xl">🍽️</div>
+          
             <h4 className="text-lg font-medium text-gray-800 dark:text-gray-100">
               Food Quality
             </h4>

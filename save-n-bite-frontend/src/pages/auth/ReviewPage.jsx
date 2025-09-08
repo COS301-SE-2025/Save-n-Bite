@@ -159,7 +159,7 @@ const ReviewPage = () => {
                   
                     <div className="text-center space-y-2 ">
                       <h2 className="text-xl font-semibold text-gray-800 dark:text-gray-100">
-                        Your feedback helps us and our providers improve.
+                        Your feedback helps our food providers improve.
                       </h2>
                       {/* <p className="text-gray-600 dark:text-gray-300">
                         Order from 
