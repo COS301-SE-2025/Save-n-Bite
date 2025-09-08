@@ -784,7 +784,7 @@ function PickupCoordination() {
                               disabled={completingPickup === pickup.id}
                               className="text-sm"
                             >
-                              {completingPickup === pickup.id ? 'Completing...' : 'Mark as Completed'}
+                              {completingPickup === pickup.id ? 'Completing...' : 'Input confirmation code to mark as Completed'}
                             </Button>
                             {/* <Button
                               variant="danger"

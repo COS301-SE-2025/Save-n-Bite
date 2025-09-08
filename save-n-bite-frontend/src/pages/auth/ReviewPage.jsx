@@ -7,6 +7,7 @@ import StarRating from '../../components/CustomerFeedback/StarRating'
 import ProviderReview from '../../components/CustomerFeedback/ProviderReview'
 import ItemReview from '../../components/CustomerFeedback/ItemReview'
 import reviewsAPI from '../../services/reviewsAPI'
+import UnifiedReviewForm from '../../components/CustomerFeedback/UnifiedReviewForm'
 
 const ReviewPage = () => {
   const { orderId } = useParams() // This is actually the interaction ID from our order history
@@ -16,8 +17,9 @@ const ReviewPage = () => {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const [step, setStep] = useState(1)
-  const [showProviderReview, setShowProviderReview] = useState(false)
-  const [showItemReview, setShowItemReview] = useState(false)
+  // const [showProviderReview, setShowProviderReview] = useState(false)
+  // const [showItemReview, setShowItemReview] = useState(false)
+  const [showUnifiedReview, setShowUnifiedReview] = useState(false)
   const [isComplete, setIsComplete] = useState(false)
 
   useEffect(() => {
@@ -52,20 +54,19 @@ const ReviewPage = () => {
   }
 
   const handleSkip = () => {
-    setIsComplete(true)
+    // setIsComplete(true)
     setTimeout(() => {
       navigate('/orders')
     }, 2000)
   }
 
   const handleReviewComplete = () => {
-    setShowProviderReview(false)
-    setShowItemReview(false)
-    setIsComplete(true)
-    setTimeout(() => {
-      navigate('/orders')
-    }, 2000)
-  }
+  setShowUnifiedReview(false)  
+  setIsComplete(true)
+  setTimeout(() => {
+    navigate('/orders')
+  }, 2000)
+}
 
   if (loading) {
     return (
@@ -123,17 +124,17 @@ const ReviewPage = () => {
 
         <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm p-6">
           {/* Interaction Details */}
-          <div className="mb-6 p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
+          {/* <div className="mb-6 p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
             <h3 className="font-semibold text-gray-800 dark:text-gray-100 mb-2">Order Details</h3>
             <div className="text-sm text-gray-600 dark:text-gray-300 space-y-1">
-              {/* <p><strong>Business:</strong> {interaction.business?.name}</p>
+              <p><strong>Business:</strong> {interaction.business?.name}</p>
               <p><strong>Type:</strong> {interaction.type}</p>
               <p><strong>Items:</strong> {interaction.items_count || 1} item(s)</p>
               <p><strong>Amount:</strong> {interaction.order?.total_amount ? `R${interaction.order.total_amount}` : 'Free'}</p>
               <p><strong>Date:</strong> {new Date(interaction.created_at).toLocaleDateString()}</p>
-              <p><strong>Status:</strong> {interaction.status}</p> */}
+              <p><strong>Status:</strong> {interaction.status}</p>
             </div>
-          </div>
+          </div> */}
 
           <AnimatePresence mode="wait">
             {step === 1 && !isComplete && (
@@ -155,19 +156,20 @@ const ReviewPage = () => {
                   </div>
                 ) : reviewStatus?.can_review ? (
                   <>
-                    <div className="text-center space-y-2">
+                  
+                    <div className="text-center space-y-2 ">
                       <h2 className="text-xl font-semibold text-gray-800 dark:text-gray-100">
-                        Would you like to leave a review?
+                        Your feedback helps us and our providers improve.
                       </h2>
-                      <p className="text-gray-600 dark:text-gray-300">
+                      {/* <p className="text-gray-600 dark:text-gray-300">
                         Order from 
                       </p>
                       <p className="text-sm text-gray-500 dark:text-gray-400">
                         Your feedback helps us and our providers improve.
-                      </p>
+                      </p> */}
                     </div>
 
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    {/* <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <button
                         onClick={() => setShowProviderReview(true)}
                         className="p-6 border-2 border-gray-200 dark:border-gray-700 rounded-lg hover:border-emerald-500 hover:text-emerald-600 transition-colors text-center"
@@ -182,7 +184,25 @@ const ReviewPage = () => {
                         <div className="text-2xl mb-2">🍽️</div>
                         <h3 className="font-medium mb-1">Review Items</h3>
                       </button>
-                    </div>
+                    </div> */}
+                    <div className="flex justify-center">
+  <button
+    onClick={() => setShowUnifiedReview(true)}
+    className="px-8 py-4 bg-emerald-600 dark:bg-emerald-700 text-white rounded-lg hover:bg-emerald-700 dark:hover:bg-emerald-800 transition-colors font-medium text-lg"
+  >
+    Start Review
+  </button>
+</div>
+
+<div className="text-center">
+  <button
+    onClick={handleSkip}
+    className="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 text-sm"
+  >
+    Skip for now
+  </button>
+</div>
+
                   </>
                 ) : (
                   <div className="text-center space-y-4">
@@ -218,7 +238,7 @@ const ReviewPage = () => {
                 </p>
                  <button 
               onClick={() => navigate('/orders')}
-              className="mt-2 text-sm underline hover:no-underline"
+              className="mt-2 text-sm underline hover:no-underline dark:text-gray-100"
             >
               Back to Order History
             </button>
@@ -226,7 +246,7 @@ const ReviewPage = () => {
             )}
           </AnimatePresence>
 
-          {showProviderReview && (
+          {/* {showProviderReview && (
             <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
               <div className="bg-white dark:bg-gray-900 w-full max-w-md rounded-xl shadow-xl">
                 <ProviderReview
@@ -250,7 +270,22 @@ const ReviewPage = () => {
                 />
               </div>
             </div>
-          )}
+          )} */}
+
+              {showUnifiedReview && (
+  <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+    <div className="bg-white dark:bg-gray-900 w-full max-w-lg max-h-[90vh] rounded-xl shadow-xl">
+      <UnifiedReviewForm
+        providerName={orderData.provider}
+        onClose={() => setShowUnifiedReview(false)}
+        onComplete={handleReviewComplete}
+        orderData={orderData}
+      />
+    </div>
+  </div>
+)}
+
+
         </div>
       </div>
     </div>
