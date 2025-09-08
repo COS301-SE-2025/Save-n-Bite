@@ -168,7 +168,14 @@ class PickupSchedulingService:
                 # Validate that the time slot belongs to this food listing
                 if time_slot.pickup_schedule.food_listing != food_listing:
                     raise ValidationError("Time slot does not belong to the specified food listing")
-                
+                existing_pickup = ScheduledPickup.objects.filter(
+                order=order,
+                food_listing=food_listing,
+                status__in=['scheduled', 'confirmed', 'completed']
+            ).first()
+
+                if existing_pickup:
+                    raise ValidationError(f"Pickup already scheduled for this item. Confirmation code: {existing_pickup.confirmation_code}")
                 # Create the scheduled pickup
                 scheduled_pickup = ScheduledPickup.objects.create(
                     order=order,
