@@ -91,12 +91,13 @@ useEffect(() => {
     try {
       const apiDate = selectedDate;
 
-      console.log('Loading schedule for date:', apiDate);
-
+      
       const response = await schedulingAPI.getScheduleOverview(apiDate);
+      
 
       if (response.success) {
         const overview = response.data.schedule_overview;
+        
         setScheduleOverview(overview);
 
         const allPickups = [];
@@ -124,7 +125,7 @@ useEffect(() => {
         }
 
         setPickups(allPickups);
-        console.log(`Loaded ${allPickups.length} pickups for ${apiDate}`);
+      
       } else {
         setError(response.error);
       }
@@ -223,6 +224,8 @@ useEffect(() => {
           notes: pickupData.customer_notes
         }
       }));
+
+   
 
       setPickups(pickups.map(p =>
         p.id === activePickup.id
@@ -683,12 +686,22 @@ const sortedPickups = [...filteredPickups].sort((a, b) => {
                 >
                   <div className="p-3 sm:p-5">
                     <div className="flex justify-between items-start mb-3">
-                      <div>
-                        {/* <h3 className="font-semibold text-gray-900 dark:text-white text-sm sm:text-base">
+                      {/* <div>
+                        <h3 className="font-semibold text-gray-900 dark:text-white text-sm sm:text-base">
                           {pickup.orderNumber}
-                        </h3> */}
+                        </h3>
                         <p className="text-gray-600 dark:text-gray-300 text-sm">{pickup.customerName}</p>
-                      </div>
+                      </div> */}
+                      <div>
+  <h3 className="font-semibold text-gray-900 dark:text-white text-sm sm:text-base">
+    {pickup.orderNumber}
+  </h3>
+  {/* <p className="text-gray-600 dark:text-gray-300 text-sm">
+   Customer Name : {pickup.customerName} 
+
+  </p> */}
+</div>
+
                       <div className="flex items-center space-x-2">
                         <StatusBadge status={pickup.status} />
                         {isUrgent && pickup.status === 'scheduled' && (
@@ -742,13 +755,17 @@ const sortedPickups = [...filteredPickups].sort((a, b) => {
                       </div>
                       <div>
                         <h4 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Customer & Code:</h4>
+                        
 
                         {/* Customer Contact Info (shown after verification) */}
                         {customerDetails[pickup.id] ? (
+                          
                           <div className="space-y-2 mb-3">
                             <div className="p-2 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-md">
-                              <p className="text-xs font-medium text-green-800 dark:text-green-300 mb-1">Verified Customer:</p>
-                              <p className="text-sm font-medium text-gray-900 dark:text-white">{customerDetails[pickup.id].name}</p>
+                              <p className="text-xs font-medium text-green-800 dark:text-green-300 mb-1">Verified Customer:  {pickup.customerName}</p>
+
+                              
+                              <p className="text-sm font-medium text-gray-900 dark:text-white">{customerDetails[pickup.id].full_name}</p>
                               <div className="flex flex-col gap-1 mt-1">
                                 <a
                                   href={`mailto:${customerDetails[pickup.id].email}`}
@@ -781,14 +798,14 @@ const sortedPickups = [...filteredPickups].sort((a, b) => {
                         )}
 
                         {/* Confirmation Code */}
-                        <div>
+                        {/* <div>
                           <p className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Confirmation Code:</p>
                           <div className="bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded-md inline-block">
                             <span className="text-sm font-mono bg-white dark:bg-gray-600 px-2 py-0.5 border border-gray-300 dark:border-gray-500 rounded text-gray-900 dark:text-white">
                               xxxxxx
                             </span>
                           </div>
-                        </div>
+                        </div> */}
                       </div>
                     </div>
 
