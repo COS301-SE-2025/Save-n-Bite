@@ -262,7 +262,7 @@ def food_listing_pickup_schedules(request):
 @permission_classes([IsAuthenticated])
 def generate_time_slots(request):
     """Generate time slots for a food listing on a specific date"""
-    if request.user.user_type != 'provider':
+    if request.user.user_type not in ['provider', 'customer', 'ngo']:
         return Response({
             'error': {
                 'code': 'FORBIDDEN',

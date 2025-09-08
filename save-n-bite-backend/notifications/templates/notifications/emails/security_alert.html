@@ -1,0 +1,56 @@
+<!-- notifications/templates/notifications/emails/system_log_alert.html -->
+{% extends "notifications/emails/base.html" %}
+
+{% block content %}
+<h2 style="color: #dc3545;">System Alert - {{ severity|upper }} Issue Detected</h2>
+
+<p>Hi {{ admin_name }},</p>
+
+<p>A {{ severity }} system issue has been detected on the Save n Bite platform:</p>
+
+{% if severity == 'critical' %}
+<div style="background-color: #f8d7da; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #dc3545;">
+    <h3 style="margin-top: 0; color: #721c24;">{{ title }}</h3>
+{% elif severity == 'error' %}
+<div style="background-color: #f8d7da; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #dc3545;">
+    <h3 style="margin-top: 0; color: #721c24;">{{ title }}</h3>
+{% else %}
+<div style="background-color: #fff3cd; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #ffc107;">
+    <h3 style="margin-top: 0; color: #856404;">{{ title }}</h3>
+{% endif %}
+    
+    <p><strong>Category:</strong> {{ category|title }}</p>
+    <p><strong>Severity:</strong> {{ severity|upper }}</p>
+    <p><strong>Time:</strong> {{ timestamp|date:"F j, Y g:i A T" }}</p>
+    <p><strong>Description:</strong></p>
+    <p>{{ description }}</p>
+    
+    {% if error_details %}
+    <details style="margin-top: 15px;">
+        <summary style="cursor: pointer; font-weight: bold;">Technical Details</summary>
+        <pre style="background-color: #f8f9fa; padding: 10px; border-radius: 4px; overflow-x: auto; margin-top: 10px; font-size: 12px;">{{ error_details }}</pre>
+    </details>
+    {% endif %}
+</div>
+
+<p>
+    <a href="{{ admin_panel_url }}" class="button" style="background-color: #dc3545; color: white; padding: 12px 24px; text-decoration: none; border-radius: 4px; display: inline-block;">
+        View in Admin Panel
+    </a>
+</p>
+
+<div style="background-color: #e7f3ff; padding: 15px; border-radius: 4px; margin: 15px 0; border-left: 4px solid #007bff;">
+    <p><strong>Next Steps:</strong></p>
+    <ul>
+        <li>Review the issue details in the admin panel</li>
+        <li>Investigate the root cause</li>
+        <li>Take appropriate corrective action</li>
+        <li>Mark the issue as resolved once fixed</li>
+    </ul>
+</div>
+
+<p>This email was sent automatically by the Save n Bite monitoring system.</p>
+
+<p>Best regards,</p>
+<p>Save n Bite System Monitor</p>
+{% endblock %}

@@ -282,6 +282,39 @@ useEffect(() => {
     }
   };
 
+  // Individual verify function for each pickup item (uses the same logic as the top bar verify)
+  const handleVerifyPickupItem = async (pickup) => {
+    setVerifyingCode(true);
+    try {
+      const response = await schedulingAPI.verifyPickupCode(pickup.confirmationCode);
+
+      if (!response.success) {
+        showToast('Invalid confirmation code or pickup not found', 'error');
+        return;
+      }
+
+      const pickupData = response.data.pickup;
+
+      setCustomerDetails(prev => ({
+        ...prev,
+        [pickup.id]: {
+          name: pickupData.customer.full_name,
+          email: pickupData.customer.email,
+          notes: pickupData.customer_notes
+        }
+      }));
+
+      showToast(`Verification successful for ${pickupData.customer.full_name}'s pickup`, 'success');
+      await loadScheduleData();
+
+    } catch (error) {
+      console.error('Error verifying code:', error);
+      showToast('Failed to verify confirmation code', 'error');
+    } finally {
+      setVerifyingCode(false);
+    }
+  };
+
   const handleVerifyCode = async () => {
     if (!verificationCode.trim()) {
       showToast('Please enter a confirmation code', 'error');
@@ -404,7 +437,7 @@ const sortedPickups = [...filteredPickups].sort((a, b) => {
         {/* Desktop Sidebar */}
         <div className="hidden md:flex">
 
-          <SideBar onNavigate={() => {}} currentPage="pickup-coordination" />
+          <SideBar onNavigate={() => { }} currentPage="pickup-coordination" />
 
         </div>
         <div className="flex-1 p-4 sm:p-6 overflow-auto">
@@ -425,8 +458,8 @@ const sortedPickups = [...filteredPickups].sort((a, b) => {
         {/* Desktop Sidebar */}
         <div className="hidden md:flex">
 
-          <SideBar onNavigate={() => {}} currentPage="pickup-coordination" />
-  
+          <SideBar onNavigate={() => { }} currentPage="pickup-coordination" />
+
         </div>
         <div className="flex-1 p-4 sm:p-6 overflow-auto">
           <div className="max-w-4xl mx-auto">
@@ -451,7 +484,7 @@ const sortedPickups = [...filteredPickups].sort((a, b) => {
       {/* Desktop Sidebar - Hidden on mobile */}
       <div className="hidden md:flex">
 
-        <SideBar onNavigate={() => {}} currentPage="pickup-coordination" />
+        <SideBar onNavigate={() => { }} currentPage="pickup-coordination" />
 
       </div>
 
@@ -737,12 +770,7 @@ const sortedPickups = [...filteredPickups].sort((a, b) => {
                         <h4 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Pickup Time:</h4>
                         <div className="flex items-center">
                           <Clock4 className="h-4 w-4 text-gray-400 dark:text-gray-500 mr-1" />
-                          <div>
-                            <p className="text-gray-800 dark:text-gray-200">{pickup.time}:00</p>
-                            <p className="text-xs text-gray-500 dark:text-gray-400">
-                              {new Date(pickup.pickupDate).toLocaleDateString()}
-                            </p>
-                          </div>
+                          <p className="text-gray-800 dark:text-gray-200">Business Hours</p>
                         </div>
                         {pickup.status === 'scheduled' && (
                           <div className="mt-1 flex items-center">
@@ -814,15 +842,27 @@ const sortedPickups = [...filteredPickups].sort((a, b) => {
                         {pickup.status === 'confirmed' || pickup.status === 'scheduled' ? (
                           <div className="flex flex-col sm:flex-row items-stretch sm:items-center space-y-2 sm:space-y-0 sm:space-x-2">
                             <Button
+                              variant="primary"
+                              size="sm"
+                              onClick={() => handleVerifyPickupItem(pickup)}
+                              disabled={verifyingCode}
+                              className="text-sm"
+                            >
+                              {verifyingCode ? 'Verifying...' : 'Verify Code'}
+                            </Button>
+                            <Button
                               variant="success"
                               size="sm"
                               onClick={() => handleMarkAsPickedUp(pickup)}
-                              disabled={completingPickup === pickup.id}
+                              disabled={completingPickup === pickup.id || !customerDetails[pickup.id]}
                               className="text-sm"
+                              title={!customerDetails[pickup.id] ? 'Please verify customer first' : ''}
                             >
+
                               {completingPickup === pickup.id ? 'Completing...' : 'Input confirmation code to mark as Completed'}
+
                             </Button>
-                            {/* <Button
+                            <Button
                               variant="danger"
                               size="sm"
                               onClick={() => handleMarkAsNoShow(pickup)}
@@ -830,14 +870,14 @@ const sortedPickups = [...filteredPickups].sort((a, b) => {
                               className="text-sm"
                             >
                               {completingPickup === pickup.id ? 'Processing...' : 'Mark as No Show'}
-                            </Button> */}
+                            </Button>
                           </div>
                         ) : (
                           <div className={`px-3 py-2 rounded-md flex items-center ${pickup.status === 'completed'
-                              ? 'bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-300'
-                              : pickup.status === 'confirmed'
-                                ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300'
-                                : 'bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300'
+                            ? 'bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-300'
+                            : pickup.status === 'confirmed'
+                              ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300'
+                              : 'bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300'
                             }`}>
                             <span className="text-sm font-medium">
                               {pickup.status === 'completed' ? 'Pickup completed' :
@@ -949,10 +989,10 @@ const sortedPickups = [...filteredPickups].sort((a, b) => {
           {toast && (
             <div className="fixed top-4 right-4 z-50">
               <div className={`px-4 py-3 rounded-lg shadow-lg flex items-center space-x-2 ${toast.type === 'success'
-                  ? 'bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-100'
-                  : toast.type === 'error'
-                    ? 'bg-red-100 text-red-800 dark:bg-red-800 dark:text-red-100'
-                    : 'bg-blue-100 text-blue-800 dark:bg-blue-800 dark:text-blue-100'
+                ? 'bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-100'
+                : toast.type === 'error'
+                  ? 'bg-red-100 text-red-800 dark:bg-red-800 dark:text-red-100'
+                  : 'bg-blue-100 text-blue-800 dark:bg-blue-800 dark:text-blue-100'
                 }`}>
                 <span className="text-sm font-medium">{toast.message}</span>
               </div>
