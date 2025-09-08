@@ -23,6 +23,15 @@ class PickupLocationSerializer(serializers.ModelSerializer):
         ]
         read_only_fields = ['id', 'created_at', 'updated_at']
 
+    def create(self, validated_data):
+        """Create pickup location with business from context"""
+        business = self.context.get('business')
+        if not business:
+            raise serializers.ValidationError("Business context is required")
+        
+        validated_data['business'] = business
+        return super().create(validated_data)
+
     def validate(self, data):
         business = self.context.get('business')
         if business and 'name' in data:
@@ -38,7 +47,6 @@ class PickupLocationSerializer(serializers.ModelSerializer):
                 })
         
         return data
-
 
 class FoodListingPickupScheduleSerializer(serializers.ModelSerializer):
     """Serializer for food listing pickup schedules"""

@@ -256,6 +256,29 @@ const schedulingAPI = {
     }
   },
 
+  // Add this method to your schedulingAPI object
+
+generateTimeSlots: async (foodListingId, date) => {
+  try {
+    const response = await apiClient.post('/api/scheduling/generate-time-slots/', {
+      food_listing_id: foodListingId,
+      date: date
+    });
+    
+    return {
+      success: true,
+      data: response.data,
+      error: null
+    };
+  } catch (error) {
+    return {
+      success: false,
+      data: null,
+      error: error.response?.data?.message || error.message || 'Failed to generate time slots'
+    };
+  }
+},
+
   // NEW: Verify pickup confirmation code
   verifyPickupCode: async (confirmationCode) => {
     try {
