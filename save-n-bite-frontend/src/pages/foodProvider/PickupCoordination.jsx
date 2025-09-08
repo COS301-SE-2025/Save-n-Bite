@@ -847,7 +847,7 @@ const sortedPickups = [...filteredPickups].sort((a, b) => {
                           </div>
                         )}
 
-                        <Button
+                        {/* <Button
                           variant="secondary"
                           size="sm"
                           icon={<QrCode className="h-4 w-4" />}
@@ -855,7 +855,7 @@ const sortedPickups = [...filteredPickups].sort((a, b) => {
                           className="text-sm"
                         >
                           {pickup.id === showQRCode ? 'Hide QR' : 'Show QR'}
-                        </Button>
+                        </Button> */}
                       </div>
 
                       {pickup.id === showQRCode && (
