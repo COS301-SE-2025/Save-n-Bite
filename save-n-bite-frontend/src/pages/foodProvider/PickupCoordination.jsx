@@ -334,18 +334,26 @@ function PickupCoordination() {
   });
 
   const sortedPickups = [...filteredPickups].sort((a, b) => {
-    const aHour = parseInt(a.hour);
-    const bHour = parseInt(b.hour);
+  const aTime = getTimeRemaining(a.pickupWindow, a.pickupDate);
+  const bTime = getTimeRemaining(b.pickupWindow, b.pickupDate);
+  const aUrgent = isPickupUrgent(aTime);
+  const bUrgent = isPickupUrgent(bTime);
 
-    if (aHour !== bHour) {
-      return aHour - bHour;
-    }
+  // Urgent pickups come first
+  if (aUrgent && !bUrgent) return -1;
+  if (!aUrgent && bUrgent) return 1;
 
-    if (a.status === 'scheduled' && b.status !== 'scheduled') return -1;
-    if (a.status !== 'scheduled' && b.status === 'scheduled') return 1;
+  // Then sort by pickup hour
+  const aHour = parseInt(a.hour);
+  const bHour = parseInt(b.hour);
+  if (aHour !== bHour) return aHour - bHour;
 
-    return 0;
-  });
+  // Then scheduled pickups come before others
+  if (a.status === 'scheduled' && b.status !== 'scheduled') return -1;
+  if (a.status !== 'scheduled' && b.status === 'scheduled') return 1;
+
+  return 0;
+});
 
   const refreshPickupData = async () => {
     await loadScheduleData();
@@ -631,7 +639,7 @@ function PickupCoordination() {
                 </select>
               </div>
 
-              <div className="flex gap-2">
+              {/* <div className="flex gap-2">
                 <Button
                   variant="primary"
                   onClick={() => setShowVerifyModal(true)}
@@ -647,7 +655,7 @@ function PickupCoordination() {
                 >
                   Refresh
                 </Button>
-              </div>
+              </div> */}
             </div>
           </div>
 
