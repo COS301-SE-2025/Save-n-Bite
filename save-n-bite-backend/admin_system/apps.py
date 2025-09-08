@@ -7,5 +7,5 @@ class AdminPanelConfig(AppConfig):
     verbose_name = 'Admin Panel'
 
     def ready(self):
-        # Import signals if needed
-        pass
+        # Import signals to ensure they're connected
+        import admin_system.signals

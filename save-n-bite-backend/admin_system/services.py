@@ -500,20 +500,116 @@ class SystemLogService:
     
     @staticmethod
     def create_system_log(severity, category, title, description, error_details=None):
-        """Create a new system log entry with anomaly check"""
-        log_entry = SystemLogEntry.objects.create(
-            severity=severity,
-            category=category,
-            title=title,
-            description=description,
-            error_details=error_details or {}
-        )
+        """Create a new system log entry with email notifications for critical issues"""
+        try:
+            log_entry = SystemLogEntry.objects.create(
+                severity=severity,
+                category=category,
+                title=title,
+                description=description,
+                error_details=error_details or {}
+            )
+            
+            # Send email notification for critical/error/warning logs
+            if severity in ['critical', 'error', 'warning']:
+                SystemLogService._send_critical_log_email_notification(log_entry)
+            
+            # Check for anomalies when creating critical/error logs
+            if severity in ['critical', 'error']:
+                try:
+                    AnomalyDetectionService.check_for_anomalies_and_alert()
+                except Exception as e:
+                    logger.warning(f"Error checking anomalies: {e}")
+            
+            return log_entry
+            
+        except Exception as e:
+            logger.error(f"Failed to create system log: {str(e)}")
+            return None
         
-        # Check for anomalies when creating critical/error logs
-        if severity in ['critical', 'error']:
-            SystemLogService.check_for_anomalies_and_alert()
-        
-        return log_entry
+        @staticmethod
+        def _send_critical_log_email_notification(log_entry):
+            """Send email notification for critical system logs to all admin users"""
+            try:
+                from notifications.services import NotificationService
+                from django.contrib.auth import get_user_model
+                from django.conf import settings
+                
+                User = get_user_model()
+                
+                # Get all admin users
+                admin_users = User.objects.filter(
+                    admin_rights=True,
+                    is_active=True,
+                    email__isnull=False
+                ).exclude(email='')
+                
+                if not admin_users.exists():
+                    logger.warning("No admin users found to send system log notifications")
+                    return
+                
+                # Prepare email context
+                admin_panel_url = f"{getattr(settings, 'FRONTEND_URL', 'http://localhost:3000')}/admin/system-logs"
+                
+                for admin_user in admin_users:
+                    try:
+                        # Create in-app notification
+                        notification = NotificationService.create_notification(
+                            recipient=admin_user,
+                            notification_type='system_announcement',
+                            title=f"System Alert: {log_entry.severity.upper()} - {log_entry.title}",
+                            message=f"A {log_entry.severity} system issue has been detected: {log_entry.description}",
+                            data={
+                                'log_entry_id': str(log_entry.id),
+                                'severity': log_entry.severity,
+                                'category': log_entry.category,
+                                'log_title': log_entry.title,
+                                'admin_panel_url': admin_panel_url
+                            }
+                        )
+                        
+                        # Prepare email context
+                        email_context = {
+                            'admin_name': admin_user.get_full_name() or admin_user.username,
+                            'severity': log_entry.severity,
+                            'category': log_entry.category,
+                            'title': log_entry.title,
+                            'description': log_entry.description,
+                            'timestamp': log_entry.timestamp,
+                            'error_details': log_entry.error_details if log_entry.error_details else None,
+                            'admin_panel_url': admin_panel_url,
+                            'company_name': 'Save n Bite',
+                            'support_email': 'savenbite@gmail.com'
+                        }
+                        
+                        # Format error details for email if they exist
+                        if log_entry.error_details:
+                            try:
+                                import json
+                                email_context['error_details'] = json.dumps(log_entry.error_details, indent=2)
+                            except:
+                                email_context['error_details'] = str(log_entry.error_details)
+                        
+                        # Send critical email (bypasses user preferences)
+                        email_sent = NotificationService.send_critical_email_notification(
+                            user=admin_user,
+                            subject=f"[{log_entry.severity.upper()}] Save n Bite System Alert - {log_entry.title}",
+                            template_name='system_log_alert',
+                            context=email_context,
+                            notification=notification
+                        )
+                        
+                        if email_sent:
+                            logger.info(f"System log alert email sent to admin {admin_user.email}")
+                        else:
+                            logger.error(f"Failed to send system log alert email to admin {admin_user.email}")
+                            
+                    except Exception as e:
+                        logger.error(f"Failed to send system log notification to {admin_user.email}: {e}")
+                        
+            except Exception as e:
+                logger.error(f"Error sending critical log email notifications: {e}")
+
     
     @staticmethod
     def check_for_anomalies_and_alert():
@@ -1171,65 +1267,101 @@ class AnomalyDetectionService:
             }
         )
 
-@staticmethod
-def send_critical_log_notification(log_entry):
-    """Send email notification for critical/error system logs"""
-    try:
-        from django.core.mail import send_mail
-        from django.conf import settings
-        from django.contrib.auth import get_user_model
-        
-        User = get_user_model()
-        
-        # Only send emails for critical/error/warning logs
-        if log_entry.severity not in ['critical', 'error', 'warning']:
-            return
-        
-        # Get all admin users to notify
-        admin_users = User.objects.filter(
-            admin_rights=True,
-            is_active=True,
-            email__isnull=False
-        ).exclude(email='')
-        
-        if not admin_users.exists():
-            logger.warning("No admin users found to send system log notifications")
-            return
-        
-        # Email content
-        subject = f"[{log_entry.severity.upper()}] System Alert: {log_entry.title}"
-        
-        message = f"""
-A {log_entry.severity} system log has been recorded:
+    @staticmethod
+    def send_critical_log_notification(log_entry):
+        """Send email notification for critical/error system logs - DEPRECATED"""
+        # This method is now handled by the signal system
+        # Call the new private method directly if needed
+        SystemLogService._send_critical_log_email_notification(log_entry)
 
-Title: {log_entry.title}
-Category: {log_entry.category}
-Severity: {log_entry.severity.upper()}
-Time: {log_entry.timestamp.strftime('%Y-%m-%d %H:%M:%S')}
+    # admin_system/services.py - Fix the context data being passed
 
-Description:
-{log_entry.description}
-
-Error Details:
-{log_entry.error_details if log_entry.error_details else 'None'}
-
-Please review this issue in the admin panel as soon as possible.
-
----
-Save n Bite System Monitor
-        """
-        
-        admin_emails = [user.email for user in admin_users]
-        
-        send_mail(
-            subject=subject,
-            message=message,
-            from_email=settings.DEFAULT_FROM_EMAIL,
-            recipient_list=admin_emails,
-            fail_silently=False
-        )
-        
-        logger.info(f"Critical log notification sent to {len(admin_emails)} admins")
-        
-    except Exception as e:
-        logger.error(f"Failed to send critical log notification: {e}")
+    @staticmethod
+    def _send_critical_log_email_notification(log_entry):
+        """Send email notification for critical system logs to all admin users"""
+        try:
+            from notifications.services import NotificationService
+            from django.contrib.auth import get_user_model
+            from django.conf import settings
+            
+            User = get_user_model()
+            
+            # Get all admin users
+            admin_users = User.objects.filter(
+                admin_rights=True,
+                is_active=True,
+                email__isnull=False
+            ).exclude(email='')
+            
+            if not admin_users.exists():
+                logger.warning("No admin users found to send system log notifications")
+                return
+            
+            # Prepare email context
+            admin_panel_url = f"{getattr(settings, 'FRONTEND_URL', 'http://localhost:3000')}/admin/system-logs"
+            
+            for admin_user in admin_users:
+                try:
+                    # Create in-app notification
+                    notification = NotificationService.create_notification(
+                        recipient=admin_user,
+                        notification_type='system_announcement',
+                        title=f"System Alert: {log_entry.severity.upper()} - {log_entry.title}",
+                        message=f"A {log_entry.severity} system issue has been detected: {log_entry.description}",
+                        data={
+                            'log_entry_id': str(log_entry.id),
+                            'severity': log_entry.severity,
+                            'category': log_entry.category,
+                            'log_title': log_entry.title,
+                            'admin_panel_url': admin_panel_url
+                        }
+                    )
+                    
+                    # Format error details for display
+                    error_details_formatted = None
+                    if log_entry.error_details:
+                        try:
+                            import json
+                            if isinstance(log_entry.error_details, dict):
+                                error_details_formatted = json.dumps(log_entry.error_details, indent=2)
+                            else:
+                                error_details_formatted = str(log_entry.error_details)
+                        except:
+                            error_details_formatted = str(log_entry.error_details)
+                    
+                    # Prepare email context - FIXED with proper data
+                    email_context = {
+                        'admin_name': admin_user.get_full_name() or admin_user.username,
+                        'severity': log_entry.severity,
+                        'category': log_entry.category,
+                        'title': log_entry.title,
+                        'description': log_entry.description,
+                        'timestamp': log_entry.timestamp,
+                        'error_details': error_details_formatted,
+                        'admin_panel_url': admin_panel_url,
+                        'company_name': 'Save n Bite',
+                        'support_email': 'savenbite@gmail.com'
+                    }
+                    
+                    # Debug: Log the context being sent
+                    logger.info(f"Sending email with context: {email_context}")
+                    
+                    # Send critical email (bypasses user preferences)
+                    email_sent = NotificationService.send_critical_email_notification(
+                        user=admin_user,
+                        subject=f"[{log_entry.severity.upper()}] Save n Bite System Alert - {log_entry.title}",
+                        template_name='system_log_alert',
+                        context=email_context,
+                        notification=notification
+                    )
+                    
+                    if email_sent:
+                        logger.info(f"System log alert email sent to admin {admin_user.email}")
+                    else:
+                        logger.error(f"Failed to send system log alert email to admin {admin_user.email}")
+                        
+                except Exception as e:
+                    logger.error(f"Failed to send system log notification to {admin_user.email}: {e}")
+                    
+        except Exception as e:
+            logger.error(f"Error sending critical log email notifications: {e}")
