@@ -65,6 +65,15 @@ function PickupCoordination() {
     loadScheduleData();
   }, [selectedDate]);
 
+  // Auto-refresh every 30 seconds
+useEffect(() => {
+  const interval = setInterval(() => {
+    loadScheduleData();
+  }, 30000); // 30 seconds
+
+  return () => clearInterval(interval); // Cleanup on unmount
+}, [selectedDate]);
+
   // Auto-hide success message after 3 seconds
   useEffect(() => {
     if (showSuccessMessage) {
@@ -333,13 +342,14 @@ function PickupCoordination() {
     return matchesSearch && matchesStatus && matchesDate;
   });
 
-  const sortedPickups = [...filteredPickups].sort((a, b) => {
-  const aTime = getTimeRemaining(a.pickupWindow, a.pickupDate);
-  const bTime = getTimeRemaining(b.pickupWindow, b.pickupDate);
-  const aUrgent = isPickupUrgent(aTime);
-  const bUrgent = isPickupUrgent(bTime);
+const sortedPickups = [...filteredPickups].sort((a, b) => {
+  // Completed orders go last
+  if (a.status === "completed" && b.status !== "completed") return 1;
+  if (a.status !== "completed" && b.status === "completed") return -1;
 
   // Urgent pickups come first
+  const aUrgent = a.status === "urgent";
+  const bUrgent = b.status === "urgent";
   if (aUrgent && !bUrgent) return -1;
   if (!aUrgent && bUrgent) return 1;
 
@@ -349,11 +359,12 @@ function PickupCoordination() {
   if (aHour !== bHour) return aHour - bHour;
 
   // Then scheduled pickups come before others
-  if (a.status === 'scheduled' && b.status !== 'scheduled') return -1;
-  if (a.status !== 'scheduled' && b.status === 'scheduled') return 1;
+  if (a.status === "scheduled" && b.status !== "scheduled") return -1;
+  if (a.status !== "scheduled" && b.status === "scheduled") return 1;
 
   return 0;
 });
+
 
   const refreshPickupData = async () => {
     await loadScheduleData();
