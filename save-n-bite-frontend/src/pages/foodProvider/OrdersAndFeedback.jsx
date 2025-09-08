@@ -574,9 +574,7 @@ function OrdersAndFeedback() {
                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                           Review
                         </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                          Actions
-                        </th>
+                        
                       </tr>
                     </thead>
                     <tbody className="bg-white dark:bg-gray-900 divide-y divide-gray-200 dark:divide-gray-700">
@@ -636,14 +634,7 @@ function OrdersAndFeedback() {
                               )}
                             </div>
                           </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                            <button
-                              onClick={() => handleViewReviews(order)}
-                              className="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-200 mr-2"
-                            >
-                              View Details
-                            </button>
-                          </td>
+                         
                         </tr>
                       ))}
                     </tbody>
@@ -719,13 +710,7 @@ function OrdersAndFeedback() {
                             Quick View
                           </button>
                         )}
-                        <button
-                          onClick={() => handleViewReviews(order)}
-                          className="flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 text-sm rounded-md hover:bg-gray-200 dark:hover:bg-gray-700"
-                        >
-                          <Eye size={16} />
-                          Details
-                        </button>
+                       
                       </div>
                     </div>
                   ))}
