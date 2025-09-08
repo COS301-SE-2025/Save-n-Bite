@@ -1080,3 +1080,59 @@ class NotificationService:
         except Exception as e:
             logger.error(f"Failed to send donation pickup reminder for interaction {interaction.id}: {str(e)}")
             return None
+        
+
+#System Admin 
+    @staticmethod
+    def send_critical_email_notification(user, subject, template_name, context, notification=None):
+        """
+        Send critical email that bypasses user preferences
+        This is a NEW method that doesn't interfere with the original
+        """
+        try:
+            # Create email log entry
+            email_log = EmailNotificationLog.objects.create(
+                recipient_email=user.email,
+                recipient_user=user,
+                notification=notification,
+                subject=subject,
+                template_name=template_name,
+                status='pending'
+            )
+
+            # Debug: Log the context being used
+            logger.info(f"Rendering email template {template_name} with context keys: {list(context.keys())}")
+
+            # Render email content
+            html_message = render_to_string(f'notifications/emails/{template_name}.html', context)
+            plain_message = strip_tags(html_message)
+
+            # Send email (bypasses preferences)
+            success = send_mail(
+                subject=subject,
+                message=plain_message,
+                from_email=settings.DEFAULT_FROM_EMAIL,
+                recipient_list=[user.email],
+                html_message=html_message,
+                fail_silently=False
+            )
+
+            if success:
+                email_log.status = 'sent'
+                email_log.sent_at = timezone.now()
+                logger.info(f"Critical email sent successfully to {user.email} (bypassed preferences)")
+            else:
+                email_log.status = 'failed'
+                email_log.error_message = "Unknown error occurred"
+                logger.error(f"Failed to send critical email to {user.email}")
+
+            email_log.save()
+            return success
+
+        except Exception as e:
+            logger.error(f"Error sending critical email to {user.email}: {str(e)}")
+            if 'email_log' in locals():
+                email_log.status = 'failed'
+                email_log.error_message = str(e)
+                email_log.save()
+            return False

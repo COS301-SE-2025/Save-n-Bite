@@ -151,3 +151,27 @@ class PasswordReset(models.Model):
 
     def __str__(self):
         return f"Password reset for {self.target_user.username} by {self.reset_by.username}"
+    
+class AccessLog(models.Model):
+    """Track access to admin endpoints for anomaly detection"""
+    
+    user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
+    ip_address = models.GenericIPAddressField()
+    endpoint = models.CharField(max_length=255)
+    method = models.CharField(max_length=10)  # GET, POST, etc.
+    status_code = models.IntegerField()
+    timestamp = models.DateTimeField(auto_now_add=True)
+    user_agent = models.TextField(blank=True)
+    response_time = models.FloatField(null=True, blank=True)  # in milliseconds
+    
+    class Meta:
+        ordering = ['-timestamp']
+        indexes = [
+            models.Index(fields=['timestamp', 'endpoint']),
+            models.Index(fields=['user', 'timestamp']),
+            models.Index(fields=['ip_address', 'timestamp']),
+            models.Index(fields=['status_code', 'timestamp']),
+        ]
+    
+    def __str__(self):
+        return f"{self.user or 'Anonymous'} - {self.endpoint} - {self.timestamp}"
