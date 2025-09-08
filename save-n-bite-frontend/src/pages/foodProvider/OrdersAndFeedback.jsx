@@ -215,14 +215,15 @@ function OrdersAndFeedback() {
   const review = order.reviewData;
 
   setQuickReviewData({
-    customerName: order.customerName,
-    timeAgo: order.timeAgo,
-    rating: review.general_rating || 0,
-    foodReview: review.food_review || review.general_comment || 'No comment provided',
-    businessReview: review.business_review || review.general_comment || 'No comment provided',
-    orderAmount: order.amount,
-    orderType: order.type
-  });
+  customerName: order.customerName,
+  timeAgo: order.timeAgo,
+  rating: review.general_rating || 0,
+  foodReview: review.food_review || null,
+  businessReview: review.business_review || null,
+  orderAmount: order.amount,
+  orderType: order.type
+});
+
 
   setShowQuickReview(true);
 };
@@ -360,11 +361,7 @@ function OrdersAndFeedback() {
 
               <p className="text-gray-600 dark:text-gray-300 mt-1 text-sm sm:text-base">
                 See all customer reviews on your orders
-                {currentProvider && (
-                  <span className="block sm:inline sm:ml-2 text-blue-600 dark:text-blue-400 font-medium">
-                    • {currentProvider}
-                  </span>
-                )}
+                
               </p>
             </div>
             <Button
@@ -753,21 +750,27 @@ function OrdersAndFeedback() {
           </div>
         </div>
 
-        {/* Reviews */}
-        <div className="space-y-3">
-          <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-3 sm:p-4">
-            <p className="text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Food Review:</p>
-            <p className="text-sm sm:text-base text-gray-800 dark:text-gray-100 italic">
-              "{quickReviewData.foodReview}"
-            </p>
-          </div>
-          <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-3 sm:p-4">
-            <p className="text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Business Review:</p>
-            <p className="text-sm sm:text-base text-gray-800 dark:text-gray-100 italic">
-              "{quickReviewData.businessReview}"
-            </p>
-          </div>
-        </div>
+       {/* Reviews */}
+<div className="space-y-3">
+  {quickReviewData.foodReview && (
+    <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-3 sm:p-4">
+      <p className="text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Food Review:</p>
+      <p className="text-sm sm:text-base text-gray-800 dark:text-gray-100 italic">
+        "{quickReviewData.foodReview}"
+      </p>
+    </div>
+  )}
+
+  {quickReviewData.businessReview && (
+    <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-3 sm:p-4">
+      <p className="text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Business Review:</p>
+      <p className="text-sm sm:text-base text-gray-800 dark:text-gray-100 italic">
+        "{quickReviewData.businessReview}"
+      </p>
+    </div>
+  )}
+</div>
+
 
         {/* Order info */}
         <div className="flex justify-between text-xs sm:text-sm text-gray-600 dark:text-gray-300 mt-4">

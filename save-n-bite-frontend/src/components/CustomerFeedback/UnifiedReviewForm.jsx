@@ -14,6 +14,9 @@ const UnifiedReviewForm = ({ providerName, onClose, onComplete, orderData, sourc
   const [itemComment, setItemComment] = useState('')
   const [overallRating, setOverallRating] = useState(0)
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [modalMessage, setModalMessage] = useState('');
+const [isModalOpen, setIsModalOpen] = useState(false);
+
 
   // Calculate overall rating based on provider and item ratings
   React.useEffect(() => {
@@ -27,42 +30,47 @@ const UnifiedReviewForm = ({ providerName, onClose, onComplete, orderData, sourc
   }, [providerRating, itemRating])
 
   const handleSubmit = async () => {
-    if ((providerRating === 0 && itemRating === 0) ||
-        (providerComment.trim() === "" && itemComment.trim() === "")) {
-      alert("Please provide at least one rating and one comment before submitting.");
-      return;
+  // Validation: at least one rating or comment is required
+  if (
+    providerRating === 0 &&
+    itemRating === 0 &&
+    providerComment.trim() === "" &&
+    itemComment.trim() === ""
+  ) {
+    setModalMessage("Please provide at least one rating or comment before submitting.");
+    setIsModalOpen(true);
+    return;
+  }
+
+  setIsSubmitting(true);
+
+  try {
+    const payload = {
+  interaction_id: orderId,
+  general_rating: overallRating || Math.max(providerRating, itemRating) || 0,
+  general_comment: [providerComment.trim(), itemComment.trim()].filter(Boolean).join(" | ") || "",
+  business_review: providerComment.trim() || "",
+  food_review: itemComment.trim() || "",
+  review_source: source
+};
+
+
+    const response = await reviewsAPI.createReview(payload);
+
+    if (response?.data?.review || response?.success) {
+      onComplete();
+    } else {
+      setModalMessage(response?.data?.error?.message || response?.data?.message || "Unknown error occurred");
+      setIsModalOpen(true);
     }
-
-    setIsSubmitting(true);
-
-    try {
-      const payload = {
-        interaction_id: orderId,
-        general_rating: overallRating || Math.max(providerRating, itemRating),
-        general_comment: [providerComment.trim(), itemComment.trim()].filter(Boolean).join(" | ") || null,
-        business_review: providerComment.trim() || null,
-        food_review: itemComment.trim() || null,
-        review_source: source // use the source prop here
-      };
-
-      const response = await reviewsAPI.createReview(payload);
-
-      if (response?.data?.review || response?.success) {
-        onComplete();
-      } else {
-        const errorMsg =
-          response?.data?.error?.message ||
-          response?.data?.message ||
-          "Unknown error occurred";
-        alert("Failed to submit review: " + errorMsg);
-      }
-    } catch (error) {
-      console.error("Review submission error:", error);
-      alert("Failed to submit review. Check console for details.");
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
+  } catch (error) {
+    console.error("Review submission error:", error);
+    setModalMessage("Failed to submit review. Check console for details.");
+    setIsModalOpen(true);
+  } finally {
+    setIsSubmitting(false);
+  }
+};
 
   
 
@@ -178,7 +186,23 @@ const UnifiedReviewForm = ({ providerName, onClose, onComplete, orderData, sourc
           </button>
         </div>
       </div>
+      {isModalOpen && (
+  <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+    <div className="bg-white dark:bg-gray-900 rounded-lg p-6 w-96">
+      <p className="text-gray-800 dark:text-gray-100 mb-4">{modalMessage}</p>
+      <button
+        onClick={() => setIsModalOpen(false)}
+        className="px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700"
+      >
+        OK
+      </button>
+    </div>
+  </div>
+)}
+
     </motion.div>
+
+    
   )
 }
 
