@@ -27,84 +27,75 @@ const UnifiedReviewForm = ({ providerName, onClose, onComplete, orderData }) => 
   }, [providerRating, itemRating])
 
   const handleSubmit = async () => {
-    // Require at least one rating and comment
-    if ((providerRating === 0 && itemRating === 0) || 
-        (providerComment.trim() === '' && itemComment.trim() === '')) {
-      return
-    }
-
-    setIsSubmitting(true)
-
-    try {
-      // Create the payload exactly like your working components
-      const payload = {
-        interaction_id: orderId,
-        general_rating: overallRating || Math.max(providerRating, itemRating), // Fallback calculation
-        general_comment: [providerComment.trim(), itemComment.trim()]
-          .filter(comment => comment.length > 0)
-          .join(' | ') || 'Review submitted',
-        business_review: providerComment.trim() || '',
-        food_review: itemComment.trim() || '',
-        review_source: 'unified_form'
-      }
-
-      console.log('Submitting review with payload:', payload)
-      console.log('Order ID:', orderId, 'Type:', typeof orderId)
-
-      const response = await reviewsAPI.createReview(payload)
-      
-      console.log('Full API response:', response)
-
-      if (response && response.success) {
-        console.log('Review submitted successfully!')
-        onComplete()
-      } else {
-        console.error('API returned error:', response)
-        const errorMsg = response?.error || response?.message || 'Unknown error occurred'
-        alert('Failed to submit review: ' + errorMsg)
-      }
-    } catch (error) {
-      console.error('Exception during review submission:', error)
-      
-      // Log detailed error information
-      if (error.response) {
-        console.error('Response status:', error.response.status)
-        console.error('Response data:', error.response.data)
-        console.error('Response headers:', error.response.headers)
-      } else if (error.request) {
-        console.error('No response received:', error.request)
-      } else {
-        console.error('Error setting up request:', error.message)
-      }
-      
-      // Show user-friendly error message
-      let errorMessage = 'Failed to submit review. '
-      if (error.response?.status === 400) {
-        const errorData = error.response.data
-        if (errorData?.message) {
-          errorMessage += errorData.message
-        } else if (errorData?.error) {
-          errorMessage += errorData.error
-        } else if (errorData?.detail) {
-          errorMessage += errorData.detail
-        } else {
-          errorMessage += 'Invalid data sent to server. Check console for details.'
-        }
-      } else if (error.response?.status === 401) {
-        errorMessage += 'You need to be logged in to submit a review.'
-      } else if (error.response?.status === 403) {
-        errorMessage += 'You do not have permission to review this order.'
-      } else if (error.response?.status === 404) {
-        errorMessage += 'Order not found or cannot be reviewed.'
-      } else {
-        errorMessage += error.message || 'Please try again.'
-      }
-      
-      alert(errorMessage)
-    } finally {
-      setIsSubmitting(false)
-    }
+  // Require at least one rating and one comment
+  if (
+    (providerRating === 0 && itemRating === 0) ||
+    (providerComment.trim() === '' && itemComment.trim() === '')
+  ) {
+    alert("Please provide at least one rating and one comment before submitting.");
+    return;
   }
+
+  setIsSubmitting(true);
+
+  try {
+    // Build payload in the exact shape expected by ReviewCreateSerializer
+    const payload = {
+      interaction_id: orderId,   // pulled from URL params
+      general_rating: overallRating || Math.max(providerRating, itemRating),
+      general_comment: [providerComment.trim(), itemComment.trim()]
+        .filter(Boolean)
+        .join(" | ") || null,
+      business_review: providerComment.trim() || null,
+      food_review: itemComment.trim() || null,
+      review_source: "unified_form"
+    };
+
+    console.log("Submitting review with payload:", payload);
+
+    const response = await reviewsAPI.createReview(payload);
+
+    console.log("Full API response:", response);
+
+    if (response?.data?.review || response?.status === 201) {
+      console.log("✅ Review submitted successfully!");
+      onComplete();
+    } else {
+      console.error("API returned unexpected response:", response);
+      const errorMsg =
+        response?.data?.error?.message ||
+        response?.data?.message ||
+        "Unknown error occurred";
+      alert("Failed to submit review: " + errorMsg);
+    }
+  } catch (error) {
+    console.error("❌ Exception during review submission:", error);
+
+    let errorMessage = "Failed to submit review. ";
+    if (error.response) {
+      if (error.response.status === 400) {
+        errorMessage += "Invalid data. Check console for details.";
+        console.error("Validation errors:", error.response.data);
+      } else if (error.response.status === 401) {
+        errorMessage += "You need to be logged in.";
+      } else if (error.response.status === 403) {
+        errorMessage += "You do not have permission to review this order.";
+      } else if (error.response.status === 404) {
+        errorMessage += "Order not found or cannot be reviewed.";
+      } else {
+        errorMessage += error.message;
+      }
+    } else if (error.request) {
+      errorMessage += "No response from server.";
+    } else {
+      errorMessage += error.message || "Unexpected error.";
+    }
+
+    alert(errorMessage);
+  } finally {
+    setIsSubmitting(false);
+  }
+};
 
   const isFormValid = () => {
     return (providerRating > 0 || itemRating > 0) && 
