@@ -664,42 +664,116 @@ def schedule_pickup(request):
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
+# def customer_pickups(request):
+#     """Get customer's scheduled pickups"""
+#     if request.user.user_type not in ['customer', 'ngo']:
+#         return Response({
+#             'error': {
+#                 'code': 'FORBIDDEN',
+#                 'message': 'Only customers and NGOs can view their pickups'
+#             }
+#         }, status=status.HTTP_403_FORBIDDEN)
+
+#     # Filter parameters
+#     status_filter = request.query_params.get('status')
+#     upcoming_only = request.query_params.get('upcoming', 'false').lower() == 'true'
+    
+#     pickups = ScheduledPickup.objects.filter(
+#         order__interaction__user=request.user
+#     ).select_related('food_listing', 'location', 'order', 'order__interaction').order_by('-scheduled_date', '-scheduled_start_time')
+    
+#     if status_filter:
+#         pickups = pickups.filter(status=status_filter)
+    
+#     if upcoming_only:
+#         pickups = pickups.filter(
+#             scheduled_date__gte=timezone.now().date()
+#         )
+    
+#     # Pagination
+#     paginator = PickupPagination()
+#     paginated_pickups = paginator.paginate_queryset(pickups, request)
+    
+#     # Create simple response without using the problematic serializer
+#     pickup_data = []
+#     for pickup in paginated_pickups:
+#         pickup_data.append({
+#             'id': str(pickup.id),
+#             'interaction_id': str(pickup.order.interaction.id),  # Added this line
+#             'scheduled_date': pickup.scheduled_date,
+#             'scheduled_start_time': pickup.scheduled_start_time,
+#             'scheduled_end_time': pickup.scheduled_end_time,
+#             'status': pickup.status,
+#             'confirmation_code': pickup.confirmation_code,
+#             'food_listing': {
+#                 'id': str(pickup.food_listing.id),
+#                 'name': pickup.food_listing.name,
+#                 'pickup_window': pickup.food_listing.pickup_window,
+#                 'expiry_date': pickup.food_listing.expiry_date
+#             },
+#             'business': {
+#                 'id': str(pickup.location.business.id),
+#                 'business_name': pickup.location.business.business_name,
+#                 'business_address': pickup.location.business.business_address,
+#                 'business_contact': pickup.location.business.business_contact
+#             },
+#             'location': {
+#                 'id': str(pickup.location.id),
+#                 'name': pickup.location.name,
+#                 'address': pickup.location.address,
+#                 'instructions': pickup.location.instructions,
+#                 'contact_person': pickup.location.contact_person,
+#                 'contact_phone': pickup.location.contact_phone
+#             },
+            
+#             'customer_notes': pickup.customer_notes,
+#             'is_upcoming': pickup.is_upcoming,
+#             'is_today': pickup.is_today
+#         })
+    
+#     return paginator.get_paginated_response({
+#         'pickups': pickup_data
+#     })
+
 def customer_pickups(request):
-    """Get customer's scheduled pickups"""
+    """Get customer's scheduled pickups with email and phone included"""
     if request.user.user_type not in ['customer', 'ngo']:
         return Response({
             'error': {
                 'code': 'FORBIDDEN',
                 'message': 'Only customers and NGOs can view their pickups'
             }
-        }, status=status.HTTP_403_FORBIDDEN)
+        }, status=403)
 
     # Filter parameters
     status_filter = request.query_params.get('status')
     upcoming_only = request.query_params.get('upcoming', 'false').lower() == 'true'
-    
+
     pickups = ScheduledPickup.objects.filter(
         order__interaction__user=request.user
-    ).select_related('food_listing', 'location', 'order', 'order__interaction').order_by('-scheduled_date', '-scheduled_start_time')
-    
+    ).select_related(
+        'food_listing', 'location', 'order', 'order__interaction'
+    ).order_by('-scheduled_date', '-scheduled_start_time')
+
     if status_filter:
         pickups = pickups.filter(status=status_filter)
-    
+
     if upcoming_only:
-        pickups = pickups.filter(
-            scheduled_date__gte=timezone.now().date()
-        )
-    
+        pickups = pickups.filter(scheduled_date__gte=timezone.now().date())
+
     # Pagination
     paginator = PickupPagination()
     paginated_pickups = paginator.paginate_queryset(pickups, request)
-    
-    # Create simple response without using the problematic serializer
+
     pickup_data = []
     for pickup in paginated_pickups:
+        # Define user and customer_profile for each pickup
+        user = pickup.order.interaction.user
+        customer_profile = getattr(user, 'customer_profile', None)
+
         pickup_data.append({
             'id': str(pickup.id),
-            'interaction_id': str(pickup.order.interaction.id),  # Added this line
+            'interaction_id': str(pickup.order.interaction.id),
             'scheduled_date': pickup.scheduled_date,
             'scheduled_start_time': pickup.scheduled_start_time,
             'scheduled_end_time': pickup.scheduled_end_time,
@@ -725,16 +799,18 @@ def customer_pickups(request):
                 'contact_person': pickup.location.contact_person,
                 'contact_phone': pickup.location.contact_phone
             },
+            'customer': {
+                'id': str(user.id),
+                'full_name': customer_profile.full_name if customer_profile else '',
+                'email': user.email,
+                'phone': user.phone_number if hasattr(user, 'phone_number') else ''
+            },
             'customer_notes': pickup.customer_notes,
             'is_upcoming': pickup.is_upcoming,
             'is_today': pickup.is_today
         })
-    
-    return paginator.get_paginated_response({
-        'pickups': pickup_data
-    })
 
-
+    return paginator.get_paginated_response({'pickups': pickup_data})
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def pickup_details(request, pickup_id):

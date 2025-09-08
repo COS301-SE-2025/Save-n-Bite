@@ -65,6 +65,15 @@ function PickupCoordination() {
     loadScheduleData();
   }, [selectedDate]);
 
+  // Auto-refresh every 30 seconds
+useEffect(() => {
+  const interval = setInterval(() => {
+    loadScheduleData();
+  }, 30000); // 30 seconds
+
+  return () => clearInterval(interval); // Cleanup on unmount
+}, [selectedDate]);
+
   // Auto-hide success message after 3 seconds
   useEffect(() => {
     if (showSuccessMessage) {
@@ -82,12 +91,13 @@ function PickupCoordination() {
     try {
       const apiDate = selectedDate;
 
-      console.log('Loading schedule for date:', apiDate);
-
+      
       const response = await schedulingAPI.getScheduleOverview(apiDate);
+      
 
       if (response.success) {
         const overview = response.data.schedule_overview;
+        
         setScheduleOverview(overview);
 
         const allPickups = [];
@@ -115,7 +125,7 @@ function PickupCoordination() {
         }
 
         setPickups(allPickups);
-        console.log(`Loaded ${allPickups.length} pickups for ${apiDate}`);
+      
       } else {
         setError(response.error);
       }
@@ -214,6 +224,8 @@ function PickupCoordination() {
           notes: pickupData.customer_notes
         }
       }));
+
+   
 
       setPickups(pickups.map(p =>
         p.id === activePickup.id
@@ -366,19 +378,29 @@ function PickupCoordination() {
     return matchesSearch && matchesStatus && matchesDate;
   });
 
-  const sortedPickups = [...filteredPickups].sort((a, b) => {
-    const aHour = parseInt(a.hour);
-    const bHour = parseInt(b.hour);
+const sortedPickups = [...filteredPickups].sort((a, b) => {
+  // Completed orders go last
+  if (a.status === "completed" && b.status !== "completed") return 1;
+  if (a.status !== "completed" && b.status === "completed") return -1;
 
-    if (aHour !== bHour) {
-      return aHour - bHour;
-    }
+  // Urgent pickups come first
+  const aUrgent = a.status === "urgent";
+  const bUrgent = b.status === "urgent";
+  if (aUrgent && !bUrgent) return -1;
+  if (!aUrgent && bUrgent) return 1;
 
-    if (a.status === 'scheduled' && b.status !== 'scheduled') return -1;
-    if (a.status !== 'scheduled' && b.status === 'scheduled') return 1;
+  // Then sort by pickup hour
+  const aHour = parseInt(a.hour);
+  const bHour = parseInt(b.hour);
+  if (aHour !== bHour) return aHour - bHour;
 
-    return 0;
-  });
+  // Then scheduled pickups come before others
+  if (a.status === "scheduled" && b.status !== "scheduled") return -1;
+  if (a.status !== "scheduled" && b.status === "scheduled") return 1;
+
+  return 0;
+});
+
 
   const refreshPickupData = async () => {
     await loadScheduleData();
@@ -664,7 +686,7 @@ function PickupCoordination() {
                 </select>
               </div>
 
-              <div className="flex gap-2">
+              {/* <div className="flex gap-2">
                 <Button
                   variant="primary"
                   onClick={() => setShowVerifyModal(true)}
@@ -680,7 +702,7 @@ function PickupCoordination() {
                 >
                   Refresh
                 </Button>
-              </div>
+              </div> */}
             </div>
           </div>
 
@@ -697,12 +719,22 @@ function PickupCoordination() {
                 >
                   <div className="p-3 sm:p-5">
                     <div className="flex justify-between items-start mb-3">
-                      <div>
-                        {/* <h3 className="font-semibold text-gray-900 dark:text-white text-sm sm:text-base">
+                      {/* <div>
+                        <h3 className="font-semibold text-gray-900 dark:text-white text-sm sm:text-base">
                           {pickup.orderNumber}
-                        </h3> */}
+                        </h3>
                         <p className="text-gray-600 dark:text-gray-300 text-sm">{pickup.customerName}</p>
-                      </div>
+                      </div> */}
+                      <div>
+  <h3 className="font-semibold text-gray-900 dark:text-white text-sm sm:text-base">
+    {pickup.orderNumber}
+  </h3>
+  {/* <p className="text-gray-600 dark:text-gray-300 text-sm">
+   Customer Name : {pickup.customerName} 
+
+  </p> */}
+</div>
+
                       <div className="flex items-center space-x-2">
                         <StatusBadge status={pickup.status} />
                         {isUrgent && pickup.status === 'scheduled' && (
@@ -751,13 +783,17 @@ function PickupCoordination() {
                       </div>
                       <div>
                         <h4 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Customer & Code:</h4>
+                        
 
                         {/* Customer Contact Info (shown after verification) */}
                         {customerDetails[pickup.id] ? (
+                          
                           <div className="space-y-2 mb-3">
                             <div className="p-2 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-md">
-                              <p className="text-xs font-medium text-green-800 dark:text-green-300 mb-1">Verified Customer:</p>
-                              <p className="text-sm font-medium text-gray-900 dark:text-white">{customerDetails[pickup.id].name}</p>
+                              <p className="text-xs font-medium text-green-800 dark:text-green-300 mb-1">Verified Customer:  {pickup.customerName}</p>
+
+                              
+                              <p className="text-sm font-medium text-gray-900 dark:text-white">{customerDetails[pickup.id].full_name}</p>
                               <div className="flex flex-col gap-1 mt-1">
                                 <a
                                   href={`mailto:${customerDetails[pickup.id].email}`}
@@ -790,14 +826,14 @@ function PickupCoordination() {
                         )}
 
                         {/* Confirmation Code */}
-                        <div>
+                        {/* <div>
                           <p className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Confirmation Code:</p>
                           <div className="bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded-md inline-block">
                             <span className="text-sm font-mono bg-white dark:bg-gray-600 px-2 py-0.5 border border-gray-300 dark:border-gray-500 rounded text-gray-900 dark:text-white">
                               xxxxxx
                             </span>
                           </div>
-                        </div>
+                        </div> */}
                       </div>
                     </div>
 
@@ -822,8 +858,9 @@ function PickupCoordination() {
                               className="text-sm"
                               title={!customerDetails[pickup.id] ? 'Please verify customer first' : ''}
                             >
-                              {completingPickup === pickup.id ? 'Completing...' : 
-                               !customerDetails[pickup.id] ? 'Verify First' : 'Mark as Completed'}
+
+                              {completingPickup === pickup.id ? 'Completing...' : 'Input confirmation code to mark as Completed'}
+
                             </Button>
                             <Button
                               variant="danger"
@@ -850,7 +887,7 @@ function PickupCoordination() {
                           </div>
                         )}
 
-                        <Button
+                        {/* <Button
                           variant="secondary"
                           size="sm"
                           icon={<QrCode className="h-4 w-4" />}
@@ -858,7 +895,7 @@ function PickupCoordination() {
                           className="text-sm"
                         >
                           {pickup.id === showQRCode ? 'Hide QR' : 'Show QR'}
-                        </Button>
+                        </Button> */}
                       </div>
 
                       {pickup.id === showQRCode && (

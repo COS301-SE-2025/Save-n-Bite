@@ -62,23 +62,28 @@ const reviewsAPI = {
   },
 
   // Create a new review
-  createReview: async (reviewData) => {
-    try {
-      const response = await apiClient.post('/api/reviews/create/', reviewData);
-      
-      return {
-        success: true,
-        data: response.data,
-        error: null
-      };
-    } catch (error) {
-      return {
-        success: false,
-        data: null,
-        error: error.response?.data?.message || error.message || 'Failed to create review'
-      };
-    }
-  },
+  // Create a new review
+createReview: async (reviewData) => {
+  try {
+    const response = await apiClient.post('/api/reviews/create/', reviewData);
+    return {
+      success: true,
+      data: response.data,
+      error: null
+    };
+  } catch (error) {
+    console.error("Review API error:", error.response?.data); // 👈 log backend error
+    return {
+      success: false,
+      data: null,
+      error: error.response?.data?.error?.details ||  // serializer errors
+             error.response?.data?.error?.message || 
+             error.message || 
+             'Failed to create review'
+    };
+  }
+},
+
 
   // Get user's reviews
   getMyReviews: async () => {
