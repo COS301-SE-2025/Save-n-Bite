@@ -10,7 +10,7 @@ on:
       run_coverage:
         description: 'Run test coverage report'
         required: false
-        default: 'false'
+        default: false
         type: boolean
 
 jobs:

@@ -1728,3 +1728,92 @@ INFO 2025-08-20 07:06:29,620 basehttp 146256 139723733460672 "GET /api/notificat
 INFO 2025-08-20 07:06:29,622 basehttp 146256 139723741853376 "GET /api/notifications/unread-count/ HTTP/1.1" 200 18
 INFO 2025-08-20 07:06:29,666 basehttp 146256 139723741853376 "GET /api/notifications/unread-count/ HTTP/1.1" 200 18
 INFO 2025-08-20 07:06:29,719 basehttp 146256 139723733460672 "GET /api/notifications/preferences/ HTTP/1.1" 200 132
+WARNING 2025-08-20 07:08:32,806 log 146256 139724127725248 Unauthorized: /api/notifications/unread-count/
+WARNING 2025-08-20 07:08:32,807 log 146256 139724094154432 Unauthorized: /api/notifications/preferences/
+WARNING 2025-08-20 07:08:32,809 basehttp 146256 139724094154432 "GET /api/notifications/preferences/ HTTP/1.1" 401 58
+WARNING 2025-08-20 07:08:32,809 basehttp 146256 139724127725248 "GET /api/notifications/unread-count/ HTTP/1.1" 401 58
+WARNING 2025-08-20 07:08:32,817 log 146256 139724127725248 Unauthorized: /api/notifications/unread-count/
+WARNING 2025-08-20 07:08:32,821 log 146256 139724094154432 Unauthorized: /api/notifications/preferences/
+WARNING 2025-08-20 07:08:32,823 basehttp 146256 139724127725248 "GET /api/notifications/unread-count/ HTTP/1.1" 401 58
+WARNING 2025-08-20 07:08:32,823 basehttp 146256 139724094154432 "GET /api/notifications/preferences/ HTTP/1.1" 401 58
+INFO 2025-08-20 07:08:34,786 basehttp 146256 139724094154432 "POST /auth/login/ HTTP/1.1" 200 1634
+INFO 2025-08-20 07:08:34,819 basehttp 146256 139724094154432 "GET /api/notifications/unread-count/ HTTP/1.1" 200 18
+INFO 2025-08-20 07:08:34,993 basehttp 146256 139724094154432 "GET /api/business/ HTTP/1.1" 200 866
+INFO 2025-08-20 07:08:35,113 basehttp 146256 139724094154432 "GET /api/business/ HTTP/1.1" 200 866
+INFO 2025-08-20 07:08:37,964 basehttp 146256 139724094154432 "GET /api/business/reviews/ HTTP/1.1" 200 586
+INFO 2025-08-20 07:08:38,025 basehttp 146256 139724094154432 "GET /api/business/reviews/ HTTP/1.1" 200 586
+INFO 2025-08-20 07:08:38,138 basehttp 146256 139724094154432 "GET /api/business/reviews/ HTTP/1.1" 200 586
+INFO 2025-08-20 07:08:38,260 basehttp 146256 139724094154432 "GET /api/business/reviews/ HTTP/1.1" 200 586
+INFO 2025-08-20 07:08:38,299 basehttp 146256 139724127725248 "GET /api/business/reviews/stats/ HTTP/1.1" 200 302
+INFO 2025-08-20 07:08:38,356 basehttp 146256 139724094154432 "GET /api/business/reviews/stats/ HTTP/1.1" 200 302
+WARNING 2025-08-20 09:20:51,477 log 146256 139724127725248 Unauthorized: /api/notifications/unread-count/
+WARNING 2025-08-20 09:20:51,480 basehttp 146256 139724127725248 "GET /api/notifications/unread-count/ HTTP/1.1" 401 58
+WARNING 2025-08-20 09:20:51,484 log 146256 139724127725248 Unauthorized: /api/notifications/preferences/
+WARNING 2025-08-20 09:20:51,484 basehttp 146256 139724127725248 "GET /api/notifications/preferences/ HTTP/1.1" 401 58
+WARNING 2025-08-20 09:20:51,487 log 146256 139724119332544 Unauthorized: /api/notifications/unread-count/
+WARNING 2025-08-20 09:20:51,488 basehttp 146256 139724119332544 "GET /api/notifications/unread-count/ HTTP/1.1" 401 58
+WARNING 2025-08-20 09:20:51,537 log 146256 139724127725248 Unauthorized: /api/notifications/preferences/
+WARNING 2025-08-20 09:20:51,538 basehttp 146256 139724127725248 "GET /api/notifications/preferences/ HTTP/1.1" 401 58
+WARNING 2025-08-20 10:01:24,911 log 146256 139724119332544 Unauthorized: /api/notifications/unread-count/
+WARNING 2025-08-20 10:01:24,913 log 146256 139724102547136 Unauthorized: /api/notifications/preferences/
+WARNING 2025-08-20 10:01:24,921 basehttp 146256 139724119332544 "GET /api/notifications/unread-count/ HTTP/1.1" 401 58
+WARNING 2025-08-20 10:01:24,922 basehttp 146256 139724102547136 "GET /api/notifications/preferences/ HTTP/1.1" 401 58
+WARNING 2025-08-20 10:01:24,927 log 146256 139724119332544 Unauthorized: /api/notifications/unread-count/
+WARNING 2025-08-20 10:01:24,931 log 146256 139724102547136 Unauthorized: /api/notifications/preferences/
+WARNING 2025-08-20 10:01:24,932 basehttp 146256 139724119332544 "GET /api/notifications/unread-count/ HTTP/1.1" 401 58
+WARNING 2025-08-20 10:01:24,933 basehttp 146256 139724102547136 "GET /api/notifications/preferences/ HTTP/1.1" 401 58
+WARNING 2025-08-20 11:05:50,592 log 146256 139724119332544 Unauthorized: /api/notifications/unread-count/
+WARNING 2025-08-20 11:05:50,594 log 146256 139724102547136 Unauthorized: /api/notifications/preferences/
+WARNING 2025-08-20 11:05:50,598 basehttp 146256 139724119332544 "GET /api/notifications/unread-count/ HTTP/1.1" 401 58
+WARNING 2025-08-20 11:05:50,601 log 146256 139724119332544 Unauthorized: /api/notifications/unread-count/
+WARNING 2025-08-20 11:05:50,602 basehttp 146256 139724102547136 "GET /api/notifications/preferences/ HTTP/1.1" 401 58
+WARNING 2025-08-20 11:05:50,602 basehttp 146256 139724119332544 "GET /api/notifications/unread-count/ HTTP/1.1" 401 58
+WARNING 2025-08-20 11:05:50,604 log 146256 139724102547136 Unauthorized: /api/notifications/preferences/
+WARNING 2025-08-20 11:05:50,605 basehttp 146256 139724102547136 "GET /api/notifications/preferences/ HTTP/1.1" 401 58
+WARNING 2025-08-20 12:32:30,000 log 146256 139724102547136 Unauthorized: /api/notifications/unread-count/
+WARNING 2025-08-20 12:32:30,004 log 146256 139724119332544 Unauthorized: /api/notifications/preferences/
+WARNING 2025-08-20 12:32:30,006 basehttp 146256 139724119332544 "GET /api/notifications/preferences/ HTTP/1.1" 401 58
+WARNING 2025-08-20 12:32:30,007 basehttp 146256 139724102547136 "GET /api/notifications/unread-count/ HTTP/1.1" 401 58
+WARNING 2025-08-20 12:32:30,011 log 146256 139724119332544 Unauthorized: /api/notifications/preferences/
+WARNING 2025-08-20 12:32:30,013 log 146256 139724102547136 Unauthorized: /api/notifications/unread-count/
+WARNING 2025-08-20 12:32:30,014 basehttp 146256 139724102547136 "GET /api/notifications/unread-count/ HTTP/1.1" 401 58
+WARNING 2025-08-20 12:32:30,014 basehttp 146256 139724119332544 "GET /api/notifications/preferences/ HTTP/1.1" 401 58
+WARNING 2025-08-20 13:20:45,751 log 146256 139724094154432 Unauthorized: /api/notifications/unread-count/
+WARNING 2025-08-20 13:20:45,755 log 146256 139724127725248 Unauthorized: /api/notifications/preferences/
+WARNING 2025-08-20 13:20:45,768 basehttp 146256 139724127725248 "GET /api/notifications/preferences/ HTTP/1.1" 401 58
+WARNING 2025-08-20 13:20:45,774 log 146256 139724127725248 Unauthorized: /api/notifications/preferences/
+WARNING 2025-08-20 13:20:45,774 basehttp 146256 139724094154432 "GET /api/notifications/unread-count/ HTTP/1.1" 401 58
+WARNING 2025-08-20 13:20:45,780 log 146256 139724119332544 Unauthorized: /api/notifications/unread-count/
+WARNING 2025-08-20 13:20:45,781 basehttp 146256 139724127725248 "GET /api/notifications/preferences/ HTTP/1.1" 401 58
+WARNING 2025-08-20 13:20:45,783 basehttp 146256 139724119332544 "GET /api/notifications/unread-count/ HTTP/1.1" 401 58
+WARNING 2025-08-20 13:31:32,890 log 146256 139724127725248 Unauthorized: /api/notifications/unread-count/
+WARNING 2025-08-20 13:31:32,892 log 146256 139724094154432 Unauthorized: /api/notifications/preferences/
+WARNING 2025-08-20 13:31:32,893 basehttp 146256 139724127725248 "GET /api/notifications/unread-count/ HTTP/1.1" 401 58
+WARNING 2025-08-20 13:31:32,893 basehttp 146256 139724094154432 "GET /api/notifications/preferences/ HTTP/1.1" 401 58
+WARNING 2025-08-20 13:31:32,900 log 146256 139724094154432 Unauthorized: /api/notifications/preferences/
+WARNING 2025-08-20 13:31:32,902 log 146256 139724127725248 Unauthorized: /api/notifications/unread-count/
+WARNING 2025-08-20 13:31:32,903 basehttp 146256 139724094154432 "GET /api/notifications/preferences/ HTTP/1.1" 401 58
+WARNING 2025-08-20 13:31:32,904 basehttp 146256 139724127725248 "GET /api/notifications/unread-count/ HTTP/1.1" 401 58
+WARNING 2025-08-20 13:58:56,893 log 146256 139724094154432 Unauthorized: /api/notifications/preferences/
+WARNING 2025-08-20 13:58:56,894 log 146256 139724127725248 Unauthorized: /api/notifications/unread-count/
+WARNING 2025-08-20 13:58:56,898 basehttp 146256 139724094154432 "GET /api/notifications/preferences/ HTTP/1.1" 401 58
+WARNING 2025-08-20 13:58:56,898 basehttp 146256 139724127725248 "GET /api/notifications/unread-count/ HTTP/1.1" 401 58
+WARNING 2025-08-20 13:58:56,901 log 146256 139724127725248 Unauthorized: /api/notifications/unread-count/
+WARNING 2025-08-20 13:58:56,903 log 146256 139724094154432 Unauthorized: /api/notifications/preferences/
+WARNING 2025-08-20 13:58:56,903 basehttp 146256 139724127725248 "GET /api/notifications/unread-count/ HTTP/1.1" 401 58
+WARNING 2025-08-20 13:58:56,904 basehttp 146256 139724094154432 "GET /api/notifications/preferences/ HTTP/1.1" 401 58
+WARNING 2025-08-20 14:03:03,256 log 146256 139724119332544 Unauthorized: /api/notifications/unread-count/
+WARNING 2025-08-20 14:03:03,260 log 146256 139724094154432 Unauthorized: /api/notifications/preferences/
+WARNING 2025-08-20 14:03:03,261 basehttp 146256 139724119332544 "GET /api/notifications/unread-count/ HTTP/1.1" 401 58
+WARNING 2025-08-20 14:03:03,263 basehttp 146256 139724094154432 "GET /api/notifications/preferences/ HTTP/1.1" 401 58
+WARNING 2025-08-20 14:03:03,267 log 146256 139724119332544 Unauthorized: /api/notifications/unread-count/
+WARNING 2025-08-20 14:03:03,269 log 146256 139724094154432 Unauthorized: /api/notifications/preferences/
+WARNING 2025-08-20 14:03:03,270 basehttp 146256 139724094154432 "GET /api/notifications/preferences/ HTTP/1.1" 401 58
+WARNING 2025-08-20 14:03:03,270 basehttp 146256 139724119332544 "GET /api/notifications/unread-count/ HTTP/1.1" 401 58
+INFO 2025-08-20 16:25:15,154 basehttp 146256 139724119332544 "GET /admin/interactions/interaction/ HTTP/1.1" 200 35008
+INFO 2025-08-20 16:25:31,740 basehttp 146256 139724119332544 "GET /admin/authentication/user/aa7e7123-c45b-451f-9846-4854e22e3ce3/change/ HTTP/1.1" 302 0
+INFO 2025-08-20 16:25:31,776 basehttp 146256 139724119332544 "GET /admin/ HTTP/1.1" 200 30673
+WARNING 2025-08-20 16:25:31,879 log 146256 139724119332544 Not Found: /static/admin/css/dashboard.css
+WARNING 2025-08-20 16:25:31,879 basehttp 146256 139724119332544 "GET /static/admin/css/dashboard.css HTTP/1.1" 404 179
+WARNING 2025-08-20 16:25:31,897 log 146256 139724119332544 Not Found: /static/admin/img/icon-alert.svg
+WARNING 2025-08-20 16:25:31,898 basehttp 146256 139724119332544 "GET /static/admin/img/icon-alert.svg HTTP/1.1" 404 179
