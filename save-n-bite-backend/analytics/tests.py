@@ -9,6 +9,7 @@ from authentication.models import User, FoodProviderProfile
 from interactions.models import Interaction, Order
 from notifications.models import BusinessFollower
 from analytics.views import BusinessAnalyticsView
+from .serializers import AnalyticsResponseSerializer, MonthlyCountSerializer
 
 class BusinessAnalyticsViewTests(TransactionTestCase):
     def setUp(self):
@@ -533,3 +534,35 @@ class BusinessAnalyticsViewTests(TransactionTestCase):
         # Validate that the data is properly ordered (oldest to newest)
         months = [entry['month'] for entry in data['orders_per_month']]
         self.assertEqual(months, sorted(months), "Months should be in chronological order")
+
+        # Add this to your tests.py
+
+class SerializerTests(TestCase):
+    def test_monthly_count_serializer(self):
+        """Test MonthlyCountSerializer validation"""
+        data = {'month': '2023-01-01', 'count': 10}
+        serializer = MonthlyCountSerializer(data=data)
+        self.assertTrue(serializer.is_valid())
+        
+        # Test invalid data
+        invalid_data = {'month': 'invalid-date', 'count': 'not-number'}
+        serializer = MonthlyCountSerializer(data=invalid_data)
+        self.assertFalse(serializer.is_valid())
+
+    def test_analytics_response_serializer(self):
+        """Test AnalyticsResponseSerializer validation"""
+        data = {
+            'total_orders_fulfilled': 100,
+            'order_change_percent': 25.5,
+            'donations': 30,
+            'donation_change_percent': -10.2,
+            'total_followers': 50,
+            'follower_change_percent': 15.0,
+            'orders_per_month': [{'month': '2023-01-01', 'count': 10}],
+            'sales_vs_donations': {'sales': 70, 'donations': 30},
+            'follower_growth': [{'month': '2023-01-01', 'count': 5}],
+            'sustainability_impact': {'meals_saved': 100, 'estimated_water_saved_litres': 50000},
+            'top_saver_badge_percent': 85.5
+        }
+        serializer = AnalyticsResponseSerializer(data=data)
+        self.assertTrue(serializer.is_valid())
