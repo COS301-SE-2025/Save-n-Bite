@@ -891,10 +891,11 @@ def get_security_anomalies(request):
 
 # ==================== DATA EXPORT VIEWS ====================
 
+#updated for exporting of all data 
 @api_view(['POST'])
 @permission_classes([IsSystemAdmin])
 def export_data(request):
-    """Export data to CSV format"""
+    """Export data to CSV format - FIXED transactions and listings"""
     serializer = DataExportSerializer(data=request.data)
     
     if not serializer.is_valid():
@@ -970,7 +971,7 @@ def export_data(request):
                 ])
 
         elif export_type == 'system_logs':
-        # Export system logs
+            # Export system logs
             writer.writerow(['ID', 'Severity', 'Category', 'Title', 'Description', 'Status', 'Timestamp'])
     
             queryset = SystemLogEntry.objects.all()
@@ -981,14 +982,72 @@ def export_data(request):
     
             for log in queryset:
                 writer.writerow([
-                str(log.id),
-                log.severity,
-                log.category,
-                log.title,
-                log.description,
-                log.status,
-                log.timestamp.strftime('%Y-%m-%d %H:%M:%S')
-            ])
+                    str(log.id),
+                    log.severity,
+                    log.category,
+                    log.title,
+                    log.description,
+                    log.status,
+                    log.timestamp.strftime('%Y-%m-%d %H:%M:%S')
+                ])
+        
+        elif export_type == 'transactions':
+            # FIXED: Export transactions
+            try:
+                from interactions.models import Interaction
+                
+                writer.writerow(['ID', 'Provider', 'User', 'Status', 'Food Item', 'Quantity', 'Price', 'Created At'])
+                
+                queryset = Interaction.objects.select_related('business', 'user').all()
+                if date_from:
+                    queryset = queryset.filter(created_at__gte=date_from)
+                if date_to:
+                    queryset = queryset.filter(created_at__lte=date_to)
+                
+                for transaction in queryset:
+                    writer.writerow([
+                        str(transaction.id),
+                        transaction.business.business_name if hasattr(transaction.business, 'business_name') else 'Unknown',
+                        transaction.user.email if transaction.user else 'Anonymous',
+                        transaction.status,
+                        getattr(transaction, 'food_item_name', 'N/A'),
+                        getattr(transaction, 'quantity', 1),
+                        getattr(transaction, 'total_price', 0),
+                        transaction.created_at.strftime('%Y-%m-%d %H:%M:%S')
+                    ])
+            except ImportError:
+                writer.writerow(['Error: Transactions module not available'])
+        
+        elif export_type == 'listings':
+            # FIXED: Export listings
+            try:
+                from food_listings.models import FoodListing
+                
+                writer.writerow(['ID', 'Name', 'Provider', 'Status', 'Price', 'Quantity', 'Category', 'Created At'])
+                
+                queryset = FoodListing.objects.select_related('provider__provider_profile').all()
+                if date_from:
+                    queryset = queryset.filter(created_at__gte=date_from)
+                if date_to:
+                    queryset = queryset.filter(created_at__lte=date_to)
+                
+                for listing in queryset:
+                    provider_name = 'Unknown'
+                    if hasattr(listing.provider, 'provider_profile') and listing.provider.provider_profile:
+                        provider_name = listing.provider.provider_profile.business_name
+                    
+                    writer.writerow([
+                        str(listing.id),
+                        listing.name,
+                        provider_name,
+                        listing.status,
+                        getattr(listing, 'price', 0),
+                        getattr(listing, 'quantity_available', 0),
+                        getattr(listing, 'food_type', ''),
+                        listing.created_at.strftime('%Y-%m-%d %H:%M:%S')
+                    ])
+            except ImportError:
+                writer.writerow(['Error: Food Listings module not available'])
         
         # Log the export action
         AdminService.log_admin_action(
