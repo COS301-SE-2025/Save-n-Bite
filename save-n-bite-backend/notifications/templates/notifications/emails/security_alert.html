@@ -19,15 +19,14 @@
     <h3 style="margin-top: 0; color: #856404;">{{ title }}</h3>
 {% endif %}
     
-    <p><strong>Category:</strong> {{ category|title }}</p>
-    <p><strong>Severity:</strong> {{ severity|upper }}</p>
-    <p><strong>Time:</strong> {{ timestamp|date:"F j, Y g:i A T" }}</p>
+    <p><strong>Category:</strong> {{ Category|title }}</p>
+    <p><strong>Severity:</strong> {{ Severity|upper }}</p>
     <p><strong>Description:</strong></p>
-    <p>{{ description }}</p>
+    <p>{{ Description }}</p>
     
     {% if error_details %}
     <details style="margin-top: 15px;">
-        <summary style="cursor: pointer; font-weight: bold;">Technical Details</summary>
+        <summary style="cursor: pointer; font-weight: bold;"><strong>Technical Details:</strong></summary>
         <pre style="background-color: #f8f9fa; padding: 10px; border-radius: 4px; overflow-x: auto; margin-top: 10px; font-size: 12px;">{{ error_details }}</pre>
     </details>
     {% endif %}

@@ -1413,3 +1413,38 @@ def moderate_listing(request, listing_id):
             'details': serializer.errors
         }
     }, status=status.HTTP_400_BAD_REQUEST)
+
+
+
+#============================TESTING - REMOVE LATER ============================================
+# In views.py - Add a test endpoint
+@api_view(['POST'])
+@permission_classes([IsSystemAdmin])
+def test_system_log_email(request):
+    """Test endpoint to manually trigger system log email"""
+    try:
+        from .services import SystemLogService
+        
+        # Create a test system log
+        log_entry = SystemLogService.create_system_log(
+            severity='critical',
+            category='test',
+            title='Test System Alert',
+            description='This is a test system alert to verify email functionality',
+            error_details={'test': 'data', 'timestamp': timezone.now().isoformat()}
+        )
+        
+        return Response({
+            'message': 'Test system log created successfully',
+            'log_id': str(log_entry.id) if log_entry else None,
+            'email_triggered': True
+        }, status=status.HTTP_200_OK)
+        
+    except Exception as e:
+        logger.error(f"Test system log error: {str(e)}")
+        return Response({
+            'error': {
+                'code': 'TEST_ERROR',
+                'message': f'Failed to create test system log: {str(e)}'
+            }
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
