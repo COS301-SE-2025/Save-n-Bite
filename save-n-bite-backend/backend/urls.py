@@ -15,6 +15,7 @@ urlpatterns = [
     path('api/scheduling/', include('scheduling.urls')),
     path('api/', include('reviews.urls')),
     path('api/admin/', include('admin_system.urls')),
+    path('api/garden/', include('digital_garden.urls')),
 ]+ static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
 
 # Serve media files during development

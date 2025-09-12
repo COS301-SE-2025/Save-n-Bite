@@ -63,6 +63,7 @@ INSTALLED_APPS = [
     'scheduling',
     'reviews',
     'admin_system',
+    'digital_garden',
 ]
 
 MIDDLEWARE = [
