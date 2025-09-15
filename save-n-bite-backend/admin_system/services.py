@@ -498,10 +498,15 @@ class DashboardService:
 class SystemLogService:
     """Enhanced system logging with anomaly detection"""
     
+    # Added debug logging to the create_system_log method
     @staticmethod
     def create_system_log(severity, category, title, description, error_details=None):
         """Create a new system log entry with email notifications for critical issues"""
         try:
+            # DEBUG: Log when this function is called
+            logger.info(f"Creating system log: {severity} - {category} - {title}")
+            logger.info(f"Description: {description}")
+            
             log_entry = SystemLogEntry.objects.create(
                 severity=severity,
                 category=category,
@@ -510,8 +515,12 @@ class SystemLogService:
                 error_details=error_details or {}
             )
             
+            # DEBUG: Log successful creation
+            logger.info(f"System log created with ID: {log_entry.id}")
+            
             # Send email notification for critical/error/warning logs
             if severity in ['critical', 'error', 'warning']:
+                logger.info(f"Triggering email notification for {severity} log")
                 SystemLogService._send_critical_log_email_notification(log_entry)
             
             # Check for anomalies when creating critical/error logs
@@ -522,108 +531,101 @@ class SystemLogService:
                     logger.warning(f"Error checking anomalies: {e}")
             
             return log_entry
-            
+                
         except Exception as e:
             logger.error(f"Failed to create system log: {str(e)}")
             return None
         
-        @staticmethod
-        def _send_critical_log_email_notification(log_entry):
-            """Send email notification for critical system logs to all admin users"""
-            try:
-                from notifications.services import NotificationService
-                from django.contrib.auth import get_user_model
-                from django.conf import settings
-                
-                User = get_user_model()
-                
-                # Get all admin users
-                admin_users = User.objects.filter(
-                    admin_rights=True,
-                    is_active=True,
-                    email__isnull=False
-                ).exclude(email='')
-                
-                if not admin_users.exists():
-                    logger.warning("No admin users found to send system log notifications")
-                    return
-                
-                # Prepare email context
-                admin_panel_url = f"{getattr(settings, 'FRONTEND_URL', 'http://localhost:3000')}/admin/system-logs"
-                
-                for admin_user in admin_users:
-                    try:
-                        # Create in-app notification
-                        notification = NotificationService.create_notification(
-                            recipient=admin_user,
-                            notification_type='system_announcement',
-                            title=f"System Alert: {log_entry.severity.upper()} - {log_entry.title}",
-                            message=f"A {log_entry.severity} system issue has been detected: {log_entry.description}",
-                            data={
-                                'log_entry_id': str(log_entry.id),
-                                'severity': log_entry.severity,
-                                'category': log_entry.category,
-                                'log_title': log_entry.title,
-                                'admin_panel_url': admin_panel_url
-                            }
-                        )
-                        
-                        # Prepare email context
-                        email_context = {
-                            'admin_name': admin_user.get_full_name() or admin_user.username,
+    
+        
+# In services.py - Update the _send_critical_log_email_notification method
+    @staticmethod
+    def _send_critical_log_email_notification(log_entry):
+        """Send email notification for critical system logs to all admin users"""
+        try:
+            from notifications.services import NotificationService
+            from django.contrib.auth import get_user_model
+            from django.conf import settings
+            
+            User = get_user_model()
+            
+            # Get all admin users
+            admin_users = User.objects.filter(
+                admin_rights=True,
+                is_active=True,
+                email__isnull=False
+            ).exclude(email='')
+            
+            if not admin_users.exists():
+                logger.warning("No admin users found to send system log notifications")
+                return
+            
+            # Prepare email context with proper data
+            admin_panel_url = f"{getattr(settings, 'FRONTEND_URL', 'http://localhost:3000')}/admin/system-logs"
+            
+            for admin_user in admin_users:
+                try:
+                    # Create in-app notification
+                    notification = NotificationService.create_notification(
+                        recipient=admin_user,
+                        notification_type='system_announcement',
+                        title=f"System Alert: {log_entry.severity.upper()} - {log_entry.title}",
+                        message=f"A {log_entry.severity} system issue has been detected: {log_entry.description}",
+                        data={
+                            'log_entry_id': str(log_entry.id),
                             'severity': log_entry.severity,
                             'category': log_entry.category,
-                            'title': log_entry.title,
-                            'description': log_entry.description,
-                            'timestamp': log_entry.timestamp,
-                            'error_details': log_entry.error_details if log_entry.error_details else None,
-                            'admin_panel_url': admin_panel_url,
-                            'company_name': 'Save n Bite',
-                            'support_email': 'savenbite@gmail.com'
+                            'log_title': log_entry.title,
+                            'admin_panel_url': admin_panel_url
                         }
-                        
-                        # Format error details for email if they exist
-                        if log_entry.error_details:
-                            try:
-                                import json
-                                email_context['error_details'] = json.dumps(log_entry.error_details, indent=2)
-                            except:
-                                email_context['error_details'] = str(log_entry.error_details)
-                        
-                        # Send critical email (bypasses user preferences)
-                        email_sent = NotificationService.send_critical_email_notification(
-                            user=admin_user,
-                            subject=f"[{log_entry.severity.upper()}] Save n Bite System Alert - {log_entry.title}",
-                            template_name='system_log_alert',
-                            context=email_context,
-                            notification=notification
-                        )
-                        
-                        if email_sent:
-                            logger.info(f"System log alert email sent to admin {admin_user.email}")
-                        else:
-                            logger.error(f"Failed to send system log alert email to admin {admin_user.email}")
-                            
-                    except Exception as e:
-                        logger.error(f"Failed to send system log notification to {admin_user.email}: {e}")
-                        
-            except Exception as e:
-                logger.error(f"Error sending critical log email notifications: {e}")
-
-    
-    @staticmethod
-    def check_for_anomalies_and_alert():
-        """Check for anomalies and create alerts"""
-        try:
-            anomalies = AnomalyDetectionService.detect_anomalies()
-            
-            # Create system log entries for detected anomalies
-            for anomaly in anomalies:
-                if anomaly['severity'] in ['Critical', 'High']:
-                    SystemLogService.create_anomaly_alert(anomaly)
+                    )
                     
+                    # Prepare email context - MATCH TEMPLATE EXPECTATIONS
+                    email_context = {
+                        'admin_name': admin_user.get_full_name() or admin_user.username,
+                        'Category': log_entry.category,  # Capitalized to match template
+                        'Severity': log_entry.severity.upper(),  # Capitalized to match template
+                        'Time': log_entry.timestamp.strftime('%Y-%m-%d %H:%M:%S'),  # Capitalized to match template
+                        'Description': log_entry.description,  # Capitalized to match template
+                        'title': log_entry.title,
+                        'error_details': log_entry.error_details if log_entry.error_details else "No additional details",
+                        'admin_panel_url': admin_panel_url,
+                        'company_name': 'Save n Bite',
+                        'support_email': 'savenbite@gmail.com'
+                    }
+                    
+                    # Format error details for email if they exist
+                    if log_entry.error_details:
+                        try:
+                            import json
+                            email_context['error_details'] = json.dumps(log_entry.error_details, indent=2)
+                        except:
+                            email_context['error_details'] = str(log_entry.error_details)
+                    
+                    # DEBUG: Log the final context being sent
+                    logger.info(f"Final email context: {email_context}")
+                    
+                    # Send critical email (bypasses user preferences)
+                    email_sent = NotificationService.send_critical_email_notification(
+                        user=admin_user,
+                        subject=f"[{log_entry.severity.upper()}] Save n Bite System Alert - {log_entry.title}",
+                        template_name='security_alert',
+                        context=email_context,
+                        notification=notification
+                    )
+                    
+                    if email_sent:
+                        logger.info(f"System log alert email sent to admin {admin_user.email}")
+                    else:
+                        logger.error(f"Failed to send system log alert email to admin {admin_user.email}")
+                        
+                except Exception as e:
+                    logger.error(f"Failed to send system log notification to {admin_user.email}: {e}")
+                        
         except Exception as e:
-            logger.error(f"Error checking anomalies: {e}")
+            logger.error(f"Error sending critical log email notifications: {e}")
+    
+
     
     @staticmethod
     def create_anomaly_alert(anomaly):
@@ -669,22 +671,22 @@ class SystemLogService:
         except SystemLogEntry.DoesNotExist:
             raise ValueError(f"System log with ID {log_id} not found")
         
-    @staticmethod  
-    def create_system_log(severity, category, title, description, error_details=None):
-        """Create system log entry and send notification if critical"""
-        log_entry = SystemLogEntry.objects.create(
-            severity=severity,
-            category=category, 
-            title=title,
-            description=description,
-            error_details=error_details or {}
-        )
+    # @staticmethod  
+    # def create_system_log(severity, category, title, description, error_details=None):
+    #     """Create system log entry and send notification if critical"""
+    #     log_entry = SystemLogEntry.objects.create(
+    #         severity=severity,
+    #         category=category, 
+    #         title=title,
+    #         description=description,
+    #         error_details=error_details or {}
+    #     )
         
-        # Send email notification for critical/error/warning logs
-        if severity in ['critical', 'error', 'warning']:
-            SystemLogService.send_critical_log_notification(log_entry)
+    #     # Send email notification for critical/error/warning logs
+    #     if severity in ['critical', 'error', 'warning']:
+    #         SystemLogService.send_critical_log_notification(log_entry)
         
-        return log_entry
+    #     return log_entry
         
 class AdminNotificationService:
     """Service for admin-initiated custom notifications using existing notification system"""
@@ -1084,10 +1086,26 @@ class AnomalyDetectionService:
                     
         except Exception as e:
             logger.error(f"Error sending critical anomaly notifications: {e}")
-    
+
+    @staticmethod
+    def check_for_anomalies_and_alert():
+        """Check for anomalies and create alerts"""
+        try:
+            anomalies = AnomalyDetectionService.detect_anomalies()
+            
+            # Create system log entries for detected anomalies
+            for anomaly in anomalies:
+                if anomaly['severity'] in ['Critical', 'High']:
+                    SystemLogService.create_anomaly_alert(anomaly)
+                    
+        except Exception as e:
+            logger.error(f"Error checking anomalies: {e}")
+
+
+
     @staticmethod
     def detect_anomalies():
-        """Advanced rule-based anomaly detection adapted from Prac 2"""
+        """Rule-based anomaly detection"""
         from .models import AccessLog
         
         anomalies = []
@@ -1096,26 +1114,32 @@ class AnomalyDetectionService:
         twenty_four_hours_ago = timezone.now() - timedelta(hours=24)
         recent_logs = AccessLog.objects.filter(timestamp__gte=twenty_four_hours_ago)
         
-        # Anomaly 1: Excessive failed admin login attempts from same IP (from Prac 2)
+        # Anomaly 1: Excessive failed admin login attempts from same IP - INCREASED THRESHOLD
         suspicious_ips = recent_logs.filter(
-            endpoint__contains='/admin/',
+            endpoint__contains='/auth/login',  # Only check actual login endpoints
             status_code__in=[401, 403]
         ).values('ip_address').annotate(
             attempt_count=Count('id')
-        ).filter(attempt_count__gte=5)
+        ).filter(attempt_count__gte=5)  
         
         for ip_data in suspicious_ips:
             anomalies.append({
-                'type': 'Suspicious Admin Login Activity',
-                'description': f"IP {ip_data['ip_address']} made {ip_data['attempt_count']} failed admin login attempts",
-                'severity': 'Critical' if ip_data['attempt_count'] > 15 else 'High',
+                'type': 'Suspicious Login Activity',
+                'description': f"IP {ip_data['ip_address']} made {ip_data['attempt_count']} failed login attempts",
+                'severity': 'Critical' if ip_data['attempt_count'] > 10 else 'High',  # Increased threshold
                 'timestamp': timezone.now(),
                 'affected_resource': f"Admin Panel from IP {ip_data['ip_address']}"
             })
         
-        # Anomaly 2: Unauthorized access to admin endpoints (adapted from Prac 2)
+        # Anomaly 2: Unauthorized access to admin endpoints - MORE SPECIFIC
         unauthorized_admin_access = recent_logs.filter(
-            endpoint__contains='/admin/',
+            Q(endpoint__contains='/admin/users/') |
+            Q(endpoint__contains='/admin/verifications/') |
+            Q(endpoint__contains='/admin/transations') |
+            Q(endpoint__contains='/admin/logs/') |
+            Q(endpoint__contains='/admin/notifications/') |
+            Q(endpoint__contains='/admin/listings/') |
+            Q(endpoint__contains='/admin/system/'),
             status_code=403,
             user__isnull=False
         ).exclude(user__admin_rights=True)
@@ -1123,25 +1147,25 @@ class AnomalyDetectionService:
         if unauthorized_admin_access.exists():
             user_attempts = unauthorized_admin_access.values('user__username').annotate(
                 attempt_count=Count('id')
-            )
+            ).filter(attempt_count__gte=3)  
             
             for user_data in user_attempts:
                 anomalies.append({
                     'type': 'Unauthorized Admin Access Attempt',
-                    'description': f"Non-admin user {user_data['user__username']} attempted to access admin panel {user_data['attempt_count']} times",
+                    'description': f"Non-admin user {user_data['user__username']} attempted to access admin endpoints {user_data['attempt_count']} times",
                     'severity': 'Critical',
                     'timestamp': timezone.now(),
                     'affected_resource': f"Admin Panel - User: {user_data['user__username']}"
                 })
         
-        # Anomaly 3: High volume admin activity from single user (from Prac 2)
+        # Anomaly 3: High volume admin activity from single user - INCREASED THRESHOLD
         high_activity_admins = recent_logs.filter(
             endpoint__contains='/admin/',
             user__isnull=False,
             user__admin_rights=True
         ).values('user__username').annotate(
             request_count=Count('id')
-        ).filter(request_count__gte=100)  # 100+ requests in 24 hours
+        ).filter(request_count__gte=200)  
         
         for user_data in high_activity_admins:
             anomalies.append({
@@ -1152,14 +1176,16 @@ class AnomalyDetectionService:
                 'affected_resource': f"Admin Panel - User: {user_data['user__username']}"
             })
         
-        # Anomaly 4: Unusual access patterns to confidential endpoints (adapted from Prac 2)
+        # Anomaly 4: Unusual access patterns to confidential endpoints 
         confidential_access = recent_logs.filter(
-            Q(endpoint__contains='/verifications/') |
-            Q(endpoint__contains='/users/') |
-            Q(endpoint__contains='/logs/')
+            Q(endpoint__contains='/admin/users/') |
+            Q(endpoint__contains='/admin/verifications/') |
+            Q(endpoint__contains='/admin/transations') |
+            Q(endpoint__contains='/admin/logs/') |
+            Q(endpoint__contains='/admin/system/'),
         ).values('user__username', 'ip_address').annotate(
             access_count=Count('id')
-        ).filter(access_count__gte=20)  # 20+ access to sensitive endpoints
+        ).filter(access_count__gte=60)  
         
         for access_data in confidential_access:
             anomalies.append({
@@ -1170,13 +1196,13 @@ class AnomalyDetectionService:
                 'affected_resource': f"Confidential Endpoints - User: {access_data['user__username']}"
             })
         
-        # Anomaly 5: Multiple failed verification attempts (new - specific to Save n Bite)
+        # Anomaly 5: Multiple failed verification attempts 
         failed_verifications = recent_logs.filter(
             endpoint__contains='/verifications/',
             status_code__in=[400, 403, 404]
         ).values('user__username').annotate(
             failed_count=Count('id')
-        ).filter(failed_count__gte=5)
+        ).filter(failed_count__gte=5)  
         
         for verification_data in failed_verifications:
             anomalies.append({
@@ -1187,13 +1213,13 @@ class AnomalyDetectionService:
                 'affected_resource': f"Verification System - User: {verification_data['user__username']}"
             })
         
-        # Anomaly 6: Rapid user account creation from same IP (adapted from Prac 2)
+        # Anomaly 6: Rapid user account creation from same IP 
         rapid_registrations = recent_logs.filter(
             endpoint__contains='/auth/register/',
             status_code=201
         ).values('ip_address').annotate(
             registration_count=Count('id')
-        ).filter(registration_count__gte=3)  # 3+ registrations from same IP
+        ).filter(registration_count__gte=3)  
         
         for reg_data in rapid_registrations:
             anomalies.append({
@@ -1203,54 +1229,180 @@ class AnomalyDetectionService:
                 'timestamp': timezone.now(),
                 'affected_resource': f"Registration System - IP: {reg_data['ip_address']}"
             })
-        
-        # Anomaly 7: Access during unusual hours (adapted from Prac 2)
-        from django.utils import timezone as tz
-        current_hour = tz.now().hour
-        if current_hour < 6 or current_hour > 22:  # Between 10 PM and 6 AM
-            unusual_hour_access = recent_logs.filter(
-                timestamp__hour__in=range(22, 24) + range(0, 6),
-                endpoint__contains='/admin/'
-            ).values('user__username').annotate(
-                night_access_count=Count('id')
-            ).filter(night_access_count__gte=5)
-            
-            for user_data in unusual_hour_access:
-                anomalies.append({
-                    'type': 'Unusual Hour Admin Access',
-                    'description': f"User {user_data['user__username']} accessed admin panel {user_data['night_access_count']} times during unusual hours (10 PM - 6 AM)",
-                    'severity': 'Low',
-                    'timestamp': timezone.now(),
-                    'affected_resource': f"Admin Panel - User: {user_data['user__username']}"
-                })
-        
-        # Anomaly 8: Geographical anomaly detection (if IP geolocation available)
-        # This would require additional IP geolocation service, simplified version:
-        different_country_access = recent_logs.filter(
-            user__isnull=False
-        ).values('user__username').annotate(
-            ip_count=Count('ip_address', distinct=True)
-        ).filter(ip_count__gte=3)  # Same user from 3+ different IPs
-        
-        for user_data in different_country_access:
-            anomalies.append({
-                'type': 'Multiple IP Access Pattern',
-                'description': f"User {user_data['user__username']} accessed system from {user_data['ip_count']} different IP addresses",
-                'severity': 'Medium',
-                'timestamp': timezone.now(),
-                'affected_resource': f"User Account - {user_data['user__username']}"
-            })
-
+                        
         try:
             AnomalyDetectionService.send_critical_anomaly_notifications(anomalies)
         except Exception as e:
             logger.error(f"Failed to send anomaly notifications: {e}")
         
         return anomalies
+
+    # @staticmethod
+    # def detect_anomalies():
+    #     """Advanced rule-based anomaly detection adapted from Prac 2"""
+    #     from .models import AccessLog
+        
+    #     anomalies = []
+        
+    #     # Get logs for the last 24 hours
+    #     twenty_four_hours_ago = timezone.now() - timedelta(hours=24)
+    #     recent_logs = AccessLog.objects.filter(timestamp__gte=twenty_four_hours_ago)
+        
+    #     # Anomaly 1: Excessive failed admin login attempts from same IP (from Prac 2)
+    #     suspicious_ips = recent_logs.filter(
+    #         endpoint__contains='/admin/',
+    #         status_code__in=[401, 403]
+    #     ).values('ip_address').annotate(
+    #         attempt_count=Count('id')
+    #     ).filter(attempt_count__gte=5)
+        
+    #     for ip_data in suspicious_ips:
+    #         anomalies.append({
+    #             'type': 'Suspicious Admin Login Activity',
+    #             'description': f"IP {ip_data['ip_address']} made {ip_data['attempt_count']} failed admin login attempts",
+    #             'severity': 'Critical' if ip_data['attempt_count'] > 15 else 'High',
+    #             'timestamp': timezone.now(),
+    #             'affected_resource': f"Admin Panel from IP {ip_data['ip_address']}"
+    #         })
+        
+    #     # Anomaly 2: Unauthorized access to admin endpoints (adapted from Prac 2)
+    #     unauthorized_admin_access = recent_logs.filter(
+    #         endpoint__contains='/admin/',
+    #         status_code=403,
+    #         user__isnull=False
+    #     ).exclude(user__admin_rights=True)
+        
+    #     if unauthorized_admin_access.exists():
+    #         user_attempts = unauthorized_admin_access.values('user__username').annotate(
+    #             attempt_count=Count('id')
+    #         )
+            
+    #         for user_data in user_attempts:
+    #             anomalies.append({
+    #                 'type': 'Unauthorized Admin Access Attempt',
+    #                 'description': f"Non-admin user {user_data['user__username']} attempted to access admin panel {user_data['attempt_count']} times",
+    #                 'severity': 'Critical',
+    #                 'timestamp': timezone.now(),
+    #                 'affected_resource': f"Admin Panel - User: {user_data['user__username']}"
+    #             })
+        
+    #     # Anomaly 3: High volume admin activity from single user (from Prac 2)
+    #     high_activity_admins = recent_logs.filter(
+    #         endpoint__contains='/admin/',
+    #         user__isnull=False,
+    #         user__admin_rights=True
+    #     ).values('user__username').annotate(
+    #         request_count=Count('id')
+    #     ).filter(request_count__gte=100)  # 100+ requests in 24 hours
+        
+    #     for user_data in high_activity_admins:
+    #         anomalies.append({
+    #             'type': 'High Admin Activity Volume',
+    #             'description': f"Admin user {user_data['user__username']} made {user_data['request_count']} admin requests in 24h",
+    #             'severity': 'Medium',
+    #             'timestamp': timezone.now(),
+    #             'affected_resource': f"Admin Panel - User: {user_data['user__username']}"
+    #         })
+        
+    #     # Anomaly 4: Unusual access patterns to confidential endpoints (adapted from Prac 2)
+    #     confidential_access = recent_logs.filter(
+    #         Q(endpoint__contains='/verifications/') |
+    #         Q(endpoint__contains='/users/') |
+    #         Q(endpoint__contains='/logs/')
+    #     ).values('user__username', 'ip_address').annotate(
+    #         access_count=Count('id')
+    #     ).filter(access_count__gte=20)  # 20+ access to sensitive endpoints
+        
+    #     for access_data in confidential_access:
+    #         anomalies.append({
+    #             'type': 'Excessive Confidential Data Access',
+    #             'description': f"User {access_data['user__username']} from IP {access_data['ip_address']} accessed sensitive endpoints {access_data['access_count']} times",
+    #             'severity': 'High',
+    #             'timestamp': timezone.now(),
+    #             'affected_resource': f"Confidential Endpoints - User: {access_data['user__username']}"
+    #         })
+        
+    #     # Anomaly 5: Multiple failed verification attempts (new - specific to Save n Bite)
+    #     failed_verifications = recent_logs.filter(
+    #         endpoint__contains='/verifications/',
+    #         status_code__in=[400, 403, 404]
+    #     ).values('user__username').annotate(
+    #         failed_count=Count('id')
+    #     ).filter(failed_count__gte=5)
+        
+    #     for verification_data in failed_verifications:
+    #         anomalies.append({
+    #             'type': 'Multiple Failed Verification Attempts',
+    #             'description': f"User {verification_data['user__username']} had {verification_data['failed_count']} failed verification attempts",
+    #             'severity': 'Medium',
+    #             'timestamp': timezone.now(),
+    #             'affected_resource': f"Verification System - User: {verification_data['user__username']}"
+    #         })
+        
+    #     # Anomaly 6: Rapid user account creation from same IP (adapted from Prac 2)
+    #     rapid_registrations = recent_logs.filter(
+    #         endpoint__contains='/auth/register/',
+    #         status_code=201
+    #     ).values('ip_address').annotate(
+    #         registration_count=Count('id')
+    #     ).filter(registration_count__gte=3)  # 3+ registrations from same IP
+        
+    #     for reg_data in rapid_registrations:
+    #         anomalies.append({
+    #             'type': 'Rapid Account Creation',
+    #             'description': f"IP {reg_data['ip_address']} created {reg_data['registration_count']} accounts in 24h",
+    #             'severity': 'Medium',
+    #             'timestamp': timezone.now(),
+    #             'affected_resource': f"Registration System - IP: {reg_data['ip_address']}"
+    #         })
+        
+    #     # Anomaly 7: Access during unusual hours (adapted from Prac 2)
+    #     from django.utils import timezone as tz
+    #     current_hour = tz.now().hour
+    #     if current_hour < 6 or current_hour > 22:  # Between 10 PM and 6 AM
+    #         unusual_hour_access = recent_logs.filter(
+    #             timestamp__hour__in=range(22, 24) + range(0, 6),
+    #             endpoint__contains='/admin/'
+    #         ).values('user__username').annotate(
+    #             night_access_count=Count('id')
+    #         ).filter(night_access_count__gte=5)
+            
+    #         for user_data in unusual_hour_access:
+    #             anomalies.append({
+    #                 'type': 'Unusual Hour Admin Access',
+    #                 'description': f"User {user_data['user__username']} accessed admin panel {user_data['night_access_count']} times during unusual hours (10 PM - 6 AM)",
+    #                 'severity': 'Low',
+    #                 'timestamp': timezone.now(),
+    #                 'affected_resource': f"Admin Panel - User: {user_data['user__username']}"
+    #             })
+        
+    #     # Anomaly 8: Geographical anomaly detection (if IP geolocation available)
+    #     # This would require additional IP geolocation service, simplified version:
+    #     different_country_access = recent_logs.filter(
+    #         user__isnull=False
+    #     ).values('user__username').annotate(
+    #         ip_count=Count('ip_address', distinct=True)
+    #     ).filter(ip_count__gte=3)  # Same user from 3+ different IPs
+        
+    #     for user_data in different_country_access:
+    #         anomalies.append({
+    #             'type': 'Multiple IP Access Pattern',
+    #             'description': f"User {user_data['user__username']} accessed system from {user_data['ip_count']} different IP addresses",
+    #             'severity': 'Medium',
+    #             'timestamp': timezone.now(),
+    #             'affected_resource': f"User Account - {user_data['user__username']}"
+    #         })
+
+    #     try:
+    #         AnomalyDetectionService.send_critical_anomaly_notifications(anomalies)
+    #     except Exception as e:
+    #         logger.error(f"Failed to send anomaly notifications: {e}")
+        
+    #     return anomalies
     
     @staticmethod
     def create_anomaly_alert(anomaly):
-        """Create system log alert for detected anomaly (from Prac 2)"""
+        """Create system log alert for detected anomaly """
         from .models import SystemLogEntry
         
         SystemLogEntry.objects.create(
@@ -1276,92 +1428,92 @@ class AnomalyDetectionService:
 
     # admin_system/services.py - Fix the context data being passed
 
-    @staticmethod
-    def _send_critical_log_email_notification(log_entry):
-        """Send email notification for critical system logs to all admin users"""
-        try:
-            from notifications.services import NotificationService
-            from django.contrib.auth import get_user_model
-            from django.conf import settings
+    # @staticmethod
+    # def _send_critical_log_email_notification(log_entry):
+    #     """Send email notification for critical system logs to all admin users"""
+    #     try:
+    #         from notifications.services import NotificationService
+    #         from django.contrib.auth import get_user_model
+    #         from django.conf import settings
             
-            User = get_user_model()
+    #         User = get_user_model()
             
-            # Get all admin users
-            admin_users = User.objects.filter(
-                admin_rights=True,
-                is_active=True,
-                email__isnull=False
-            ).exclude(email='')
+    #         # Get all admin users
+    #         admin_users = User.objects.filter(
+    #             admin_rights=True,
+    #             is_active=True,
+    #             email__isnull=False
+    #         ).exclude(email='')
             
-            if not admin_users.exists():
-                logger.warning("No admin users found to send system log notifications")
-                return
+    #         if not admin_users.exists():
+    #             logger.warning("No admin users found to send system log notifications")
+    #             return
             
-            # Prepare email context
-            admin_panel_url = f"{getattr(settings, 'FRONTEND_URL', 'http://localhost:3000')}/admin/system-logs"
+    #         # Prepare email context
+    #         admin_panel_url = f"{getattr(settings, 'FRONTEND_URL', 'http://localhost:3000')}/admin/system-logs"
             
-            for admin_user in admin_users:
-                try:
-                    # Create in-app notification
-                    notification = NotificationService.create_notification(
-                        recipient=admin_user,
-                        notification_type='system_announcement',
-                        title=f"System Alert: {log_entry.severity.upper()} - {log_entry.title}",
-                        message=f"A {log_entry.severity} system issue has been detected: {log_entry.description}",
-                        data={
-                            'log_entry_id': str(log_entry.id),
-                            'severity': log_entry.severity,
-                            'category': log_entry.category,
-                            'log_title': log_entry.title,
-                            'admin_panel_url': admin_panel_url
-                        }
-                    )
+    #         for admin_user in admin_users:
+    #             try:
+    #                 # Create in-app notification
+    #                 notification = NotificationService.create_notification(
+    #                     recipient=admin_user,
+    #                     notification_type='system_announcement',
+    #                     title=f"System Alert: {log_entry.severity.upper()} - {log_entry.title}",
+    #                     message=f"A {log_entry.severity} system issue has been detected: {log_entry.description}",
+    #                     data={
+    #                         'log_entry_id': str(log_entry.id),
+    #                         'severity': log_entry.severity,
+    #                         'category': log_entry.category,
+    #                         'log_title': log_entry.title,
+    #                         'admin_panel_url': admin_panel_url
+    #                     }
+    #                 )
                     
-                    # Format error details for display
-                    error_details_formatted = None
-                    if log_entry.error_details:
-                        try:
-                            import json
-                            if isinstance(log_entry.error_details, dict):
-                                error_details_formatted = json.dumps(log_entry.error_details, indent=2)
-                            else:
-                                error_details_formatted = str(log_entry.error_details)
-                        except:
-                            error_details_formatted = str(log_entry.error_details)
+    #                 # Format error details for display
+    #                 error_details_formatted = None
+    #                 if log_entry.error_details:
+    #                     try:
+    #                         import json
+    #                         if isinstance(log_entry.error_details, dict):
+    #                             error_details_formatted = json.dumps(log_entry.error_details, indent=2)
+    #                         else:
+    #                             error_details_formatted = str(log_entry.error_details)
+    #                     except:
+    #                         error_details_formatted = str(log_entry.error_details)
                     
-                    # Prepare email context - FIXED with proper data
-                    email_context = {
-                        'admin_name': admin_user.get_full_name() or admin_user.username,
-                        'severity': log_entry.severity,
-                        'category': log_entry.category,
-                        'title': log_entry.title,
-                        'description': log_entry.description,
-                        'timestamp': log_entry.timestamp,
-                        'error_details': error_details_formatted,
-                        'admin_panel_url': admin_panel_url,
-                        'company_name': 'Save n Bite',
-                        'support_email': 'savenbite@gmail.com'
-                    }
+    #                 # Prepare email context - FIXED with proper data
+    #                 email_context = {
+    #                     'admin_name': admin_user.get_full_name() or admin_user.username,
+    #                     'severity': log_entry.severity,
+    #                     'category': log_entry.category,
+    #                     'title': log_entry.title,
+    #                     'description': log_entry.description,
+    #                     'timestamp': log_entry.timestamp,
+    #                     'error_details': error_details_formatted,
+    #                     'admin_panel_url': admin_panel_url,
+    #                     'company_name': 'Save n Bite',
+    #                     'support_email': 'savenbite@gmail.com'
+    #                 }
                     
-                    # Debug: Log the context being sent
-                    logger.info(f"Sending email with context: {email_context}")
+    #                 # Debug: Log the context being sent
+    #                 logger.info(f"Sending email with context: {email_context}")
                     
-                    # Send critical email (bypasses user preferences)
-                    email_sent = NotificationService.send_critical_email_notification(
-                        user=admin_user,
-                        subject=f"[{log_entry.severity.upper()}] Save n Bite System Alert - {log_entry.title}",
-                        template_name='system_log_alert',
-                        context=email_context,
-                        notification=notification
-                    )
+    #                 # Send critical email (bypasses user preferences)
+    #                 email_sent = NotificationService.send_critical_email_notification(
+    #                     user=admin_user,
+    #                     subject=f"[{log_entry.severity.upper()}] Save n Bite System Alert - {log_entry.title}",
+    #                     template_name='system_log_alert',
+    #                     context=email_context,
+    #                     notification=notification
+    #                 )
                     
-                    if email_sent:
-                        logger.info(f"System log alert email sent to admin {admin_user.email}")
-                    else:
-                        logger.error(f"Failed to send system log alert email to admin {admin_user.email}")
+    #                 if email_sent:
+    #                     logger.info(f"System log alert email sent to admin {admin_user.email}")
+    #                 else:
+    #                     logger.error(f"Failed to send system log alert email to admin {admin_user.email}")
                         
-                except Exception as e:
-                    logger.error(f"Failed to send system log notification to {admin_user.email}: {e}")
+    #             except Exception as e:
+    #                 logger.error(f"Failed to send system log notification to {admin_user.email}: {e}")
                     
-        except Exception as e:
-            logger.error(f"Error sending critical log email notifications: {e}")
+    #     except Exception as e:
+    #         logger.error(f"Error sending critical log email notifications: {e}")
