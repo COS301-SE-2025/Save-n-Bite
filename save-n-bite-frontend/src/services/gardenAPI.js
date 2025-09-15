@@ -1,6 +1,7 @@
 // src/services/gardenAPI.js
+// Fixed to properly handle API requests to Django backend
 
-const API_BASE_URL = 'http://localhost:5173';
+const API_BASE_URL = 'http://localhost:8000';
 
 class GardenAPI {
   constructor() {
@@ -20,16 +21,46 @@ class GardenAPI {
     };
 
     try {
-      const response = await fetch(`${this.baseURL}${endpoint}`, config);
+      const fullUrl = `${this.baseURL}${endpoint}`;
+      console.log('Making request to:', fullUrl); // Debug log
+      
+      const response = await fetch(fullUrl, config);
+      
+      console.log('Response status:', response.status); // Debug log
+      console.log('Response headers:', response.headers); // Debug log
       
       if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.error || errorData.detail || `HTTP ${response.status}`);
+        // Try to get error details
+        let errorData = {};
+        const contentType = response.headers.get('content-type');
+        
+        if (contentType && contentType.includes('application/json')) {
+          errorData = await response.json().catch(() => ({}));
+        } else {
+          // If it's not JSON (like HTML), it means we hit the wrong server
+          const textResponse = await response.text();
+          console.error('Non-JSON response received:', textResponse.substring(0, 200));
+          
+          if (textResponse.includes('<!DOCTYPE')) {
+            throw new Error(`API endpoint not found. Make sure Django backend is running on ${API_BASE_URL}`);
+          }
+        }
+        
+        throw new Error(errorData.error || errorData.detail || `HTTP ${response.status}: ${response.statusText}`);
       }
 
-      return await response.json();
+      const result = await response.json();
+      console.log('API Response:', result); // Debug log
+      return result;
+      
     } catch (error) {
       console.error('Garden API Error:', error);
+      
+      // Provide more helpful error messages
+      if (error.message.includes('fetch')) {
+        throw new Error(`Cannot connect to Django backend at ${API_BASE_URL}. Make sure it's running.`);
+      }
+      
       throw error;
     }
   }
@@ -114,6 +145,19 @@ class GardenAPI {
     return this.request('/debug/simulate-order/', {
       method: 'POST',
     });
+  }
+
+  // Health check method
+  async healthCheck() {
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/health/`, {
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' }
+      });
+      return response.ok;
+    } catch {
+      return false;
+    }
   }
 }
 
