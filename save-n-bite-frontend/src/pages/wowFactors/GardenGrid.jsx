@@ -1,5 +1,5 @@
 import React, { useState, useCallback } from 'react';
-import GardenTile from '../../../components/garden/GardenTile';
+import GardenTile from '../../components/garden/GardenTile';
 import './GardenGrid.css';
 
 const GardenGrid = ({ 

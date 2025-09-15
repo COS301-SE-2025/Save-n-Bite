@@ -5,6 +5,7 @@ import {
   XIcon,
   HelpCircleIcon,
   LogOutIcon,
+  TreePineIcon, // Garden icon - you can also use Sprout or Flower
 } from 'lucide-react';
 import logo from '../../assets/images/SnB_leaf_icon.png';
 import NotificationBell from './NotificationBell';
@@ -165,6 +166,20 @@ const CustomerNavBar = () => {
             >
               Browse Food Providers
             </Link>
+            
+            {/* NEW: Digital Garden Link */}
+            <Link
+              to="/garden"
+              className={`nav-link text-sm lg:text-base transition-colors duration-200 flex items-center gap-1 ${isActive('/garden')
+                  ? 'text-emerald-600 dark:text-emerald-500 font-medium'
+                  : 'text-gray-600 dark:text-gray-300 hover:text-emerald-600 dark:hover:text-emerald-500'
+                }`}
+            >
+              <TreePineIcon size={16} className="inline" />
+              <span className="hidden lg:inline">My Garden</span>
+              <span className="lg:hidden">Garden</span>
+            </Link>
+            
             <Link
               to="/cart"
               className={`nav-link text-sm lg:text-base transition-colors duration-200 ${isActive('/cart')
@@ -224,6 +239,19 @@ const CustomerNavBar = () => {
           {/* Mobile Navigation Icons */}
           <div className="md:hidden flex items-center space-x-3">
             <NotificationBell />
+            
+            {/* NEW: Mobile Garden Quick Access */}
+            <Link
+              to="/garden"
+              className={`touch-target transition-colors duration-200 ${isActive('/garden')
+                  ? 'text-emerald-600'
+                  : 'text-gray-500 hover:text-emerald-600'
+                }`}
+              aria-label="My Garden"
+            >
+              <TreePineIcon size={20} />
+            </Link>
+            
             <button
               onClick={() => setIsHelpOpen(true)}
               className="text-gray-500 hover:text-emerald-600 focus:outline-none touch-target transition-colors duration-200"
@@ -265,6 +293,7 @@ const CustomerNavBar = () => {
               >
                 Browse Food Providers
               </Link>
+            
               <Link
                 to="/cart"
                 className={`mobile-nav-link transition-colors duration-200 ${isActive('/cart')
@@ -285,6 +314,19 @@ const CustomerNavBar = () => {
               >
                 Order History
               </Link>
+
+                {/* NEW: Mobile Garden Link */}
+              <Link
+                to="/garden"
+                className={`mobile-nav-link flex items-center transition-colors duration-200 ${isActive('/garden')
+                    ? 'text-emerald-600 dark:text-emerald-500 font-medium'
+                    : 'dark:text-gray-300 dark:hover:text-emerald-500'
+                  }`}
+                onClick={() => setIsMenuOpen(false)}
+              >
+              My Digital Garden
+              </Link>
+              
               <Link
                 to="/profile"
                 className={`mobile-nav-link transition-colors duration-200 ${isActive('/profile')

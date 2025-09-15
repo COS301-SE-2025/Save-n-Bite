@@ -1,5 +1,5 @@
 import React from 'react';
-import PlantCard from '../../../components/garden/PlantCard';
+import PlantCard from '../../components/garden/PlantCard';
 import './PlantInventory.css';
 
 const PlantInventory = ({ 

@@ -1,10 +1,10 @@
 import React, { useState, useCallback } from 'react';
-import GardenGrid from './GardenGrid';
-import PlantInventory from './PlantInventory';
-import PlantDetails from './PlantDetails';
-import GardenStats from './GardenStats';
-import useDigitalGarden from './hooks/useDigitalGarden';
-import useGardenActions from './hooks/useGardenActions';
+import GardenGrid from '../GardenGrid';
+import PlantInventory from '../PlantInventory';
+import PlantDetails from '../PlantDetails';
+import GardenStats from '../GardenStats';
+import useDigitalGarden from '../hooks/useDigitalGarden';
+import useGardenActions from '../hooks/useGardenAction';
 import './DigitalGarden.css';
 
 const DigitalGarden = () => {

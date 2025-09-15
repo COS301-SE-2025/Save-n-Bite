@@ -1,4 +1,6 @@
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000';
+// src/services/gardenAPI.js
+
+const API_BASE_URL = 'http://localhost:5173';
 
 class GardenAPI {
   constructor() {
@@ -6,7 +8,7 @@ class GardenAPI {
   }
 
   async request(endpoint, options = {}) {
-    const token = localStorage.getItem('access_token');
+    const token = localStorage.getItem('access_token') || localStorage.getItem('authToken');
     
     const config = {
       headers: {

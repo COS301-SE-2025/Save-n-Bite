@@ -1,5 +1,5 @@
 import React from 'react';
-import Modal from '../../../components/ui/Modal';
+import Modal from '../../components/ui/Modal';
 import './PlantDetails.css';
 
 const PlantDetails = ({ plant, onClose }) => {

@@ -5,7 +5,6 @@ import { AuthProvider } from './context/AuthContext';
 import ProtectedRoute from './components/ProtectedRoutes';
 import { ThemeProvider } from "./context/ThemeContext";
 
-
 import { USER_TYPES } from './config/routes';
 
 // Import your components
@@ -29,12 +28,14 @@ import OrdersAndFeedback from './pages/foodProvider/OrdersAndFeedback';
 import PickupCoordination from './pages/foodProvider/PickupCoordination';
 import ManageDonations from './pages/foodProvider/Donations';
 import CustomerSettings from './pages/auth/CustomerSettings';
+
 //FoodProvider
 import FoodProvidersPage from './pages/auth/AllFoodproviders';
 import SpecificFoodProvider from './pages/auth/SpecificFoodProvider';
 import ProfilePage from './components/auth/Profile';
 import FoodproviderProfile from './pages/foodProvider/Profile'
 import FoodproviderSettings from './pages/foodProvider/Settings'
+
 //System Admin
 import Layout from './components/SystemAdmin/Layout/Layout'
 import AdminLogin from './pages/SystemAdmin/AdminLogin'
@@ -53,6 +54,8 @@ import EditProfilePage from './components/auth/EditProfile';
 
 import ForgotPassword from './pages/auth/ForgotPassword';
 
+// NEW: Digital Garden Import
+import DigitalGarden from './pages/wowFactors/digitalGarden/DigitalGarden';
 
 function App() {
   return (
@@ -96,6 +99,16 @@ function App() {
             element={
               <ProtectedRoute requiredRoles={[USER_TYPES.CUSTOMER, USER_TYPES.NGO]}>
                 <OrderHistory />
+              </ProtectedRoute>
+            } 
+          />
+
+          {/* NEW: Digital Garden Route - Customer Only (since only customers earn plants) */}
+          <Route 
+            path="/garden" 
+            element={
+              <ProtectedRoute requiredRoles={[USER_TYPES.CUSTOMER]}>
+                <DigitalGarden />
               </ProtectedRoute>
             } 
           />
@@ -144,8 +157,6 @@ function App() {
             } 
           />
 
-
-       
          <Route path="/edit-listing/:listingId" element={<EditListing />} />
           <Route path="/providers" element={<FoodProvidersPage />} />
            <Route path="/provider/:id" element={<SpecificFoodProvider />} />
@@ -155,10 +166,8 @@ function App() {
             <Route path="/settings" element={<FoodproviderSettings />} />
              <Route path="/customer-settings" element={<CustomerSettings />} />
 
-
               <Route path="/admin-login" element={<AdminLogin />} />
         <Route element={<Layout />}>
-
           <Route path="/admin-dashboard" element={<AdminDashboard />} />
           <Route path="/users" element={<Users />} />
           <Route path="/verifications" element={<Verifications />} />
@@ -171,7 +180,6 @@ function App() {
           <Route path="/system-logs" element={<SystemLogs />} />
            <Route path="/admin-settings" element={<AdminSettings />} />
         </Route>
-
 
           {/* Provider-only routes */}
           <Route 
@@ -239,10 +247,7 @@ function App() {
       </Router>
     </AuthProvider>
     </ThemeProvider>
- 
   );
 }
-
-
 
 export default App;
