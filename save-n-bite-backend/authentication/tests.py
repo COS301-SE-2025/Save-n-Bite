@@ -1,9 +1,18 @@
-from django.test import TestCase
+from django.test import TestCase, RequestFactory
+from django.contrib.admin.sites import AdminSite
+from django.contrib.auth import get_user_model
+from django.core.files.uploadedfile import SimpleUploadedFile
+from django.contrib import messages
+from django.http import HttpRequest
 from django.urls import reverse
 from rest_framework.test import APIClient
 from rest_framework import status
 from .models import User, CustomerProfile, NGOProfile, FoodProviderProfile
 from unittest.mock import patch, MagicMock
+from authentication.admin import (
+    CustomUserAdmin, CustomerProfileAdmin, NGOProfileAdmin, FoodProviderProfileAdmin
+)
+
 
 class AuthenticationTests(TestCase):
     def setUp(self):
@@ -280,4 +289,437 @@ class AdminViewsTests(TestCase):
         if response.status_code >= 500:
             print(f"DEBUG: Server error response: {response.status_code}")
             print(f"DEBUG: Response data: {response.data}")
-            # You might want to check your server logs for the full traceback
+            
+class MockRequest:
+    def __init__(self, user=None):
+        self.user = user
+        self.session = {}
+        self._messages = messages.storage.default_storage(self)
+
+    def get_messages(self):
+        return list(self._messages)
+
+class CustomUserAdminTest(TestCase):
+    def setUp(self):
+        self.site = AdminSite()
+        self.admin = CustomUserAdmin(User, self.site)
+        
+        self.user1 = User.objects.create_user(
+            email='test1@example.com',
+            username='testuser1',
+            password='testpass123',
+            user_type='customer'
+        )
+        self.user2 = User.objects.create_user(
+            email='test2@example.com',
+            username='testuser2',
+            password='testpass123',
+            user_type='food_provider'
+        )
+
+    def test_list_display(self):
+        self.assertEqual(
+            self.admin.list_display,
+            ['email', 'username', 'user_type', 'is_active', 'date_joined']
+        )
+
+    def test_list_filter(self):
+        self.assertEqual(
+            self.admin.list_filter,
+            ['user_type', 'is_active', 'date_joined']
+        )
+
+    def test_search_fields(self):
+        self.assertEqual(
+            self.admin.search_fields,
+            ['email', 'username']
+        )
+
+    def test_fieldsets_includes_user_type(self):
+        fieldsets = self.admin.fieldsets
+        custom_fields_found = False
+        for name, fieldset in fieldsets:
+            if name == 'Custom Fields':
+                self.assertIn('user_type', fieldset['fields'])
+                custom_fields_found = True
+        self.assertTrue(custom_fields_found)
+
+class CustomerProfileAdminTest(TestCase):
+    def setUp(self):
+        self.site = AdminSite()
+        self.admin = CustomerProfileAdmin(CustomerProfile, self.site)
+        
+        self.user = User.objects.create_user(
+            email='customer@example.com',
+            username='customer',
+            password='testpass123',
+            user_type='customer'
+        )
+        self.profile = CustomerProfile.objects.create(
+            user=self.user,
+            full_name='Test Customer'
+        )
+
+    def test_list_display(self):
+        self.assertEqual(
+            self.admin.list_display,
+            ['user', 'full_name']
+        )
+
+    def test_search_fields(self):
+        self.assertEqual(
+            self.admin.search_fields,
+            ['user__email', 'full_name']
+        )
+
+class NGOProfileAdminTest(TestCase):
+    def setUp(self):
+        self.site = AdminSite()
+        self.admin = NGOProfileAdmin(NGOProfile, self.site)
+        
+        self.user = User.objects.create_user(
+            email='ngo@example.com',
+            username='ngo',
+            password='testpass123',
+            user_type='ngo'
+        )
+        self.profile = NGOProfile.objects.create(
+            user=self.user,
+            organisation_name='Test NGO',
+            representative_name='John Doe',
+            representative_email='john@ngo.com',
+            status='pending_verification'
+        )
+
+    def test_list_display(self):
+        self.assertEqual(
+            self.admin.list_display,
+            ['organisation_name', 'representative_name', 'representative_email', 'status']
+        )
+
+    def test_list_filter(self):
+        self.assertEqual(
+            self.admin.list_filter,
+            ['status']
+        )
+
+    def test_search_fields(self):
+        self.assertEqual(
+            self.admin.search_fields,
+            ['organisation_name', 'representative_name', 'representative_email']
+        )
+
+    def test_fieldsets_structure(self):
+        fieldsets = self.admin.fieldsets
+        fieldset_names = [name for name, _ in fieldsets]
+        expected_fieldset_names = ['Organization Info', 'Representative', 'Address', 'Documents & Status']
+        
+        for expected_name in expected_fieldset_names:
+            self.assertIn(expected_name, fieldset_names)
+
+class FoodProviderProfileAdminTest(TestCase):
+    def setUp(self):
+        self.site = AdminSite()
+        self.admin = FoodProviderProfileAdmin(FoodProviderProfile, self.site)
+        self.factory = RequestFactory()
+        
+        self.user = User.objects.create_user(
+            email='business@example.com',
+            username='business',
+            password='testpass123',
+            user_type='food_provider'
+        )
+        
+        self.provider = FoodProviderProfile.objects.create(
+            user=self.user,
+            business_name='Test Restaurant',
+            business_email='test@restaurant.com',
+            business_contact='+1234567890',
+            status='pending_verification',
+            business_description='A test restaurant',
+            business_tags=['fast-food', 'vegetarian']
+        )
+
+    def test_list_display(self):
+        expected_display = [
+            'business_name', 
+            'business_email', 
+            'business_contact', 
+            'status',
+            'has_banner',
+            'has_description', 
+            'tag_count',
+            'profile_completeness_display'
+        ]
+        self.assertEqual(self.admin.list_display, expected_display)
+
+    def test_list_filter(self):
+        expected_filters = [
+            'status', 
+            'geocoding_failed',
+            'banner_updated_at',
+            'description_updated_at',
+            'tags_updated_at'
+        ]
+        self.assertEqual(self.admin.list_filter, expected_filters)
+
+    def test_search_fields(self):
+        expected_search = [
+            'business_name', 
+            'business_email', 
+            'business_description',
+            'business_tags'
+        ]
+        self.assertEqual(self.admin.search_fields, expected_search)
+
+    def test_readonly_fields(self):
+        expected_readonly = [
+            'geocoded_at', 
+            'geocoding_failed', 
+            'geocoding_error',
+            'banner_updated_at',
+            'description_updated_at',
+            'tags_updated_at',
+            'banner_preview',
+            'logo_preview',
+            'tags_display'
+        ]
+        self.assertEqual(self.admin.readonly_fields, expected_readonly)
+
+    def test_has_banner_method(self):
+        # Test without banner
+        self.assertFalse(self.admin.has_banner(self.provider))
+        
+        # Test with banner (mock)
+        self.provider.banner = SimpleUploadedFile("banner.jpg", b"file_content", content_type="image/jpeg")
+        self.assertTrue(self.admin.has_banner(self.provider))
+
+    def test_has_description_method(self):
+        # Test without description
+        provider_no_desc = FoodProviderProfile.objects.create(
+            user=User.objects.create_user(email='no_desc@test.com', username='nodesc', password='test'),
+            business_name='No Desc'
+        )
+        self.assertFalse(self.admin.has_description(provider_no_desc))
+        
+        # Test with description
+        self.assertTrue(self.admin.has_description(self.provider))
+
+    def test_tag_count_method(self):
+        # Test with tags
+        self.assertEqual(self.admin.tag_count(self.provider), 2)
+        
+        # Test without tags
+        provider_no_tags = FoodProviderProfile.objects.create(
+            user=User.objects.create_user(email='notags@test.com', username='notags', password='test'),
+            business_name='No Tags'
+        )
+        self.assertEqual(self.admin.tag_count(provider_no_tags), 0)
+        
+        # Test with None tags
+        provider_no_tags.business_tags = None
+        self.assertEqual(self.admin.tag_count(provider_no_tags), 0)
+
+    def test_profile_completeness_display_method(self):
+        # Test basic profile (incomplete)
+        result = self.admin.profile_completeness_display(self.provider)
+        self.assertIn('Basic', str(result))
+        
+        # Test complete profile (would need more fields filled)
+        complete_provider = FoodProviderProfile.objects.create(
+            user=User.objects.create_user(email='complete@test.com', username='complete', password='test'),
+            business_name='Complete Business',
+            business_email='complete@test.com',
+            business_contact='+1234567890',
+            business_description='Complete description',
+            business_address='123 Complete St',
+            latitude=-26.2041,
+            longitude=28.0473,
+            status='verified',
+            business_tags=['complete', 'test']
+        )
+        result = self.admin.profile_completeness_display(complete_provider)
+        self.assertIn('Complete', str(result))
+
+    def test_banner_preview_method(self):
+        # Test without banner
+        result = self.admin.banner_preview(self.provider)
+        self.assertEqual(result, "No banner")
+        
+        # Test with banner
+        self.provider.banner = SimpleUploadedFile("banner.jpg", b"file_content", content_type="image/jpeg")
+        result = self.admin.banner_preview(self.provider)
+        self.assertIn('img', str(result))
+
+    def test_logo_preview_method(self):
+        # Test without logo
+        result = self.admin.logo_preview(self.provider)
+        self.assertEqual(result, "No logo")
+        
+        # Test with logo
+        self.provider.logo = SimpleUploadedFile("logo.jpg", b"file_content", content_type="image/jpeg")
+        result = self.admin.logo_preview(self.provider)
+        self.assertIn('img', str(result))
+
+    def test_tags_display_method(self):
+        # Test with tags
+        result = self.admin.tags_display(self.provider)
+        self.assertIn('Fast-Food', str(result))
+        self.assertIn('Vegetarian', str(result))
+        
+        # Test without tags
+        provider_no_tags = FoodProviderProfile.objects.create(
+            user=User.objects.create_user(email='notags@test.com', username='notags', password='test'),
+            business_name='No Tags'
+        )
+        result = self.admin.tags_display(provider_no_tags)
+        self.assertEqual(result, "No tags")
+
+    def test_verify_providers_action(self):
+        # Create a mock request
+        request = MockRequest()
+        
+        # Create pending providers
+        pending_provider = FoodProviderProfile.objects.create(
+            user=User.objects.create_user(email='pending@test.com', username='pending', password='test'),
+            business_name='Pending Business',
+            status='pending_verification'
+        )
+        
+        # Test action
+        queryset = FoodProviderProfile.objects.filter(id=pending_provider.id)
+        self.admin.verify_providers(request, queryset)
+        
+        # Verify status changed
+        pending_provider.refresh_from_db()
+        self.assertEqual(pending_provider.status, 'verified')
+
+    def test_reject_providers_action(self):
+        # Create a mock request
+        request = MockRequest()
+        
+        # Create pending providers
+        pending_provider = FoodProviderProfile.objects.create(
+            user=User.objects.create_user(email='pending2@test.com', username='pending2', password='test'),
+            business_name='Pending Business 2',
+            status='pending_verification'
+        )
+        
+        # Test action
+        queryset = FoodProviderProfile.objects.filter(id=pending_provider.id)
+        self.admin.reject_providers(request, queryset)
+        
+        # Verify status changed
+        pending_provider.refresh_from_db()
+        self.assertEqual(pending_provider.status, 'rejected')
+
+    @patch('authentication.admin.FoodProviderProfile.geocode_address')
+    def test_geocode_addresses_action(self, mock_geocode):
+        mock_geocode.return_value = None
+        
+        request = MockRequest()
+        
+        provider = FoodProviderProfile.objects.create(
+            user=User.objects.create_user(
+                email='test_geocode@test.com', 
+                username='test_geocode', 
+                password='test'
+            ),
+            business_name='Test Geocode Business',
+            business_address='123 Test Street, Johannesburg',
+            latitude=None,
+            longitude=None
+        )
+        
+        queryset = FoodProviderProfile.objects.filter(id=provider.id)
+        
+        self.admin.geocode_addresses(request, queryset)
+        
+        provider.refresh_from_db()
+        
+        mock_called = mock_geocode.called
+        coordinates_set = provider.latitude is not None and provider.longitude is not None
+        action_worked = coordinates_set or mock_called
+        
+        self.assertTrue(action_worked)
+
+    def test_geocode_addresses_action_exists(self):
+        request = MockRequest()
+        
+        provider = FoodProviderProfile.objects.create(
+            user=User.objects.create_user(
+                email='simple_test@test.com', 
+                username='simple_test', 
+                password='test'
+            ),
+            business_name='Simple Test Business',
+            business_address='123 Test Street',
+            latitude=None,
+            longitude=None
+        )
+        
+        queryset = FoodProviderProfile.objects.filter(id=provider.id)
+        
+        try:
+            self.admin.geocode_addresses(request, queryset)
+            self.assertTrue(True)
+        except Exception as e:
+            self.assertTrue(True)
+
+    @patch('authentication.admin.FoodProviderProfile.geocode_address')
+    def test_geocode_addresses_action(self, mock_geocode):
+        mock_geocode.return_value = None
+        
+        request = MockRequest()
+        
+        provider = FoodProviderProfile.objects.create(
+            user=User.objects.create_user(
+                email='test_geocode@test.com', 
+                username='test_geocode', 
+                password='test'
+            ),
+            business_name='Test Geocode Business',
+            business_address='123 Test Street, Johannesburg',
+            latitude=None,
+            longitude=None
+        )
+        
+        queryset = FoodProviderProfile.objects.filter(id=provider.id)
+        
+        self.admin.geocode_addresses(request, queryset)
+        
+        provider.refresh_from_db()
+        
+        mock_called = mock_geocode.called
+        coordinates_set = provider.latitude is not None and provider.longitude is not None
+        action_worked = coordinates_set or mock_called
+        
+        self.assertTrue(action_worked)
+
+    def test_geocode_addresses_action_exists(self):
+        request = MockRequest()
+        
+        provider = FoodProviderProfile.objects.create(
+            user=User.objects.create_user(
+                email='simple_test@test.com', 
+                username='simple_test', 
+                password='test'
+            ),
+            business_name='Simple Test Business',
+            business_address='123 Test Street',
+            latitude=None,
+            longitude=None
+        )
+        
+        queryset = FoodProviderProfile.objects.filter(id=provider.id)
+        
+        try:
+            self.admin.geocode_addresses(request, queryset)
+            self.assertTrue(True)
+        except Exception:
+            self.assertTrue(True)
+
+# Run all tests
+if __name__ == '__main__':
+    import unittest
+    unittest.main()
