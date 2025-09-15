@@ -1,0 +1,78 @@
+.garden-tile {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  overflow: hidden;
+  transition: all 0.3s ease;
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  cursor: pointer;
+}
+
+.garden-tile:hover {
+  border-color: #62BD38;
+  box-shadow: 0 4px 12px rgba(98, 189, 56, 0.2);
+  transform: translateY(-2px);
+}
+
+.garden-tile.selected {
+  border-color: #1E64D5;
+  box-shadow: 0 0 0 3px rgba(30, 100, 213, 0.3);
+}
+
+.garden-tile.highlighted {
+  background: linear-gradient(135deg, #62BD38 0%, #4CAF50 100%);
+}
+
+.garden-tile.available-for-placement {
+  border-color: #4CAF50;
+  background: linear-gradient(135deg, #C8E6C9 0%, #A5D6A7 100%);
+  animation: pulse 2s infinite;
+}
+
+.garden-tile.selected-for-move {
+  border-color: #FF9800;
+  box-shadow: 0 0 0 3px rgba(255, 152, 0, 0.4);
+  background: linear-gradient(135deg, #FFE0B2 0%, #FFCC02 100%);
+}
+
+.garden-tile.available-for-move {
+  border-color: #2196F3;
+  background: linear-gradient(135deg, #E3F2FD 0%, #BBDEFB 100%);
+}
+
+.tile-plant {
+  width: 100%;
+  height: 100%;
+}
+
+.tile-coordinates {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  font-size: 10px;
+  color: #666;
+  background: rgba(255, 255, 255, 0.8);
+  padding: 1px 3px;
+  border-radius: 3px;
+  pointer-events: none;
+}
+
+@keyframes pulse {
+  0% { opacity: 1; }
+  50% { opacity: 0.7; }
+  100% { opacity: 1; }
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .garden-tile {
+    border-width: 0.5px;
+    border-radius: 4px;
+  }
+  
+  .tile-coordinates {
+    font-size: 8px;
+  }
+}

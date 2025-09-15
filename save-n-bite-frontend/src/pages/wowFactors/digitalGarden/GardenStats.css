@@ -1,0 +1,210 @@
+.garden-stats h3 {
+  margin: 0 0 20px 0;
+  color: #333;
+  font-size: 18px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.stats-loading {
+  text-align: center;
+  color: #666;
+  padding: 20px;
+}
+
+.stats-section {
+  margin-bottom: 25px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid #eee;
+}
+
+.stats-section:last-child {
+  border-bottom: none;
+  margin-bottom: 0;
+}
+
+.stats-section h4 {
+  margin: 0 0 15px 0;
+  font-size: 14px;
+  color: #666;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.stat-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+  border-bottom: 1px solid #f5f5f5;
+}
+
+.stat-item:last-child {
+  border-bottom: none;
+}
+
+.stat-label {
+  font-size: 14px;
+  color: #666;
+}
+
+.stat-value {
+  font-size: 14px;
+  font-weight: 600;
+  color: #333;
+}
+
+.milestone-item {
+  margin-bottom: 15px;
+  padding: 15px;
+  background: #f8f9fa;
+  border-radius: 10px;
+  border-left: 4px solid #62BD38;
+}
+
+.milestone-item:last-child {
+  margin-bottom: 0;
+}
+
+.milestone-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.milestone-type {
+  font-size: 11px;
+  font-weight: 700;
+  color: #62BD38;
+  letter-spacing: 0.5px;
+}
+
+.milestone-progress {
+  font-size: 12px;
+  font-weight: 600;
+  color: #333;
+}
+
+.progress-bar {
+  height: 6px;
+  background: #e0e0e0;
+  border-radius: 3px;
+  overflow: hidden;
+  margin-bottom: 8px;
+}
+
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #62BD38, #4CAF50);
+  border-radius: 3px;
+  transition: width 0.3s ease;
+}
+
+.milestone-description {
+  margin: 0;
+  font-size: 12px;
+  color: #666;
+  line-height: 1.4;
+}
+
+.achievement-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+  border-bottom: 1px solid #f5f5f5;
+}
+
+.achievement-item:last-child {
+  border-bottom: none;
+}
+
+.achievement-label {
+  font-size: 12px;
+  color: #666;
+  text-transform: capitalize;
+}
+
+.achievement-count {
+  font-size: 12px;
+  font-weight: 600;
+  color: #62BD38;
+  background: #e8f5e8;
+  padding: 3px 8px;
+  border-radius: 10px;
+}
+
+.completion-circle {
+  display: flex;
+  justify-content: center;
+  margin-top: 15px;
+}
+
+.circular-chart {
+  display: block;
+  margin: 10px auto;
+  max-width: 100px;
+  max-height: 100px;
+}
+
+.circle-bg {
+  fill: none;
+  stroke: #eee;
+  stroke-width: 3.8;
+}
+
+.circle {
+  fill: none;
+  stroke-width: 2.8;
+  stroke-linecap: round;
+  animation: progress 1s ease-out forwards;
+  stroke: #62BD38;
+}
+
+.percentage {
+  fill: #333;
+  font-family: sans-serif;
+  font-size: 0.5em;
+  font-weight: bold;
+  text-anchor: middle;
+}
+
+@keyframes progress {
+  0% {
+    stroke-dasharray: 0 100;
+  }
+}
+
+/* Responsive design */
+@media (max-width: 968px) {
+  .garden-stats {
+    max-height: none;
+  }
+}
+
+@media (max-width: 480px) {
+  .stats-section {
+    margin-bottom: 20px;
+    padding-bottom: 15px;
+  }
+  
+  .milestone-item {
+    padding: 12px;
+  }
+  
+  .stat-item {
+    padding: 6px 0;
+  }
+  
+  .stat-label,
+  .stat-value {
+    font-size: 13px;
+  }
+}

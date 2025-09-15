@@ -1,0 +1,137 @@
+.plant-inventory h3 {
+  margin: 0 0 20px 0;
+  color: #333;
+  font-size: 18px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.plant-inventory.empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.empty-inventory {
+  padding: 40px 20px;
+  color: #666;
+}
+
+.empty-icon {
+  font-size: 48px;
+  margin-bottom: 15px;
+}
+
+.empty-inventory p {
+  margin: 10px 0 5px;
+  font-weight: 600;
+  color: #333;
+}
+
+.empty-inventory small {
+  color: #999;
+  font-style: italic;
+}
+
+.inventory-instruction {
+  margin-bottom: 15px;
+  padding: 10px;
+  background: #e8f5e8;
+  border-radius: 8px;
+  border-left: 4px solid #62BD38;
+}
+
+.inventory-instruction p {
+  margin: 0;
+  font-size: 14px;
+  color: #2d5a2d;
+  font-weight: 500;
+}
+
+.inventory-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.inventory-summary {
+  padding: 15px;
+  background: #f8f9fa;
+  border-radius: 10px;
+  border-top: 3px solid #62BD38;
+}
+
+.rarity-counts {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.rarity-count {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 5px 10px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.rarity-count.common {
+  background: #e8f5e8;
+  color: #2d5a2d;
+}
+
+.rarity-count.uncommon {
+  background: #e3f2fd;
+  color: #1565c0;
+}
+
+.rarity-count.rare {
+  background: #f3e5f5;
+  color: #6a1b9a;
+}
+
+.rarity-count.epic {
+  background: #fff3e0;
+  color: #e65100;
+}
+
+.rarity-count.legendary {
+  background: #ffebee;
+  color: #c62828;
+}
+
+.rarity-name {
+  text-transform: capitalize;
+}
+
+.count {
+  background: white;
+  padding: 2px 6px;
+  border-radius: 10px;
+  min-width: 20px;
+  text-align: center;
+}
+
+/* Responsive design */
+@media (max-width: 968px) {
+  .inventory-grid {
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  }
+}
+
+@media (max-width: 480px) {
+  .inventory-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .rarity-counts {
+    grid-template-columns: repeat(2, 1fr);
+    display: grid;
+  }
+}
