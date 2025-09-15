@@ -7,8 +7,17 @@ from django.http import HttpRequest
 from django.urls import reverse
 from rest_framework.test import APIClient
 from rest_framework import status
+from rest_framework_simplejwt.exceptions import InvalidToken, AuthenticationFailed
+from rest_framework_simplejwt.tokens import AccessToken
+from django.utils import timezone
+from datetime import timedelta
+import json
+from unittest.mock import Mock
+
+from authentication.jwt_auth import CustomJWTAuthentication
 from .models import User, CustomerProfile, NGOProfile, FoodProviderProfile
 from unittest.mock import patch, MagicMock
+from authentication.middleware import PasswordChangeMiddleware
 from authentication.admin import (
     CustomUserAdmin, CustomerProfileAdmin, NGOProfileAdmin, FoodProviderProfileAdmin
 )
@@ -718,6 +727,428 @@ class FoodProviderProfileAdminTest(TestCase):
             self.assertTrue(True)
         except Exception:
             self.assertTrue(True)
+
+class CustomJWTAuthenticationTest(TestCase):
+    def setUp(self):
+        self.auth = CustomJWTAuthentication()
+        self.factory = RequestFactory()
+        
+        # Create test user
+        self.user = User.objects.create_user(
+            email='test@example.com',
+            username='testuser',
+            password='testpass123',
+            user_type='customer'
+        )
+        
+        # Create a valid token for the user
+        self.valid_token = AccessToken()
+        self.valid_token['user_id'] = str(self.user.UserID)
+        
+        # Create invalid token (no user_id claim)
+        self.invalid_token = AccessToken()
+        if 'user_id' in self.invalid_token.payload:
+            del self.invalid_token.payload['user_id']
+
+    def test_get_validated_token_valid(self):
+        """Test validating a valid token"""
+        raw_token = str(self.valid_token)
+        validated_token = self.auth.get_validated_token(raw_token)
+        self.assertIsNotNone(validated_token)
+        self.assertEqual(validated_token['user_id'], str(self.user.UserID))
+
+    @patch('authentication.jwt_auth.logger')
+    def test_get_validated_token_invalid(self, mock_logger):
+        """Test validating an invalid token"""
+        with self.assertRaises(InvalidToken):
+            self.auth.get_validated_token('invalid.token.here')
+        mock_logger.error.assert_called()
+
+    @patch('authentication.jwt_auth.logger')
+    def test_get_user_valid(self, mock_logger):
+        """Test getting user with valid token"""
+        user = self.auth.get_user(self.valid_token)
+        self.assertEqual(user, self.user)
+
+    @patch('authentication.jwt_auth.logger')
+    def test_get_user_no_user_id(self, mock_logger):
+        """Test getting user with token missing user_id claim"""
+        with self.assertRaises(InvalidToken):
+            self.auth.get_user(self.invalid_token)
+
+    @patch('authentication.jwt_auth.logger')
+    def test_get_user_not_found(self, mock_logger):
+        """Test getting user that doesn't exist"""
+        token = AccessToken()
+        token['user_id'] = 'non-existent-user-id'
+        
+        with self.assertRaises(AuthenticationFailed):
+            self.auth.get_user(token)
+        mock_logger.error.assert_called()
+
+    @patch('authentication.jwt_auth.logger')
+    def test_get_user_inactive(self, mock_logger):
+        """Test getting inactive user"""
+        self.user.is_active = False
+        self.user.save()
+        
+        with self.assertRaises(AuthenticationFailed):
+            self.auth.get_user(self.valid_token)
+        mock_logger.warning.assert_called()
+
+    def test_authenticate_valid(self):
+        """Test successful authentication"""
+        request = self.factory.get('/')
+        request.META['HTTP_AUTHORIZATION'] = f'Bearer {self.valid_token}'
+        
+        result = self.auth.authenticate(request)
+        self.assertIsNotNone(result)
+        user, token = result
+        self.assertEqual(user, self.user)
+
+    def test_authenticate_no_header(self):
+        """Test authentication with no authorization header"""
+        request = self.factory.get('/')
+        result = self.auth.authenticate(request)
+        self.assertIsNone(result)
+
+    def test_authenticate_invalid_header(self):
+        """Test authentication with invalid authorization header"""
+        request = self.factory.get('/')
+        request.META['HTTP_AUTHORIZATION'] = 'Invalid format'
+        result = self.auth.authenticate(request)
+        self.assertIsNone(result)
+
+    @patch('authentication.jwt_auth.logger')
+    def test_authenticate_invalid_token(self, mock_logger):
+        """Test authentication with invalid token"""
+        request = self.factory.get('/')
+        request.META['HTTP_AUTHORIZATION'] = 'Bearer invalid.token.here'
+        
+        result = self.auth.authenticate(request)
+        self.assertIsNone(result)
+        mock_logger.error.assert_called()
+
+    @patch('authentication.jwt_auth.logger')
+    def test_authenticate_user_not_found(self, mock_logger):
+        """Test authentication when user doesn't exist"""
+        token = AccessToken()
+        token['user_id'] = 'non-existent-user-id'
+        
+        request = self.factory.get('/')
+        request.META['HTTP_AUTHORIZATION'] = f'Bearer {token}'
+        
+        result = self.auth.authenticate(request)
+        self.assertIsNone(result)
+        mock_logger.error.assert_called()
+
+    def test_authenticate_different_token_types(self):
+        """Test authentication with different token formats"""
+        # Test with lowercase bearer
+        request = self.factory.get('/')
+        request.META['HTTP_AUTHORIZATION'] = f'bearer {self.valid_token}'
+        result = self.auth.authenticate(request)
+        self.assertIsNotNone(result)
+
+        # Test with mixed case
+        request.META['HTTP_AUTHORIZATION'] = f'BeArEr {self.valid_token}'
+        result = self.auth.authenticate(request)
+        self.assertIsNotNone(result)
+
+    @patch('authentication.jwt_auth.User.objects.get')
+    def test_get_user_uuid_conversion(self, mock_get):
+        """Test UserID conversion from UUID to string"""
+        mock_get.return_value = self.user
+        
+        # Create token with UUID user_id
+        token = AccessToken()
+        test_uuid = '12345678-1234-5678-1234-567812345678'
+        token['user_id'] = test_uuid
+        
+        user = self.auth.get_user(token)
+        
+        # Verify UserID was converted to string for lookup
+        mock_get.assert_called_with(UserID=test_uuid)
+        self.assertEqual(user, self.user)
+
+    @patch('authentication.jwt_auth.logger')
+    def test_get_user_unexpected_error(self, mock_logger):
+        """Test handling of unexpected errors during user lookup"""
+        with patch('authentication.jwt_auth.User.objects.get') as mock_get:
+            mock_get.side_effect = Exception('Database error')
+            
+            with self.assertRaises(AuthenticationFailed):
+                self.auth.get_user(self.valid_token)
+            
+            mock_logger.error.assert_called()
+
+    def test_authenticate_empty_token(self):
+        """Test authentication with empty token string"""
+        request = self.factory.get('/')
+        request.META['HTTP_AUTHORIZATION'] = 'Bearer '
+        
+        # This should raise AuthenticationFailed due to malformed header
+        with self.assertRaises(AuthenticationFailed):
+            self.auth.authenticate(request)
+
+    def test_authenticate_different_token_types(self):
+        """Test authentication with different token formats"""
+        # Test with standard Bearer format (should work)
+        request = self.factory.get('/')
+        request.META['HTTP_AUTHORIZATION'] = f'Bearer {self.valid_token}'
+        result = self.auth.authenticate(request)
+        print(f"Bearer format result: {result is not None}")
+        self.assertIsNotNone(result, "Standard Bearer format should work")
+        
+        # Test with multiple spaces (should work)
+        request = self.factory.get('/')
+        request.META['HTTP_AUTHORIZATION'] = f'Bearer   {self.valid_token}'
+        result = self.auth.authenticate(request)
+        print(f"Multiple spaces result: {result is not None}")
+        self.assertIsNotNone(result, "Multiple spaces should work")
+
+    def test_authenticate_lowercase_bearer(self):
+        """Test if lowercase bearer format is supported"""
+        request = self.factory.get('/')
+        request.META['HTTP_AUTHORIZATION'] = f'bearer {self.valid_token}'
+        result = self.auth.authenticate(request)
+        print(f"Lowercase bearer result: {result is not None}")
+
+        @patch('authentication.jwt_auth.logger')
+        def test_authenticate_invalid_formats(self, mock_logger):
+            """Test authentication with invalid token formats"""
+            request = self.factory.get('/')
+            
+            # Test with no space after Bearer (should fail)
+            request.META['HTTP_AUTHORIZATION'] = f'Bearer{self.valid_token}'
+            result = self.auth.authenticate(request)
+            self.assertIsNone(result)
+            
+            # Test with malformed token (should fail)
+            request.META['HTTP_AUTHORIZATION'] = 'Bearer not.a.valid.token'
+            result = self.auth.authenticate(request)
+            self.assertIsNone(result)
+
+    def test_authenticate_malformed_token(self):
+        """Test authentication with malformed token"""
+        request = self.factory.get('/')
+        request.META['HTTP_AUTHORIZATION'] = 'Bearer not.a.valid.token'
+        result = self.auth.authenticate(request)
+        # This should return None due to invalid token, not raise exception
+        self.assertIsNone(result)
+
+import json
+
+class PasswordChangeMiddlewareTest(TestCase):
+    def setUp(self):
+        self.factory = RequestFactory()
+        self.middleware = PasswordChangeMiddleware(self.get_mock_response)
+        
+        # Create test users
+        self.normal_user = User.objects.create_user(
+            email='normal@example.com',
+            username='normal',
+            password='normalpass123',
+            user_type='customer'
+        )
+        
+        self.temp_password_user = User.objects.create_user(
+            email='temp@example.com',
+            username='tempuser',
+            password='temppass123',
+            user_type='customer',
+            password_must_change=True,
+            has_temporary_password=True,
+            temp_password_created_at=timezone.now()
+        )
+        
+        self.expired_temp_user = User.objects.create_user(
+            email='expired@example.com',
+            username='expired',
+            password='expiredpass123',
+            user_type='customer',
+            password_must_change=True,
+            has_temporary_password=True,
+            temp_password_created_at=timezone.now() - timedelta(hours=25)  # Expired
+        )
+
+    def get_mock_response(self, request):
+        """Mock response function for the middleware"""
+        return {'status': 'success'}
+
+    def parse_json_response(self, response):
+        """Helper to parse JsonResponse content"""
+        return json.loads(response.content.decode('utf-8'))
+
+    def test_normal_user_no_restriction(self):
+        """Test that normal users can access any endpoint"""
+        request = self.factory.get('/api/some-endpoint')
+        request.user = self.normal_user
+        
+        response = self.middleware(request)
+        self.assertEqual(response, {'status': 'success'})
+
+    def test_temp_password_user_redirected(self):
+        """Test that users with temp passwords are redirected to change password"""
+        request = self.factory.get('/api/some-endpoint')
+        request.user = self.temp_password_user
+        
+        response = self.middleware(request)
+        self.assertEqual(response.status_code, 403)
+        response_data = self.parse_json_response(response)
+        self.assertEqual(response_data['error']['code'], 'PASSWORD_CHANGE_REQUIRED')
+
+    def test_temp_password_user_allowed_change_password(self):
+        """Test that users with temp passwords can access change password endpoint"""
+        request = self.factory.get('/api/auth/change-password')
+        request.user = self.temp_password_user
+        
+        response = self.middleware(request)
+        self.assertEqual(response, {'status': 'success'})
+
+    def test_temp_password_user_allowed_logout(self):
+        """Test that users with temp passwords can access logout endpoint"""
+        request = self.factory.get('/api/auth/logout')
+        request.user = self.temp_password_user
+        
+        response = self.middleware(request)
+        self.assertEqual(response, {'status': 'success'})
+
+    def test_expired_temp_password(self):
+        """Test that expired temp passwords return different error"""
+        request = self.factory.get('/api/some-endpoint')
+        request.user = self.expired_temp_user
+        
+        response = self.middleware(request)
+        self.assertEqual(response.status_code, 401)
+        response_data = self.parse_json_response(response)
+        self.assertEqual(response_data['error']['code'], 'PASSWORD_EXPIRED')
+
+    def test_expired_temp_password_allowed_change_password(self):
+        """Test that expired temp passwords can still access change password"""
+        request = self.factory.get('/api/auth/change-password')
+        request.user = self.expired_temp_user
+        
+        response = self.middleware(request)
+        self.assertEqual(response, {'status': 'success'})
+
+    def test_expired_temp_password_allowed_logout(self):
+        """Test that expired temp passwords can still access logout"""
+        request = self.factory.get('/api/auth/logout')
+        request.user = self.expired_temp_user
+        
+        response = self.middleware(request)
+        self.assertEqual(response, {'status': 'success'})
+
+    def test_unauthenticated_user(self):
+        """Test that unauthenticated users are not affected"""
+        request = self.factory.get('/api/some-endpoint')
+        request.user = Mock(is_authenticated=False)
+        
+        response = self.middleware(request)
+        self.assertEqual(response, {'status': 'success'})
+
+    def test_user_without_temp_password_created_at(self):
+        """Test user with temp password but no created_at timestamp"""
+        user = User.objects.create_user(
+            email='notimestamp@example.com',
+            username='notimestamp',
+            password='testpass123',
+            user_type='customer',
+            password_must_change=True,
+            has_temporary_password=True,
+            temp_password_created_at=None  # No timestamp
+        )
+        
+        request = self.factory.get('/api/some-endpoint')
+        request.user = user
+        
+        response = self.middleware(request)
+        self.assertEqual(response.status_code, 403)
+        response_data = self.parse_json_response(response)
+        self.assertEqual(response_data['error']['code'], 'PASSWORD_CHANGE_REQUIRED')
+
+    def test_different_request_methods(self):
+        """Test middleware with different HTTP methods"""
+        for method in ['get', 'post', 'put', 'patch', 'delete']:
+            with self.subTest(method=method):
+                request_factory_method = getattr(self.factory, method)
+                request = request_factory_method('/api/some-endpoint')
+                request.user = self.temp_password_user
+                
+                response = self.middleware(request)
+                self.assertEqual(response.status_code, 403)
+
+    def test_exact_url_matching(self):
+        """Test exact URL matching for excluded endpoints"""
+        excluded_urls = [
+            '/api/auth/change-password',
+            '/api/auth/change-password/',
+            '/api/auth/logout',
+            '/api/auth/logout/',
+        ]
+        
+        included_urls = [
+            '/api/auth/login',
+            '/api/auth/profile',
+            '/api/some-other-endpoint',
+        ]
+        
+        for url in excluded_urls:
+            with self.subTest(url=url):
+                request = self.factory.get(url)
+                request.user = self.temp_password_user
+                response = self.middleware(request)
+                self.assertEqual(response, {'status': 'success'})
+        
+        for url in included_urls:
+            with self.subTest(url=url):
+                request = self.factory.get(url)
+                request.user = self.temp_password_user
+                response = self.middleware(request)
+                self.assertEqual(response.status_code, 403)
+
+    def test_edge_case_24_hours_exact(self):
+        """Test edge case where password is exactly 24 hours old"""
+        user = User.objects.create_user(
+            email='edgecase@example.com',
+            username='edgecase',
+            password='testpass123',
+            user_type='customer',
+            password_must_change=True,
+            has_temporary_password=True,
+            temp_password_created_at=timezone.now() - timedelta(hours=24, seconds=1)  # 24h + 1s to ensure expiration
+        )
+        
+        request = self.factory.get('/api/some-endpoint')
+        request.user = user
+        
+        response = self.middleware(request)
+        # 24 hours and 1 second should be expired
+        self.assertEqual(response.status_code, 401)
+        response_data = self.parse_json_response(response)
+        self.assertEqual(response_data['error']['code'], 'PASSWORD_EXPIRED')
+
+    def test_edge_case_23_hours_59_minutes(self):
+        """Test edge case where password is almost 24 hours old"""
+        user = User.objects.create_user(
+            email='edgecase2@example.com',
+            username='edgecase2',
+            password='testpass123',
+            user_type='customer',
+            password_must_change=True,
+            has_temporary_password=True,
+            temp_password_created_at=timezone.now() - timedelta(hours=23, minutes=59, seconds=59)
+        )
+        
+        request = self.factory.get('/api/some-endpoint')
+        request.user = user
+        
+        response = self.middleware(request)
+        # Less than 24 hours should require password change but not be expired
+        self.assertEqual(response.status_code, 403)
+        response_data = self.parse_json_response(response)
+        self.assertEqual(response_data['error']['code'], 'PASSWORD_CHANGE_REQUIRED')
 
 # Run all tests
 if __name__ == '__main__':
