@@ -1136,3 +1136,74 @@ class NotificationService:
                 email_log.error_message = str(e)
                 email_log.save()
             return False
+        
+    @staticmethod
+    def send_order_ready_notification(scheduled_pickup):
+        """Send notification when order is verified and ready for pickup"""
+        try:
+            customer = scheduled_pickup.order.interaction.user
+            business = scheduled_pickup.location.business
+            
+            # Create in-app notification
+            title = "Order Ready for Pickup!"
+            message = f"Great news! Your order for '{scheduled_pickup.food_listing.name}' from {business.business_name} is now ready for collection. Please visit {scheduled_pickup.location.name} during business hours to collect your order."
+            
+            notification = NotificationService.create_notification(
+                recipient=customer,
+                notification_type='order_preparation',  # Reusing existing type for consistency
+                title=title,
+                message=message,
+                sender=business.user,
+                business=business,
+                data={
+                    'pickup_id': str(scheduled_pickup.id),
+                    'confirmation_code': scheduled_pickup.confirmation_code,
+                    'food_listing_id': str(scheduled_pickup.food_listing.id),
+                    'food_listing_name': scheduled_pickup.food_listing.name,
+                    'business_name': business.business_name,
+                    'location_name': scheduled_pickup.location.name,
+                    'location_address': scheduled_pickup.location.address,
+                    'status': 'ready_for_pickup',
+                    'verified_at': timezone.now().isoformat()
+                }
+            )
+
+            # Check if user wants email notifications
+            preferences, _ = NotificationPreferences.objects.get_or_create(user=customer)
+            if preferences.email_notifications:
+                # Calculate total quantity from interaction items
+                total_quantity = sum(item.quantity for item in scheduled_pickup.order.interaction.items.all())
+                
+                # Send email notification
+                email_context = {
+                    'customer_name': NotificationService._get_user_display_name(customer),
+                    'business_name': business.business_name,
+                    'food_listing_name': scheduled_pickup.food_listing.name,
+                    'food_listing_description': scheduled_pickup.food_listing.description,
+                    'confirmation_code': scheduled_pickup.confirmation_code,
+                    'total_quantity': total_quantity,
+                    'location_name': scheduled_pickup.location.name,
+                    'location_address': scheduled_pickup.location.address,
+                    'location_instructions': scheduled_pickup.location.instructions,
+                    'contact_person': scheduled_pickup.location.contact_person,
+                    'contact_phone': scheduled_pickup.location.contact_phone,
+                    'customer_notes': scheduled_pickup.customer_notes,
+                    'business_logo': business.logo.url if business.logo else None,
+                    'verification_time': timezone.now().strftime('%B %d, %Y at %I:%M %p'),
+                }
+                
+                NotificationService.send_email_notification(
+                    user=customer,
+                    subject=f"Order Ready for Pickup - {business.business_name}",
+                    template_name='order_ready',
+                    context=email_context,
+                    notification=notification
+                )
+
+            logger.info(f"Sent order ready notification to {customer.email} for pickup {scheduled_pickup.confirmation_code}")
+            return notification
+
+        except Exception as e:
+            logger.error(f"Failed to send order ready notification for pickup {scheduled_pickup.id}: {str(e)}")
+            # Don't re-raise the exception to avoid breaking the verification process
+            return None

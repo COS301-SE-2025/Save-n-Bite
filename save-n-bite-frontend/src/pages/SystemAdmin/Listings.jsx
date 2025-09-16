@@ -79,16 +79,20 @@ const getListings = async () => {
   }
 
 
-  const filteredListings = listings.filter((listing) => {
-    const matchesSearch =
-      listing.name.toLowerCase().includes(search.toLowerCase()) ||
-      listing.provider.toLowerCase().includes(search.toLowerCase()) ||
-      listing.id.toLowerCase().includes(search.toLowerCase())
-    const matchesType = typeFilter === 'All' || listing.type === typeFilter
-    const matchesStatus =
-      statusFilter === 'All' || listing.status === statusFilter
-    return matchesSearch && matchesType && matchesStatus
-  })
+const filteredListings = listings.filter((listing) => {
+  const matchesSearch =
+    (listing.name?.toLowerCase() || '').includes(search.toLowerCase()) ||
+    (listing.provider?.toLowerCase() || '').includes(search.toLowerCase()) ||
+    (listing.id?.toLowerCase() || '').includes(search.toLowerCase())
+  
+  const matchesType = typeFilter === 'All' || listing.type === typeFilter
+  
+  // Make sure this matches the backend status values exactly
+  const matchesStatus =
+    statusFilter === 'All' || listing.status === statusFilter
+  
+  return matchesSearch && matchesType && matchesStatus
+})
 
   const handleViewListing = (listing) => {
     setSelectedListing(listing)

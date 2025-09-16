@@ -1102,3 +1102,99 @@ def pickup_locations_public(request, business_id):
                 'message': 'Business not found'
             }
         }, status=status.HTTP_404_NOT_FOUND)
+    
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def verify_pickup_code(request):
+    """Verify pickup confirmation code"""
+    if request.user.user_type != 'provider':
+        return Response({
+            'error': {
+                'code': 'FORBIDDEN',
+                'message': 'Only food providers can verify pickup codes'
+            }
+        }, status=status.HTTP_403_FORBIDDEN)
+
+    business = request.user.provider_profile
+    serializer = PickupVerificationSerializer(
+        data=request.data,
+        context={'business': business}
+    )
+    
+    if serializer.is_valid():
+        try:
+            pickup = PickupSchedulingService.verify_pickup_code(
+                serializer.validated_data['confirmation_code'],
+                business
+            )
+            
+            # NEW: Send order ready notification
+            try:
+                from notifications.services import NotificationService
+                NotificationService.send_order_ready_notification(pickup)
+                logger.info(f"Order ready notification sent for pickup {pickup.confirmation_code}")
+            except Exception as e:
+                logger.error(f"Failed to send order ready notification: {str(e)}")
+                # Don't fail the verification if notification fails
+            
+            # Create manual response to avoid serializer issues
+            user = pickup.order.interaction.user
+            customer_profile = getattr(user, 'customer_profile', None)
+            
+            pickup_data = {
+                'id': str(pickup.id),
+                'order': str(pickup.order.id),
+                'food_listing': {
+                    'id': str(pickup.food_listing.id),
+                    'name': pickup.food_listing.name,
+                    'description': pickup.food_listing.description,
+                    'quantity': sum(item.quantity for item in pickup.order.interaction.items.all()),
+                    'pickup_window': pickup.food_listing.pickup_window
+                },
+                'location': {
+                    'id': str(pickup.location.id),
+                    'name': pickup.location.name,
+                    'address': pickup.location.address,
+                    'instructions': pickup.location.instructions,
+                    'contact_person': pickup.location.contact_person,
+                    'contact_phone': pickup.location.contact_phone
+                },
+                'scheduled_date': pickup.scheduled_date,
+                'scheduled_start_time': pickup.scheduled_start_time,
+                'scheduled_end_time': pickup.scheduled_end_time,
+                'status': pickup.status,
+                'confirmation_code': pickup.confirmation_code,
+                'customer': {
+                    'id': str(user.id),
+                    'full_name': customer_profile.full_name if customer_profile else '',
+                    'email': user.email,
+                    'phone': user.phone_number if hasattr(user, 'phone_number') else ''
+                },
+                'customer_notes': pickup.customer_notes,
+                'business_notes': pickup.business_notes,
+                'is_upcoming': pickup.is_upcoming,
+                'is_today': pickup.is_today,
+                'created_at': pickup.created_at,
+                'updated_at': pickup.updated_at
+            }
+            
+            return Response({
+                'message': 'Pickup verified successfully and customer notified',
+                'pickup': pickup_data
+            }, status=status.HTTP_200_OK)
+            
+        except Exception as e:
+            return Response({
+                'error': {
+                    'code': 'VERIFICATION_ERROR',
+                    'message': str(e)
+                }
+            }, status=status.HTTP_400_BAD_REQUEST)
+    
+    return Response({
+        'error': {
+            'code': 'VALIDATION_ERROR',
+            'message': 'Invalid verification data',
+            'details': serializer.errors
+        }
+    }, status=status.HTTP_400_BAD_REQUEST)
