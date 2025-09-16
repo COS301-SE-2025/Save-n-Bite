@@ -195,22 +195,26 @@ const FoodCard = ({ item }) => {
           </p>
           
           {/* Price section - make it the most dominant visually */}
-          <div className="mb-4">
-            {item.type === 'Discount' ? (
-              <div className="space-y-1">
-                <div className="text-2xl font-extrabold text-gray-900 dark:text-white">
-                  R{item.discountPrice.toFixed(2)}
-                </div>
-                <div className="text-sm text-gray-400 line-through">
-                  R{item.originalPrice.toFixed(2)}
-                </div>
-              </div>
-            ) : (
-              <div className="text-2xl font-extrabold text-emerald-600 dark:text-emerald-400">
-                Free
-              </div>
-            )}
-          </div>
+<div className="mb-4">
+  {item.type === 'Discount' ? (
+    <div className="flex items-baseline gap-2">
+      {/* Discounted Price (big & bold) */}
+      <div className="text-2xl font-extrabold text-gray-900 dark:text-white">
+        R{item.discountPrice.toFixed(2)}
+      </div>
+
+      {/* Original Price (smaller, strikethrough) */}
+      <div className="text-sm text-gray-400 line-through">
+        R{item.originalPrice.toFixed(2)}
+      </div>
+    </div>
+  ) : (
+    <div className="text-2xl font-extrabold text-emerald-600 dark:text-emerald-400">
+      Free
+    </div>
+  )}
+</div>
+
           
           {/* Footer */}
           <div className="pt-4 border-t border-gray-100 dark:border-gray-700">
