@@ -1,5 +1,5 @@
-// src/pages/auth/Login.js - Updated to work with AuthContext
-import React, { useState } from 'react';
+// src/pages/auth/Login.jsx - Updated with premium design
+import React, { useState, useEffect } from 'react';
 import { authAPI } from '../../services/authAPI';
 import ForgotPassword from '../../services/ForgotPasswordAPI';
 import { useNavigate, Link, useLocation } from 'react-router-dom';
@@ -7,17 +7,52 @@ import LoginForm from '../../components/auth/LoginForm';
 import logo from '../../assets/images/SnB_leaf_icon.png';
 import { useNotifications } from '../../services/contexts/NotificationContext';
 import { useAuth } from '../../context/AuthContext';
+import { motion } from 'framer-motion';
+
+// Animated background elements
+const Blob = ({ className }) => (
+  <motion.div
+    className={`absolute rounded-full opacity-20 filter blur-3xl ${className}`}
+    animate={{
+      scale: [1, 1.1, 1],
+      x: [0, 15, 0],
+      y: [0, 10, 0],
+    }}
+    transition={{
+      duration: 20,
+      repeat: Infinity,
+      repeatType: 'reverse',
+      ease: 'easeInOut',
+    }}
+  />
+);
+
+const AnimatedCircle = ({ className }) => (
+  <motion.div
+    className={`absolute rounded-full border-2 border-emerald-200/30 ${className}`}
+    animate={{
+      scale: [1, 1.05, 1],
+      rotate: [0, 5, 0],
+    }}
+    transition={{
+      duration: 15,
+      repeat: Infinity,
+      repeatType: 'reverse',
+      ease: 'easeInOut',
+    }}
+  />
+);
 
 const Login = () => {
   const [message, setMessage] = useState('');
-  const [messageType, setMessageType] = useState(''); // 'success' or 'error'
+  const [messageType, setMessageType] = useState('');
   const [showPopup, setShowPopup] = useState(false);
   const [unreadCountSnapshot, setUnreadCountSnapshot] = useState(0);
-  const [currentEmail, setCurrentEmail] = useState(''); // Track email from LoginForm
+  const [currentEmail, setCurrentEmail] = useState('');
   const navigate = useNavigate();
   const location = useLocation();
   const { fetchUnreadCount, unreadCount } = useNotifications();
-  const { updateUser } = useAuth(); // Add this to sync with AuthContext
+  const { updateUser } = useAuth();
 
   // Get the path user was trying to access before being redirected to login
   const from = location.state?.from?.pathname || '/';
@@ -148,77 +183,103 @@ const Login = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-2 sm:px-4 py-8 sm:py-12 bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
-      {/* Notification Popup (top right) */}
+    <div className="min-h-screen flex items-center justify-center px-4 py-12 bg-gray-50 dark:bg-gray-900 transition-colors duration-300 relative overflow-hidden">
+      {/* Animated Background Elements */}
+      <Blob className="w-64 h-64 bg-emerald-400 -top-32 -left-32" />
+      <Blob className="w-96 h-96 bg-blue-400 -bottom-48 -right-48" />
+      <AnimatedCircle className="w-32 h-32 top-1/4 right-1/4" />
+      <AnimatedCircle className="w-64 h-64 bottom-1/4 left-1/4" />
+
+      {/* Notification Popup */}
       {showPopup && unreadCountSnapshot > 0 && (
-        <div className="fixed top-4 sm:top-5 right-4 sm:right-5 bg-emerald-500 text-white px-3 sm:px-4 py-2 rounded shadow-lg z-50 animate-fade-in-out text-sm">
+        <motion.div 
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="fixed top-5 right-5 bg-emerald-600 text-white px-4 py-2 rounded-lg shadow-lg z-50 text-sm font-medium"
+        >
           You have {unreadCountSnapshot} unread notification
           {unreadCountSnapshot > 1 ? 's' : ''}!
-        </div>
+        </motion.div>
       )}
-      <div className="max-w-6xl w-full bg-white dark:bg-gray-800 rounded-lg shadow-sm overflow-hidden transition-colors duration-300">
+
+      <motion.div 
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+        className="w-full max-w-6xl bg-white dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden backdrop-blur-sm bg-opacity-90 dark:bg-opacity-90 z-10"
+      >
         <div className="flex flex-col lg:flex-row">
           {/* Left Side - Branding */}
-          <div className="lg:w-1/2 text-white p-6 sm:p-8 lg:p-12 flex flex-col justify-between relative bg-emerald-700">
+          <div className="lg:w-1/2 p-8 md:p-12 flex flex-col justify-between relative bg-gradient-to-br from-emerald-700 to-emerald-600">
             <div className="flex flex-col items-center text-center">
               {/* Logo */}
-              <div className="mb-6 sm:mb-8">
+              <motion.div 
+                initial={{ scale: 0.9, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                transition={{ delay: 0.2, duration: 0.5 }}
+                className="mb-8"
+              >
                 <img
                   src={logo}
                   alt="Save n Bite Logo"
-                  className="w-16 h-16 sm:w-20 sm:h-20 lg:w-24 lg:h-24 object-contain"
-                  style={{ filter: 'drop-shadow(0 0 2px #0003)' }}
+                  className="w-45 h-45 object-contain drop-shadow-lg"
                 />
-              </div>
+              </motion.div>
 
               {/* Welcome Text */}
-              <h1
-                className="text-white mb-3 sm:mb-4 text-responsive-xl"
-                style={{
-                  fontFamily: 'Inter, sans-serif',
-                  fontWeight: 'bold',
-                  lineHeight: '1.2',
-                }}
+              <motion.h1
+                initial={{ y: 20, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                transition={{ delay: 0.3, duration: 0.5 }}
+                className="text-white mb-4 text-4xl md:text-5xl font-bold leading-tight"
               >
                 Welcome Back To
-                <br />
-                Save n Bite
-              </h1>
+                <span className="block mt-2 text-emerald-100">Save n Bite</span>
+              </motion.h1>
 
               {/* Subtitle */}
-              <p className="text-white text-base sm:text-lg opacity-90 max-w-sm">
-                Login to continue your journey with us.
-              </p>
+              <motion.p 
+                initial={{ y: 20, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                transition={{ delay: 0.4, duration: 0.5 }}
+                className="text-emerald-100 text-lg md:text-xl max-w-md"
+              >
+                Login to continue your journey with us and help reduce food waste.
+              </motion.p>
             </div>
 
             {/* Copyright */}
-            <div className="text-white text-xs sm:text-sm opacity-75 text-center">
-              © 2025 Save n Bite. All rights reserved.
-            </div>
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.5, duration: 0.5 }}
+              className="text-emerald-100 text-sm opacity-80 text-center mt-8"
+            >
+              &copy; {new Date().getFullYear()} Save n Bite. All rights reserved.
+            </motion.div>
           </div>
 
           {/* Right Side - Login Form */}
-          <div className="lg:w-1/2 p-4 sm:p-6 lg:p-8 xl:p-12 bg-white dark:bg-gray-800 transition-colors duration-300">
-            <div className="max-w-md mx-auto">
-              {/* Page Title */}
-              <div className="mb-6 sm:mb-8 text-center">
-                <h2 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-gray-100 mb-2">
-                  Sign In
-                </h2>
-                <p className="text-sm sm:text-base text-gray-600 dark:text-gray-300">
-                  Enter your credentials to access your account
-                </p>
-              </div>
+          <div className="lg:w-1/2 p-8 md:p-12 bg-white dark:bg-gray-800 transition-colors duration-300">
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2, duration: 0.5 }}
+            >
+              <h2 className="text-2xl md:text-3xl font-bold text-gray-800 dark:text-white mb-2">
+                Sign In
+              </h2>
+              <p className="text-gray-600 dark:text-gray-300 mb-8">
+                Enter your credentials to access your account
+              </p>
 
               {/* Message Display */}
               {message && (
                 <div
-                  className={`mb-6 p-3 rounded-md border transition-colors duration-300 ${
+                  className={`mb-6 p-4 rounded-lg ${
                     messageType === 'success'
-                      ? 'bg-emerald-100 text-emerald-700 border-emerald-200 dark:bg-emerald-900 dark:text-emerald-200 dark:border-emerald-800'
-                      : messageType === 'info'
-                      ? 'bg-blue-100 text-blue-700 border-blue-200 dark:bg-blue-900 dark:text-blue-200 dark:border-blue-800'
-                      : 'bg-red-100 text-red-700 border-red-200 dark:bg-red-900 dark:text-red-200 dark:border-red-800'
+                      ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300'
+                      : 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300'
                   }`}
                 >
                   {message}
@@ -226,37 +287,75 @@ const Login = () => {
               )}
 
               {/* Login Form */}
-              <LoginForm
-                onSuccess={handleLoginSuccess}
-                onError={handleLoginError}
-                onEmailChange={setCurrentEmail} // Pass callback to track email
-              />
+              <div className="space-y-6">
+                <LoginForm
+                  onSuccess={handleLoginSuccess}
+                  onError={handleLoginError}
+                  onEmailChange={setCurrentEmail}
+                />
 
-              {/* Forgot Password Link */}
-              <div className="mt-4 text-center">
-                <button
-                  type="button"
-                  onClick={handleForgotPasswordClick}
-                  className="text-sm text-emerald-600 hover:text-emerald-700 dark:text-emerald-400 dark:hover:text-emerald-300 underline transition-colors duration-200"
-                >
-                  Forgot your password?
-                </button>
+                {/* <div className="flex items-center justify-between">
+                  <div className="flex items-center">
+                    <input
+                      id="remember-me"
+                      name="remember-me"
+                      type="checkbox"
+                      className="h-4 w-4 text-emerald-600 focus:ring-emerald-500 border-gray-300 rounded dark:bg-gray-700 dark:border-gray-600"
+                    />
+                    <label
+                      htmlFor="remember-me"
+                      className="ml-2 block text-sm text-gray-700 dark:text-gray-300"
+                    >
+                      Remember me
+                    </label>
+                  </div>
+
+                  <div className="text-sm">
+                    <button
+                      onClick={handleForgotPasswordClick}
+                      className="font-medium text-emerald-600 hover:text-emerald-500 dark:text-emerald-400 dark:hover:text-emerald-300"
+                    >
+                      Forgot your password?
+                    </button>
+                  </div>
+                </div> */}
+
+                {/* <div>
+                  <button
+                    type="submit"
+                    form="login-form"
+                    className="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-emerald-600 hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 transition-colors duration-200"
+                  >
+                    Sign in
+                  </button>
+                </div> */}
               </div>
 
-              {/* Register Link */}
-              <div className="mt-6 text-center text-gray-600 dark:text-gray-300">
-                Don't have an account?{' '}
-                <Link
-                  to="/register"
-                  className="text-emerald-600 hover:text-emerald-700 dark:text-emerald-400 dark:hover:text-emerald-300"
-                >
-                  Sign up
-                </Link>
+              <div className="mt-6">
+                <div className="relative">
+                  <div className="absolute inset-0 flex items-center">
+                    <div className="w-full border-t border-gray-300 dark:border-gray-600"></div>
+                  </div>
+                  <div className="relative flex justify-center text-sm">
+                    <span className="px-2 bg-white dark:bg-gray-800 text-gray-500 dark:text-gray-400">
+                      New to Save n Bite?
+                    </span>
+                  </div>
+                </div>
+
+                <div className="mt-6">
+                  <Link
+                    to="/register"
+                    className="w-full flex justify-center py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-600 transition-colors duration-200"
+                  >
+                    Create an account
+                  </Link>
+                </div>
               </div>
-            </div>
+            </motion.div>
           </div>
         </div>
-      </div>
+      </motion.div>
     </div>
   );
 };
