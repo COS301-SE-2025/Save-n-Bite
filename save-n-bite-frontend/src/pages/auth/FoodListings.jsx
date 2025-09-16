@@ -286,6 +286,8 @@ const FoodListings = () => {
         setSearchQuery={setSearchQuery}
         showFilters={showFilters}
         setShowFilters={setShowFilters}
+        selectedSort={selectedSort}
+        setSelectedSort={setSelectedSort}
       />
 
       <br />
@@ -313,12 +315,13 @@ const FoodListings = () => {
             providerOptions={uniqueProviders}
             typeOptions={getAvailableTypeFilters()}
             onResetFilters={handleResetFilters}
-             userType={userType}  
+            userType={userType}  
           />
+          
 
           <div className="flex-grow">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-4 mb-4">
-              <div className="text-xs sm:text-sm text-gray-600 dark:text-gray-200">
+              {/* <div className="text-xs sm:text-sm text-gray-600 dark:text-gray-200">
 
                 {loading ? 'Loading...' : `${totalCount} listings found`}
                 {userType === 'customer' && (
@@ -327,11 +330,8 @@ const FoodListings = () => {
                 {userType === 'ngo' && (
                   <span className="text-gray-500 ml-2">(Discounted items & donations)</span>
                 )}
-              </div>
-              <Sort
-                selectedSort={selectedSort}
-                setSelectedSort={setSelectedSort}
-              />
+              </div> */}
+              
             </div>
 
             {loading && filteredListings.length > 0 && (
