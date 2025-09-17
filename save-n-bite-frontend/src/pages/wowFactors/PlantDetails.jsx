@@ -62,7 +62,7 @@ const PlantDetails = ({ plant, onClose }) => {
         <div className="plant-content">
           {/* Description */}
           <section className="plant-section">
-            <h3>🌿 About This Plant</h3>
+            <h3>About This Plant</h3>
             <p>{plant.description}</p>
             
             {plant.common_names && plant.common_names.length > 0 && (
@@ -74,7 +74,7 @@ const PlantDetails = ({ plant, onClose }) => {
 
           {/* Care requirements */}
           <section className="plant-section">
-            <h3>🌱 Care Requirements</h3>
+            <h3>Care Requirements</h3>
             <div className="care-grid">
               <div className="care-item">
                 <span className="care-icon">
@@ -118,7 +118,7 @@ const PlantDetails = ({ plant, onClose }) => {
 
           {/* Fun facts */}
           <section className="plant-section">
-            <h3>🤔 Fun Facts</h3>
+            <h3>Fun Facts</h3>
             <div className="fun-facts">
               <p>{plant.fun_facts}</p>
             </div>
@@ -126,7 +126,7 @@ const PlantDetails = ({ plant, onClose }) => {
 
           {/* Growing tips */}
           <section className="plant-section">
-            <h3>💡 Growing Tips</h3>
+            <h3>Growing Tips</h3>
             <div className="growing-tips">
               <p>{plant.growing_tips}</p>
             </div>

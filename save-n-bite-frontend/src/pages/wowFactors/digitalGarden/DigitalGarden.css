@@ -1,7 +1,10 @@
+/*  DigitalGarden.css*/
+
 .digital-garden {
   min-height: 100vh;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
   padding: 20px;
+  font-family: system-ui, -apple-system, sans-serif;
 }
 
 .garden-header {
@@ -15,9 +18,35 @@
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
 }
 
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.back-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border: none;
+  background: #f3f4f6;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  color: #6b7280;
+}
+
+.back-button:hover {
+  background: #10b981;
+  color: white;
+  transform: translateY(-1px);
+}
+
 .garden-header h1 {
   margin: 0;
-  color: #333;
+  color: #1f2937;
   font-size: 28px;
   font-weight: 700;
 }
@@ -29,9 +58,9 @@
 
 .mode-btn {
   padding: 10px 20px;
-  border: 2px solid #62BD38;
+  border: 2px solid #10b981;
   background: white;
-  color: #62BD38;
+  color: #10b981;
   border-radius: 25px;
   font-weight: 600;
   cursor: pointer;
@@ -40,15 +69,15 @@
 }
 
 .mode-btn:hover {
-  background: #62BD38;
+  background: #10b981;
   color: white;
   transform: translateY(-2px);
 }
 
 .mode-btn.active {
-  background: #62BD38;
+  background: #10b981;
   color: white;
-  box-shadow: 0 4px 15px rgba(98, 189, 56, 0.3);
+  box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
 }
 
 .mode-btn:disabled {
@@ -57,6 +86,7 @@
   transform: none;
 }
 
+/* Notification system */
 .notification {
   position: fixed;
   top: 20px;
@@ -74,11 +104,11 @@
 }
 
 .notification.success {
-  background: linear-gradient(135deg, #4CAF50, #45a049);
+  background: linear-gradient(135deg, #10b981, #059669);
 }
 
 .notification.error {
-  background: linear-gradient(135deg, #f44336, #da190b);
+  background: linear-gradient(135deg, #ef4444, #dc2626);
 }
 
 .notification button {
@@ -90,22 +120,16 @@
   margin-left: 15px;
 }
 
+/* Main layout - Updated grid for better vertical arrangement */
 .garden-main {
   display: grid;
-  grid-template-columns: 300px 1fr 280px;
+  grid-template-columns: 1fr 300px;
   gap: 20px;
   min-height: 600px;
+  align-items: start;
 }
 
-.garden-sidebar {
-  background: white;
-  border-radius: 15px;
-  padding: 20px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-  overflow-y: auto;
-  max-height: 80vh;
-}
-
+/* Center content */
 .garden-content {
   background: white;
   border-radius: 15px;
@@ -116,25 +140,90 @@
   align-items: center;
 }
 
+/* Right sidebar container */
+.garden-sidebar-container {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  height: fit-content;
+}
+
+/* Right sidebar - Inventory*/
+.garden-inventory-sidebar {
+  background: white;
+  border-radius: 15px;
+  padding: 20px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  overflow-y: auto;
+  max-height: 350px; 
+}
+
+/* Right sidebar - Stats*/
 .garden-stats-sidebar {
   background: white;
   border-radius: 15px;
   padding: 20px;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
   overflow-y: auto;
-  max-height: 80vh;
+  flex: 1;
 }
 
+/* Garden overview section (beneath garden) */
+.garden-overview {
+  margin-top: 20px;
+  padding: 20px;
+  background: #f9fafb;
+  border-radius: 12px;
+  border: 1px solid #e5e7eb;
+  width: 100%;
+  max-width: 800px;
+}
+
+.garden-overview h3 {
+  margin: 0 0 15px 0;
+  color: #1f2937;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.overview-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 15px;
+}
+
+.stat-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+}
+
+.stat-label {
+  font-size: 14px;
+  color: #6b7280;
+}
+
+.stat-value {
+  font-size: 14px;
+  font-weight: 600;
+  color: #1f2937;
+}
+
+/* Mode instructions */
 .mode-instructions {
   margin-top: 20px;
   padding: 15px;
-  background: #f8f9fa;
+  background: #f3f4f6;
   border-radius: 10px;
   text-align: center;
   font-style: italic;
-  color: #666;
+  color: #6b7280;
+  max-width: 800px;
 }
 
+/* ================================LOOK OVER HERE !!!!!!!!!!!!!!!! ==================================*/
+/* Loading overlay -> can make this more "game-y" later  */
 .action-loading-overlay {
   position: fixed;
   top: 0;
@@ -160,12 +249,13 @@
   width: 40px;
   height: 40px;
   border: 4px solid #f3f3f3;
-  border-top: 4px solid #62BD38;
+  border-top: 4px solid #10b981;
   border-radius: 50%;
   animation: spin 1s linear infinite;
   margin: 0 auto 15px;
 }
 
+/* EDIT THIS LATER!!!!!!!!*/
 /* Welcome/Error states */
 .digital-garden-welcome,
 .digital-garden-error,
@@ -174,7 +264,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
 }
 
 .welcome-content,
@@ -184,7 +274,7 @@
   background: white;
   padding: 50px;
   border-radius: 20px;
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
   max-width: 500px;
 }
 
@@ -192,11 +282,12 @@
 .error-content h2,
 .loading-content h2 {
   margin-bottom: 20px;
-  color: #333;
+  color: #1f2937;
 }
 
+/* Buttons */
 .btn-primary {
-  background: linear-gradient(135deg, #62BD38, #4CAF50);
+  background: linear-gradient(135deg, #10b981, #059669);
   color: white;
   border: none;
   padding: 12px 25px;
@@ -209,7 +300,7 @@
 
 .btn-primary:hover {
   transform: translateY(-2px);
-  box-shadow: 0 5px 15px rgba(98, 189, 56, 0.4);
+  box-shadow: 0 5px 15px rgba(16, 185, 129, 0.4);
 }
 
 .btn-large {
@@ -217,6 +308,7 @@
   font-size: 18px;
 }
 
+/* Animations */
 @keyframes slideIn {
   from {
     transform: translateX(100%);
@@ -236,18 +328,24 @@
 /* Responsive design */
 @media (max-width: 1200px) {
   .garden-main {
-    grid-template-columns: 250px 1fr 250px;
+    grid-template-columns: 1fr 280px;
   }
 }
 
 @media (max-width: 968px) {
   .garden-main {
     grid-template-columns: 1fr;
-    grid-template-rows: auto auto auto;
+    gap: 15px;
   }
   
-  .garden-sidebar,
+  .garden-sidebar-container {
+    flex-direction: row;
+    gap: 15px;
+  }
+  
+  .garden-inventory-sidebar,
   .garden-stats-sidebar {
+    flex: 1;
     max-height: none;
   }
   
@@ -282,5 +380,13 @@
   
   .garden-content {
     padding: 20px;
+  }
+  
+  .garden-sidebar-container {
+    flex-direction: column;
+  }
+  
+  .overview-stats {
+    grid-template-columns: 1fr;
   }
 }

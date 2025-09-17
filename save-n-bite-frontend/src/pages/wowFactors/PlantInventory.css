@@ -1,6 +1,8 @@
+/* Updated PlantInventory.css - Emerald theme with drag and drop */
+
 .plant-inventory h3 {
   margin: 0 0 20px 0;
-  color: #333;
+  color: #1f2937;
   font-size: 18px;
   font-weight: 600;
   display: flex;
@@ -17,7 +19,7 @@
 
 .empty-inventory {
   padding: 40px 20px;
-  color: #666;
+  color: #6b7280;
 }
 
 .empty-icon {
@@ -28,26 +30,26 @@
 .empty-inventory p {
   margin: 10px 0 5px;
   font-weight: 600;
-  color: #333;
+  color: #1f2937;
 }
 
 .empty-inventory small {
-  color: #999;
+  color: #9ca3af;
   font-style: italic;
 }
 
 .inventory-instruction {
   margin-bottom: 15px;
   padding: 10px;
-  background: #e8f5e8;
+  background: #d1fae5;
   border-radius: 8px;
-  border-left: 4px solid #62BD38;
+  border-left: 4px solid #10b981;
 }
 
 .inventory-instruction p {
   margin: 0;
   font-size: 14px;
-  color: #2d5a2d;
+  color: #065f46;
   font-weight: 500;
 }
 
@@ -58,11 +60,49 @@
   margin-bottom: 20px;
 }
 
+/* Drag and drop styling */
+.inventory-item {
+  transition: all 0.3s ease;
+}
+
+.inventory-item.draggable {
+  cursor: grab;
+}
+
+.inventory-item.draggable:active {
+  cursor: grabbing;
+}
+
+.inventory-item.draggable:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2);
+}
+
+.draggable-card {
+  position: relative;
+}
+
+.draggable-card::before {
+  content: '⋮⋮';
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  color: #10b981;
+  font-weight: bold;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  z-index: 2;
+}
+
+.inventory-item.draggable:hover .draggable-card::before {
+  opacity: 0.7;
+}
+
 .inventory-summary {
   padding: 15px;
-  background: #f8f9fa;
+  background: #f9fafb;
   border-radius: 10px;
-  border-top: 3px solid #62BD38;
+  border-top: 3px solid #10b981;
 }
 
 .rarity-counts {
@@ -82,28 +122,28 @@
 }
 
 .rarity-count.common {
-  background: #e8f5e8;
-  color: #2d5a2d;
+  background: #d1fae5;
+  color: #065f46;
 }
 
 .rarity-count.uncommon {
-  background: #e3f2fd;
-  color: #1565c0;
+  background: #dbeafe;
+  color: #1e40af;
 }
 
 .rarity-count.rare {
-  background: #f3e5f5;
-  color: #6a1b9a;
+  background: #f3e8ff;
+  color: #6b21a8;
 }
 
 .rarity-count.epic {
-  background: #fff3e0;
-  color: #e65100;
+  background: #fef3c7;
+  color: #92400e;
 }
 
 .rarity-count.legendary {
-  background: #ffebee;
-  color: #c62828;
+  background: #fecaca;
+  color: #991b1b;
 }
 
 .rarity-name {

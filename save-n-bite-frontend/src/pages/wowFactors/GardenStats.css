@@ -1,6 +1,8 @@
+/* Updated GardenStats.css - Emerald theme, reorganized layout */
+
 .garden-stats h3 {
   margin: 0 0 20px 0;
-  color: #333;
+  color: #1f2937;
   font-size: 18px;
   font-weight: 600;
   display: flex;
@@ -8,16 +10,26 @@
   gap: 8px;
 }
 
+.garden-stats.compact h3 {
+  font-size: 16px;
+  margin-bottom: 15px;
+}
+
 .stats-loading {
   text-align: center;
-  color: #666;
+  color: #6b7280;
   padding: 20px;
 }
 
 .stats-section {
   margin-bottom: 25px;
   padding-bottom: 20px;
-  border-bottom: 1px solid #eee;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.garden-stats.compact .stats-section {
+  margin-bottom: 20px;
+  padding-bottom: 15px;
 }
 
 .stats-section:last-child {
@@ -28,7 +40,7 @@
 .stats-section h4 {
   margin: 0 0 15px 0;
   font-size: 14px;
-  color: #666;
+  color: #6b7280;
   text-transform: uppercase;
   letter-spacing: 0.5px;
   font-weight: 600;
@@ -37,12 +49,17 @@
   gap: 6px;
 }
 
+.garden-stats.compact .stats-section h4 {
+  font-size: 12px;
+  margin-bottom: 10px;
+}
+
 .stat-item {
   display: flex;
   justify-content: space-between;
   align-items: center;
   padding: 8px 0;
-  border-bottom: 1px solid #f5f5f5;
+  border-bottom: 1px solid #f3f4f6;
 }
 
 .stat-item:last-child {
@@ -51,21 +68,27 @@
 
 .stat-label {
   font-size: 14px;
-  color: #666;
+  color: #6b7280;
 }
 
 .stat-value {
   font-size: 14px;
   font-weight: 600;
-  color: #333;
+  color: #1f2937;
 }
 
+/* Milestone styling */
 .milestone-item {
   margin-bottom: 15px;
   padding: 15px;
-  background: #f8f9fa;
+  background: #f9fafb;
   border-radius: 10px;
-  border-left: 4px solid #62BD38;
+  border-left: 4px solid #10b981;
+}
+
+.garden-stats.compact .milestone-item {
+  padding: 12px;
+  margin-bottom: 12px;
 }
 
 .milestone-item:last-child {
@@ -82,19 +105,19 @@
 .milestone-type {
   font-size: 11px;
   font-weight: 700;
-  color: #62BD38;
+  color: #10b981;
   letter-spacing: 0.5px;
 }
 
 .milestone-progress {
   font-size: 12px;
   font-weight: 600;
-  color: #333;
+  color: #1f2937;
 }
 
 .progress-bar {
   height: 6px;
-  background: #e0e0e0;
+  background: #e5e7eb;
   border-radius: 3px;
   overflow: hidden;
   margin-bottom: 8px;
@@ -102,7 +125,7 @@
 
 .progress-fill {
   height: 100%;
-  background: linear-gradient(90deg, #62BD38, #4CAF50);
+  background: linear-gradient(90deg, #10b981, #059669);
   border-radius: 3px;
   transition: width 0.3s ease;
 }
@@ -110,16 +133,21 @@
 .milestone-description {
   margin: 0;
   font-size: 12px;
-  color: #666;
+  color: #6b7280;
   line-height: 1.4;
 }
 
+.garden-stats.compact .milestone-description {
+  font-size: 11px;
+}
+
+/* Achievement styling */
 .achievement-item {
   display: flex;
   justify-content: space-between;
   align-items: center;
   padding: 8px 0;
-  border-bottom: 1px solid #f5f5f5;
+  border-bottom: 1px solid #f3f4f6;
 }
 
 .achievement-item:last-child {
@@ -128,52 +156,67 @@
 
 .achievement-label {
   font-size: 12px;
-  color: #666;
+  color: #6b7280;
   text-transform: capitalize;
 }
 
 .achievement-count {
   font-size: 12px;
   font-weight: 600;
-  color: #62BD38;
-  background: #e8f5e8;
-  padding: 3px 8px;
-  border-radius: 10px;
+  color: #10b981;
+  background: #d1fae5;
+  padding: 2px 8px;
+  border-radius: 12px;
 }
 
+.no-achievements {
+  text-align: center;
+  padding: 20px;
+  color: #6b7280;
+}
+
+.no-achievements p {
+  margin: 0 0 5px 0;
+  font-weight: 500;
+}
+
+.no-achievements small {
+  color: #9ca3af;
+  font-style: italic;
+}
+
+/* Progress circle */
 .completion-circle {
   display: flex;
   justify-content: center;
-  margin-top: 15px;
+  margin-top: 10px;
 }
 
 .circular-chart {
-  display: block;
-  margin: 10px auto;
-  max-width: 100px;
-  max-height: 100px;
+  width: 80px;
+  height: 80px;
 }
 
 .circle-bg {
   fill: none;
-  stroke: #eee;
-  stroke-width: 3.8;
+  stroke: #e5e7eb;
+  stroke-width: 2.8;
 }
 
 .circle {
   fill: none;
+  stroke: #10b981;
   stroke-width: 2.8;
   stroke-linecap: round;
   animation: progress 1s ease-out forwards;
-  stroke: #62BD38;
 }
 
 .percentage {
-  fill: #333;
+  fill: #1f2937;
   font-family: sans-serif;
   font-size: 0.5em;
-  font-weight: bold;
   text-anchor: middle;
+  font-weight: 600;
 }
 
 @keyframes progress {
@@ -183,28 +226,21 @@
 }
 
 /* Responsive design */
-@media (max-width: 968px) {
-  .garden-stats {
-    max-height: none;
+@media (max-width: 768px) {
+  .garden-stats h3 {
+    font-size: 16px;
   }
-}
-
-@media (max-width: 480px) {
-  .stats-section {
-    margin-bottom: 20px;
-    padding-bottom: 15px;
+  
+  .stats-section h4 {
+    font-size: 12px;
   }
   
   .milestone-item {
     padding: 12px;
   }
   
-  .stat-item {
-    padding: 6px 0;
-  }
-  
-  .stat-label,
-  .stat-value {
-    font-size: 13px;
+  .circular-chart {
+    width: 60px;
+    height: 60px;
   }
 }

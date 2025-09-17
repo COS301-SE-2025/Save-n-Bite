@@ -1,4 +1,5 @@
 import React, { useState, useCallback } from 'react';
+import { ArrowLeft } from 'lucide-react';
 import GardenGrid from '../GardenGrid';
 import PlantInventory from '../PlantInventory';
 import PlantDetails from '../PlantDetails';
@@ -9,10 +10,11 @@ import './DigitalGarden.css';
 
 const DigitalGarden = () => {
   const [selectedPlant, setSelectedPlant] = useState(null);
-  const [gardenMode, setGardenMode] = useState('view'); // 'view', 'place', 'move'
+  const [gardenMode, setGardenMode] = useState('view'); // 'view', 'move'
   const [showPlantDetails, setShowPlantDetails] = useState(false);
   const [selectedPlantForDetails, setSelectedPlantForDetails] = useState(null);
   const [notification, setNotification] = useState(null);
+  const [draggedPlant, setDraggedPlant] = useState(null);
 
   // Main garden hook
   const {
@@ -37,6 +39,7 @@ const DigitalGarden = () => {
       refreshInventory();
       setGardenMode('view');
       setSelectedPlant(null);
+      setDraggedPlant(null);
     }, [refreshGarden, refreshInventory]),
 
     // onError callback
@@ -51,15 +54,13 @@ const DigitalGarden = () => {
   // Handle tile selection in garden
   const handleTileSelect = useCallback(async (tile, actionType, sourceTile = null) => {
     try {
-      if (actionType === 'place' && selectedPlant) {
-        await placePlant(selectedPlant.plant, tile.row, tile.col);
-      } else if (actionType === 'move' && sourceTile) {
+      if (actionType === 'move' && sourceTile) {
         await movePlant(sourceTile.row, sourceTile.col, tile.row, tile.col);
       }
     } catch (error) {
       console.error('Tile action failed:', error);
     }
-  }, [selectedPlant, placePlant, movePlant]);
+  }, [movePlant]);
 
   // Handle plant interaction (click for details)
   const handlePlantInteract = useCallback((plantData, tile) => {
@@ -67,11 +68,24 @@ const DigitalGarden = () => {
     setShowPlantDetails(true);
   }, []);
 
-  // Handle inventory plant selection
-  const handleInventoryPlantSelect = useCallback((inventoryItem) => {
-    setSelectedPlant(inventoryItem);
-    setGardenMode('place');
+  // Handle drag and drop functionality
+  const handleDragStart = useCallback((inventoryItem) => {
+    setDraggedPlant(inventoryItem);
   }, []);
+
+  const handleDragEnd = useCallback(() => {
+    setDraggedPlant(null);
+  }, []);
+
+  const handleDrop = useCallback(async (tile) => {
+    if (draggedPlant && !tile.plant_details) {
+      try {
+        await placePlant(draggedPlant.plant, tile.row, tile.col);
+      } catch (error) {
+        console.error('Plant placement failed:', error);
+      }
+    }
+  }, [draggedPlant, placePlant]);
 
   // Handle mode changes
   const handleModeChange = useCallback((newMode) => {
@@ -98,6 +112,13 @@ const DigitalGarden = () => {
   // Clear notifications
   const clearNotification = useCallback(() => {
     setNotification(null);
+  }, []);
+
+  // Handle back button (you'll need to implement navigation)
+  const handleGoBack = useCallback(() => {
+    // Implement navigation back to previous page
+    // For example: navigate('/dashboard')
+    console.log('Navigate back to previous page');
   }, []);
 
   if (loading) {
@@ -130,7 +151,7 @@ const DigitalGarden = () => {
     return (
       <div className="digital-garden-welcome">
         <div className="welcome-content">
-          <h1>Welcome to Your Digital Garden! 🌱</h1>
+          <h1>Welcome to Your Digital Garden!</h1>
           <p>Start your gardening journey by creating your personal 8×8 garden space.</p>
           <p>Complete orders to earn plants and build your collection!</p>
           <button onClick={handleInitializeGarden} className="btn-primary btn-large">
@@ -145,26 +166,24 @@ const DigitalGarden = () => {
     <div className="digital-garden">
       {/* Header */}
       <div className="garden-header">
-        <h1>🌱 My Digital Garden</h1>
+        <div className="header-left">
+          <button onClick={handleGoBack} className="back-button">
+            <ArrowLeft size={20} />
+          </button>
+          <h1>My Digital Garden</h1>
+        </div>
         <div className="garden-controls">
           <button
             className={`mode-btn ${gardenMode === 'view' ? 'active' : ''}`}
             onClick={() => handleModeChange('view')}
           >
-            👁️ View
-          </button>
-          <button
-            className={`mode-btn ${gardenMode === 'place' ? 'active' : ''}`}
-            onClick={() => handleModeChange('place')}
-            disabled={inventory.length === 0}
-          >
-            🌱 Place
+            View
           </button>
           <button
             className={`mode-btn ${gardenMode === 'move' ? 'active' : ''}`}
             onClick={() => handleModeChange('move')}
           >
-            🔄 Move
+            Move
           </button>
         </div>
       </div>
@@ -179,47 +198,83 @@ const DigitalGarden = () => {
 
       {/* Main content */}
       <div className="garden-main">
-        {/* Left sidebar - Inventory */}
-        <aside className="garden-sidebar">
-          <PlantInventory
-            inventory={inventory}
-            selectedPlant={selectedPlant}
-            onPlantSelect={handleInventoryPlantSelect}
-            mode={gardenMode}
-          />
-        </aside>
-
-        {/* Center - Garden Grid */}
+        {/* Center - Garden Grid (enlarged) */}
         <main className="garden-content">
           <GardenGrid
             gardenData={garden}
-            selectedPlant={selectedPlant}
+            selectedPlant={draggedPlant}
             onTileSelect={handleTileSelect}
             onPlantInteract={handlePlantInteract}
+            onDrop={handleDrop}
+            draggedPlant={draggedPlant}
             mode={gardenMode}
           />
+
+          {/* Garden Overview beneath the garden */}
+          {garden && (
+            <div className="garden-overview">
+              <h3>Garden Overview</h3>
+              <div className="overview-stats">
+                <div className="stat-item">
+                  <span className="stat-label">Plants Earned:</span>
+                  <span className="stat-value">{garden.total_plants_earned || 0}</span>
+                </div>
+                <div className="stat-item">
+                  <span className="stat-label">Plants Placed:</span>
+                  <span className="stat-value">{garden.total_plants_placed || 0}/64</span>
+                </div>
+                <div className="stat-item">
+                  <span className="stat-label">Completion:</span>
+                  <span className="stat-value">
+                    {garden.completion_percentage?.toFixed(1) || 0}%
+                  </span>
+                </div>
+                <div className="stat-item">
+                  <span className="stat-label">Garden Level:</span>
+                  <span className="stat-value">{garden.garden_level || 1}</span>
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* Mode instructions */}
           <div className="mode-instructions">
             {gardenMode === 'view' && (
               <p>Click on plants to see their details and growing tips!</p>
             )}
-            {gardenMode === 'place' && !selectedPlant && (
-              <p>Select a plant from your inventory to place it in the garden.</p>
-            )}
-            {gardenMode === 'place' && selectedPlant && (
-              <p>Click on an empty tile to place your {selectedPlant.plant_details?.name}.</p>
-            )}
             {gardenMode === 'move' && (
               <p>Click a plant to select it, then click an empty tile to move it there.</p>
+            )}
+            {draggedPlant && (
+              <p>Drag your {draggedPlant.plant_details?.name} to an empty tile to place it.</p>
             )}
           </div>
         </main>
 
-        {/* Right sidebar - Stats */}
-        <aside className="garden-stats-sidebar">
-          <GardenStats stats={stats} garden={garden} />
-        </aside>
+        {/* Right sidebar container - Stack vertically */}
+        <div className="garden-sidebar-container">
+          {/* Plant Inventory (top) */}
+          <aside className="garden-inventory-sidebar">
+            <PlantInventory
+              inventory={inventory}
+              selectedPlant={selectedPlant}
+              onPlantSelect={setSelectedPlant}
+              onDragStart={handleDragStart}
+              onDragEnd={handleDragEnd}
+              supportsDragDrop={true}
+              mode={gardenMode}
+            />
+          </aside>
+
+          {/* Garden Stats (bottom) */}
+          <aside className="garden-stats-sidebar">
+            <GardenStats 
+              stats={stats} 
+              garden={garden} 
+              compactMode={true}
+            />
+          </aside>
+        </div>
       </div>
 
       {/* Plant Details Modal */}

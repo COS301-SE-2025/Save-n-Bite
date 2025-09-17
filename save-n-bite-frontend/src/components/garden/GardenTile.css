@@ -1,68 +1,145 @@
+/* Updated GardenTile.css - Earth-like appearance */
+
 .garden-tile {
   position: relative;
   width: 100%;
   height: 100%;
-  border: 1px solid #e0e0e0;
+  border: 1px solid rgba(139, 69, 19, 0.3);
   border-radius: 8px;
   overflow: hidden;
   transition: all 0.3s ease;
-  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
   cursor: pointer;
+  background: transparent;
 }
 
-.garden-tile:hover {
-  border-color: #62BD38;
-  box-shadow: 0 4px 12px rgba(98, 189, 56, 0.2);
+/* Empty tile styling - looks like fresh earth */
+.garden-tile.empty {
+  background: linear-gradient(135deg, #8B4513 0%, #A0522D 50%, #CD853F 100%);
+  border: 1px solid rgba(139, 69, 19, 0.5);
+}
+
+.garden-tile.empty:hover {
+  border-color: #10b981;
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2);
+  transform: translateY(-1px);
+}
+
+/* Planted tile styling */
+.garden-tile.planted {
+  background: linear-gradient(135deg, #22543d 0%, #2d5a2d 50%, #38a169 100%);
+  border: 1px solid rgba(34, 84, 61, 0.7);
+}
+
+.garden-tile.planted:hover {
+  border-color: #10b981;
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
   transform: translateY(-2px);
 }
 
 .garden-tile.selected {
-  border-color: #1E64D5;
-  box-shadow: 0 0 0 3px rgba(30, 100, 213, 0.3);
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.3);
 }
 
 .garden-tile.highlighted {
-  background: linear-gradient(135deg, #62BD38 0%, #4CAF50 100%);
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
 }
 
-.garden-tile.available-for-placement {
-  border-color: #4CAF50;
-  background: linear-gradient(135deg, #C8E6C9 0%, #A5D6A7 100%);
-  animation: pulse 2s infinite;
+/* Earth texture for empty tiles */
+.earth-texture {
+  position: absolute;
+  inset: 0;
+  opacity: 0.8;
 }
 
-.garden-tile.selected-for-move {
-  border-color: #FF9800;
-  box-shadow: 0 0 0 3px rgba(255, 152, 0, 0.4);
-  background: linear-gradient(135deg, #FFE0B2 0%, #FFCC02 100%);
-}
-
-.garden-tile.available-for-move {
-  border-color: #2196F3;
-  background: linear-gradient(135deg, #E3F2FD 0%, #BBDEFB 100%);
-}
-
-.tile-plant {
+.earth-svg {
   width: 100%;
   height: 100%;
 }
 
+/* Plant container */
+.tile-plant {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Tile coordinates (hidden by default, only shown in dev mode when requested) */
 .tile-coordinates {
   position: absolute;
   top: 2px;
   left: 2px;
-  font-size: 10px;
-  color: #666;
-  background: rgba(255, 255, 255, 0.8);
+  font-size: 8px;
+  color: rgba(255, 255, 255, 0.7);
+  background: rgba(0, 0, 0, 0.5);
   padding: 1px 3px;
   border-radius: 3px;
   pointer-events: none;
+  z-index: 10;
 }
 
-@keyframes pulse {
-  0% { opacity: 1; }
-  50% { opacity: 0.7; }
-  100% { opacity: 1; }
+/* Drag and drop visual feedback */
+.garden-tile.available-for-placement {
+  position: relative;
+}
+
+.garden-tile.available-for-placement::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border: 2px dashed #10b981;
+  border-radius: 6px;
+  background: rgba(16, 185, 129, 0.1);
+  z-index: 1;
+  animation: earthPulse 1.5s ease-in-out infinite;
+}
+
+.garden-tile.drag-over::before {
+  background: rgba(16, 185, 129, 0.3);
+  border-color: #059669;
+  animation: none;
+}
+
+@keyframes earthPulse {
+  0%, 100% {
+    opacity: 0.6;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.02);
+  }
+}
+
+/* Selected for move state */
+.garden-tile.selected-for-move {
+  border-color: #f59e0b;
+  box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.4);
+  background: linear-gradient(135deg, #fef3c7 0%, #fbbf24 100%);
+}
+
+/* Available for move state */
+.garden-tile.available-for-move {
+  border-color: #3b82f6;
+  background: linear-gradient(135deg, #dbeafe 0%, #93c5fd 100%);
+}
+
+/* Add subtle earth particle effects */
+.garden-tile.empty::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: 
+    radial-gradient(circle at 20% 30%, rgba(205, 133, 63, 0.3) 1px, transparent 1px),
+    radial-gradient(circle at 70% 60%, rgba(160, 82, 45, 0.2) 1px, transparent 1px),
+    radial-gradient(circle at 40% 80%, rgba(210, 105, 30, 0.25) 1px, transparent 1px);
+  background-size: 15px 15px, 20px 20px, 25px 25px;
+  opacity: 0.6;
+  pointer-events: none;
 }
 
 /* Responsive design */
@@ -73,6 +150,12 @@
   }
   
   .tile-coordinates {
-    font-size: 8px;
+    font-size: 6px;
+  }
+}
+
+@media (max-width: 480px) {
+  .garden-tile {
+    border-radius: 3px;
   }
 }

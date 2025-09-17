@@ -6,12 +6,15 @@ const PlantInventory = ({
   inventory, 
   selectedPlant, 
   onPlantSelect, 
+  onDragStart,
+  onDragEnd,
+  supportsDragDrop = false,
   mode 
 }) => {
   if (!inventory || inventory.length === 0) {
     return (
       <div className="plant-inventory empty">
-        <h3>🎒 Plant Inventory</h3>
+        <h3>Plant Inventory</h3>
         <div className="empty-inventory">
           <div className="empty-icon">🌱</div>
           <p>No plants in inventory</p>
@@ -21,26 +24,48 @@ const PlantInventory = ({
     );
   }
 
+  const handleDragStart = (e, item) => {
+    if (supportsDragDrop && onDragStart) {
+      onDragStart(item);
+      e.dataTransfer.effectAllowed = 'move';
+      e.dataTransfer.setData('text/plain', item.id);
+    }
+  };
+
+  const handleDragEnd = (e) => {
+    if (supportsDragDrop && onDragEnd) {
+      onDragEnd();
+    }
+  };
+
   return (
     <div className="plant-inventory">
-      <h3>🎒 Plant Inventory ({inventory.length})</h3>
+      <h3>Plant Inventory ({inventory.length})</h3>
       
-      {mode === 'place' && (
+      {supportsDragDrop && (
         <div className="inventory-instruction">
-          <p>Select a plant to place in your garden:</p>
+          <p>Drag plants to place them in your garden:</p>
         </div>
       )}
 
       <div className="inventory-grid">
         {inventory.map((item) => (
-          <PlantCard
+          <div
             key={item.id}
-            inventoryItem={item}
-            isSelected={selectedPlant && selectedPlant.id === item.id}
-            onClick={() => onPlantSelect(item)}
-            showQuantity={true}
-            className={mode === 'place' ? 'selectable' : ''}
-          />
+            draggable={supportsDragDrop}
+            onDragStart={(e) => handleDragStart(e, item)}
+            onDragEnd={handleDragEnd}
+            className={`inventory-item ${supportsDragDrop ? 'draggable' : ''}`}
+          >
+            <PlantCard
+              inventoryItem={item}
+              isSelected={selectedPlant && selectedPlant.id === item.id}
+              onClick={() => onPlantSelect && onPlantSelect(item)}
+              showQuantity={true}
+              showDragIndicator={supportsDragDrop}
+              className={supportsDragDrop ? 'draggable-card' : ''}
+            />
+          </div>
         ))}
       </div>
 
