@@ -1,11 +1,13 @@
-import React, { useState, useCallback } from 'react';
-import { ArrowLeft } from 'lucide-react';
+import React, { useState, useCallback, useEffect } from 'react';
+import CustomerNavBar from '../../../components/auth/CustomerNavBar';
 import GardenGrid from '../GardenGrid';
 import PlantInventory from '../PlantInventory';
 import PlantDetails from '../PlantDetails';
 import GardenStats from '../GardenStats';
 import useDigitalGarden from '../hooks/useDigitalGarden';
 import useGardenActions from '../hooks/useGardenAction';
+import panelBackgroundSvg from '../../../assets/images/backgrounds/panel-background.svg';
+import headerBackgroundSvg from '../../../assets/images/backgrounds/garden-background.svg';
 import './DigitalGarden.css';
 
 const DigitalGarden = () => {
@@ -15,6 +17,10 @@ const DigitalGarden = () => {
   const [selectedPlantForDetails, setSelectedPlantForDetails] = useState(null);
   const [notification, setNotification] = useState(null);
   const [draggedPlant, setDraggedPlant] = useState(null);
+  
+  // New state for move mode prompts
+  const [movePrompt, setMovePrompt] = useState('');
+  const [selectedPlantForMove, setSelectedPlantForMove] = useState(null);
 
   // Main garden hook
   const {
@@ -40,6 +46,8 @@ const DigitalGarden = () => {
       setGardenMode('view');
       setSelectedPlant(null);
       setDraggedPlant(null);
+      setSelectedPlantForMove(null);
+      setMovePrompt('');
     }, [refreshGarden, refreshInventory]),
 
     // onError callback
@@ -54,7 +62,16 @@ const DigitalGarden = () => {
   // Handle tile selection in garden
   const handleTileSelect = useCallback(async (tile, actionType, sourceTile = null) => {
     try {
-      if (actionType === 'move' && sourceTile) {
+      if (actionType === 'select') {
+        // Plant selected for moving
+        setSelectedPlantForMove(tile);
+        setMovePrompt('Select the block in which you would like to place the plant');
+        
+        // Auto-hide prompt after 4 seconds
+        setTimeout(() => {
+          setMovePrompt('');
+        }, 4000);
+      } else if (actionType === 'move' && sourceTile) {
         await movePlant(sourceTile.row, sourceTile.col, tile.row, tile.col);
       }
     } catch (error) {
@@ -62,11 +79,14 @@ const DigitalGarden = () => {
     }
   }, [movePlant]);
 
-  // Handle plant interaction (click for details)
+  // Handle plant interaction (click for details) - Only in view mode
   const handlePlantInteract = useCallback((plantData, tile) => {
-    setSelectedPlantForDetails(plantData);
-    setShowPlantDetails(true);
-  }, []);
+    if (gardenMode === 'view') {
+      setSelectedPlantForDetails(plantData);
+      setShowPlantDetails(true);
+    }
+    // In move mode, this does nothing - plant selection is handled by handleTileSelect
+  }, [gardenMode]);
 
   // Handle drag and drop functionality
   const handleDragStart = useCallback((inventoryItem) => {
@@ -87,10 +107,28 @@ const DigitalGarden = () => {
     }
   }, [draggedPlant, placePlant]);
 
-  // Handle mode changes
-  const handleModeChange = useCallback((newMode) => {
+  // Handle mode changes - Toggle between view and move
+  const handleModeToggle = useCallback(() => {
+    const newMode = gardenMode === 'view' ? 'move' : 'view';
     setGardenMode(newMode);
     setSelectedPlant(null);
+    setSelectedPlantForMove(null);
+    setMovePrompt('');
+    
+    if (newMode === 'move') {
+      setMovePrompt('Select the plant you would like to move');
+      // Auto-hide initial prompt after 3 seconds
+      setTimeout(() => {
+        if (gardenMode === 'move' && !selectedPlantForMove) {
+          setMovePrompt('');
+        }
+      }, 3000);
+    }
+  }, [gardenMode, selectedPlantForMove]);
+
+  // Clear notification helper
+  const clearNotification = useCallback(() => {
+    setNotification(null);
   }, []);
 
   // Handle garden initialization
@@ -108,18 +146,6 @@ const DigitalGarden = () => {
       });
     }
   }, [initializeGarden]);
-
-  // Clear notifications
-  const clearNotification = useCallback(() => {
-    setNotification(null);
-  }, []);
-
-  // Handle back button (you'll need to implement navigation)
-  const handleGoBack = useCallback(() => {
-    // Implement navigation back to previous page
-    // For example: navigate('/dashboard')
-    console.log('Navigate back to previous page');
-  }, []);
 
   if (loading) {
     return (
@@ -164,26 +190,29 @@ const DigitalGarden = () => {
 
   return (
     <div className="digital-garden">
-      {/* Header */}
-      <div className="garden-header">
+      <CustomerNavBar />
+      
+      {/* Header with SVG background */}
+      <div 
+        className="garden-header"
+        style={{
+          backgroundImage: `url(${headerBackgroundSvg})`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          backgroundRepeat: 'no-repeat'
+        }}
+      >
         <div className="header-left">
-          <button onClick={handleGoBack} className="back-button">
-            <ArrowLeft size={20} />
-          </button>
           <h1>My Digital Garden</h1>
         </div>
         <div className="garden-controls">
+          {/* Toggle button instead of separate View/Move buttons */}
           <button
-            className={`mode-btn ${gardenMode === 'view' ? 'active' : ''}`}
-            onClick={() => handleModeChange('view')}
+            className={`mode-toggle ${gardenMode === 'move' ? 'active' : ''}`}
+            onClick={handleModeToggle}
+            disabled={actionLoading}
           >
-            View
-          </button>
-          <button
-            className={`mode-btn ${gardenMode === 'move' ? 'active' : ''}`}
-            onClick={() => handleModeChange('move')}
-          >
-            Move
+            {gardenMode === 'view' ? 'Switch to Move Mode' : 'Switch to View Mode'}
           </button>
         </div>
       </div>
@@ -193,6 +222,13 @@ const DigitalGarden = () => {
         <div className={`notification ${notification.type}`}>
           <span>{notification.message}</span>
           <button onClick={clearNotification}>×</button>
+        </div>
+      )}
+
+      {/* Move Mode Prompt */}
+      {movePrompt && (
+        <div className="move-prompt">
+          <span>{movePrompt}</span>
         </div>
       )}
 
@@ -208,6 +244,7 @@ const DigitalGarden = () => {
             onDrop={handleDrop}
             draggedPlant={draggedPlant}
             mode={gardenMode}
+            selectedTileForMove={selectedPlantForMove}
           />
 
           {/* Garden Overview beneath the garden */}
@@ -239,11 +276,14 @@ const DigitalGarden = () => {
 
           {/* Mode instructions */}
           <div className="mode-instructions">
-            {gardenMode === 'view' && (
+            {gardenMode === 'view' && !selectedPlantForMove && (
               <p>Click on plants to see their details and growing tips!</p>
             )}
-            {gardenMode === 'move' && (
-              <p>Click a plant to select it, then click an empty tile to move it there.</p>
+            {gardenMode === 'move' && !selectedPlantForMove && (
+              <p>Click a plant to select it for moving.</p>
+            )}
+            {gardenMode === 'move' && selectedPlantForMove && (
+              <p>Now click an empty tile to move your selected plant there.</p>
             )}
             {draggedPlant && (
               <p>Drag your {draggedPlant.plant_details?.name} to an empty tile to place it.</p>
@@ -253,8 +293,17 @@ const DigitalGarden = () => {
 
         {/* Right sidebar container - Stack vertically */}
         <div className="garden-sidebar-container">
-          {/* Plant Inventory (top) */}
-          <aside className="garden-inventory-sidebar">
+          {/* Plant Inventory with SVG background */}
+          <aside 
+            className="garden-inventory-sidebar"
+            style={{
+              backgroundImage: `url(${panelBackgroundSvg})`,
+              backgroundSize: 'cover',
+              backgroundPosition: 'center',
+              backgroundRepeat: 'no-repeat',
+              backgroundColor: 'transparent'
+            }}
+          >
             <PlantInventory
               inventory={inventory}
               selectedPlant={selectedPlant}
@@ -266,8 +315,17 @@ const DigitalGarden = () => {
             />
           </aside>
 
-          {/* Garden Stats (bottom) */}
-          <aside className="garden-stats-sidebar">
+          {/* Garden Stats with SVG background */}
+          <aside 
+            className="garden-stats-sidebar"
+            style={{
+              backgroundImage: `url(${panelBackgroundSvg})`,
+              backgroundSize: 'cover',
+              backgroundPosition: 'center',
+              backgroundRepeat: 'no-repeat',
+              backgroundColor: 'transparent'
+            }}
+          >
             <GardenStats 
               stats={stats} 
               garden={garden} 
@@ -277,8 +335,8 @@ const DigitalGarden = () => {
         </div>
       </div>
 
-      {/* Plant Details Modal */}
-      {showPlantDetails && selectedPlantForDetails && (
+      {/* Plant Details Modal - Only shows in view mode */}
+      {showPlantDetails && selectedPlantForDetails && gardenMode === 'view' && (
         <PlantDetails
           plant={selectedPlantForDetails}
           onClose={() => {

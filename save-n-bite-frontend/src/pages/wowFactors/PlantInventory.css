@@ -1,4 +1,4 @@
-/* Updated PlantInventory.css - Emerald theme with drag and drop */
+/* Updated PlantInventory.css - Emerald theme with drag and drop and bordered heading */
 
 .plant-inventory h3 {
   margin: 0 0 20px 0;
@@ -8,6 +8,14 @@
   display: flex;
   align-items: center;
   gap: 8px;
+  /* Add white background and border to match other sections */
+  background: white;
+  padding: 12px 15px;
+  border-radius: 8px;
+  border: 1px solid rgba(16, 185, 129, 0.2);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  text-align: center;
+  justify-content: center;
 }
 
 .plant-inventory.empty {
@@ -166,6 +174,11 @@
 }
 
 @media (max-width: 480px) {
+  .plant-inventory h3 {
+    padding: 10px 12px;
+    font-size: 16px;
+  }
+  
   .inventory-grid {
     grid-template-columns: 1fr;
   }

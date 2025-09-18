@@ -4,6 +4,7 @@
   min-height: 100vh;
   background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
   padding: 20px;
+  padding-top: 80px; /* Reduced padding for navigation bar */
   font-family: system-ui, -apple-system, sans-serif;
 }
 
@@ -12,36 +13,18 @@
   justify-content: space-between;
   align-items: center;
   background: white;
-  padding: 20px 30px;
-  border-radius: 15px;
-  margin-bottom: 20px;
+  padding: 30px 30px;
+  border-radius: 20px;
+  margin: 0 auto 15px auto; 
+  max-width: 1400px; 
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
 }
+
 
 .header-left {
   display: flex;
   align-items: center;
   gap: 15px;
-}
-
-.back-button {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 40px;
-  height: 40px;
-  border: none;
-  background: #f3f4f6;
-  border-radius: 10px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  color: #6b7280;
-}
-
-.back-button:hover {
-  background: #10b981;
-  color: white;
-  transform: translateY(-1px);
 }
 
 .garden-header h1 {
@@ -56,8 +39,8 @@
   gap: 10px;
 }
 
-.mode-btn {
-  padding: 10px 20px;
+.mode-toggle {
+  padding: 12px 24px;
   border: 2px solid #10b981;
   background: white;
   color: #10b981;
@@ -66,27 +49,84 @@
   cursor: pointer;
   transition: all 0.3s ease;
   font-size: 14px;
+  position: relative;
+  overflow: hidden;
 }
 
-.mode-btn:hover {
+.mode-toggle:hover {
   background: #10b981;
   color: white;
   transform: translateY(-2px);
-}
-
-.mode-btn.active {
-  background: #10b981;
-  color: white;
   box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
 }
 
-.mode-btn:disabled {
+.mode-toggle.active {
+  background: #10b981;
+  color: white;
+  box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4);
+}
+
+.mode-toggle.active::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(45deg, transparent 30%, rgba(255, 255, 255, 0.2) 50%, transparent 70%);
+  animation: shine 2s infinite;
+}
+
+@keyframes shine {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+.mode-toggle:disabled {
   opacity: 0.5;
   cursor: not-allowed;
   transform: none;
 }
 
-/* Notification system */
+.move-prompt {
+  position: fixed;
+  top: 100px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+  color: white;
+  padding: 12px 24px;
+  border-radius: 20px;
+  font-weight: 500;
+  font-size: 16px;
+  box-shadow: 0 8px 25px rgba(59, 130, 246, 0.3);
+  z-index: 1000;
+  animation: promptSlideIn 0.4s ease-out;
+  max-width: 400px;
+  text-align: center;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+}
+
+.move-prompt::before {
+  content: '💡';
+  margin-right: 8px;
+}
+
+@keyframes promptSlideIn {
+  0% {
+    opacity: 0;
+    transform: translateX(-50%) translateY(-20px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+}
+
 .notification {
   position: fixed;
   top: 20px;
@@ -95,7 +135,7 @@
   border-radius: 10px;
   color: white;
   font-weight: 600;
-  z-index: 1000;
+  z-index: 1001;
   animation: slideIn 0.3s ease;
   display: flex;
   align-items: center;
@@ -120,27 +160,38 @@
   margin-left: 15px;
 }
 
-/* Main layout - Updated grid for better vertical arrangement */
-.garden-main {
-  display: grid;
-  grid-template-columns: 1fr 300px;
-  gap: 20px;
-  min-height: 600px;
-  align-items: start;
+@keyframes slideIn {
+  0% {
+    opacity: 0;
+    transform: translateX(100%);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0);
+  }
 }
 
-/* Center content */
+.garden-main {
+  display: grid;
+  grid-template-columns: 1fr 350px; 
+  gap: 25px; 
+  min-height: 600px;
+  align-items: start;
+  max-width: 1400px; 
+  margin: 0 auto; 
+  width: 100%; 
+}
+
 .garden-content {
   background: white;
   border-radius: 15px;
-  padding: 30px;
+  padding: 10px;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
   display: flex;
   flex-direction: column;
   align-items: center;
 }
 
-/* Right sidebar container */
 .garden-sidebar-container {
   display: flex;
   flex-direction: column;
@@ -148,41 +199,36 @@
   height: fit-content;
 }
 
-/* Right sidebar - Inventory*/
 .garden-inventory-sidebar {
   background: white;
   border-radius: 15px;
-  padding: 20px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  padding: 25px; 
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  max-height: 500px; 
   overflow-y: auto;
-  max-height: 350px; 
 }
 
-/* Right sidebar - Stats*/
 .garden-stats-sidebar {
   background: white;
   border-radius: 15px;
-  padding: 20px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-  overflow-y: auto;
-  flex: 1;
+  padding: 25px; 
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
 }
 
-/* Garden overview section (beneath garden) */
 .garden-overview {
+  width: 100%;
+  max-width: 900px; 
   margin-top: 20px;
   padding: 20px;
-  background: #f9fafb;
+  background: #f8fafc;
   border-radius: 12px;
-  border: 1px solid #e5e7eb;
-  width: 100%;
-  max-width: 800px;
+  border: 1px solid #e2e8f0;
 }
 
 .garden-overview h3 {
   margin: 0 0 15px 0;
   color: #1f2937;
-  font-size: 16px;
+  font-size: 18px;
   font-weight: 600;
 }
 
@@ -210,7 +256,6 @@
   color: #1f2937;
 }
 
-/* Mode instructions */
 .mode-instructions {
   margin-top: 20px;
   padding: 15px;
@@ -222,8 +267,7 @@
   max-width: 800px;
 }
 
-/* ================================LOOK OVER HERE !!!!!!!!!!!!!!!! ==================================*/
-/* Loading overlay -> can make this more "game-y" later  */
+/*Loading overlay*/
 .action-loading-overlay {
   position: fixed;
   top: 0;
@@ -255,7 +299,11 @@
   margin: 0 auto 15px;
 }
 
-/* EDIT THIS LATER!!!!!!!!*/
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
 /* Welcome/Error states */
 .digital-garden-welcome,
 .digital-garden-error,
@@ -281,66 +329,55 @@
 .welcome-content h1,
 .error-content h2,
 .loading-content h2 {
-  margin-bottom: 20px;
+  margin: 0 0 20px 0;
   color: #1f2937;
 }
 
-/* Buttons */
 .btn-primary {
-  background: linear-gradient(135deg, #10b981, #059669);
+  padding: 12px 24px;
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
   color: white;
   border: none;
-  padding: 12px 25px;
-  border-radius: 25px;
+  border-radius: 10px;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.3s ease;
-  font-size: 16px;
 }
 
 .btn-primary:hover {
   transform: translateY(-2px);
-  box-shadow: 0 5px 15px rgba(16, 185, 129, 0.4);
+  box-shadow: 0 8px 25px rgba(16, 185, 129, 0.3);
 }
 
-.btn-large {
-  padding: 15px 35px;
+.btn-primary.btn-large {
+  padding: 16px 32px;
   font-size: 18px;
 }
 
-/* Animations */
-@keyframes slideIn {
-  from {
-    transform: translateX(100%);
-    opacity: 0;
-  }
-  to {
-    transform: translateX(0);
-    opacity: 1;
-  }
-}
-
-@keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
-}
-
-/* Responsive design */
+/* Responsive design - Better space utilization */
 @media (max-width: 1200px) {
   .garden-main {
-    grid-template-columns: 1fr 280px;
+    max-width: 1200px;
+    grid-template-columns: 1fr 320px;
+    gap: 20px;
   }
 }
 
-@media (max-width: 968px) {
+@media (max-width: 1024px) {
+  .digital-garden {
+    padding: 15px;
+    padding-top: 70px;
+  }
+  
   .garden-main {
     grid-template-columns: 1fr;
-    gap: 15px;
+    gap: 20px;
+    max-width: 100%;
   }
   
   .garden-sidebar-container {
     flex-direction: row;
-    gap: 15px;
+    gap: 20px;
   }
   
   .garden-inventory-sidebar,
@@ -348,45 +385,58 @@
     flex: 1;
     max-height: none;
   }
-  
-  .garden-header {
-    flex-direction: column;
-    gap: 15px;
-  }
-  
-  .garden-controls {
-    flex-wrap: wrap;
-    justify-content: center;
-  }
 }
 
 @media (max-width: 768px) {
   .digital-garden {
     padding: 10px;
+    padding-top: 60px; /* Further reduced for mobile */
   }
   
   .garden-header {
-    padding: 15px 20px;
+    padding: 12px 20px; /* Reduced padding */
+    margin-bottom: 10px; /* Reduced margin */
+    flex-direction: column;
+    gap: 10px;
   }
   
-  .garden-header h1 {
-    font-size: 24px;
+  .garden-content {
+    padding: 15px; /* Reduced padding */
   }
   
-  .mode-btn {
+  .overview-stats {
+    grid-template-columns: 1fr;
+  }
+  
+  .move-prompt {
+    max-width: 320px;
+    font-size: 14px;
+    padding: 10px 20px;
+  }
+  
+  .garden-sidebar-container {
+    flex-direction: column;
+    gap: 15px;
+  }
+}
+
+@media (max-width: 480px) {
+  .digital-garden {
+    padding: 8px;
+    padding-top: 55px; /* Minimized for very small screens */
+  }
+  
+  .garden-header {
+    padding: 10px 15px;
+    margin-bottom: 8px;
+  }
+  
+  .mode-toggle {
     padding: 8px 16px;
     font-size: 12px;
   }
   
   .garden-content {
-    padding: 20px;
-  }
-  
-  .garden-sidebar-container {
-    flex-direction: column;
-  }
-  
-  .overview-stats {
-    grid-template-columns: 1fr;
+    padding: 12px;
   }
 }

@@ -10,6 +10,9 @@ export default defineConfig({
       'savenbiteportal-f5ggcpczf5f2f8b4.southafricanorth-01.azurewebsites.net',
       '.azurewebsites.net',
       'localhost'
-    ]
+    ],
+    hmr: {
+      overlay: false 
+    }
   }
 })

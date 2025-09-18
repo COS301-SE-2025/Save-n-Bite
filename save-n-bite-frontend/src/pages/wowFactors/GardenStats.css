@@ -1,98 +1,59 @@
-/* Updated GardenStats.css - Emerald theme, reorganized layout */
+/* GardenStats.css - Properly structured vertical layout */
 
-.garden-stats h3 {
-  margin: 0 0 20px 0;
-  color: #1f2937;
+.garden-stats {
+  background: white;
+  border-radius: 15px;
+  padding: 20px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* Main header styling like Plant Inventory */
+.stats-header {
+  border-bottom: 2px solid #e5e7eb;
+  padding-bottom: 10px;
+  margin-bottom: 5px;
+}
+
+.stats-header h3 {
+  margin: 0;
   font-size: 18px;
   font-weight: 600;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.garden-stats.compact h3 {
-  font-size: 16px;
-  margin-bottom: 15px;
-}
-
-.stats-loading {
-  text-align: center;
-  color: #6b7280;
-  padding: 20px;
-}
-
-.stats-section {
-  margin-bottom: 25px;
-  padding-bottom: 20px;
-  border-bottom: 1px solid #e5e7eb;
-}
-
-.garden-stats.compact .stats-section {
-  margin-bottom: 20px;
-  padding-bottom: 15px;
-}
-
-.stats-section:last-child {
-  border-bottom: none;
-  margin-bottom: 0;
-}
-
-.stats-section h4 {
-  margin: 0 0 15px 0;
-  font-size: 14px;
-  color: #6b7280;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  font-weight: 600;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.garden-stats.compact .stats-section h4 {
-  font-size: 12px;
-  margin-bottom: 10px;
-}
-
-.stat-item {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 8px 0;
-  border-bottom: 1px solid #f3f4f6;
-}
-
-.stat-item:last-child {
-  border-bottom: none;
-}
-
-.stat-label {
-  font-size: 14px;
-  color: #6b7280;
-}
-
-.stat-value {
-  font-size: 14px;
-  font-weight: 600;
   color: #1f2937;
+  text-align: center;
 }
 
-/* Milestone styling */
+/* Section styling */
+.stats-section {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.section-heading {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: #10b981;
+  text-align: left;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #d1d5db;
+}
+
+/* Milestones container */
+.milestones-container {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
 .milestone-item {
-  margin-bottom: 15px;
-  padding: 15px;
-  background: #f9fafb;
-  border-radius: 10px;
-  border-left: 4px solid #10b981;
-}
-
-.garden-stats.compact .milestone-item {
+  background: #f8fafc;
+  border-radius: 8px;
   padding: 12px;
-  margin-bottom: 12px;
-}
-
-.milestone-item:last-child {
-  margin-bottom: 0;
+  border-left: 4px solid #10b981;
 }
 
 .milestone-header {
@@ -103,19 +64,21 @@
 }
 
 .milestone-type {
-  font-size: 11px;
-  font-weight: 700;
-  color: #10b981;
+  font-size: 12px;
+  font-weight: 600;
+  color: #374151;
+  text-transform: uppercase;
   letter-spacing: 0.5px;
 }
 
 .milestone-progress {
-  font-size: 12px;
-  font-weight: 600;
-  color: #1f2937;
+  font-size: 14px;
+  font-weight: 700;
+  color: #10b981;
 }
 
 .progress-bar {
+  width: 100%;
   height: 6px;
   background: #e5e7eb;
   border-radius: 3px;
@@ -137,87 +100,57 @@
   line-height: 1.4;
 }
 
-.garden-stats.compact .milestone-description {
-  font-size: 11px;
+/* Achievements container */
+.achievements-container {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 
-/* Achievement styling */
 .achievement-item {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 8px 0;
-  border-bottom: 1px solid #f3f4f6;
-}
-
-.achievement-item:last-child {
-  border-bottom: none;
+  background: #f0fdf4;
+  padding: 10px 12px;
+  border-radius: 6px;
+  border-left: 3px solid #22c55e;
 }
 
 .achievement-label {
   font-size: 12px;
-  color: #6b7280;
-  text-transform: capitalize;
+  font-weight: 600;
+  color: #166534;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
 }
 
 .achievement-count {
-  font-size: 12px;
-  font-weight: 600;
-  color: #10b981;
-  background: #d1fae5;
-  padding: 2px 8px;
-  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 700;
+  color: #15803d;
 }
 
 .no-achievements {
   text-align: center;
   padding: 20px;
-  color: #6b7280;
+  background: #f9fafb;
+  border-radius: 8px;
+  border: 2px dashed #d1d5db;
 }
 
 .no-achievements p {
   margin: 0 0 5px 0;
+  font-size: 14px;
+  color: #6b7280;
   font-weight: 500;
 }
 
 .no-achievements small {
+  font-size: 12px;
   color: #9ca3af;
-  font-style: italic;
 }
 
-/* Progress circle */
-.completion-circle {
-  display: flex;
-  justify-content: center;
-  margin-top: 10px;
-}
-
-.circular-chart {
-  width: 80px;
-  height: 80px;
-}
-
-.circle-bg {
-  fill: none;
-  stroke: #e5e7eb;
-  stroke-width: 2.8;
-}
-
-.circle {
-  fill: none;
-  stroke: #10b981;
-  stroke-width: 2.8;
-  stroke-linecap: round;
-  animation: progress 1s ease-out forwards;
-}
-
-.percentage {
-  fill: #1f2937;
-  font-family: sans-serif;
-  font-size: 0.5em;
-  text-anchor: middle;
-  font-weight: 600;
-}
 
 @keyframes progress {
   0% {
@@ -225,22 +158,74 @@
   }
 }
 
+/* Loading state */
+.stats-loading {
+  text-align: center;
+  padding: 40px 20px;
+  color: #6b7280;
+}
+
+.stats-loading p {
+  margin: 0;
+  font-size: 14px;
+}
+
+/* Compact mode adjustments */
+.garden-stats.compact {
+  padding: 15px;
+  gap: 15px;
+}
+
+.garden-stats.compact .stats-header h3 {
+  font-size: 16px;
+}
+
+.garden-stats.compact .section-heading {
+  font-size: 14px;
+}
+
+.garden-stats.compact .milestone-item {
+  padding: 10px;
+}
+
+.garden-stats.compact .achievement-item {
+  padding: 8px 10px;
+}
+
 /* Responsive design */
 @media (max-width: 768px) {
-  .garden-stats h3 {
+  .garden-stats {
+    padding: 15px;
+    gap: 15px;
+  }
+  
+  .stats-header h3 {
     font-size: 16px;
   }
   
-  .stats-section h4 {
-    font-size: 12px;
+  .section-heading {
+    font-size: 14px;
   }
   
-  .milestone-item {
+  .milestone-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+  }
+  
+  .milestone-progress {
+    align-self: flex-end;
+  }
+}
+
+@media (max-width: 480px) {
+  .garden-stats {
     padding: 12px;
+    gap: 12px;
   }
   
   .circular-chart {
-    width: 60px;
-    height: 60px;
+    max-width: 100px;
+    max-height: 100px;
   }
 }

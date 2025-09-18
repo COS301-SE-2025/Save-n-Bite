@@ -1,5 +1,6 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import GardenTile from '../../components/garden/GardenTile';
+import gardenBackgroundSvg from '../../assets/images/backgrounds/garden-background.svg';
 import './GardenGrid.css';
 
 const GardenGrid = ({ 
@@ -9,11 +10,24 @@ const GardenGrid = ({
   onPlantInteract,
   onDrop,
   draggedPlant,
-  mode = 'view' // 'view', 'move'
+  mode = 'view', // 'view', 'move'
+  selectedTileForMove = null
 }) => {
   const [selectedTile, setSelectedTile] = useState(null);
   const [hoveredTile, setHoveredTile] = useState(null);
   const [dragOverTile, setDragOverTile] = useState(null);
+
+  // Sync local selectedTile with prop from parent
+  useEffect(() => {
+    setSelectedTile(selectedTileForMove);
+  }, [selectedTileForMove]);
+
+  // Clear selected tile when switching to view mode
+  useEffect(() => {
+    if (mode === 'view') {
+      setSelectedTile(null);
+    }
+  }, [mode]);
 
   const handleTileClick = useCallback((tile) => {
     if (mode === 'move' && tile.plant_details) {
@@ -29,7 +43,7 @@ const GardenGrid = ({
       }
       setSelectedTile(null);
     } else if (mode === 'view' && tile.plant_details) {
-      // Viewing plant details
+      // Viewing plant details (only in view mode)
       if (onPlantInteract) {
         onPlantInteract(tile.plant_details, tile);
       }
@@ -37,18 +51,20 @@ const GardenGrid = ({
   }, [mode, selectedTile, onTileSelect, onPlantInteract]);
 
   const handlePlantClick = useCallback((plantData, tile) => {
-    if (onPlantInteract) {
+    // Only allow plant details in view mode
+    if (mode === 'view' && onPlantInteract) {
       onPlantInteract(plantData, tile);
     }
-  }, [onPlantInteract]);
+    // In move mode, plant clicks are handled by handleTileClick
+  }, [mode, onPlantInteract]);
 
   // Drag and drop handlers
   const handleDragOver = useCallback((e, tile) => {
     e.preventDefault();
-    if (!tile.plant_details && draggedPlant) {
+    if (!tile.plant_details && (draggedPlant || selectedTile)) {
       setDragOverTile(tile);
     }
-  }, [draggedPlant]);
+  }, [draggedPlant, selectedTile]);
 
   const handleDragLeave = useCallback((e, tile) => {
     setDragOverTile(null);
@@ -58,10 +74,16 @@ const GardenGrid = ({
     e.preventDefault();
     setDragOverTile(null);
     
+    // Handle inventory plant drop
     if (!tile.plant_details && draggedPlant && onDrop) {
       onDrop(tile);
     }
-  }, [draggedPlant, onDrop]);
+    // Handle move mode plant drop
+    else if (!tile.plant_details && selectedTile && mode === 'move' && onTileSelect) {
+      onTileSelect(tile, 'move', selectedTile);
+      setSelectedTile(null);
+    }
+  }, [draggedPlant, selectedTile, mode, onDrop, onTileSelect]);
 
   const getTileClassName = (tile) => {
     let className = '';
@@ -95,27 +117,16 @@ const GardenGrid = ({
 
   return (
     <div className="garden-container">
-      {/* Garden background with grass/earth SVG */}
-      <div className="garden-background">
-        <svg className="garden-earth-svg" viewBox="0 0 100 100" preserveAspectRatio="none">
-          <defs>
-            <pattern id="earthTexture" patternUnits="userSpaceOnUse" width="20" height="20">
-              <rect width="20" height="20" fill="#8B4513"/>
-              <circle cx="5" cy="5" r="1" fill="#A0522D"/>
-              <circle cx="15" cy="10" r="0.5" fill="#CD853F"/>
-              <circle cx="10" cy="15" r="1.5" fill="#D2691E"/>
-            </pattern>
-            <pattern id="grassTexture" patternUnits="userSpaceOnUse" width="10" height="10">
-              <rect width="10" height="10" fill="#228B22"/>
-              <path d="M2,10 Q2,8 2,6 Q2,8 2,10" stroke="#32CD32" strokeWidth="0.5" fill="none"/>
-              <path d="M6,10 Q6,7 6,5 Q6,7 6,10" stroke="#90EE90" strokeWidth="0.3" fill="none"/>
-              <path d="M8,10 Q8,8 8,6 Q8,8 8,10" stroke="#98FB98" strokeWidth="0.4" fill="none"/>
-            </pattern>
-          </defs>
-          <rect width="100" height="100" fill="url(#earthTexture)"/>
-          <rect width="100" height="15" y="85" fill="url(#grassTexture)" opacity="0.7"/>
-        </svg>
-      </div>
+      {/* Garden background with SVG image */}
+      <div 
+        className="garden-background" 
+        style={{ 
+          backgroundImage: `url(${gardenBackgroundSvg})`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          backgroundRepeat: 'no-repeat'
+        }}
+      />
 
       <div className="garden-grid">
         {gardenData.garden_tiles.map((tile) => (
@@ -129,28 +140,12 @@ const GardenGrid = ({
             onDragOver={(e) => handleDragOver(e, tile)}
             onDragLeave={(e) => handleDragLeave(e, tile)}
             onDrop={(e) => handleDrop(e, tile)}
-            showCoordinates={false} // Remove tile numbers from display
+            showCoordinates={false}
             className={getTileClassName(tile)}
           />
         ))}
       </div>
       
-      {/* Garden info overlay */}
-      <div className="garden-info">
-        <div className="garden-stats">
-          <span>Plants: {gardenData.total_plants_placed}/64</span>
-          <span>Completion: {gardenData.completion_percentage?.toFixed(1)}%</span>
-        </div>
-        
-        {mode !== 'view' && (
-          <div className="garden-mode-indicator">
-            Mode: {mode.charAt(0).toUpperCase() + mode.slice(1)}
-            {selectedTile && mode === 'move' && (
-              <span> - Selected plant at [{selectedTile.row}, {selectedTile.col}]</span>
-            )}
-          </div>
-        )}
-      </div>
     </div>
   );
 };

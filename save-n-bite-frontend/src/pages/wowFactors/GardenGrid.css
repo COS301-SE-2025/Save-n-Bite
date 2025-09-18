@@ -1,19 +1,19 @@
-/* Updated GardenGrid.css - Earth-like garden appearance */
+/* Updated GardenGrid.css - Earth-like garden appearance with proper background coverage */
 
 .garden-container {
   position: relative;
   width: 100%;
   max-width: 900px; /* Enlarged from 800px */
   margin: 0 auto;
-  padding: 20px;
+  padding: 15px;
 }
 
 .garden-background {
   position: absolute;
-  top: 20px;
-  left: 20px;
-  right: 20px;
-  bottom: 60px;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
   border-radius: 16px;
   overflow: hidden;
   z-index: 0;
@@ -36,6 +36,7 @@
   border-radius: 16px;
   padding: 16px; /* Increased padding */
   z-index: 1;
+  min-height: 500px; /* Ensure minimum height */
 }
 
 .garden-grid-loading {
@@ -71,7 +72,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 12px 16px;
+  padding: 5px 16px;
   background: white;
   border-radius: 12px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
@@ -155,6 +156,7 @@
     gap: 4px;
     padding: 12px;
     border-radius: 12px;
+    min-height: 400px;
   }
   
   .garden-info {
@@ -173,6 +175,7 @@
   .garden-grid {
     gap: 2px;
     padding: 8px;
+    min-height: 350px;
   }
   
   .garden-stats {
