@@ -376,12 +376,12 @@ const HomePage = () => {
                 Get Started
                 <ArrowRightIcon className="w-5 h-5" />
               </button>
-              <Link
+              {/* <Link
                 to="/about"
                 className="px-8 py-4 bg-transparent text-emerald-700 dark:text-emerald-300 border-2 border-emerald-200 dark:border-emerald-800 font-medium rounded-xl hover:bg-emerald-50/50 dark:hover:bg-white/5 transition-all flex items-center justify-center gap-2"
               >
                 Learn More
-              </Link>
+              </Link> */}
             </div>
           </div>
         </div>
