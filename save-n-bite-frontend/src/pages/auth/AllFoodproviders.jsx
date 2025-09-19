@@ -234,39 +234,57 @@ const FoodProvidersPage = () => {
 
         {/* Providers Grid */}
         {filteredProviders.length > 0 ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4">
             {filteredProviders.map((provider) => (
               <Link
                 to={`/provider/${provider.id}`}
                 key={provider.id}
-                className="group bg-white dark:bg-gray-800 rounded-xl overflow-hidden shadow-sm hover:shadow-lg transition-all duration-300 border border-gray-100 dark:border-gray-700 hover:border-emerald-100 dark:hover:border-emerald-900/30 flex flex-col h-full"
+                className="group bg-white dark:bg-gray-800 rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-all duration-200 border border-gray-100 dark:border-gray-700/50 flex flex-col h-full"
               >
-                <div className="relative h-40 overflow-hidden">
+                <div className="relative pt-[70%] sm:pt-[75%] overflow-hidden">
                   <img
                     src={getProviderImage(provider)}
                     alt={provider.business_name}
-                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                    className="absolute inset-0 w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
                     onError={(e) => {
                       e.target.src = 'src/assets/images/SnB_leaf_icon.png'
-                      e.target.className = 'w-full h-full object-contain p-8 bg-gray-50 dark:bg-gray-700/30'
+                      e.target.className = 'absolute inset-0 w-full h-full object-contain p-6 bg-gray-50 dark:bg-gray-700/30 transition-transform duration-300 group-hover:scale-105'
                     }}
                   />
-                </div>
-                <div className="p-5 flex-grow flex flex-col">
-                  <div className="flex justify-between items-start mb-2">
-                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors line-clamp-1">
-                      {provider.business_name}
-                    </h3>
-                    <div className="flex items-center bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 text-xs font-medium px-2.5 py-1 rounded-full">
-                      <Star className="h-3 w-3 fill-current mr-1" />
-                      <span>{provider.rating?.toFixed(1) || 'N/A'}</span>
+                  <div className="absolute top-1.5 right-1.5 bg-white/90 dark:bg-gray-900/90 backdrop-blur-sm text-xs font-medium px-2 py-1 rounded-full shadow-sm">
+                    <div className="flex items-center">
+                      <Star className="h-3 w-3 text-amber-500 fill-amber-500 mr-0.5" />
+                      <span className="font-semibold">{provider.rating?.toFixed(1) || 'N/A'}</span>
                     </div>
                   </div>
+                </div>
+                <div className="p-2 sm:p-3 flex-grow flex flex-col">
+                  <h3 className="text-sm font-medium text-gray-900 dark:text-white group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors line-clamp-2 mb-1">
+                    {provider.business_name}
+                  </h3>
                   
                   {provider.business_address && (
-                    <div className="flex items-center text-gray-500 dark:text-gray-400 text-sm mt-2">
-                      <MapPin className="h-3.5 w-3.5 mr-1.5 flex-shrink-0" />
-                      <span className="truncate">{provider.business_address}</span>
+                    <div className="flex items-center text-gray-500 dark:text-gray-400 text-xs mt-auto">
+                      <MapPin className="h-3 w-3 mr-1 flex-shrink-0" />
+                      <span className="truncate">{provider.business_address.split(',')[0]}</span>
+                    </div>
+                  )}
+
+                  {provider.business_tags?.length > 0 && (
+                    <div className="mt-1.5 flex flex-wrap gap-1">
+                      {provider.business_tags.slice(0, 2).map((tag, index) => (
+                        <span 
+                          key={index}
+                          className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300"
+                        >
+                          {tag}
+                        </span>
+                      ))}
+                      {provider.business_tags.length > 2 && (
+                        <span className="text-[10px] text-gray-400 dark:text-gray-500">
+                          +{provider.business_tags.length - 2}
+                        </span>
+                      )}
                     </div>
                   )}
                 </div>
@@ -274,7 +292,7 @@ const FoodProvidersPage = () => {
             ))}
           </div>
         ) : (
-          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-12 text-center border border-gray-100 dark:border-gray-700">
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-8 sm:p-12 text-center border border-gray-100 dark:border-gray-700">
             <div className="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-gray-100 dark:bg-gray-700 mb-4">
               <Search className="h-8 w-8 text-gray-400" />
             </div>
@@ -290,7 +308,7 @@ const FoodProvidersPage = () => {
                   setSearchQuery('')
                   setSelectedCategory('All')
                 }}
-                className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-emerald-600 hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 transition-colors"
+                className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-lg shadow-sm text-white bg-emerald-600 hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 transition-colors"
               >
                 Clear all filters
               </button>
