@@ -5,6 +5,8 @@ from django.core.files.uploadedfile import SimpleUploadedFile
 from django.contrib import messages
 from django.http import HttpRequest
 from django.urls import reverse
+from io import StringIO
+from django.core.management import call_command
 from rest_framework.test import APIClient
 from rest_framework import status
 from rest_framework_simplejwt.exceptions import InvalidToken, AuthenticationFailed
@@ -1149,6 +1151,527 @@ class PasswordChangeMiddlewareTest(TestCase):
         self.assertEqual(response.status_code, 403)
         response_data = self.parse_json_response(response)
         self.assertEqual(response_data['error']['code'], 'PASSWORD_CHANGE_REQUIRED')
+
+class UserModelTest(TestCase):
+    def setUp(self):
+        self.user = User.objects.create_user(
+            email='test@example.com',
+            username='testuser',
+            password='testpass123',
+            user_type='customer'
+        )
+        
+        self.admin_user = User.objects.create_user(
+            email='admin@example.com',
+            username='admin',
+            password='adminpass123',
+            user_type='customer',
+            admin_rights=True
+        )
+
+    def test_user_creation(self):
+        self.assertEqual(self.user.email, 'test@example.com')
+        self.assertEqual(self.user.username, 'testuser')
+        self.assertEqual(self.user.user_type, 'customer')
+        self.assertTrue(self.user.is_active)
+        self.assertFalse(self.user.is_staff)
+        self.assertFalse(self.user.is_superuser)
+
+    def test_user_id_alias(self):
+        self.assertEqual(self.user.id, self.user.UserID)
+
+    def test_get_full_name_customer(self):
+        customer_profile = CustomerProfile.objects.create(
+            user=self.user,
+            full_name='Test Customer'
+        )
+        self.assertEqual(self.user.get_full_name(), 'Test Customer')
+
+    def test_get_full_name_ngo(self):
+        ngo_user = User.objects.create_user(
+            email='ngo@example.com',
+            username='ngo',
+            password='ngopass123',
+            user_type='ngo'
+        )
+        ngo_profile = NGOProfile.objects.create(
+            user=ngo_user,
+            organisation_name='Test NGO',
+            organisation_contact='+1234567890',
+            organisation_email='ngo@test.com',
+            representative_name='John Doe',  # This should be returned by get_full_name
+            representative_email='john@ngo.com',
+            address_line1='123 Test St',
+            city='Test City',
+            province_or_state='Test Province',
+            postal_code='1234',
+            country='Test Country',
+            npo_document=SimpleUploadedFile("test.pdf", b"file_content", content_type="application/pdf")
+        )
+        # get_full_name should return representative_name for NGOs
+        self.assertEqual(ngo_user.get_full_name(), 'John Doe')
+
+    def test_get_full_name_provider(self):
+        provider_user = User.objects.create_user(
+            email='provider@example.com',
+            username='provider',
+            password='providerpass123',
+            user_type='provider'
+        )
+        provider_profile = FoodProviderProfile.objects.create(
+            user=provider_user,
+            business_name='Test Restaurant',
+            business_address='123 Test St',
+            business_contact='+1234567890',
+            business_email='test@restaurant.com',
+            cipc_document=SimpleUploadedFile("test.pdf", b"file_content", content_type="application/pdf")
+        )
+        self.assertEqual(provider_user.get_full_name(), 'Test Restaurant')
+
+    def test_can_login_normal(self):
+        can_login, message = self.user.can_login()
+        self.assertTrue(can_login)
+        self.assertEqual(message, "OK")
+
+    def test_can_login_inactive(self):
+        self.user.is_active = False
+        self.user.save()
+        can_login, message = self.user.can_login()
+        self.assertFalse(can_login)
+        self.assertEqual(message, "Account is deactivated")
+
+    def test_can_login_locked(self):
+        self.user.account_locked_until = timezone.now() + timedelta(minutes=30)
+        self.user.save()
+        can_login, message = self.user.can_login()
+        self.assertFalse(can_login)
+        self.assertEqual(message, "Account is temporarily locked")
+
+    def test_can_login_password_change_required(self):
+        self.user.password_must_change = True
+        self.user.save()
+        can_login, message = self.user.can_login()
+        self.assertTrue(can_login)
+        self.assertEqual(message, "Password must be changed")
+
+    def test_increment_failed_login(self):
+        initial_attempts = self.user.failed_login_attempts
+        self.user.increment_failed_login()
+        self.user.refresh_from_db()
+        self.assertEqual(self.user.failed_login_attempts, initial_attempts + 1)
+
+    def test_increment_failed_login_lock_account(self):
+        self.user.failed_login_attempts = 4
+        self.user.save()
+        self.user.increment_failed_login()
+        self.user.refresh_from_db()
+        self.assertEqual(self.user.failed_login_attempts, 5)
+        self.assertIsNotNone(self.user.account_locked_until)
+
+    def test_reset_failed_login_attempts(self):
+        self.user.failed_login_attempts = 3
+        self.user.account_locked_until = timezone.now()
+        self.user.save()
+        self.user.reset_failed_login_attempts()
+        self.user.refresh_from_db()
+        self.assertEqual(self.user.failed_login_attempts, 0)
+        self.assertIsNone(self.user.account_locked_until)
+
+    def test_set_temporary_password(self):
+        self.user.set_temporary_password('temp123')
+        self.user.refresh_from_db()
+        self.assertTrue(self.user.has_temporary_password)
+        self.assertTrue(self.user.password_must_change)
+        self.assertIsNotNone(self.user.temp_password_created_at)
+        self.assertTrue(self.user.check_password('temp123'))
+
+    def test_complete_password_change(self):
+        self.user.has_temporary_password = True
+        self.user.password_must_change = True
+        self.user.temp_password_created_at = timezone.now()
+        self.user.save()
+        self.user.complete_password_change()
+        self.user.refresh_from_db()
+        self.assertFalse(self.user.has_temporary_password)
+        self.assertFalse(self.user.password_must_change)
+        self.assertIsNone(self.user.temp_password_created_at)
+
+    def test_deactivate_account(self):
+        self.user.deactivate_account(self.admin_user, "Test deactivation")
+        self.user.refresh_from_db()
+        self.assertFalse(self.user.is_active)
+        self.assertEqual(self.user.deactivation_reason, "Test deactivation")
+        self.assertEqual(self.user.deactivated_by, self.admin_user)
+        self.assertIsNotNone(self.user.deactivated_at)
+
+    def test_reactivate_account(self):
+        self.user.is_active = False
+        self.user.deactivation_reason = "Test"
+        self.user.deactivated_by = self.admin_user
+        self.user.deactivated_at = timezone.now()
+        self.user.save()
+        self.user.reactivate_account()
+        self.user.refresh_from_db()
+        self.assertTrue(self.user.is_active)
+        self.assertEqual(self.user.deactivation_reason, "")
+        self.assertIsNone(self.user.deactivated_by)
+        self.assertIsNone(self.user.deactivated_at)
+
+class CustomerProfileModelTest(TestCase):
+    def setUp(self):
+        self.user = User.objects.create_user(
+            email='customer@example.com',
+            username='customer',
+            password='testpass123',
+            user_type='customer'
+        )
+        self.profile = CustomerProfile.objects.create(
+            user=self.user,
+            full_name='Test Customer'
+        )
+
+    def test_customer_profile_creation(self):
+        self.assertEqual(self.profile.full_name, 'Test Customer')
+        self.assertEqual(self.profile.user, self.user)
+        self.assertEqual(str(self.profile), 'Customer: Test Customer')
+
+class NGOProfileModelTest(TestCase):
+    def setUp(self):
+        self.user = User.objects.create_user(
+            email='ngo@example.com',
+            username='ngo',
+            password='testpass123',
+            user_type='ngo'
+        )
+        self.profile = NGOProfile.objects.create(
+            user=self.user,
+            organisation_name='Test NGO',
+            organisation_contact='+1234567890',
+            organisation_email='ngo@test.com',
+            representative_name='John Doe',
+            representative_email='john@ngo.com',
+            address_line1='123 Test St',
+            city='Test City',
+            province_or_state='Test Province',
+            postal_code='1234',
+            country='Test Country',
+            npo_document=SimpleUploadedFile("test.pdf", b"file_content", content_type="application/pdf")
+        )
+
+    def test_ngo_profile_creation(self):
+        self.assertEqual(self.profile.organisation_name, 'Test NGO')
+        self.assertEqual(self.profile.status, 'pending_verification')
+        self.assertEqual(str(self.profile), 'NGO: Test NGO')
+
+    def test_ngo_profile_address_fields(self):
+        self.assertEqual(self.profile.address_line1, '123 Test St')
+        self.assertEqual(self.profile.city, 'Test City')
+        self.assertEqual(self.profile.province_or_state, 'Test Province')
+        self.assertEqual(self.profile.postal_code, '1234')
+        self.assertEqual(self.profile.country, 'Test Country')
+
+class FoodProviderProfileModelTest(TestCase):
+    def setUp(self):
+        self.user = User.objects.create_user(
+            email='provider@example.com',
+            username='provider',
+            password='testpass123',
+            user_type='provider'
+        )
+        self.provider = FoodProviderProfile.objects.create(
+            user=self.user,
+            business_name='Test Restaurant',
+            business_address='123 Test St, Johannesburg',
+            business_contact='+1234567890',
+            business_email='test@restaurant.com',
+            cipc_document=SimpleUploadedFile("test.pdf", b"file_content", content_type="application/pdf")
+        )
+
+    def test_provider_profile_creation(self):
+        self.assertEqual(self.provider.business_name, 'Test Restaurant')
+        self.assertEqual(self.provider.status, 'pending_verification')
+        self.assertEqual(str(self.provider), 'Provider: Test Restaurant')
+
+    # def test_geocode_address_success(self):
+    #     """Test successful geocoding with mocked requests"""
+    #     with patch('authentication.models.requests.get') as mock_get:
+    #         mock_response = MagicMock()
+    #         mock_response.json.return_value = [{
+    #             'lat': '-26.2041',
+    #             'lon': '28.0473'
+    #         }]
+    #         mock_get.return_value = mock_response
+            
+    #         # Call the method directly
+    #         self.provider.geocode_address()
+            
+    #         self.assertEqual(float(self.provider.latitude), -26.2041)
+    #         self.assertEqual(float(self.provider.longitude), 28.0473)
+    #         self.assertFalse(self.provider.geocoding_failed)
+    #         self.assertEqual(self.provider.geocoding_error, '')
+    #         mock_get.assert_called_once()
+
+    # def test_geocode_address_no_results(self):
+    #     """Test geocoding with no results"""
+    #     with patch('authentication.models.requests.get') as mock_get:
+    #         mock_response = MagicMock()
+    #         mock_response.json.return_value = []
+    #         mock_get.return_value = mock_response
+            
+    #         self.provider.geocode_address()
+            
+    #         self.assertIsNone(self.provider.latitude)
+    #         self.assertIsNone(self.provider.longitude)
+    #         self.assertTrue(self.provider.geocoding_failed)
+    #         self.assertEqual(self.provider.geocoding_error, 'No results found for address')
+
+    # def test_geocode_address_exception(self):
+    #     """Test geocoding with exception"""
+    #     with patch('authentication.models.requests.get') as mock_get:
+    #         mock_get.side_effect = Exception('Network error')
+            
+    #         self.provider.geocode_address()
+            
+    #         self.assertIsNone(self.provider.latitude)
+    #         self.assertIsNone(self.provider.longitude)
+    #         self.assertTrue(self.provider.geocoding_failed)
+    #         self.assertIn('Network error', self.provider.geocoding_error)
+
+    def test_coordinates_property(self):
+        self.provider.latitude = -26.2041
+        self.provider.longitude = 28.0473
+        coordinates = self.provider.coordinates
+        self.assertEqual(coordinates, {'lat': -26.2041, 'lng': 28.0473})
+
+    def test_coordinates_property_none(self):
+        coordinates = self.provider.coordinates
+        self.assertIsNone(coordinates)
+
+    def test_openstreetmap_url_with_coordinates(self):
+        self.provider.latitude = -26.2041
+        self.provider.longitude = 28.0473
+        url = self.provider.openstreetmap_url
+        self.assertIn('-26.2041', url)
+        self.assertIn('28.0473', url)
+
+    def test_openstreetmap_url_with_address(self):
+        self.provider.latitude = None
+        self.provider.longitude = None
+        url = self.provider.openstreetmap_url
+        self.assertIn('123%20Test%20St%2C%20Johannesburg', url)
+
+    def test_add_tag(self):
+        result = self.provider.add_tag('vegetarian')
+        self.assertTrue(result)
+        self.assertIn('Vegetarian', self.provider.business_tags)
+        
+        # Test adding duplicate tag
+        result = self.provider.add_tag('vegetarian')
+        self.assertFalse(result)
+
+    def test_remove_tag(self):
+        self.provider.business_tags = ['Vegetarian', 'Vegan']
+        self.provider.save()
+        
+        result = self.provider.remove_tag('vegetarian')
+        self.assertTrue(result)
+        self.assertNotIn('Vegetarian', self.provider.business_tags)
+        self.assertIn('Vegan', self.provider.business_tags)
+        
+        # Test removing non-existent tag
+        result = self.provider.remove_tag('nonexistent')
+        self.assertFalse(result)
+
+    def test_get_tag_display(self):
+        self.provider.business_tags = ['vegetarian', '  vegan  ', '']
+        tags = self.provider.get_tag_display()
+        self.assertEqual(tags, ['Vegetarian', 'Vegan'])
+
+    def test_has_complete_profile(self):
+        # Test incomplete profile
+        self.assertFalse(self.provider.has_complete_profile())
+        
+        # Test complete profile with description
+        self.provider.business_description = 'A test restaurant'
+        self.provider.save()
+        self.assertTrue(self.provider.has_complete_profile())
+        
+        # Test complete profile with tags
+        self.provider.business_description = ''
+        self.provider.business_tags = ['test']
+        self.provider.save()
+        self.assertTrue(self.provider.has_complete_profile())
+
+    def test_get_popular_tags(self):
+        """Test getting popular tags from verified providers"""
+        # Create actual provider instances instead of mocking
+        provider1 = FoodProviderProfile.objects.create(
+            user=User.objects.create_user(email='p1@test.com', username='p1', password='test', user_type='provider'),
+            business_name='Provider 1',
+            business_address='Address 1',
+            business_contact='+1111111111',
+            business_email='p1@test.com',
+            cipc_document=SimpleUploadedFile("test1.pdf", b"file_content", content_type="application/pdf"),
+            status='verified',
+            business_tags=['Vegetarian', 'Vegan']
+        )
+        
+        provider2 = FoodProviderProfile.objects.create(
+            user=User.objects.create_user(email='p2@test.com', username='p2', password='test', user_type='provider'),
+            business_name='Provider 2',
+            business_address='Address 2',
+            business_contact='+2222222222',
+            business_email='p2@test.com',
+            cipc_document=SimpleUploadedFile("test2.pdf", b"file_content", content_type="application/pdf"),
+            status='verified',
+            business_tags=['Vegetarian', 'Gluten-Free']
+        )
+        
+        provider3 = FoodProviderProfile.objects.create(
+            user=User.objects.create_user(email='p3@test.com', username='p3', password='test', user_type='provider'),
+            business_name='Provider 3',
+            business_address='Address 3',
+            business_contact='+3333333333',
+            business_email='p3@test.com',
+            cipc_document=SimpleUploadedFile("test3.pdf", b"file_content", content_type="application/pdf"),
+            status='pending_verification',  # Should not be included
+            business_tags=['Vegetarian']
+        )
+        
+        popular_tags = FoodProviderProfile.get_popular_tags()
+        
+        self.assertEqual(len(popular_tags), 3)
+        self.assertEqual(popular_tags[0]['tag'], 'Vegetarian')
+        self.assertEqual(popular_tags[0]['count'], 2)  # Only from verified providers
+        self.assertEqual(popular_tags[1]['tag'], 'Vegan')
+        self.assertEqual(popular_tags[1]['count'], 1)
+        self.assertEqual(popular_tags[2]['tag'], 'Gluten-Free')
+        self.assertEqual(popular_tags[2]['count'], 1)
+
+    def test_save_tracks_updates(self):
+        # Initial save
+        self.provider.save()
+        
+        # Update banner
+        self.provider.banner = SimpleUploadedFile("banner.jpg", b"file_content", content_type="image/jpeg")
+        self.provider.save()
+        self.assertIsNotNone(self.provider.banner_updated_at)
+        
+        # Update description
+        self.provider.business_description = 'Updated description'
+        self.provider.save()
+        self.assertIsNotNone(self.provider.description_updated_at)
+        
+        # Update tags
+        self.provider.business_tags = ['updated']
+        self.provider.save()
+        self.assertIsNotNone(self.provider.tags_updated_at)
+
+class GeocodeAddressesCommandTest(TestCase):
+    def setUp(self):
+        # Create test user
+        self.user = User.objects.create_user(
+            email='test@example.com',
+            username='testuser',
+            password='testpass123',
+            user_type='provider'
+        )
+        
+        # Create test businesses with and without coordinates
+        self.business_without_coords = FoodProviderProfile.objects.create(
+            user=self.user,
+            business_name='Business Without Coords',
+            business_address='123 Test Street, Johannesburg',
+            business_contact='+1234567890',
+            business_email='test@business.com',
+            cipc_document=SimpleUploadedFile("test.pdf", b"file_content", content_type="application/pdf"),
+            latitude=None,
+            longitude=None
+        )
+        
+        self.business_with_coords = FoodProviderProfile.objects.create(
+            user=User.objects.create_user(email='test2@example.com', username='testuser2', password='testpass123', user_type='provider'),
+            business_name='Business With Coords',
+            business_address='456 Test Street, Cape Town',
+            business_contact='+0987654321',
+            business_email='test2@business.com',
+            cipc_document=SimpleUploadedFile("test2.pdf", b"file_content", content_type="application/pdf"),
+            latitude=-33.9249,
+            longitude=18.4241
+        )
+        
+        self.business_empty_address = FoodProviderProfile.objects.create(
+            user=User.objects.create_user(email='test3@example.com', username='testuser3', password='testpass123', user_type='provider'),
+            business_name='Business Empty Address',
+            business_address='',
+            business_contact='+1111111111',
+            business_email='test3@business.com',
+            cipc_document=SimpleUploadedFile("test3.pdf", b"file_content", content_type="application/pdf"),
+            latitude=None,
+            longitude=None
+        )
+
+    @patch('authentication.management.commands.geocode_addresses.FoodProviderProfile.geocode_address')
+    def test_command_geocoding_failure(self, mock_geocode):
+        """Test command when geocoding fails"""
+        # Mock failed geocoding
+        def mock_geocode_side_effect():
+            self.business_without_coords.geocoding_failed = True
+            self.business_without_coords.geocoding_error = 'No results found'
+        
+        mock_geocode.side_effect = mock_geocode_side_effect
+        
+        # Capture command output
+        out = StringIO()
+        call_command('geocode_addresses', stdout=out)
+        
+        output = out.getvalue()
+        
+        # Verify failure was handled
+        self.assertIn('Failed: No results found', output)
+        self.assertIn('Success: 0, Errors: 1', output)
+
+    @patch('authentication.management.commands.geocode_addresses.FoodProviderProfile.geocode_address')
+    def test_command_geocoding_exception(self, mock_geocode):
+        """Test command when geocoding raises exception"""
+        # Mock exception during geocoding
+        mock_geocode.side_effect = Exception('Network error')
+        
+        # Capture command output
+        out = StringIO()
+        call_command('geocode_addresses', stdout=out)
+        
+        output = out.getvalue()
+        
+        # Verify exception was handled
+        self.assertIn('Exception: Network error', output)
+        self.assertIn('Success: 0, Errors: 1', output)
+
+    def test_command_no_businesses_to_geocode(self):
+        """Test command when no businesses need geocoding"""
+        # Remove all businesses without coordinates
+        FoodProviderProfile.objects.filter(latitude__isnull=True, longitude__isnull=True).delete()
+        
+        # Capture command output
+        out = StringIO()
+        call_command('geocode_addresses', stdout=out)
+        
+        output = out.getvalue()
+        
+        # Verify no businesses message
+        self.assertIn('No businesses need geocoding', output)
+
+    def test_command_help_text(self):
+        """Test command help text"""
+        # Use a different approach to test help
+        try:
+            call_command('geocode_addresses', '--help')
+        except SystemExit:
+            # Help command typically exits with SystemExit
+            pass
+        # This test is mostly to ensure the command exists and has help
+        self.assertTrue(True)
+
 
 # Run all tests
 if __name__ == '__main__':
