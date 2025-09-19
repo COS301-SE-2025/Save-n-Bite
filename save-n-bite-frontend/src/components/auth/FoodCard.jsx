@@ -1,17 +1,31 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { MapPin, Clock } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 
 const FoodCard = ({ item }) => {
   const { isNGO } = useAuth();
   const [showExpiry, setShowExpiry] = useState(false);
+  const navigate = useNavigate();
   
   const getLinkDestination = () => {
     if (isNGO() && item.type === 'Donation') {
       return `/donation-request/${item.id}`;
     }
     return `/item/${item.id}`;
+  };
+
+  const handleButtonClick = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    if (item.type === 'Donation') {
+      // Navigate to donation request page for NGOs
+      navigate(`/donation-request/${item.id}`);
+    } else {
+      // Navigate to food item page for ordering
+      navigate(`/item/${item.id}`);
+    }
   };
 
   const getButtonText = () => {
@@ -91,17 +105,26 @@ const FoodCard = ({ item }) => {
           </div>
           
           {/* Order button - full width but smaller */}
-          <button 
-            type="button"
-            className="mt-2 w-full px-2 py-1.5 sm:py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs sm:text-sm font-medium rounded-lg transition-colors duration-200 focus:outline-none focus:ring-1 focus:ring-emerald-500 focus:ring-offset-1"
-            onClick={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              // Handle order/request logic here
-            }}
-          >
-            {getButtonText()}
-          </button>
+          <button
+  type="button"
+  className={`
+    mt-2 w-full px-3 py-2 sm:py-2.5
+    bg-gradient-to-r from-emerald-500 to-emerald-600
+    hover:from-emerald-600 hover:to-emerald-700
+    text-white text-sm font-medium
+    rounded-lg
+    transition-all duration-200
+    focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:ring-offset-2
+    shadow-sm hover:shadow
+    active:scale-[0.98] active:shadow-inner
+    dark:from-emerald-600 dark:to-emerald-700
+    dark:hover:from-emerald-700 dark:hover:to-emerald-800
+    dark:focus:ring-emerald-600/50
+  `}
+  onClick={handleButtonClick} 
+>
+  {getButtonText()}
+</button>
         </div>
       </Link>
     </div>
