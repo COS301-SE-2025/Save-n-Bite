@@ -4,7 +4,7 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import ProtectedRoute from './components/ProtectedRoutes';
 import { ThemeProvider } from "./context/ThemeContext";
-
+import { CartProvider } from './context/CartContext';
 
 import { USER_TYPES } from './config/routes';
 
@@ -58,6 +58,7 @@ function App() {
   return (
        <ThemeProvider>
     <AuthProvider>
+    <CartProvider>
       <Router>
         <Routes>
           {/* Public routes - no authentication required */}
@@ -237,6 +238,7 @@ function App() {
           />
         </Routes>
       </Router>
+      </CartProvider>
     </AuthProvider>
     </ThemeProvider>
  
