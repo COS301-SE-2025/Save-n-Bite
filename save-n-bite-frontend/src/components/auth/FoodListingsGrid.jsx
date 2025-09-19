@@ -12,28 +12,16 @@ const FoodListingsGrid = ({
   totalResults = 0
 }) => {
   return (
-    <div className="space-y-6">
-      {/* Header with filters and sorting */}
-      <div className="flex flex-col sm:flex-row sm:
-      -center sm:justify-between gap-4">
-        <div>
-          <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
-            Available Food
-          </h2>
-         
-        </div>
-        
-      </div>
-      
+    <div>
       {/* Grid of food cards */}
       {isLoading ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-5">
           {[...Array(8)].map((_, i) => (
             <div key={i} className="animate-pulse bg-gray-100 dark:bg-gray-800 rounded-xl h-80"></div>
           ))}
         </div>
       ) : listings.length > 0 ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-5">
           {listings.map((item) => (
             <FoodCard key={`${item.id}-${item.provider?.id || ''}`} item={item} />
           ))}
