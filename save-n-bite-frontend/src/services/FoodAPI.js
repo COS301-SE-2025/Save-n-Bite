@@ -272,7 +272,7 @@ const foodAPI = {
             // If new quantity is 0 or less, remove the item
             if (newQuantity <= 0) {
                 const response = await apiClient.post('/cart/remove/', {
-                    cart_item_id: cartItemId
+                    cartItemId: cartItemId
                 });
                 
                 return {
@@ -288,7 +288,7 @@ const foodAPI = {
             if (quantityDifference > 0) {
                 // Need to add more items
                 const response = await apiClient.post('/cart/add/', {
-                    food_listing_id: foodListingId,
+                    listingId: foodListingId,  // Changed from food_listing_id to listingId
                     quantity: quantityDifference
                 });
                 
@@ -301,12 +301,12 @@ const foodAPI = {
                 // Need to reduce quantity - we'll do this by removing and re-adding
                 // First remove the entire item
                 await apiClient.post('/cart/remove/', {
-                    cart_item_id: cartItemId
+                    cartItemId: cartItemId
                 });
                 
                 // Then add back the correct quantity
                 const response = await apiClient.post('/cart/add/', {
-                    food_listing_id: foodListingId,
+                    listingId: foodListingId,  // Changed from food_listing_id to listingId
                     quantity: newQuantity
                 });
                 
@@ -334,7 +334,7 @@ const foodAPI = {
             };
         }
     },
-
+    
     processCheckout: async (checkoutData) => {
         try {
             const response = await apiClient.post('/cart/checkout/', checkoutData);

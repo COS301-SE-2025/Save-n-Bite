@@ -24,6 +24,28 @@ const DetailedBasket = ({
   // Calculate subtotal
   const subtotal = provider.items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
 
+  // Debug function to log interactions
+  const handleUpdateQuantity = (itemId, newQuantity) => {
+    console.log('Updating quantity:', { itemId, newQuantity, provider });
+    if (onUpdateQuantity) {
+      onUpdateQuantity(itemId, newQuantity);
+    }
+  };
+
+  const handleRemoveItem = (itemId) => {
+    console.log('Removing item:', { itemId, provider });
+    if (onRemoveItem) {
+      onRemoveItem(itemId);
+    }
+  };
+
+  const handleCheckout = () => {
+    console.log('Checkout clicked:', { provider, subtotal });
+    if (onCheckout) {
+      onCheckout();
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       <CustomerNavBar />
@@ -84,27 +106,26 @@ const DetailedBasket = ({
                         <div className="flex items-center space-x-3">
                           <div className="flex items-center space-x-2 bg-gray-50 dark:bg-gray-700 rounded-lg px-2 py-1">
                             <button
-                              onClick={() => onUpdateQuantity(item.id, item.quantity - 1)}
+                              onClick={() => handleUpdateQuantity(item.id, item.quantity - 1)}
                               className="p-1 text-gray-500 hover:text-emerald-600 dark:text-gray-300 dark:hover:text-emerald-400 transition-colors"
                             >
-                              {item.quantity === 1 ? (
-                                <Trash2 className="h-4 w-4 text-red-500" />
-                              ) : (
-                                <Minus className="h-4 w-4" />
-                              )}
+                              {item.quantity > 1 && (
+  <Minus className="h-4 w-4" />
+)}
+
                             </button>
                             <span className="text-sm font-medium text-gray-900 dark:text-white w-5 text-center">
                               {item.quantity}
                             </span>
                             <button
-                              onClick={() => onUpdateQuantity(item.id, item.quantity + 1)}
+                              onClick={() => handleUpdateQuantity(item.id, item.quantity + 1)}
                               className="p-1 text-gray-500 hover:text-emerald-600 dark:text-gray-300 dark:hover:text-emerald-400 transition-colors"
                             >
                               <Plus className="h-4 w-4" />
                             </button>
                           </div>
                           <button
-                            onClick={() => onRemoveItem(item.id)}
+                            onClick={() => handleRemoveItem(item.id)}
                             className="p-1.5 text-gray-400 hover:text-red-500 dark:hover:text-red-400 transition-colors"
                           >
                             <Trash2 className="h-5 w-5" />
@@ -148,7 +169,7 @@ const DetailedBasket = ({
 
                   <motion.button
                     whileTap={{ scale: 0.98 }}
-                    onClick={onCheckout}
+                    onClick={handleCheckout}
                     disabled={isProcessingCheckout}
                     className="w-full flex items-center justify-center px-6 py-3 border border-transparent rounded-lg text-base font-medium text-white bg-emerald-600 hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                   >
@@ -202,7 +223,6 @@ const DetailedBasket = ({
     </div>
   );
 };
-
 
 // Payment Modal Component
 const PaymentModal = ({ 
@@ -370,6 +390,7 @@ const YourCart = () => {
   const [cartItems, setCartItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  
   const [isProcessingCheckout, setIsProcessingCheckout] = useState(false);
   const [currentView, setCurrentView] = useState('baskets');
   const [selectedProvider, setSelectedProvider] = useState(null);
@@ -429,7 +450,7 @@ const YourCart = () => {
   const providers = Object.values(itemsByProvider);
   const totalAmount = providers.reduce((sum, provider) => sum + provider.subtotal, 0);
 
-  // Add this updated updateQuantity function to your YourCart component
+// Update your updateQuantity function in YourCart.jsx to show better error messages:
 const updateQuantity = async (itemId, newQuantity) => {
   if (newQuantity < 1) {
     await removeItem(itemId);
@@ -437,29 +458,69 @@ const updateQuantity = async (itemId, newQuantity) => {
   }
   
   try {
-    const response = await foodAPI.updateCartItemQuantity(itemId, newQuantity);
+    const currentItem = cartItems.find(item => item.id === itemId);
+    if (!currentItem) {
+      setError('Item not found in cart');
+      return;
+    }
+    
+    const listingId = currentItem.listingId || currentItem.food_listing_id || currentItem.listing_id;
+    
+    const response = await foodAPI.updateCartItemQuantity(
+      itemId, 
+      newQuantity, 
+      currentItem.quantity,
+      listingId
+    );
+    
     if (response.success) {
-      // Update cartItems state
-      const updatedCartItems = cartItems.map(item => 
-        item.id === itemId ? { ...item, quantity: newQuantity } : item
-      );
-      setCartItems(updatedCartItems);
-      
-      // IMPORTANT: Also update selectedProvider if we're in detailed view
-      if (selectedProvider && currentView === 'provider') {
-        const updatedProviderItems = selectedProvider.items.map(item => 
-          item.id === itemId ? { ...item, quantity: newQuantity } : item
-        );
-        setSelectedProvider({
-          ...selectedProvider,
-          items: updatedProviderItems
-        });
+      // Success - update UI as before
+      const updatedCartResponse = await foodAPI.getCart();
+      if (updatedCartResponse.success) {
+        const newCartItems = updatedCartResponse.data.items || [];
+        setCartItems(newCartItems);
+        
+        if (selectedProvider && currentView === 'provider') {
+          const updatedItemsByProvider = newCartItems.reduce((acc, item) => {
+            const providerId = item.provider?.id || 'unknown';
+            if (!acc[providerId]) {
+              acc[providerId] = {
+                ...item.provider,
+                items: [],
+                subtotal: 0
+              };
+            }
+            acc[providerId].items.push(item);
+            acc[providerId].subtotal += item.price * item.quantity;
+            return acc;
+          }, {});
+          
+          const updatedProvider = updatedItemsByProvider[selectedProvider.id];
+          if (updatedProvider) {
+            setSelectedProvider(updatedProvider);
+          } else {
+            setCurrentView('baskets');
+            setSelectedProvider(null);
+          }
+        }
       }
       
-      // Clear any existing errors
       setError(null);
     } else {
-      setError(response.error || 'Failed to update quantity');
+      // Show a more user-friendly error message for stock issues
+      let errorMessage = response.error || 'Failed to update quantity';
+      
+      // Check if it's a stock-related error and make it more user-friendly
+      if (errorMessage.toLowerCase().includes('stock') || 
+          errorMessage.toLowerCase().includes('available') ||
+          errorMessage.toLowerCase().includes('quantity')) {
+        errorMessage = `Sorry, only ${currentItem.quantity} items can be added. Not enough stock available.`;
+      }
+      
+      setError(errorMessage);
+      
+      // Auto-clear the error after 5 seconds
+      setTimeout(() => setError(null), 2000);
     }
   } catch (err) {
     setError('Failed to update quantity');
@@ -1017,7 +1078,7 @@ const handleProceedToPayment = () => {
               </div>
 
               {/* Items Summary */}
-              <div className="px-4 py-3">
+              {/* <div className="px-4 py-3">
                 <div className="flex items-center justify-between">
                   <span className="text-sm text-gray-600 dark:text-gray-300">
                     {provider.items.length} item{provider.items.length !== 1 ? 's' : ''} in basket
@@ -1026,7 +1087,7 @@ const handleProceedToPayment = () => {
                     Subtotal: R {provider.subtotal.toFixed(2)}
                   </span>
                 </div>
-              </div>
+              </div> */}
 
               {/* Action Buttons */}
               <div className="px-4 pb-4 pt-2 space-y-2">
