@@ -1,3 +1,6 @@
+// components/garden/GardenTile.jsx
+// Fixed to properly size the PlantSVG component
+
 import React from 'react';
 import PlantSvg from './PlantSVG'; 
 import './GardenTile.css';
@@ -79,15 +82,18 @@ const GardenTile = ({
         </div>
       )}
 
-      {/* Plant SVG */}
+      {/* Plant SVG - FIXED: Added size prop and proper styling */}
       {plant_details && (
-        <PlantSvg
-          plantData={plant_details}
-          isSelected={isSelected}
-          onClick={handlePlantClick}
-          customState={custom_data}
-          className="tile-plant"
-        />
+        <div className="tile-plant">
+          <PlantSvg
+            plantData={plant_details}
+            isSelected={isSelected}
+            onClick={handlePlantClick}
+            customState={custom_data}
+            className="plant-in-tile"
+            size={60} // Explicit size for garden tiles
+          />
+        </div>
       )}
       
       {/* Tile coordinates overlay (for debugging only) */}

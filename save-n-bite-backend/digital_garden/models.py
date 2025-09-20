@@ -10,44 +10,43 @@ import json
 User = get_user_model()
 
 class Plant(models.Model):
-    """Master plant database with all available plants"""
+    """Plant species available in the garden"""
     RARITY_CHOICES = [
         ('common', 'Common'),
         ('uncommon', 'Uncommon'), 
         ('rare', 'Rare'),
         ('epic', 'Epic'),
-        ('legendary', 'Legendary'),
+        ('legendary', 'Legendary')
     ]
     
     CATEGORY_CHOICES = [
-        ('vegetable', 'Vegetable'),
-        ('succulent', 'Succulent'),
-        ('flowering', 'Flowering Plant'),
         ('herb', 'Herb'),
-        ('shrub', 'Shrub'),
-        ('tree', 'Tree'),
-        ('grass', 'Grass'),
-        ('fern', 'Fern'),
+        ('vegetable', 'Vegetable'),
+        ('flower', 'Flower'),
+        ('fruit', 'Fruit'),
+        ('succulent', 'Succulent'),
+        ('tree', 'Tree')
     ]
     
+    # Basic information
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    name = models.CharField(max_length=255)
-    scientific_name = models.CharField(max_length=255, blank=True)
-    common_names = models.JSONField(default=list, help_text="Alternative common names")
+    name = models.CharField(max_length=100, unique=True)
+    scientific_name = models.CharField(max_length=100)
+    common_names = models.JSONField(default=list, help_text="List of common names")
     
-    # Plant characteristics
-    category = models.CharField(max_length=50, choices=CATEGORY_CHOICES)
-    rarity = models.CharField(max_length=50, choices=RARITY_CHOICES)
-    native_region = models.CharField(max_length=255, default="South Africa")
+    # Classification
+    category = models.CharField(max_length=20, choices=CATEGORY_CHOICES)
+    rarity = models.CharField(max_length=20, choices=RARITY_CHOICES, default='common')
+    native_region = models.CharField(max_length=100)
     
-    # Care information
+    # Care requirements  
     care_difficulty = models.CharField(max_length=20, choices=[
         ('easy', 'Easy'),
-        ('moderate', 'Moderate'), 
+        ('moderate', 'Moderate'),
         ('difficult', 'Difficult')
-    ], default='easy')
+    ])
     
-    sunlight_requirements = models.CharField(max_length=50, choices=[
+    sunlight_requirements = models.CharField(max_length=20, choices=[
         ('full_sun', 'Full Sun'),
         ('partial_sun', 'Partial Sun'),
         ('shade', 'Shade'),
@@ -65,9 +64,22 @@ class Plant(models.Model):
     fun_facts = models.TextField(help_text="Interesting facts about the plant")
     growing_tips = models.TextField(help_text="Tips for growing at home")
     
-    # Visual representation (for Rive integration)
-    rive_asset_name = models.CharField(max_length=100, help_text="Name of Rive asset/animation")
+    # Visual representation - UPDATED for SVG images
+    svg_image_url = models.CharField(
+        max_length=200, 
+        help_text="URL path to SVG image (e.g., 'plants/basil.svg')",
+        blank=True,
+        null=True
+    )
     icon_color = models.CharField(max_length=7, default="#62BD38", help_text="Hex color for plant icon")
+    
+    # Legacy field - keep for backward compatibility but rename to be clearer
+    rive_asset_name = models.CharField(
+        max_length=100, 
+        help_text="Legacy field - now used for SVG image filename",
+        blank=True,
+        null=True
+    )
     
     # Metadata
     is_active = models.BooleanField(default=True)
@@ -83,6 +95,23 @@ class Plant(models.Model):
     
     def __str__(self):
         return f"{self.name} ({self.rarity})"
+    
+    def get_svg_image_path(self):
+        """Get the full path to the SVG image"""
+        if self.svg_image_url:
+            return f"assets/images/{self.svg_image_url}"
+        elif self.rive_asset_name:
+            # Fallback to using rive_asset_name as filename
+            return f"assets/images/plants/{self.rive_asset_name}.svg"
+        return None
+    
+    def get_svg_filename(self):
+        """Get just the filename for the SVG"""
+        if self.svg_image_url:
+            return self.svg_image_url.split('/')[-1]
+        elif self.rive_asset_name:
+            return f"{self.rive_asset_name}.svg"
+        return f"{self.name.lower().replace(' ', '_')}.svg"
 
 
 class CustomerGarden(models.Model):

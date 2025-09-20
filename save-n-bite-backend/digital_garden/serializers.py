@@ -1,4 +1,5 @@
 # digital_garden/serializers.py
+# Fix the CustomerStatsSerializer to match the actual model fields
 
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
@@ -52,7 +53,7 @@ class CustomerGardenSerializer(serializers.ModelSerializer):
             'completion_percentage', 'rarity_distribution', 'garden_tiles',
             'created_at', 'updated_at'
         ]
-        read_only_fields = ['id', 'customer', 'created_at', 'updated_at']
+        read_only_fields = ['id', 'completion_percentage', 'rarity_distribution', 'created_at', 'updated_at']
     
     def get_completion_percentage(self, obj):
         return obj.get_completion_percentage()
@@ -62,52 +63,47 @@ class CustomerGardenSerializer(serializers.ModelSerializer):
 
 
 class GardenSummarySerializer(serializers.ModelSerializer):
-    """Lightweight garden summary (without full tile data)"""
+    """Lightweight garden summary without tile details"""
     completion_percentage = serializers.SerializerMethodField()
+    rarity_distribution = serializers.SerializerMethodField()
     customer_username = serializers.CharField(source='customer.username', read_only=True)
     
     class Meta:
         model = CustomerGarden
         fields = [
-            'id', 'customer_username', 'name', 'total_plants_earned',
-            'total_plants_placed', 'garden_level', 'completion_percentage',
+            'id', 'customer', 'customer_username', 'name',
+            'total_plants_earned', 'total_plants_placed', 'garden_level',
+            'completion_percentage', 'rarity_distribution',
             'created_at', 'updated_at'
         ]
+        read_only_fields = ['id', 'completion_percentage', 'rarity_distribution', 'created_at', 'updated_at']
     
     def get_completion_percentage(self, obj):
         return obj.get_completion_percentage()
+    
+    def get_rarity_distribution(self, obj):
+        return list(obj.get_rarity_distribution())
 
 
 class PlantInventorySerializer(serializers.ModelSerializer):
-    """Serializer for plant inventory"""
+    """Serializer for plant inventory items"""
     plant_details = PlantSerializer(source='plant', read_only=True)
-    earned_from_order_id = serializers.CharField(source='earned_from_order.id', read_only=True)
     
     class Meta:
         model = PlantInventory
         fields = [
-            'id', 'plant', 'plant_details', 'quantity', 
-            'earned_from_order_id', 'earned_reason', 'earned_at'
+            'id', 'plant', 'plant_details', 'quantity',
+            'earned_from_order', 'earned_reason', 'earned_at'
         ]
         read_only_fields = ['id', 'earned_at']
 
 
 class PlantPlacementSerializer(serializers.Serializer):
     """Serializer for placing plants in garden"""
-    plant_id = serializers.UUIDField()
+    plant_inventory_id = serializers.UUIDField()
     row = serializers.IntegerField(min_value=0, max_value=7)
     col = serializers.IntegerField(min_value=0, max_value=7)
     custom_data = serializers.JSONField(required=False, default=dict)
-    
-    def validate(self, data):
-        # Check if plant exists
-        try:
-            plant = Plant.objects.get(id=data['plant_id'])
-            data['plant'] = plant
-        except Plant.DoesNotExist:
-            raise serializers.ValidationError("Plant not found")
-        
-        return data
 
 
 class PlantRemovalSerializer(serializers.Serializer):
@@ -119,68 +115,110 @@ class PlantRemovalSerializer(serializers.Serializer):
 class PlantMoveSerializer(serializers.Serializer):
     """Serializer for moving plants within garden"""
     from_row = serializers.IntegerField(min_value=0, max_value=7)
-    from_col = serializers.IntegerField(min_value=0, max_value=7) 
+    from_col = serializers.IntegerField(min_value=0, max_value=7)
     to_row = serializers.IntegerField(min_value=0, max_value=7)
     to_col = serializers.IntegerField(min_value=0, max_value=7)
-    
-    def validate(self, data):
-        # Ensure we're not moving to the same position
-        if (data['from_row'] == data['to_row'] and 
-            data['from_col'] == data['to_col']):
-            raise serializers.ValidationError(
-                "Cannot move plant to the same position"
-            )
-        return data
 
 
 class CustomerStatsSerializer(serializers.ModelSerializer):
-    """Serializer for customer statistics"""
-    customer_username = serializers.CharField(source='customer.username', read_only=True)
-    next_milestones = serializers.SerializerMethodField()
+    """Serializer for customer garden statistics - FIXED field names"""
+    
+    # Add computed fields for garden-specific stats
+    plants_earned = serializers.SerializerMethodField()
+    plants_placed = serializers.SerializerMethodField()
+    garden_completion_percentage = serializers.SerializerMethodField()
+    current_streak_days = serializers.SerializerMethodField()
+    longest_streak_days = serializers.SerializerMethodField()
+    last_order_date = serializers.SerializerMethodField()
     
     class Meta:
         model = CustomerStats
         fields = [
-            'id', 'customer_username', 'total_orders', 'total_order_amount',
-            'unique_businesses_ordered_from', 'achieved_milestones',
-            'next_milestones', 'last_calculated_at'
+            # Actual model fields
+            'total_orders', 'total_order_amount', 'unique_businesses_ordered_from',
+            'achieved_milestones', 'last_calculated_at',
+            # Computed fields
+            'plants_earned', 'plants_placed', 'garden_completion_percentage',
+            'current_streak_days', 'longest_streak_days', 'last_order_date'
         ]
-        read_only_fields = ['id', 'last_calculated_at']
+        read_only_fields = fields
     
-    def get_next_milestones(self, obj):
-        """Get the next achievable milestones"""
-        from .services import DigitalGardenService
-        service = DigitalGardenService()
-        return service.get_next_milestones(obj.customer)
+    def get_plants_earned(self, obj):
+        """Get total plants earned by customer"""
+        try:
+            garden = obj.customer.digital_garden
+            return garden.total_plants_earned
+        except:
+            return 0
+    
+    def get_plants_placed(self, obj):
+        """Get total plants placed in garden"""
+        try:
+            garden = obj.customer.digital_garden
+            return garden.total_plants_placed
+        except:
+            return 0
+    
+    def get_garden_completion_percentage(self, obj):
+        """Get garden completion percentage"""
+        try:
+            garden = obj.customer.digital_garden
+            return garden.get_completion_percentage()
+        except:
+            return 0.0
+    
+    def get_current_streak_days(self, obj):
+        """Calculate current order streak (placeholder)"""
+        # TODO: Implement streak calculation logic
+        return 0
+    
+    def get_longest_streak_days(self, obj):
+        """Calculate longest order streak (placeholder)"""
+        # TODO: Implement streak calculation logic
+        return 0
+    
+    def get_last_order_date(self, obj):
+        """Get last order date"""
+        from interactions.models import Order
+        try:
+            last_order = Order.objects.filter(
+                interaction__user=obj.customer,
+                status='completed'
+            ).order_by('-created_at').first()
+            return last_order.created_at if last_order else None
+        except:
+            return None
 
 
 class PlantRewardSerializer(serializers.ModelSerializer):
-    """Serializer for plant reward configuration"""
+    """Serializer for plant reward history"""
     plant_details = PlantSerializer(source='plant', read_only=True)
+    customer_username = serializers.CharField(source='customer.username', read_only=True)
     
     class Meta:
         model = PlantReward
         fields = [
-            'id', 'milestone_type', 'milestone_value', 'plant',
-            'plant_details', 'quantity', 'is_active', 'created_at'
+            'id', 'milestone_type', 'milestone_value', 'plant', 'plant_details',
+            'quantity', 'is_active', 'created_at'
         ]
-        read_only_fields = ['id', 'created_at']
+        read_only_fields = fields
 
 
-class GardenInitializationSerializer(serializers.Serializer):
-    """Serializer for initializing a customer's garden"""
-    garden_name = serializers.CharField(max_length=255, required=False, default="My Garden")
+class GardenInitializationSerializer(serializers.ModelSerializer):
+    """Serializer for initializing new gardens"""
+    
+    class Meta:
+        model = CustomerGarden
+        fields = ['name']
     
     def create(self, validated_data):
         customer = self.context['request'].user
-        
-        # Create garden
         garden = CustomerGarden.objects.create(
             customer=customer,
-            name=validated_data.get('garden_name', 'My Garden')
+            **validated_data
         )
         
-        # Create all 64 empty tiles
+        # Initialize 64 empty tiles (8x8 grid)
         tiles = []
         for row in range(8):
             for col in range(8):
@@ -191,55 +229,39 @@ class GardenInitializationSerializer(serializers.Serializer):
                 ))
         
         GardenTile.objects.bulk_create(tiles)
-        
-        # Create stats record
-        CustomerStats.objects.get_or_create(customer=customer)
-        
         return garden
 
 
 class BulkPlantActionSerializer(serializers.Serializer):
     """Serializer for bulk plant operations"""
-    actions = serializers.ListField(
+    action = serializers.ChoiceField(choices=['place', 'remove', 'move'])
+    operations = serializers.ListField(
         child=serializers.DictField(),
-        allow_empty=False,
-        max_length=64  # Max garden size
+        min_length=1,
+        max_length=64  # Maximum tiles in garden
     )
     
-    def validate_actions(self, actions):
-        """Validate bulk action format"""
-        valid_action_types = ['place', 'remove', 'move']
+    def validate_operations(self, value):
+        """Validate individual operations based on action type"""
+        action = self.initial_data.get('action')
         
-        for i, action in enumerate(actions):
-            action_type = action.get('type')
-            if action_type not in valid_action_types:
-                raise serializers.ValidationError(
-                    f"Action {i}: Invalid action type '{action_type}'"
-                )
-            
-            # Validate based on action type
-            if action_type == 'place':
-                required_fields = ['plant_id', 'row', 'col']
-                for field in required_fields:
-                    if field not in action:
-                        raise serializers.ValidationError(
-                            f"Action {i}: Missing required field '{field}' for place action"
-                        )
-            
-            elif action_type == 'remove':
+        for operation in value:
+            if action == 'place':
+                required_fields = ['plant_inventory_id', 'row', 'col']
+            elif action == 'remove':
                 required_fields = ['row', 'col']
-                for field in required_fields:
-                    if field not in action:
-                        raise serializers.ValidationError(
-                            f"Action {i}: Missing required field '{field}' for remove action"
-                        )
-            
-            elif action_type == 'move':
+            elif action == 'move':
                 required_fields = ['from_row', 'from_col', 'to_row', 'to_col']
-                for field in required_fields:
-                    if field not in action:
-                        raise serializers.ValidationError(
-                            f"Action {i}: Missing required field '{field}' for move action"
-                        )
+            else:
+                raise serializers.ValidationError("Invalid action type")
+            
+            for field in required_fields:
+                if field not in operation:
+                    raise serializers.ValidationError(f"Operation missing required field: {field}")
+            
+            # Validate coordinates
+            for coord_field in [f for f in required_fields if 'row' in f or 'col' in f]:
+                if not (0 <= operation[coord_field] <= 7):
+                    raise serializers.ValidationError(f"Invalid coordinate {coord_field}: {operation[coord_field]}")
         
-        return actions
+        return value

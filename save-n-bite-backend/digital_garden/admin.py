@@ -17,7 +17,7 @@ class PlantAdmin(admin.ModelAdmin):
     """Admin interface for Plant model"""
     list_display = [
         'name', 'rarity', 'category', 'native_region', 
-        'care_difficulty', 'is_active', 'created_at'
+        'care_difficulty', 'svg_preview', 'is_active', 'created_at'
     ]
     list_filter = ['rarity', 'category', 'care_difficulty', 'is_active', 'native_region']
     search_fields = ['name', 'scientific_name', 'common_names']
@@ -34,12 +34,24 @@ class PlantAdmin(admin.ModelAdmin):
             'fields': ('description', 'fun_facts', 'growing_tips')
         }),
         ('Visual & Technical', {
-            'fields': ('rive_asset_name', 'icon_color')
+            'fields': ('svg_image_url', 'icon_color', 'rive_asset_name'),
+            'description': 'SVG image URL should be relative to assets/images/ (e.g., "plants/basil.svg")'
         }),
         ('Status', {
             'fields': ('is_active',)
         })
     )
+    
+    def svg_preview(self, obj):
+        """Show a preview of the SVG path in admin"""
+        if obj.svg_image_url or obj.rive_asset_name:
+            path = obj.get_svg_image_path()
+            return format_html(
+                '<span style="font-family: monospace; background: #f0f0f0; padding: 2px 4px; border-radius: 3px;">{}</span>',
+                path
+            )
+        return '❌ No SVG'
+    svg_preview.short_description = 'SVG Path'
     
     def get_queryset(self, request):
         return super().get_queryset(request).select_related()
