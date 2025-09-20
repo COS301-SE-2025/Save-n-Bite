@@ -562,3 +562,312 @@ class DigitalGardenService:
             'results': results,
             'errors': errors
         }
+    
+    def process_order_completion(self, order: Order):
+        """
+        Updated method to process order completion and send notifications
+        """
+        customer = order.interaction.user
+        if customer.user_type != 'customer':
+            self.logger.warning(f"Non-customer user {customer.username} completed order {order.id}")
+            return []
+        
+        plants_earned = []
+        
+        try:
+            # Get or create customer stats
+            stats, created = CustomerStats.objects.get_or_create(
+                customer=customer,
+                defaults={
+                    'total_orders': 0,
+                    'total_order_amount': 0,
+                    'unique_businesses_ordered_from': 0,
+                    'achieved_milestones': {}
+                }
+            )
+            
+            # Update stats
+            stats.calculate_stats()
+            
+            # Get or create customer garden
+            garden, created = CustomerGarden.objects.get_or_create(
+                customer=customer,
+                defaults={'name': "My Garden"}
+            )
+            
+            # 1. Always give a common plant for any order
+            common_plant = self._get_random_plant('common')
+            if common_plant:
+                inventory_item = self._add_plant_to_inventory(
+                    customer=customer,
+                    plant=common_plant,
+                    quantity=1,
+                    reason='order',
+                    order=order
+                )
+                plants_earned.append({
+                    'plant': common_plant,
+                    'quantity': 1,
+                    'reason': 'order',
+                    'description': 'Regular order completion'
+                })
+                
+                # Update garden stats
+                garden.total_plants_earned += 1
+                garden.save()
+            
+            # 2. Check for milestone rewards
+            milestone_plants = self._check_and_award_milestones(
+                customer, stats, order
+            )
+            plants_earned.extend(milestone_plants)
+            
+            # 3. Send notification for earned plants
+            if plants_earned:
+                try:
+                    if len(plants_earned) == 1:
+                        # Single plant notification
+                        plant_info = plants_earned[0]
+                        milestone_details = plant_info.get('milestone_details') if 'milestone' in plant_info['reason'] else None
+                        
+                        NotificationService.send_plant_earned_notification(
+                            customer=customer,
+                            plant=plant_info['plant'],
+                            quantity=plant_info['quantity'],
+                            reason=plant_info['reason'],
+                            order=order,
+                            milestone_details=milestone_details
+                        )
+                    else:
+                        # Multiple plants notification
+                        NotificationService.send_multiple_plants_earned_notification(
+                            customer=customer,
+                            plants_earned_list=plants_earned,
+                            order=order
+                        )
+                        
+                except Exception as e:
+                    logger.error(f"Failed to send plant earning notifications for order {order.id}: {str(e)}")
+                    # Don't fail the order completion process due to notification errors
+                    
+        except Exception as e:
+            self.logger.error(f"Error processing order completion for {customer.username}: {str(e)}")
+            
+        self.logger.info(
+            f"Order {order.id} completed for {customer.username}. "
+            f"Earned {len(plants_earned)} plants: {[p['plant'].name for p in plants_earned]}"
+        )
+        
+        return plants_earned
+    
+    def _check_order_count_milestones(self, customer: User, stats: CustomerStats) -> List[Dict]:
+        """Check and award order count milestone rewards with notification details"""
+        plants_earned = []
+        milestone_key = 'order_count'
+        
+        # Define order count milestones and their rarities
+        milestones = [
+            (1, 'uncommon'),   # First order
+            (3, 'uncommon'),   # 3rd order  
+            (5, 'rare'),       # 5th order
+            (10, 'rare'),      # 10th order
+            (15, 'epic'),      # 15th order
+            (20, 'epic'),      # 20th order
+            (25, 'legendary'), # 25th order
+            (30, 'legendary'), # 30th order
+            (50, 'legendary'), # 50th order
+            (100, 'legendary') # 100th order
+        ]
+        
+        achieved_milestones = stats.achieved_milestones.get(milestone_key, [])
+        
+        for count, rarity in milestones:
+            if stats.total_orders >= count and count not in achieved_milestones:
+                # Award plant
+                plant = self._get_random_plant(rarity)
+                if plant:
+                    self._add_plant_to_inventory(
+                        customer=customer,
+                        plant=plant,
+                        reason='milestone_orders'
+                    )
+                    
+                    plants_earned.append({
+                        'plant': plant,
+                        'quantity': 1,
+                        'reason': 'milestone_orders',
+                        'description': f'Order milestone: {count} orders completed',
+                        'milestone_details': {
+                            'milestone_count': count,
+                            'milestone_type': 'order_count',
+                            'total_orders': stats.total_orders
+                        }
+                    })
+                    
+                    # Mark milestone as achieved
+                    achieved_milestones.append(count)
+        
+        # Update achieved milestones
+        if achieved_milestones:
+            stats.achieved_milestones[milestone_key] = achieved_milestones
+            stats.save()
+        
+        return plants_earned
+    
+    def _check_order_amount_milestones(self, customer: User, stats: CustomerStats, order_amount: float) -> List[Dict]:
+        """Check and award order amount milestone rewards with notification details"""
+        plants_earned = []
+        milestone_key = 'order_amount'
+        
+        # Define amount milestones and their rarities
+        milestones = [
+            (150, 'uncommon'),
+            (200, 'uncommon'), 
+            (300, 'rare'),
+            (500, 'epic'),
+            (1000, 'legendary')
+        ]
+        
+        achieved_milestones = stats.achieved_milestones.get(milestone_key, [])
+        
+        for amount, rarity in milestones:
+            if order_amount >= amount and amount not in achieved_milestones:
+                # Award plant
+                plant = self._get_random_plant(rarity)
+                if plant:
+                    self._add_plant_to_inventory(
+                        customer=customer,
+                        plant=plant,
+                        reason='milestone_amount'
+                    )
+                    
+                    plants_earned.append({
+                        'plant': plant,
+                        'quantity': 1,
+                        'reason': 'milestone_amount',
+                        'description': f'Order amount milestone: R{amount} order',
+                        'milestone_details': {
+                            'milestone_amount': amount,
+                            'milestone_type': 'order_amount',
+                            'current_order_amount': order_amount
+                        }
+                    })
+                    
+                    # Mark milestone as achieved
+                    achieved_milestones.append(amount)
+        
+        # Update achieved milestones
+        if achieved_milestones:
+            stats.achieved_milestones[milestone_key] = achieved_milestones
+            stats.save()
+        
+        return plants_earned
+    
+    def _check_business_milestones(self, customer: User, stats: CustomerStats) -> List[Dict]:
+        """Check and award business diversity milestone rewards with notification details"""
+        plants_earned = []
+        milestone_key = 'business_count'
+        
+        # Define business count milestones and their rarities
+        milestones = [
+            (5, 'rare'),       # 5 different businesses
+            (10, 'epic'),      # 10 different businesses
+            (15, 'epic'),      # 15 different businesses
+            (20, 'legendary'), # 20 different businesses
+            (25, 'legendary')  # 25 different businesses
+        ]
+        
+        achieved_milestones = stats.achieved_milestones.get(milestone_key, [])
+        
+        for count, rarity in milestones:
+            if stats.unique_businesses_ordered_from >= count and count not in achieved_milestones:
+                # Award plant
+                plant = self._get_random_plant(rarity)
+                if plant:
+                    self._add_plant_to_inventory(
+                        customer=customer,
+                        plant=plant,
+                        reason='milestone_businesses'
+                    )
+                    
+                    plants_earned.append({
+                        'plant': plant,
+                        'quantity': 1,
+                        'reason': 'milestone_businesses',
+                        'description': f'Business diversity milestone: {count} different businesses',
+                        'milestone_details': {
+                            'business_count': count,
+                            'milestone_type': 'business_diversity',
+                            'total_businesses': stats.unique_businesses_ordered_from
+                        }
+                    })
+                    
+                    # Mark milestone as achieved
+                    achieved_milestones.append(count)
+        
+        # Update achieved milestones
+        if achieved_milestones:
+            stats.achieved_milestones[milestone_key] = achieved_milestones
+            stats.save()
+        
+        return plants_earned
+    
+    def check_garden_milestones(self, customer: User):
+        """
+        Check for garden-specific milestones and send notifications
+        Call this method when plants are placed in the garden
+        """
+        try:
+            garden = CustomerGarden.objects.get(customer=customer)
+            
+            # Calculate garden statistics
+            completion_percentage = garden.get_completion_percentage()
+            total_planted = garden.garden_tiles.filter(plant__isnull=False).count()
+            total_inventory = PlantInventory.objects.filter(customer=customer).aggregate(
+                total=models.Sum('quantity')
+            )['total'] or 0
+            total_plants_collected = garden.total_plants_earned
+            
+            # Check completion milestones
+            completion_milestones = [25, 50, 75, 100]
+            for milestone in completion_milestones:
+                if completion_percentage >= milestone:
+                    # Check if this milestone notification was already sent
+                    recent_notification = Notification.objects.filter(
+                        recipient=customer,
+                        notification_type='garden_milestone',
+                        data__milestone_type='garden_completion',
+                        data__milestone_value=milestone,
+                        created_at__gte=timezone.now() - timedelta(days=1)
+                    ).exists()
+                    
+                    if not recent_notification:
+                        NotificationService.send_garden_milestone_notification(
+                            customer=customer,
+                            milestone_type='garden_completion',
+                            milestone_value=milestone
+                        )
+            
+            # Check plant collection milestones
+            collection_milestones = [5, 10, 25, 50, 100]
+            for milestone in collection_milestones:
+                if total_plants_collected >= milestone:
+                    recent_notification = Notification.objects.filter(
+                        recipient=customer,
+                        notification_type='garden_milestone',
+                        data__milestone_type='plants_collected',
+                        data__milestone_value=milestone,
+                        created_at__gte=timezone.now() - timedelta(days=1)
+                    ).exists()
+                    
+                    if not recent_notification:
+                        NotificationService.send_garden_milestone_notification(
+                            customer=customer,
+                            milestone_type='plants_collected',
+                            milestone_value=milestone
+                        )
+            
+        except CustomerGarden.DoesNotExist:
+            pass  # Garden doesn't exist yet
+        except Exception as e:
+            logger.error(f"Error checking garden milestones for {customer.email}: {str(e)}")
