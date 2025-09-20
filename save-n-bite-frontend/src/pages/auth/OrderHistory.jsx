@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import CustomerNavBar from '../../components/auth/CustomerNavBar';
@@ -21,7 +20,8 @@ import {
   FilterIcon,
   RotateCcwIcon,
   HeartIcon,
-  GiftIcon
+  GiftIcon,
+  ShoppingBagIcon
 } from 'lucide-react';
 import { Toast } from '../../components/ui/Toast';
 import { ConfirmDialog } from '../../components/ui/ConfirmDialog';
@@ -113,18 +113,16 @@ const SimpleOrderFilters = ({ filters, setFilters, orders = [], userType, onRese
   );
 };
 
-// Detailed Pickup Modal Component
+// Enhanced Pickup Modal Component
 const PickupDetailsModal = ({ order, isOpen, onClose, onStatusUpdate }) => {
   if (!isOpen || !order) return null;
 
-  // Check if this is a donation or pickup
   const isDonation = order.interaction_type === 'Donation';
-
-  // Generate QR code URL - use pickup code for pickups, verification code for donations
   const codeToShow = isDonation ? order.verification_code : order.confirmation_code;
   const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=${codeToShow}`;
+  const itemName = isDonation ? order.items?.[0]?.name : order.food_listing?.name;
+  const providerName = isDonation ? (order.order?.providerName || 'Provider') : order.business?.business_name;
 
-  // Add handleCancel function inside modal
   const handleCancel = async (reason) => {
     try {
       let response;
@@ -149,171 +147,183 @@ const PickupDetailsModal = ({ order, isOpen, onClose, onStatusUpdate }) => {
     }
   };
 
+  const formatDate = (dateString) => {
+    return new Date(dateString).toLocaleDateString('en-US', {
+      weekday: 'short',
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric'
+    });
+  };
+
+  const getStatusBadge = (status) => {
+    const statusMap = {
+      ready: { bg: 'bg-emerald-100 dark:bg-emerald-900/30', text: 'text-emerald-800 dark:text-emerald-200' },
+      confirmed: { bg: 'bg-blue-100 dark:bg-blue-900/30', text: 'text-blue-800 dark:text-blue-200' },
+      scheduled: { bg: 'bg-purple-100 dark:bg-purple-900/30', text: 'text-purple-800 dark:text-purple-200' },
+      cancelled: { bg: 'bg-red-100 dark:bg-red-900/30', text: 'text-red-800 dark:text-red-200' },
+      rejected: { bg: 'bg-red-100 dark:bg-red-900/30', text: 'text-red-800 dark:text-red-200' },
+      missed: { bg: 'bg-amber-100 dark:bg-amber-900/30', text: 'text-amber-800 dark:text-amber-200' },
+      default: { bg: 'bg-gray-100 dark:bg-gray-700', text: 'text-gray-800 dark:text-gray-200' }
+    };
+    
+    const { bg, text } = statusMap[status.toLowerCase()] || statusMap.default;
+    return (
+      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${bg} ${text} capitalize`}>
+        {status}
+      </span>
+    );
+  };
+
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-      <div className="bg-white dark:bg-gray-800 rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto transition-colors duration-300">
-        <div className="sticky top-0 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 p-4 flex justify-between items-center">
-          <h2 className="text-xl font-semibold text-gray-800 dark:text-gray-100">
-            {isDonation ? 'Donation Details' : 'Pickup Details'}
-          </h2>
+    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-fadeIn">
+      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl w-full max-w-md overflow-hidden transition-all duration-300 transform scale-100 opacity-100">
+        {/* Header */}
+        <div className="border-b border-gray-100 dark:border-gray-700 p-4 flex justify-between items-center">
+          <div>
+            <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
+              {isDonation ? 'Donation Details' : 'Pickup Details'}
+            </h2>
+            <p className="text-sm text-gray-500 dark:text-gray-400">
+              {formatDate(isDonation ? order.created_at : order.scheduled_date)}
+            </p>
+          </div>
           <button
             onClick={onClose}
-            className="text-gray-400 dark:text-gray-300 hover:text-gray-600 dark:hover:text-gray-100"
+            className="text-gray-400 hover:text-gray-500 dark:text-gray-400 dark:hover:text-gray-300 transition-colors"
+            aria-label="Close"
           >
-            <XIcon size={24} />
+            <XIcon className="h-5 w-5" />
           </button>
         </div>
 
-        <div className="p-6 space-y-6">
-          {/* Order Header */}
-          <div className="text-center border-b border-gray-100 dark:border-gray-700 pb-4">
-            <div className="flex items-center justify-center mb-2">
-              {isDonation ? (
-                <HeartIcon size={20} className="mr-2 text-red-500" />
-              ) : (
-                <QrCodeIcon size={20} className="mr-2 text-emerald-600" />
-              )}
-              <p className="text-sm text-emerald-700 dark:text-emerald-400">
-                {isDonation ? 'Donation Request' : 'Pickup Order'}
-              </p>
+        {/* Main Content */}
+        <div className="p-6 space-y-6 max-h-[70vh] overflow-y-auto">
+          {/* Status Badge */}
+          <div className="flex justify-between items-center">
+            {getStatusBadge(order.status)}
+            <span className="text-sm text-gray-500 dark:text-gray-400">
+              #{order.id?.slice(-6) || 'N/A'}
+            </span>
+          </div>
+
+          {/* Item Details */}
+          <div className="space-y-4">
+            <div className="flex items-start space-x-4">
+              <div className="flex-shrink-0 h-12 w-12 rounded-lg bg-emerald-50 dark:bg-emerald-900/30 flex items-center justify-center">
+                {isDonation ? (
+                  <HeartIcon className="h-6 w-6 text-emerald-600 dark:text-emerald-400" />
+                ) : (
+                  <ShoppingBagIcon className="h-6 w-6 text-emerald-600 dark:text-emerald-400" />
+                )}
+              </div>
+              <div>
+                <h3 className="font-medium text-gray-900 dark:text-white">{itemName}</h3>
+                <p className="text-sm text-gray-500 dark:text-gray-400">{providerName}</p>
+                {!isDonation && order.food_listing?.price && (
+                  <p className="mt-1 text-sm font-medium text-emerald-600 dark:text-emerald-400">
+                    R{parseFloat(order.food_listing.price).toFixed(2)}
+                  </p>
+                )}
+              </div>
             </div>
-            <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-100 mt-2">
-              {isDonation ? order.items?.[0]?.name : order.food_listing?.name}
-            </h3>
-            <p className="text-gray-600 dark:text-gray-300 text-sm flex items-center justify-center mt-1">
-              <StoreIcon size={16} className="mr-1" />
-              {isDonation ? (order.order?.providerName || 'Provider') : order.business?.business_name}
-            </p>
-            {isDonation && (
-              <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                Quantity: {order.quantity || order.items?.[0]?.quantity || 1}
-              </p>
-            )}
           </div>
 
           {/* QR Code Section */}
           {codeToShow && (
-            <div className="text-center bg-gray-50 dark:bg-gray-900 rounded-lg p-6">
-              <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-4 flex items-center justify-center">
-                <QrCodeIcon size={20} className="mr-2 text-emerald-600 dark:text-emerald-400" />
-                {isDonation ? 'Show for Collection' : 'Show at Pickup'}
-              </h3>
-
-              <div className="flex flex-col items-center space-y-4">
-                <img
-                  src={qrCodeUrl}
-                  alt={isDonation ? "Collection QR Code" : "Pickup QR Code"}
-                  className="w-40 h-40 border border-gray-200 dark:border-gray-700 rounded-lg"
-                  onError={(e) => {
-                    // Fallback if QR service fails
-                    e.target.style.display = 'none';
-                  }}
-                />
-
-                <div className="text-center">
-                  <p className="text-sm text-gray-600 dark:text-gray-300 mb-1">
-                    {isDonation ? 'Verification Code' : 'Confirmation Code'}
-                  </p>
-                  <p className="text-2xl font-bold text-emerald-600 dark:text-emerald-400 tracking-wider">
+            <div className="bg-gray-50 dark:bg-gray-800/50 rounded-xl p-5 text-center">
+              <div className="inline-flex items-center space-x-2 mb-3">
+                <QrCodeIcon className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
+                <span className="text-sm font-medium text-gray-700 dark:text-gray-200">
+                  {isDonation ? 'Collection Code' : 'Pickup Code'}
+                </span>
+              </div>
+              <div className="flex flex-col items-center space-y-3">
+                <div className="bg-white p-3 rounded-lg inline-block">
+                  <img
+                    src={qrCodeUrl}
+                    alt={isDonation ? "Collection QR Code" : "Pickup QR Code"}
+                    className="w-32 h-32"
+                    onError={(e) => {
+                      e.target.style.display = 'none';
+                    }}
+                  />
+                </div>
+                <div className="bg-white dark:bg-gray-900 px-4 py-2 rounded-lg">
+                  <p className="font-mono text-lg font-semibold tracking-wider text-gray-900 dark:text-white">
                     {codeToShow}
                   </p>
-                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
-                    Show this code or QR code to the provider
-                  </p>
                 </div>
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                  Show this code to the {isDonation ? 'provider' : 'staff'}
+                </p>
               </div>
             </div>
           )}
 
-          {/* Information Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Timing Details */}
-            <div className="space-y-3">
-              <h4 className="font-semibold text-gray-800 dark:text-gray-100 flex items-center">
-                <ClockIcon size={18} className="mr-2 text-emerald-600 dark:text-emerald-400" />
-                {isDonation ? 'Collection Window' : 'Pickup Time'}
-              </h4>
-              <div className="text-sm space-y-1">
-                {isDonation ? (
-                  <>
-                    <p className="text-gray-700 dark:text-gray-300">
-                      {new Date(order.created_at).toLocaleDateString('en-US', {
-                        weekday: 'long',
-                        year: 'numeric',
-                        month: 'long',
-                        day: 'numeric'
-                      })}
-                    </p>
-                    {order.order?.pickupWindow && (
-                      <p className="text-gray-600 dark:text-gray-400 font-medium">
-                        {order.order.pickupWindow}
-                      </p>
-                    )}
-                    <p className="text-gray-500 dark:text-gray-400 text-xs">
-                      Requested: {new Date(order.created_at).toLocaleTimeString()}
-                    </p>
-                  </>
-                ) : (
-                  <>
-                    <p className="text-gray-700 dark:text-gray-300">
-                      {new Date(order.scheduled_date).toLocaleDateString('en-US', {
-                        weekday: 'long',
-                        year: 'numeric',
-                        month: 'long',
-                        day: 'numeric'
-                      })}
-                    </p>
-                    <p className="text-gray-600 dark:text-gray-400 font-medium">
-                      {order.scheduled_start_time} - {order.scheduled_end_time}
-                    </p>
-                    {order.food_listing?.pickup_window && (
-                      <p className="text-gray-500 dark:text-gray-400 text-xs">
-                        Window: {order.food_listing.pickup_window}
-                      </p>
-                    )}
-                  </>
-                )}
+          {/* Details Grid */}
+          <div className="grid grid-cols-1 gap-4">
+            {/* Timing */}
+            <div className="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-4">
+              <div className="flex items-center space-x-2 text-gray-700 dark:text-gray-300 mb-2">
+                <ClockIcon className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
+                <h4 className="text-sm font-medium">
+                  {isDonation ? 'Collection Window' : 'Pickup Time'}
+                </h4>
+              </div>
+              <div className="space-y-1">
+                <p className="text-sm text-gray-900 dark:text-white font-medium">
+                  {isDonation
+                    ? order.order?.pickupWindow || 'Flexible'
+                    : `${order.scheduled_start_time} - ${order.scheduled_end_time}`}
+                </p>
+                <p className="text-xs text-gray-500 dark:text-gray-400">
+                  {formatDate(isDonation ? order.created_at : order.scheduled_date)}
+                </p>
               </div>
             </div>
 
-            {/* Location Details or Expiry Info */}
-            <div className="space-y-3">
-              <h4 className="font-semibold text-gray-800 dark:text-gray-100 flex items-center">
+            {/* Location or Details */}
+            <div className="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-4">
+              <div className="flex items-center space-x-2 text-gray-700 dark:text-gray-300 mb-2">
                 {isDonation ? (
-                  <>
-                    <InfoIcon size={18} className="mr-2 text-emerald-600 dark:text-emerald-400" />
-                    Item Details
-                  </>
+                  <InfoIcon className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
                 ) : (
-                  <>
-                    <MapPinIcon size={18} className="mr-2 text-emerald-600 dark:text-emerald-400" />
-                    Location
-                  </>
+                  <MapPinIcon className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
                 )}
-              </h4>
-              <div className="text-sm space-y-1">
+                <h4 className="text-sm font-medium">
+                  {isDonation ? 'Item Details' : 'Pickup Location'}
+                </h4>
+              </div>
+              <div className="space-y-1">
                 {isDonation ? (
                   <>
                     {order.items?.[0]?.expiry_date && (
-                      <p className="text-gray-600 dark:text-gray-400">
+                      <p className="text-sm text-gray-900 dark:text-white">
                         Expires: {new Date(order.items[0].expiry_date).toLocaleDateString()}
                       </p>
                     )}
-                    <p className="text-gray-500 dark:text-gray-400 text-xs">
-                      Total Amount: ${order.total_amount || '0.00'}
+                    <p className="text-sm text-gray-900 dark:text-white">
+                      Quantity: {order.quantity || order.items?.[0]?.quantity || 1}
                     </p>
                     {order.special_instructions && (
-                      <p className="text-gray-500 dark:text-gray-400 text-xs">
-                        Instructions: {order.special_instructions}
+                      <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                        Note: {order.special_instructions}
                       </p>
                     )}
                   </>
                 ) : (
                   <>
-                    <p className="font-medium">{order.location?.name}</p>
-                    <p className="text-gray-600 dark:text-gray-400">{order.location?.address}</p>
+                    <p className="text-sm font-medium text-gray-900 dark:text-white">
+                      {order.location?.name}
+                    </p>
+                    <p className="text-sm text-gray-700 dark:text-gray-300">
+                      {order.location?.address}
+                    </p>
                     {order.location?.contact_phone && (
-                      <p className="text-gray-500 dark:text-gray-400 text-xs">{order.location.contact_phone}</p>
+                      <p className="text-sm text-emerald-600 dark:text-emerald-400 mt-1">
+                        {order.location.contact_phone}
+                      </p>
                     )}
                   </>
                 )}
@@ -321,41 +331,35 @@ const PickupDetailsModal = ({ order, isOpen, onClose, onStatusUpdate }) => {
             </div>
           </div>
 
-          {/* Status Information */}
+          {/* Status Message */}
           {order.status !== 'completed' && (
-            <div className="bg-blue-50 dark:bg-blue-900 rounded-lg p-4">
-              <h4 className="font-semibold text-blue-800 dark:text-blue-300 mb-2 flex items-center">
-                <InfoIcon size={16} className="mr-1" />
-                {isDonation ? 'Donation Status' : 'Pickup Status'}
-              </h4>
-              <p className="text-blue-700 dark:text-blue-200 text-sm">
-                {order.status === 'ready' && (isDonation ? 'Your donation is ready for collection' : 'Your pickup is ready for collection')}
-                {order.status === 'confirmed' && (isDonation ? 'Your donation has been confirmed by the provider' : 'Your pickup has been confirmed by the provider')}
-                {order.status === 'cancelled' && (isDonation ? 'This donation has been cancelled' : 'This pickup has been cancelled')}
-                {order.status === 'rejected' && 'This request has been rejected'}
-                {order.status === 'scheduled' && 'Your pickup is confirmed and ready to collect'}
-                {order.status === 'missed' && (isDonation ? 'This donation was missed' : 'This pickup was missed')}
+            <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4 border-l-4 border-blue-400">
+              <p className="text-sm text-blue-700 dark:text-blue-300">
+                {order.status === 'ready' && (isDonation ? 'Your donation is ready for collection' : 'Your order is ready for pickup')}
+                {order.status === 'confirmed' && (isDonation ? 'Your donation has been confirmed' : 'Your pickup has been confirmed')}
+                {order.status === 'cancelled' && '❌ ' + (isDonation ? 'This donation has been cancelled' : 'This pickup has been cancelled')}
+                {order.status === 'rejected' && '❌ This request has been rejected'}
+                {order.status === 'scheduled' && '📅 Your pickup is confirmed and ready to collect'}
+                {order.status === 'missed' && '⏰ ' + (isDonation ? 'This donation was missed' : 'This pickup was missed')}
               </p>
             </div>
           )}
+        </div>
 
-          {/* Action Buttons */}
-          <div className="flex gap-3 pt-4 border-t border-gray-100 dark:border-gray-700">
+        {/* Footer Actions */}
+        <div className="border-t border-gray-100 dark:border-gray-700 p-4 bg-gray-50 dark:bg-gray-800/50">
+          <div className="flex space-x-3">
             {((isDonation && order.status === 'ready') || (!isDonation && order.can_cancel && order.status === 'scheduled')) && (
               <button
-                onClick={() => {
-                  // Open a custom dialog or use the handleCancel directly
-                  handleCancel('Cancelled by customer');
-                }}
-                className="px-4 py-2 border border-red-300 dark:border-red-700 text-red-600 dark:text-red-400 rounded-lg hover:bg-red-50 dark:hover:bg-red-900 transition-colors"
+                onClick={() => handleCancel('Cancelled by customer')}
+                className="flex-1 px-4 py-2.5 text-sm font-medium text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg border border-red-200 dark:border-red-800 transition-colors"
               >
                 Cancel {isDonation ? 'Donation' : 'Pickup'}
               </button>
             )}
-
             <button
               onClick={onClose}
-              className="flex-1 px-6 py-2 border border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-100 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+              className="flex-1 px-4 py-2.5 text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg border border-gray-200 dark:border-gray-700 transition-colors"
             >
               Close
             </button>
@@ -717,7 +721,7 @@ const OrderHistory = () => {
                 navigate(`/reviews/${order.interaction_id}`);
               }
             }}
-            className="px-4 py-2 text-emerald-600 hover:text-emerald-700 font-medium"
+            className="px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 text-sm"
           >
             Leave a Review
           </button>
@@ -877,7 +881,7 @@ const OrderHistory = () => {
               <div className="text-center py-12 bg-white dark:bg-gray-800 rounded-lg shadow-sm transition-colors duration-300">
                 <div className="text-gray-500 dark:text-gray-400 mb-4">
                   <svg className="mx-auto h-12 w-12" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2v-6a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
                   </svg>
                 </div>
                 <p className="text-xl text-gray-600 dark:text-gray-300 mb-4">No orders found</p>
