@@ -6,7 +6,7 @@ import CustomerNavBar from '../../components/auth/CustomerNavBar';
 import foodAPI from '../../services/FoodAPI';
 import schedulingAPI from '../../services/schedulingAPI';
 
-// Detailed Basket Component
+// Enhanced Detailed Basket Component with new UI
 const DetailedBasket = ({ 
   provider, 
   onBack, 
@@ -21,101 +21,173 @@ const DetailedBasket = ({
   onPaymentInput,  
   onSubmitPayment  
 }) => {
+  // Calculate subtotal
+  const subtotal = provider.items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
-      <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 sticky top-0 z-10">
-        <div className="flex items-center px-4 py-3">
-          <button 
-            onClick={onBack} 
-            className="p-2 -ml-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
-          >
-            <ChevronLeft className="w-6 h-6 text-gray-700 dark:text-gray-100" />
-          </button>
-          <div className="ml-2">
-            <h1 className="text-xl font-semibold text-gray-800 dark:text-gray-100">
-              {provider.business_name}
-            </h1>
-            <div className="flex items-center text-sm text-gray-600 dark:text-gray-300">
-              <MapPin className="w-4 h-4 mr-1" />
-              <span>{provider.address || 'Pickup available'}</span>
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+      <CustomerNavBar />
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
+          {/* Header with back button and title */}
+          <div className="px-6 py-5 border-b border-gray-100 dark:border-gray-700">
+            <div className="flex items-center">
+              <button
+                onClick={onBack}
+                className="p-2 -ml-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+              >
+                <ChevronLeft className="h-5 w-5 text-gray-600 dark:text-gray-300" />
+              </button>
+              <div className="ml-4">
+                <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Your Basket</h1>
+                <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                  {provider.business_name} • {provider.items.length} {provider.items.length === 1 ? 'item' : 'items'}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div className="md:flex">
+            {/* Items List */}
+            <div className="flex-1 p-6">
+              <div className="space-y-4">
+                {provider.items.map((item, index) => (
+                  <motion.div
+                    key={item.id}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: index * 0.1 }}
+                    className="flex items-center p-4 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors duration-200"
+                  >
+                    <div className="flex-shrink-0 h-20 w-20 rounded-lg overflow-hidden bg-gray-100 dark:bg-gray-700">
+                      <img
+                        src={item.image || '/placeholder-food.jpg'}
+                        alt={item.name}
+                        className="h-full w-full object-cover"
+                      />
+                    </div>
+                    <div className="ml-4 flex-1 min-w-0">
+                      <div className="flex items-start justify-between">
+                        <div className="pr-4">
+                          <h3 className="font-medium text-gray-900 dark:text-white truncate">
+                            {item.name}
+                          </h3>
+                          {item.description && (
+                            <p className="text-sm text-gray-600 dark:text-gray-300 mt-1">
+                              {item.description}
+                            </p>
+                          )}
+                          <p className="text-sm text-emerald-600 dark:text-emerald-400 mt-1">
+                            R {item.price.toFixed(2)}
+                          </p>
+                        </div>
+                        <div className="flex items-center space-x-3">
+                          <div className="flex items-center space-x-2 bg-gray-50 dark:bg-gray-700 rounded-lg px-2 py-1">
+                            <button
+                              onClick={() => onUpdateQuantity(item.id, item.quantity - 1)}
+                              className="p-1 text-gray-500 hover:text-emerald-600 dark:text-gray-300 dark:hover:text-emerald-400 transition-colors"
+                            >
+                              {item.quantity === 1 ? (
+                                <Trash2 className="h-4 w-4 text-red-500" />
+                              ) : (
+                                <Minus className="h-4 w-4" />
+                              )}
+                            </button>
+                            <span className="text-sm font-medium text-gray-900 dark:text-white w-5 text-center">
+                              {item.quantity}
+                            </span>
+                            <button
+                              onClick={() => onUpdateQuantity(item.id, item.quantity + 1)}
+                              className="p-1 text-gray-500 hover:text-emerald-600 dark:text-gray-300 dark:hover:text-emerald-400 transition-colors"
+                            >
+                              <Plus className="h-4 w-4" />
+                            </button>
+                          </div>
+                          <button
+                            onClick={() => onRemoveItem(item.id)}
+                            className="p-1.5 text-gray-400 hover:text-red-500 dark:hover:text-red-400 transition-colors"
+                          >
+                            <Trash2 className="h-5 w-5" />
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </motion.div>
+                ))}
+              </div>
+            </div>
+
+            {/* Order Summary */}
+            <div className="md:w-96 border-t md:border-t-0 md:border-l border-gray-100 dark:border-gray-700 p-6 bg-gray-50 dark:bg-gray-800/50">
+              <div className="sticky top-6">
+                <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+                  Order Summary
+                </h2>
+                
+                <div className="space-y-3 mb-6">
+                  {provider.items.map((item) => (
+                    <div
+                      key={item.id}
+                      className="flex items-center justify-between text-sm"
+                    >
+                      <span className="text-gray-600 dark:text-gray-300">
+                        {item.name} × {item.quantity}
+                      </span>
+                      <span className="text-gray-900 dark:text-white font-medium">
+                        R {(item.price * item.quantity).toFixed(2)}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="border-t border-gray-200 dark:border-gray-700 pt-4">
+                  <div className="flex items-center justify-between text-base font-medium text-gray-900 dark:text-white mb-6">
+                    <span>Total</span>
+                    <span className="text-lg">R {subtotal.toFixed(2)}</span>
+                  </div>
+
+                  <motion.button
+                    whileTap={{ scale: 0.98 }}
+                    onClick={onCheckout}
+                    disabled={isProcessingCheckout}
+                    className="w-full flex items-center justify-center px-6 py-3 border border-transparent rounded-lg text-base font-medium text-white bg-emerald-600 hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  >
+                    {isProcessingCheckout ? (
+                      <>
+                        <svg
+                          className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
+                          xmlns="http://www.w3.org/2000/svg"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                        >
+                          <circle
+                            className="opacity-25"
+                            cx="12"
+                            cy="12"
+                            r="10"
+                            stroke="currentColor"
+                            strokeWidth="4"
+                          ></circle>
+                          <path
+                            className="opacity-75"
+                            fill="currentColor"
+                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                          ></path>
+                        </svg>
+                        Processing...
+                      </>
+                    ) : (
+                      'Proceed to Payment'
+                    )}
+                  </motion.button>
+                </div>
+              </div>
             </div>
           </div>
         </div>
       </div>
 
-      <div className="px-4 py-4">
-        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
-          <div className="px-4 py-4">
-            {provider.items.map((item, index) => (
-              <motion.div
-                key={item.id}
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: index * 0.1 }}
-                className="flex items-center py-4 border-b border-gray-100 dark:border-gray-700 last:border-b-0"
-              >
-                <img
-                  src={item.image || '/placeholder-food.jpg'}
-                  alt={item.name}
-                  className="w-16 h-16 rounded-lg object-cover mr-4"
-                />
-                <div className="flex-1 min-w-0">
-                  <h4 className="font-semibold text-gray-800 dark:text-gray-100 text-base">
-                    {item.name}
-                  </h4>
-                  {item.description && (
-                    <p className="text-sm text-gray-600 dark:text-gray-300 mt-1">
-                      {item.description}
-                    </p>
-                  )}
-                  <p className="text-lg font-bold text-emerald-600 dark:text-emerald-400 mt-2">
-                    R {item.price.toFixed(2)}
-                  </p>
-                </div>
-                <div className="flex items-center ml-4">
-                  <button
-                    onClick={() => onUpdateQuantity(item.id, item.quantity - 1)}
-                    className="p-2 rounded-full border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
-                  >
-                    {item.quantity === 1 ? (
-                      <Trash2 className="w-5 h-5 text-red-500" />
-                    ) : (
-                      <Minus className="w-5 h-5 text-gray-600 dark:text-gray-400" />
-                    )}
-                  </button>
-                  <span className="mx-4 font-semibold text-lg text-gray-800 dark:text-gray-100 min-w-[24px] text-center">
-                    {item.quantity}
-                  </span>
-                  <button
-                    onClick={() => onUpdateQuantity(item.id, item.quantity + 1)}
-                    className="p-2 rounded-full border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
-                  >
-                    <Plus className="w-5 h-5 text-gray-600 dark:text-gray-400" />
-                  </button>
-                </div>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </div>
-
-      <div className="fixed bottom-0 left-0 right-0 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 px-4 py-4">
-        <div className="flex items-center justify-between mb-4">
-          <span className="text-lg font-semibold text-gray-800 dark:text-gray-100">Subtotal</span>
-          <span className="text-lg font-bold text-emerald-600 dark:text-emerald-400">
-            R {provider.items.reduce((sum, item) => sum + (item.price * item.quantity), 0).toFixed(2)}
-          </span>
-        </div>
-        <motion.button
-  whileTap={{ scale: 0.98 }}
-  onClick={onCheckout}
-  disabled={isProcessingCheckout}
-  className="w-full bg-emerald-600 dark:bg-emerald-700 text-white font-semibold py-4 rounded-xl transition-colors hover:bg-emerald-700 dark:hover:bg-emerald-800 disabled:opacity-50 disabled:cursor-not-allowed"
->
-  {isProcessingCheckout ? 'Processing...' : 'Proceed to Payment'}
-</motion.button>
-      </div>
-
+      {/* Payment Modal - Keep your existing modal code here */}
       {showPayment && (
         <PaymentModal
           provider={provider}
@@ -127,10 +199,11 @@ const DetailedBasket = ({
           isProcessingCheckout={isProcessingCheckout}
         />
       )}
-
     </div>
   );
 };
+
+
 // Payment Modal Component
 const PaymentModal = ({ 
   provider,
@@ -356,39 +429,81 @@ const YourCart = () => {
   const providers = Object.values(itemsByProvider);
   const totalAmount = providers.reduce((sum, provider) => sum + provider.subtotal, 0);
 
-  const updateQuantity = async (itemId, newQuantity) => {
-    if (newQuantity < 1) return;
-    
-    try {
-      const response = await foodAPI.updateCartItemQuantity(itemId, newQuantity);
-      if (response.success) {
-        setCartItems(cartItems.map(item => 
+  // Add this updated updateQuantity function to your YourCart component
+const updateQuantity = async (itemId, newQuantity) => {
+  if (newQuantity < 1) {
+    await removeItem(itemId);
+    return;
+  }
+  
+  try {
+    const response = await foodAPI.updateCartItemQuantity(itemId, newQuantity);
+    if (response.success) {
+      // Update cartItems state
+      const updatedCartItems = cartItems.map(item => 
+        item.id === itemId ? { ...item, quantity: newQuantity } : item
+      );
+      setCartItems(updatedCartItems);
+      
+      // IMPORTANT: Also update selectedProvider if we're in detailed view
+      if (selectedProvider && currentView === 'provider') {
+        const updatedProviderItems = selectedProvider.items.map(item => 
           item.id === itemId ? { ...item, quantity: newQuantity } : item
-        ));
-      } else {
-        setError(response.error || 'Failed to update quantity');
+        );
+        setSelectedProvider({
+          ...selectedProvider,
+          items: updatedProviderItems
+        });
       }
-    } catch (err) {
-      setError('Failed to update quantity');
-      console.error('Error updating quantity:', err);
+      
+      // Clear any existing errors
+      setError(null);
+    } else {
+      setError(response.error || 'Failed to update quantity');
     }
-  };
+  } catch (err) {
+    setError('Failed to update quantity');
+    console.error('Error updating quantity:', err);
+  }
+};
 
-  const removeItem = async (itemId) => {
-    try {
-      const response = await foodAPI.removeFromCart(itemId);
-      if (response.success) {
-        setCartItems(cartItems.filter(item => item.id !== itemId));
-      } else {
-        setError(response.error || 'Failed to remove item');
+// Also update the removeItem function
+const removeItem = async (itemId) => {
+  try {
+    const response = await foodAPI.removeFromCart(itemId);
+    if (response.success) {
+      // Update cartItems state
+      const updatedCartItems = cartItems.filter(item => item.id !== itemId);
+      setCartItems(updatedCartItems);
+      
+      // IMPORTANT: Also update selectedProvider if we're in detailed view
+      if (selectedProvider && currentView === 'provider') {
+        const updatedProviderItems = selectedProvider.items.filter(item => item.id !== itemId);
+        
+        // If no items left in this provider's basket, go back to main view
+        if (updatedProviderItems.length === 0) {
+          setCurrentView('baskets');
+          setSelectedProvider(null);
+        } else {
+          setSelectedProvider({
+            ...selectedProvider,
+            items: updatedProviderItems
+          });
+        }
       }
-    } catch (err) {
-      setError('Failed to remove item');
-      console.error('Error removing item:', err);
+      
+      // Clear any existing errors
+      setError(null);
+    } else {
+      setError(response.error || 'Failed to remove item');
     }
-  };
+  } catch (err) {
+    setError('Failed to remove item');
+    console.error('Error removing item:', err);
+  }
+};
 
-  const viewProviderBasket = (provider) => {
+const viewProviderBasket = (provider) => {
     setSelectedProvider(provider);
     setCurrentView('provider');
     setError(null);
@@ -700,12 +815,12 @@ const handleProceedToPayment = () => {
             console.log(`✅ Successfully scheduled pickup for ${cartItem.name}`);
             console.log(`Order ID: ${order.id}, Confirmation: ${scheduleResponse.data.pickup.confirmation_code}`);
           } else {
-            console.error(`❌ Failed to schedule pickup for ${cartItem.name}:`, scheduleResponse.error);
+            console.error(`Failed to schedule pickup for ${cartItem.name}:`, scheduleResponse.error);
             failedItems.push({ item: cartItem, error: scheduleResponse.error, stage: 'scheduling' });
           }
           
         } catch (itemError) {
-          console.error(`💥 Error scheduling pickup for ${cartItem.name}:`, itemError);
+          console.error(`Error scheduling pickup for ${cartItem.name}:`, itemError);
           failedItems.push({ item: cartItem, error: itemError.message, stage: 'scheduling' });
         }
         
