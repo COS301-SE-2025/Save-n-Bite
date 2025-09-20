@@ -91,7 +91,7 @@ const GardenTile = ({
             onClick={handlePlantClick}
             customState={custom_data}
             className="plant-in-tile"
-            size={60} // Explicit size for garden tiles
+            size={80} // Explicit size for garden tiles
           />
         </div>
       )}
