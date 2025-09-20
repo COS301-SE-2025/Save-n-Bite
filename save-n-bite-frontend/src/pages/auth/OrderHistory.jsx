@@ -983,7 +983,7 @@ const OrderHistory = () => {
                       </div>
 
                       {/* Code Preview */}
-                      {((isDonation && order.verification_code) || (!isDonation && order.confirmation_code)) &&
+                      {/* {((isDonation && order.verification_code) || (!isDonation && order.confirmation_code)) &&
                         (order.status === 'scheduled' || order.status === 'confirmed' || order.status === 'ready') && (
                           <div className={`mt-4 p-3 rounded-lg ${isDonation ? 'bg-red-50 dark:bg-red-900' : 'bg-emerald-50 dark:bg-emerald-900'
                             }`}>
@@ -1000,7 +1000,7 @@ const OrderHistory = () => {
                               Click to view QR code and full {isDonation ? 'collection' : 'pickup'} details
                             </p>
                           </div>
-                        )}
+                        )} */}
                     </div>
                   );
                 })}
