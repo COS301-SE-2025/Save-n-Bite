@@ -346,7 +346,7 @@ const ProfilePage = () => {
                 <HeartIcon size={48} className="mx-auto text-gray-300 dark:text-gray-600 mb-4" />
                 <h4 className="text-lg font-medium text-gray-900 dark:text-white mb-2">No saved items</h4>
                 <p className="text-gray-500 dark:text-gray-400 mb-6 max-w-md mx-auto">
-                  Save your favorite food items to access them easily later.
+                  Follow your favorite food providers to access them easily later.
                 </p>
                 <Link
                   to="/food-listing"

@@ -620,7 +620,7 @@ const FoodItem = () => {
               )}
               
               {/* Follow Button - Positioned over the image */}
-              <button
+              {/* <button
                 onClick={handleFollowToggle}
                 disabled={followLoading}
                 className={`absolute top-3 left-3 p-2 rounded-full shadow-lg transition-all duration-200 ${
@@ -630,12 +630,8 @@ const FoodItem = () => {
                 } ${followLoading ? 'opacity-50 cursor-not-allowed' : 'hover:scale-105'}`}
                 title={isFollowing ? `Unfollow ${item.provider.businessName}` : `Follow ${item.provider.businessName}`}
               >
-                <Heart 
-                  size={18} 
-                  fill={isFollowing ? 'currentColor' : 'none'}
-                  className={followLoading ? 'animate-pulse' : ''}
-                />
-              </button>
+               
+              </button> */}
             </div>
 
             {/* Item details */}
@@ -853,7 +849,7 @@ const FoodItem = () => {
       </main>
 
       {/* Bottom navigation for mobile */}
-      <div className="fixed bottom-0 left-0 right-0 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 p-3 md:hidden z-50">
+      {/* <div className="fixed bottom-0 left-0 right-0 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 p-3 md:hidden z-50">
         <div className="flex items-center justify-between max-w-md mx-auto">
           <div>
             <p className="text-xs text-gray-500 dark:text-gray-400">Price</p>
@@ -880,7 +876,7 @@ const FoodItem = () => {
             </button>
           )}
         </div>
-      </div>
+      </div> */}
     </div>
   );
 };
