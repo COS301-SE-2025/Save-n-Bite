@@ -100,7 +100,7 @@ class PlantInventorySerializer(serializers.ModelSerializer):
 
 class PlantPlacementSerializer(serializers.Serializer):
     """Serializer for placing plants in garden"""
-    plant_inventory_id = serializers.UUIDField()
+    plant_id = serializers.UUIDField()
     row = serializers.IntegerField(min_value=0, max_value=7)
     col = serializers.IntegerField(min_value=0, max_value=7)
     custom_data = serializers.JSONField(required=False, default=dict)
