@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import Modal from '../../components/ui/Modal';
 import './PlantDetails.css';
 
@@ -29,6 +29,53 @@ const PlantDetails = ({ plant, onClose }) => {
     return colors[rarity] || '#666';
   };
 
+  // State for SVG loading (similar to PlantSVG component)
+  const [svgContent, setSvgContent] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(false);
+
+  useEffect(() => {
+    loadSvgImage();
+  }, [plant.rive_asset_name, plant.name]);
+
+  const loadSvgImage = async () => {
+    // Use rive_asset_name to build the SVG path (same logic as PlantSVG)
+    let imagePath = null;
+    
+    if (plant.rive_asset_name) {
+      // Use rive_asset_name as filename
+      imagePath = `/assets/images/plants/${plant.rive_asset_name}.svg`;
+    } else {
+      // Fallback: use plant name, cleaned up
+      const cleanName = plant.name.toLowerCase()
+        .replace(/\s+/g, '_')        // Replace spaces with underscores
+        .replace(/[^a-z0-9_]/g, ''); // Remove special characters
+      imagePath = `/assets/images/plants/${cleanName}.svg`;
+    }
+
+    setLoading(true);
+    setError(false);
+
+    try {
+      console.log(`Attempting to load SVG from: ${imagePath}`);
+      const response = await fetch(imagePath);
+      
+      if (!response.ok) {
+        throw new Error(`Failed to load SVG: ${response.status} ${response.statusText}`);
+      }
+      
+      const svgText = await response.text();
+      setSvgContent(svgText);
+      console.log(`Successfully loaded SVG for ${plant.name}`);
+    } catch (err) {
+      console.warn(`Failed to load SVG for ${plant.name} from ${imagePath}:`, err);
+      setError(true);
+      setSvgContent(null);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <Modal onClose={onClose} className="plant-details-modal">
       <div className="plant-details">
@@ -41,7 +88,21 @@ const PlantDetails = ({ plant, onClose }) => {
             className="plant-icon-large"
             style={{ backgroundColor: plant.icon_color }}
           >
-            <span className="plant-emoji-large">🌱</span>
+            {loading ? (
+              <div className="loading-spinner">🌱</div>
+            ) : svgContent ? (
+              <div 
+                dangerouslySetInnerHTML={{ 
+                  __html: svgContent.replace(
+                    /<svg([^>]*)>/i,
+                    `<svg$1 class="plant-image-large">`
+                  )
+                }}
+                className="svg-wrapper"
+              />
+            ) : (
+              <span className="plant-emoji-large">🌱</span>
+            )}
           </div>
           
           <div className="plant-title">

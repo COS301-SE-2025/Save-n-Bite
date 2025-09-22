@@ -11,7 +11,8 @@
 }
 
 .plant-header {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  /* Updated to dark green gradient */
+  background: linear-gradient(135deg, #1a4a3a 0%, #2d5a2d 25%, #1e3a2e 50%, #0f2922 100%);
   color: white;
   padding: 30px;
   display: flex;
@@ -21,18 +22,61 @@
 }
 
 .plant-icon-large {
-  width: 80px;
-  height: 80px;
+  /* Increased size from 80px to 120px */
+  width: 120px;
+  height: 120px;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   background: rgba(255, 255, 255, 0.2);
   backdrop-filter: blur(10px);
+  overflow: hidden;
+  position: relative;
+}
+
+/* New styles for plant SVG and loading states */
+.plant-image-large {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  border-radius: 50%;
+  filter: drop-shadow(2px 2px 8px rgba(0, 0, 0, 0.3));
+}
+
+.svg-wrapper {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.svg-wrapper svg {
+  max-width: 90%;
+  max-height: 90%;
+  border-radius: 50%;
+}
+
+.loading-spinner {
+  font-size: 30px;
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.7;
+    transform: scale(1.1);
+  }
 }
 
 .plant-emoji-large {
-  font-size: 40px;
+  /* Increased from 40px to 60px */
+  font-size: 60px;
   filter: drop-shadow(2px 2px 4px rgba(0, 0, 0, 0.2));
 }
 
@@ -190,12 +234,13 @@
   }
   
   .plant-icon-large {
-    width: 60px;
-    height: 60px;
+    /* Responsive size adjustment */
+    width: 100px;
+    height: 100px;
   }
   
   .plant-emoji-large {
-    font-size: 30px;
+    font-size: 50px;
   }
   
   .plant-title h2 {
@@ -227,6 +272,15 @@
   
   .plant-header {
     padding: 15px;
+  }
+  
+  .plant-icon-large {
+    width: 80px;
+    height: 80px;
+  }
+  
+  .plant-emoji-large {
+    font-size: 40px;
   }
   
   .plant-content {
