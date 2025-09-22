@@ -130,18 +130,25 @@ class CustomerStatsSerializer(serializers.ModelSerializer):
     current_streak_days = serializers.SerializerMethodField()
     longest_streak_days = serializers.SerializerMethodField()
     last_order_date = serializers.SerializerMethodField()
+    next_milestones = serializers.SerializerMethodField()
     
     class Meta:
         model = CustomerStats
         fields = [
             # Actual model fields
             'total_orders', 'total_order_amount', 'unique_businesses_ordered_from',
-            'achieved_milestones', 'last_calculated_at',
+            'achieved_milestones', 'next_milestones', 'last_calculated_at',
             # Computed fields
             'plants_earned', 'plants_placed', 'garden_completion_percentage',
             'current_streak_days', 'longest_streak_days', 'last_order_date'
         ]
         read_only_fields = fields
+
+    def get_next_milestones(self, obj):
+        """Get the next achievable milestones"""
+        from .services import DigitalGardenService
+        service = DigitalGardenService()
+        return service.get_next_milestones(obj.customer)
     
     def get_plants_earned(self, obj):
         """Get total plants earned by customer"""

@@ -25,6 +25,7 @@
   display: flex;
   align-items: center;
   gap: 15px;
+  color: whitesmoke;
 }
 
 .garden-header h1 {

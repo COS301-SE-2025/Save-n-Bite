@@ -203,7 +203,7 @@ const DigitalGarden = () => {
         }}
       >
         <div className="header-left">
-          <h1>My Digital Garden</h1>
+          <h1 style={{ color: 'whitesmoke' }}>My Digital Garden</h1>
         </div>
         <div className="garden-controls">
           {/* Toggle button instead of separate View/Move buttons */}
