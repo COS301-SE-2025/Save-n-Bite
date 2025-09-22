@@ -22,12 +22,12 @@ class GardenAPI {
 
     try {
       const fullUrl = `${this.baseURL}${endpoint}`;
-      console.log('Making request to:', fullUrl); // Debug log
+      //console.o('Making request to:', fullUrl); // Debug log
       
       const response = await fetch(fullUrl, config);
       
-      console.log('Response status:', response.status); // Debug log
-      console.log('Response headers:', response.headers); // Debug log
+      //console.o('Response status:', response.status); // Debug log
+      //console.o('Response headers:', response.headers); // Debug log
       
       if (!response.ok) {
         // Try to get error details
@@ -50,7 +50,7 @@ class GardenAPI {
       }
 
       const result = await response.json();
-      console.log('API Response:', result); // Debug log
+      //console.o('API Response:', result); // Debug log
       return result;
       
     } catch (error) {
@@ -98,7 +98,7 @@ class GardenAPI {
 
   // Garden Actions
   async placePlant(plantId, row, col, customData = {}) {
-    console.log(`API: Placing plant ${plantId} at position [${row}, ${col}]`);
+    //console.o(`API: Placing plant ${plantId} at position [${row}, ${col}]`);
     
     // The backend view expects 'plant_id'
     const requestBody = {
@@ -108,9 +108,9 @@ class GardenAPI {
       custom_data: customData,
     };
     
-    console.log('API Request Body:', requestBody);
-    console.log('Plant ID value:', plantId, 'Type:', typeof plantId);
-    console.log('Row type:', typeof row, 'Col type:', typeof col);
+    //console.o('API Request Body:', requestBody);
+    //console.o('Plant ID value:', plantId, 'Type:', typeof plantId);
+    //console.o('Row type:', typeof row, 'Col type:', typeof col);
     
     return this.request('/actions/place/', {
       method: 'POST',
@@ -119,7 +119,7 @@ class GardenAPI {
   }
 
   async removePlant(row, col) {
-    console.log(`API: Removing plant from garden at position [${row}, ${col}]`);
+    //console.o(`API: Removing plant from garden at position [${row}, ${col}]`);
     
     return this.request('/actions/remove/', {
       method: 'POST',
@@ -136,7 +136,7 @@ class GardenAPI {
   }
 
   async movePlant(fromRow, fromCol, toRow, toCol) {
-    console.log(`API: Moving plant from [${fromRow}, ${fromCol}] to [${toRow}, ${toCol}]`);
+    //console.o(`API: Moving plant from [${fromRow}, ${fromCol}] to [${toRow}, ${toCol}]`);
     
     return this.request('/actions/move/', {
       method: 'POST',

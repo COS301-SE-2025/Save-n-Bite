@@ -64,13 +64,13 @@ const GardenGrid = ({
   }, [mode, selectedTile, onTileSelect, onPlantInteract]);
 
   const handlePlantClick = useCallback((plantData, tile) => {
-    console.log('GardenGrid handlePlantClick called:', { mode, plantData: plantData?.name, tile: `${tile.row},${tile.col}` });
+    //console.o('GardenGrid handlePlantClick called:', { mode, plantData: plantData?.name, tile: `${tile.row},${tile.col}` });
     
     // Only allow plant details in view mode
     if (mode === 'view' && onPlantInteract) {
       onPlantInteract(plantData, tile);
     } else if (mode === 'harvest' && onPlantInteract) {
-      console.log('GardenGrid: Forwarding harvest interaction to parent');
+      //console.o('GardenGrid: Forwarding harvest interaction to parent');
       // Handle harvest interaction
       onPlantInteract(plantData, tile);
     }

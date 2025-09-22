@@ -9,6 +9,7 @@ import useGardenActions from '../hooks/useGardenAction';
 import panelBackgroundSvg from '../../../assets/images/backgrounds/panel-background.svg';
 import headerBackgroundSvg from '../../../assets/images/backgrounds/garden-background.svg';
 import './DigitalGarden.css';
+import './RarityTallies.css';
 
 const DigitalGarden = () => {
   const [selectedPlant, setSelectedPlant] = useState(null);
@@ -32,11 +33,11 @@ const DigitalGarden = () => {
     plants,
     loading,
     error,
-    actions: { refreshGarden, refreshInventory, refreshStats, initializeGarden }
+    actions: { refreshGarden, refreshInventory, initializeGarden }
   } = useDigitalGarden();
 
   // Garden actions hook
-  const { actionLoading, placePlant, removePlant, harvestPlant, movePlant } = useGardenActions(
+  const { actionLoading, placePlant, harvestPlant, movePlant } = useGardenActions(
     // onSuccess callback
     useCallback((action, result) => {
       let message = `${action.charAt(0).toUpperCase() + action.slice(1)} successful!`;
@@ -71,9 +72,75 @@ const DigitalGarden = () => {
     }, [])
   );
 
+// FIXED: Calculate total plants earned
+const calculateTotalPlantsEarned = useCallback(() => {
+  // Use the backend's calculated value since inventory might be empty when all plants are placed
+  return garden?.total_plants_earned || 0;
+}, [garden]);
+
+// FIXED: Calculate unique plant types earned  
+const calculateUniquePlantsEarned = useCallback(() => {
+  if (!garden?.garden_tiles) return 0;
+  
+  // Get unique plant IDs from inventory
+  const uniqueInventoryPlants = new Set();
+  if (inventory && inventory.length > 0) {
+    inventory.forEach(item => uniqueInventoryPlants.add(item.plant));
+  }
+  
+  // Get unique plant IDs from placed plants in garden
+  const placedPlantIds = new Set();
+  garden.garden_tiles.forEach(tile => {
+    if (tile.plant) {
+      placedPlantIds.add(tile.plant);
+    }
+  });
+  
+  // Combine both sets to get total unique plants
+  const allUniquePlants = new Set([...uniqueInventoryPlants, ...placedPlantIds]);
+  return allUniquePlants.size;
+}, [inventory, garden]);
+
+// FIXED: Calculate rarity tallies
+const calculateRarityTallies = useCallback(() => {
+  const tallies = {
+    common: 0,
+    uncommon: 0,
+    rare: 0,
+    epic: 0,
+    legendary: 0
+  };
+
+  // Count from inventory
+  if (inventory && inventory.length > 0) {
+    inventory.forEach(item => {
+      const rarity = item.plant_details?.rarity;
+      if (tallies.hasOwnProperty(rarity)) {
+        tallies[rarity] += item.quantity;
+      }
+    });
+  }
+
+  // Count from placed plants in garden
+  if (garden?.garden_tiles) {
+    garden.garden_tiles.forEach(tile => {
+      if (tile.plant_details?.rarity) {
+        const rarity = tile.plant_details.rarity;
+        if (tallies.hasOwnProperty(rarity)) {
+          tallies[rarity] += 1;
+        }
+      }
+    });
+  }
+
+  return tallies;
+}, [inventory, garden]);
+
   // Handle tile selection in garden
   const handleTileSelect = useCallback(async (tile, actionType, sourceTile = null) => {
-    console.log('handleTileSelect called:', { actionType, gardenMode, tile: `${tile.row},${tile.col}`, hasPlant: !!tile.plant_details });
+    //consolee.log('handleTileSelect called:', { actionType, gardenMode, tile: `${tile.row},${tile.col}`, hasPlant: !!tile.plant_details });
+
+
     
     try {
       if (actionType === 'select') {
@@ -87,7 +154,7 @@ const DigitalGarden = () => {
             setMovePrompt('');
           }, 4000);
         } else if (gardenMode === 'harvest') {
-          console.log('Setting plant for harvest selection');
+          //consolee.log('Setting plant for harvest selection');
           // Plant selected for harvesting
           setSelectedPlantForHarvest(tile);
           setHarvestPrompt('Click the plant again to confirm harvest (This will return the seeds to your inventory)');
@@ -98,39 +165,39 @@ const DigitalGarden = () => {
           }, 4000);
         }
       } else if (actionType === 'move' && sourceTile) {
-        console.log('Executing move action');
+        //consolee.log('Executing move action');
         await movePlant(sourceTile.row, sourceTile.col, tile.row, tile.col);
       } else if (actionType === 'harvest' && tile.plant_details) {
-        console.log('Executing harvest action');
+        //consolee.log('Executing harvest action');
         // Perform harvest using dedicated harvest function
         const result = await harvestPlant(tile.row, tile.col);
-        console.log('Harvest result:', result);
+        //consolee.log('Harvest result:', result);
         // The success callback will handle the notification and state cleanup
       }
     } catch (error) {
-      console.error('Tile action failed:', error);
+      consolee.error('Tile action failed:', error);
     }
   }, [movePlant, harvestPlant, gardenMode]);
 
   // Handle plant interaction (click for details) - Only in view mode
   const handlePlantInteract = useCallback((plantData, tile) => {
-    console.log('handlePlantInteract called:', { gardenMode, plantData: plantData?.name, tile: `${tile.row},${tile.col}` });
+    //console.log('handlePlantInteract called:', { gardenMode, plantData: plantData?.name, tile: `${tile.row},${tile.col}` });
     
     if (gardenMode === 'view') {
       setSelectedPlantForDetails(plantData);
       setShowPlantDetails(true);
     } else if (gardenMode === 'harvest') {
-      console.log('In harvest mode, handling plant interaction');
-      console.log('selectedPlantForHarvest:', selectedPlantForHarvest);
-      console.log('Current tile:', tile);
+      // console.log('In harvest mode, handling plant interaction');
+      // console.log('selectedPlantForHarvest:', selectedPlantForHarvest);
+      // console.log('Current tile:', tile);
       
       // Handle harvest confirmation
       if (selectedPlantForHarvest && selectedPlantForHarvest.id === tile.id) {
-        console.log('Confirming harvest for selected plant');
+        //console.o('Confirming harvest for selected plant');
         // Confirm harvest
         handleTileSelect(tile, 'harvest');
       } else {
-        console.log('Selecting plant for harvest');
+        //console.o('Selecting plant for harvest');
         // Select for harvest
         handleTileSelect(tile, 'select');
       }
@@ -153,8 +220,8 @@ const DigitalGarden = () => {
         // The backend view code expects plant_id (the plant type ID), not inventory_id
         // From debug: draggedPlant.plant_details.id is the plant ID we need
         const plantId = draggedPlant.plant_details?.id || draggedPlant.plant;
-        console.log('Using plant ID:', plantId);
-        console.log('Tile position:', { row: tile.row, col: tile.col });
+        // console.log('Using plant ID:', plantId);
+        // console.log('Tile position:', { row: tile.row, col: tile.col });
         
         if (!plantId) {
           console.error('No plant ID found in draggedPlant:', draggedPlant);
@@ -272,6 +339,26 @@ const DigitalGarden = () => {
     );
   }
 
+  const totalPlantsEarned = calculateTotalPlantsEarned();
+  const uniquePlantsEarned = calculateUniquePlantsEarned();
+  const rarityTallies = calculateRarityTallies();
+//  TEMPORARY debug code
+//console.o('=== DEBUG INFO ===');
+//console.o('Garden object:', garden);
+//console.o('Inventory array:', inventory);
+if (garden) {
+  //console.o('Garden keys:', Object.keys(garden));
+  //console.o('Garden tiles:', garden.tiles);
+  //console.o('Garden garden_tiles:', garden.garden_tiles);
+}
+if (inventory && inventory.length > 0) {
+  //console.o('First inventory item:', inventory[0]);
+  //console.o('Inventory item keys:', Object.keys(inventory[0]));
+}
+//console.o('=== END DEBUG ===');
+//console.o('First garden tile:', garden.garden_tiles[0]);
+//console.o('A garden tile with plant:', garden.garden_tiles.find(tile => tile.plant));
+
   return (
     <div className="digital-garden">
       <CustomerNavBar />
@@ -354,8 +441,8 @@ const DigitalGarden = () => {
               <h3>Garden Overview</h3>
               <div className="overview-stats">
                 <div className="stat-item">
-                  <span className="stat-label">Plants Earned:</span>
-                  <span className="stat-value">{garden.total_plants_earned || 0}</span>
+                  <span className="stat-label">Unique Plants:</span>
+                  <span className="stat-value">{uniquePlantsEarned}</span>
                 </div>
                 <div className="stat-item">
                   <span className="stat-label">Plants Placed:</span>
@@ -366,6 +453,17 @@ const DigitalGarden = () => {
                   <span className="stat-value">
                     {Math.round(((garden.total_plants_placed || 0) / 64) * 100)}%
                   </span>
+                </div>
+              </div>
+                           <div className="rarity-tallies">
+                <h4>Plants by Rarity</h4>
+                <div className="rarity-breakdown">
+                  {Object.entries(rarityTallies).map(([rarity, count]) => (
+                    <div key={rarity} className={`rarity-stat ${rarity}`}>
+                      <span className="rarity-label">{rarity.charAt(0).toUpperCase() + rarity.slice(1)}:</span>
+                      <span className="rarity-count">{count}</span>
+                    </div>
+                  ))}
                 </div>
               </div>
             </div>

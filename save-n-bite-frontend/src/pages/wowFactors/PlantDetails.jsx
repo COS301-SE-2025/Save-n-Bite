@@ -57,7 +57,7 @@ const PlantDetails = ({ plant, onClose }) => {
     setError(false);
 
     try {
-      console.log(`Attempting to load SVG from: ${imagePath}`);
+      //console.o(`Attempting to load SVG from: ${imagePath}`);
       const response = await fetch(imagePath);
       
       if (!response.ok) {
@@ -66,7 +66,7 @@ const PlantDetails = ({ plant, onClose }) => {
       
       const svgText = await response.text();
       setSvgContent(svgText);
-      console.log(`Successfully loaded SVG for ${plant.name}`);
+      //console.o(`Successfully loaded SVG for ${plant.name}`);
     } catch (err) {
       console.warn(`Failed to load SVG for ${plant.name} from ${imagePath}:`, err);
       setError(true);
