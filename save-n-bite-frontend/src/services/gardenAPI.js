@@ -98,32 +98,53 @@ class GardenAPI {
 
   // Garden Actions
   async placePlant(plantId, row, col, customData = {}) {
+    console.log(`API: Placing plant ${plantId} at position [${row}, ${col}]`);
+    
+    // The backend view expects 'plant_id'
+    const requestBody = {
+      plant_id: plantId,
+      row: parseInt(row),
+      col: parseInt(col),
+      custom_data: customData,
+    };
+    
+    console.log('API Request Body:', requestBody);
+    console.log('Plant ID value:', plantId, 'Type:', typeof plantId);
+    console.log('Row type:', typeof row, 'Col type:', typeof col);
+    
     return this.request('/actions/place/', {
       method: 'POST',
-      body: JSON.stringify({
-        plant_id: plantId,
-        row,
-        col,
-        custom_data: customData,
-      }),
+      body: JSON.stringify(requestBody),
     });
   }
 
   async removePlant(row, col) {
+    console.log(`API: Removing plant from garden at position [${row}, ${col}]`);
+    
     return this.request('/actions/remove/', {
       method: 'POST',
-      body: JSON.stringify({ row, col }),
+      body: JSON.stringify({ 
+        row: parseInt(row), 
+        col: parseInt(col) 
+      }),
     });
   }
 
+  // Alias for removePlant to make the intent clearer
+  async harvestPlant(row, col) {
+    return this.removePlant(row, col);
+  }
+
   async movePlant(fromRow, fromCol, toRow, toCol) {
+    console.log(`API: Moving plant from [${fromRow}, ${fromCol}] to [${toRow}, ${toCol}]`);
+    
     return this.request('/actions/move/', {
       method: 'POST',
       body: JSON.stringify({
-        from_row: fromRow,
-        from_col: fromCol,
-        to_row: toRow,
-        to_col: toCol,
+        from_row: parseInt(fromRow),
+        from_col: parseInt(fromCol),
+        to_row: parseInt(toRow),
+        to_col: parseInt(toCol),
       }),
     });
   }

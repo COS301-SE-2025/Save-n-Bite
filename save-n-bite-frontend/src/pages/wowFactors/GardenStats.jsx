@@ -39,14 +39,6 @@ const GardenStats = ({ stats, garden, compactMode = false }) => {
                     {milestone.current}/{milestone.target}
                   </span>
                 </div>
-                <div className="progress-bar">
-                  <div 
-                    className="progress-fill"
-                    style={{ 
-                      width: `${getProgressPercentage(milestone.current, milestone.target)}%` 
-                    }}
-                  ></div>
-                </div>
                 <p className="milestone-description">
                   {milestone.description}
                 </p>
@@ -79,33 +71,7 @@ const GardenStats = ({ stats, garden, compactMode = false }) => {
           )}
         </div>
       </div>
-
-      {/* Garden Progress Circle - Only in full mode */}
-      {!compactMode && (
-        <div className="stats-section">
-          <h4 className="section-heading">Garden Progress</h4>
-          <div className="completion-circle">
-            <svg viewBox="0 0 36 36" className="circular-chart">
-              <path
-                className="circle-bg"
-                d="M18 2.0845
-                  a 15.9155 15.9155 0 0 1 0 31.831
-                  a 15.9155 15.9155 0 0 1 0 -31.831"
-              />
-              <path
-                className="circle"
-                strokeDasharray={`${garden?.completion_percentage || 0}, 100`}
-                d="M18 2.0845
-                  a 15.9155 15.9155 0 0 1 0 31.831
-                  a 15.9155 15.9155 0 0 1 0 -31.831"
-              />
-              <text x="18" y="20.35" className="percentage">
-                {garden?.completion_percentage?.toFixed(0) || 0}%
-              </text>
-            </svg>
-          </div>
-        </div>
-      )}
+  
     </div>
   );
 };

@@ -32,6 +32,21 @@ export const useGardenActions = (onSuccess, onError) => {
     }
   }, [onSuccess, onError]);
 
+  // Dedicated harvest function that calls removePlant but identifies as harvest
+  const harvestPlant = useCallback(async (row, col) => {
+    setActionLoading(true);
+    try {
+      const result = await gardenAPI.removePlant(row, col); // same API endpoint
+      if (onSuccess) onSuccess('harvest', result); //identify as harvest in callback
+      return result;
+    } catch (error) {
+      if (onError) onError('harvest', error);
+      throw error;
+    } finally {
+      setActionLoading(false);
+    }
+  }, [onSuccess, onError]);
+
   const movePlant = useCallback(async (fromRow, fromCol, toRow, toCol) => {
     setActionLoading(true);
     try {
@@ -64,6 +79,7 @@ export const useGardenActions = (onSuccess, onError) => {
     actionLoading,
     placePlant,
     removePlant,
+    harvestPlant, 
     movePlant,
     bulkActions,
   };

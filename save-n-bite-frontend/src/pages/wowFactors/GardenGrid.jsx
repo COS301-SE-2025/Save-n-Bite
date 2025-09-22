@@ -10,17 +10,24 @@ const GardenGrid = ({
   onPlantInteract,
   onDrop,
   draggedPlant,
-  mode = 'view', // 'view', 'move'
-  selectedTileForMove = null
+  mode = 'view', // 'view', 'move', 'harvest'
+  selectedTileForMove = null,
+  selectedTileForHarvest = null
 }) => {
   const [selectedTile, setSelectedTile] = useState(null);
   const [hoveredTile, setHoveredTile] = useState(null);
   const [dragOverTile, setDragOverTile] = useState(null);
 
-  // Sync local selectedTile with prop from parent
+  // Sync local selectedTile with props from parent
   useEffect(() => {
-    setSelectedTile(selectedTileForMove);
-  }, [selectedTileForMove]);
+    if (mode === 'move') {
+      setSelectedTile(selectedTileForMove);
+    } else if (mode === 'harvest') {
+      setSelectedTile(selectedTileForHarvest);
+    } else {
+      setSelectedTile(null);
+    }
+  }, [selectedTileForMove, selectedTileForHarvest, mode]);
 
   // Clear selected tile when switching to view mode
   useEffect(() => {
@@ -42,6 +49,12 @@ const GardenGrid = ({
         onTileSelect(tile, 'move', selectedTile);
       }
       setSelectedTile(null);
+    } else if (mode === 'harvest' && tile.plant_details) {
+      // Selecting plant for harvest
+      setSelectedTile(tile);
+      if (onTileSelect) {
+        onTileSelect(tile, 'select');
+      }
     } else if (mode === 'view' && tile.plant_details) {
       // Viewing plant details (only in view mode)
       if (onPlantInteract) {
@@ -51,8 +64,14 @@ const GardenGrid = ({
   }, [mode, selectedTile, onTileSelect, onPlantInteract]);
 
   const handlePlantClick = useCallback((plantData, tile) => {
+    console.log('GardenGrid handlePlantClick called:', { mode, plantData: plantData?.name, tile: `${tile.row},${tile.col}` });
+    
     // Only allow plant details in view mode
     if (mode === 'view' && onPlantInteract) {
+      onPlantInteract(plantData, tile);
+    } else if (mode === 'harvest' && onPlantInteract) {
+      console.log('GardenGrid: Forwarding harvest interaction to parent');
+      // Handle harvest interaction
       onPlantInteract(plantData, tile);
     }
     // In move mode, plant clicks are handled by handleTileClick
@@ -74,7 +93,7 @@ const GardenGrid = ({
     e.preventDefault();
     setDragOverTile(null);
     
-    // Handle inventory plant drop
+    // Handle inventory plant drop - should work in all modes
     if (!tile.plant_details && draggedPlant && onDrop) {
       onDrop(tile);
     }
@@ -88,6 +107,7 @@ const GardenGrid = ({
   const getTileClassName = (tile) => {
     let className = '';
     
+    // Move mode states
     if (mode === 'move' && selectedTile && selectedTile.id === tile.id) {
       className += ' selected-for-move';
     }
@@ -96,6 +116,16 @@ const GardenGrid = ({
       className += ' available-for-move';
     }
     
+    // Harvest mode states
+    if (mode === 'harvest' && selectedTile && selectedTile.id === tile.id) {
+      className += ' selected-for-harvest';
+    }
+    
+    if (mode === 'harvest' && tile.plant_details) {
+      className += ' harvestable';
+    }
+    
+    // Drag and drop states - should work in all modes for inventory items
     if (dragOverTile && dragOverTile.id === tile.id) {
       className += ' drag-over';
     }
@@ -109,43 +139,42 @@ const GardenGrid = ({
 
   if (!gardenData || !gardenData.garden_tiles) {
     return (
-      <div className="garden-grid-loading">
-        <div className="loading-spinner">Loading garden...</div>
+      <div className="garden-container">
+        <div className="garden-info">
+          <h2>Garden Loading...</h2>
+        </div>
       </div>
     );
   }
 
   return (
     <div className="garden-container">
-      {/* Garden background with SVG image */}
+
       <div 
-        className="garden-background" 
-        style={{ 
+        className="garden-grid"
+        style={{
           backgroundImage: `url(${gardenBackgroundSvg})`,
           backgroundSize: 'cover',
           backgroundPosition: 'center',
           backgroundRepeat: 'no-repeat'
         }}
-      />
-
-      <div className="garden-grid">
-        {gardenData.garden_tiles.map((tile) => (
+      >
+        {gardenData.garden_tiles.map(tile => (
           <GardenTile
-            key={tile.id}
+            key={`${tile.row}-${tile.col}`}
             tile={tile}
             isSelected={selectedTile && selectedTile.id === tile.id}
             isHighlighted={hoveredTile && hoveredTile.id === tile.id}
             onTileClick={handleTileClick}
             onPlantClick={handlePlantClick}
-            onDragOver={(e) => handleDragOver(e, tile)}
-            onDragLeave={(e) => handleDragLeave(e, tile)}
-            onDrop={(e) => handleDrop(e, tile)}
-            showCoordinates={false}
+            onDragOver={handleDragOver}
+            onDragLeave={handleDragLeave}
+            onDrop={handleDrop}
             className={getTileClassName(tile)}
+            showCoordinates={false}
           />
         ))}
       </div>
-      
     </div>
   );
 };

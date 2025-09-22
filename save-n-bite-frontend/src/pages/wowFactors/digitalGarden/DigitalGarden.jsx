@@ -12,15 +12,17 @@ import './DigitalGarden.css';
 
 const DigitalGarden = () => {
   const [selectedPlant, setSelectedPlant] = useState(null);
-  const [gardenMode, setGardenMode] = useState('view'); // 'view', 'move'
+  const [gardenMode, setGardenMode] = useState('view'); // 'view', 'move', 'harvest'
   const [showPlantDetails, setShowPlantDetails] = useState(false);
   const [selectedPlantForDetails, setSelectedPlantForDetails] = useState(null);
   const [notification, setNotification] = useState(null);
   const [draggedPlant, setDraggedPlant] = useState(null);
   
-  // New state for move mode prompts
+  // State for mode prompts
   const [movePrompt, setMovePrompt] = useState('');
+  const [harvestPrompt, setHarvestPrompt] = useState('');
   const [selectedPlantForMove, setSelectedPlantForMove] = useState(null);
+  const [selectedPlantForHarvest, setSelectedPlantForHarvest] = useState(null);
 
   // Main garden hook
   const {
@@ -34,12 +36,20 @@ const DigitalGarden = () => {
   } = useDigitalGarden();
 
   // Garden actions hook
-  const { actionLoading, placePlant, removePlant, movePlant } = useGardenActions(
+  const { actionLoading, placePlant, removePlant, harvestPlant, movePlant } = useGardenActions(
     // onSuccess callback
     useCallback((action, result) => {
+      let message = `${action.charAt(0).toUpperCase() + action.slice(1)} successful!`;
+      
+      if (action === 'harvest' && result?.plant) {
+        message = `${result.plant.name} harvested and returned to inventory!`;
+      } else if (action === 'remove' && result?.plant) {
+        message = `${result.plant.name} removed from garden and returned to inventory!`;
+      }
+      
       setNotification({
         type: 'success',
-        message: `${action.charAt(0).toUpperCase() + action.slice(1)} successful!`
+        message: message
       });
       refreshGarden();
       refreshInventory();
@@ -47,7 +57,9 @@ const DigitalGarden = () => {
       setSelectedPlant(null);
       setDraggedPlant(null);
       setSelectedPlantForMove(null);
+      setSelectedPlantForHarvest(null);
       setMovePrompt('');
+      setHarvestPrompt('');
     }, [refreshGarden, refreshInventory]),
 
     // onError callback
@@ -61,32 +73,70 @@ const DigitalGarden = () => {
 
   // Handle tile selection in garden
   const handleTileSelect = useCallback(async (tile, actionType, sourceTile = null) => {
+    console.log('handleTileSelect called:', { actionType, gardenMode, tile: `${tile.row},${tile.col}`, hasPlant: !!tile.plant_details });
+    
     try {
       if (actionType === 'select') {
-        // Plant selected for moving
-        setSelectedPlantForMove(tile);
-        setMovePrompt('Select the block in which you would like to place the plant');
-        
-        // Auto-hide prompt after 4 seconds
-        setTimeout(() => {
-          setMovePrompt('');
-        }, 4000);
+        if (gardenMode === 'move') {
+          // Plant selected for moving
+          setSelectedPlantForMove(tile);
+          setMovePrompt('Select the block in which you would like to place the plant');
+          
+          // Auto-hide prompt after 4 seconds
+          setTimeout(() => {
+            setMovePrompt('');
+          }, 4000);
+        } else if (gardenMode === 'harvest') {
+          console.log('Setting plant for harvest selection');
+          // Plant selected for harvesting
+          setSelectedPlantForHarvest(tile);
+          setHarvestPrompt('Click the plant again to confirm harvest (This will return the seeds to your inventory)');
+          
+          // Auto-hide prompt after 4 seconds
+          setTimeout(() => {
+            setHarvestPrompt('');
+          }, 4000);
+        }
       } else if (actionType === 'move' && sourceTile) {
+        console.log('Executing move action');
         await movePlant(sourceTile.row, sourceTile.col, tile.row, tile.col);
+      } else if (actionType === 'harvest' && tile.plant_details) {
+        console.log('Executing harvest action');
+        // Perform harvest using dedicated harvest function
+        const result = await harvestPlant(tile.row, tile.col);
+        console.log('Harvest result:', result);
+        // The success callback will handle the notification and state cleanup
       }
     } catch (error) {
       console.error('Tile action failed:', error);
     }
-  }, [movePlant]);
+  }, [movePlant, harvestPlant, gardenMode]);
 
   // Handle plant interaction (click for details) - Only in view mode
   const handlePlantInteract = useCallback((plantData, tile) => {
+    console.log('handlePlantInteract called:', { gardenMode, plantData: plantData?.name, tile: `${tile.row},${tile.col}` });
+    
     if (gardenMode === 'view') {
       setSelectedPlantForDetails(plantData);
       setShowPlantDetails(true);
+    } else if (gardenMode === 'harvest') {
+      console.log('In harvest mode, handling plant interaction');
+      console.log('selectedPlantForHarvest:', selectedPlantForHarvest);
+      console.log('Current tile:', tile);
+      
+      // Handle harvest confirmation
+      if (selectedPlantForHarvest && selectedPlantForHarvest.id === tile.id) {
+        console.log('Confirming harvest for selected plant');
+        // Confirm harvest
+        handleTileSelect(tile, 'harvest');
+      } else {
+        console.log('Selecting plant for harvest');
+        // Select for harvest
+        handleTileSelect(tile, 'select');
+      }
     }
     // In move mode, this does nothing - plant selection is handled by handleTileSelect
-  }, [gardenMode]);
+  }, [gardenMode, selectedPlantForHarvest, handleTileSelect]);
 
   // Handle drag and drop functionality
   const handleDragStart = useCallback((inventoryItem) => {
@@ -100,20 +150,33 @@ const DigitalGarden = () => {
   const handleDrop = useCallback(async (tile) => {
     if (draggedPlant && !tile.plant_details) {
       try {
-        await placePlant(draggedPlant.plant, tile.row, tile.col);
+        // The backend view code expects plant_id (the plant type ID), not inventory_id
+        // From debug: draggedPlant.plant_details.id is the plant ID we need
+        const plantId = draggedPlant.plant_details?.id || draggedPlant.plant;
+        console.log('Using plant ID:', plantId);
+        console.log('Tile position:', { row: tile.row, col: tile.col });
+        
+        if (!plantId) {
+          console.error('No plant ID found in draggedPlant:', draggedPlant);
+          return;
+        }
+        
+        await placePlant(plantId, tile.row, tile.col);
       } catch (error) {
         console.error('Plant placement failed:', error);
       }
     }
   }, [draggedPlant, placePlant]);
 
-  // Handle mode changes - Toggle between view and move
+  // Handle mode changes - Toggle between view, move, and harvest
   const handleModeToggle = useCallback(() => {
     const newMode = gardenMode === 'view' ? 'move' : 'view';
     setGardenMode(newMode);
     setSelectedPlant(null);
     setSelectedPlantForMove(null);
+    setSelectedPlantForHarvest(null);
     setMovePrompt('');
+    setHarvestPrompt('');
     
     if (newMode === 'move') {
       setMovePrompt('Select the plant you would like to move');
@@ -125,6 +188,27 @@ const DigitalGarden = () => {
       }, 3000);
     }
   }, [gardenMode, selectedPlantForMove]);
+
+  // Handle harvest mode toggle
+  const handleHarvestToggle = useCallback(() => {
+    const newMode = gardenMode === 'harvest' ? 'view' : 'harvest';
+    setGardenMode(newMode);
+    setSelectedPlant(null);
+    setSelectedPlantForMove(null);
+    setSelectedPlantForHarvest(null);
+    setMovePrompt('');
+    setHarvestPrompt('');
+    
+    if (newMode === 'harvest') {
+      setHarvestPrompt('Select the plant you wish to harvest! (This will return the seeds to your inventory)');
+      // Auto-hide initial prompt after 4 seconds
+      setTimeout(() => {
+        if (gardenMode === 'harvest' && !selectedPlantForHarvest) {
+          setHarvestPrompt('');
+        }
+      }, 4000);
+    }
+  }, [gardenMode, selectedPlantForHarvest]);
 
   // Clear notification helper
   const clearNotification = useCallback(() => {
@@ -206,13 +290,22 @@ const DigitalGarden = () => {
           <h1 style={{ color: 'whitesmoke' }}>My Digital Garden</h1>
         </div>
         <div className="garden-controls">
-          {/* Toggle button instead of separate View/Move buttons */}
+          {/* Toggle button for Move/View mode */}
           <button
             className={`mode-toggle ${gardenMode === 'move' ? 'active' : ''}`}
             onClick={handleModeToggle}
             disabled={actionLoading}
           >
             {gardenMode === 'view' ? 'Switch to Move Mode' : 'Switch to View Mode'}
+          </button>
+          
+          {/* Harvest button */}
+          <button
+            className={`mode-toggle harvest-toggle ${gardenMode === 'harvest' ? 'active' : ''}`}
+            onClick={handleHarvestToggle}
+            disabled={actionLoading}
+          >
+            {gardenMode === 'harvest' ? 'Exit Harvest Mode' : 'Harvest Plants'}
           </button>
         </div>
       </div>
@@ -232,6 +325,13 @@ const DigitalGarden = () => {
         </div>
       )}
 
+      {/* Harvest Mode Prompt */}
+      {harvestPrompt && (
+        <div className="harvest-prompt">
+          <span>{harvestPrompt}</span>
+        </div>
+      )}
+
       {/* Main content */}
       <div className="garden-main">
         {/* Center - Garden Grid (enlarged) */}
@@ -245,6 +345,7 @@ const DigitalGarden = () => {
             draggedPlant={draggedPlant}
             mode={gardenMode}
             selectedTileForMove={selectedPlantForMove}
+            selectedTileForHarvest={selectedPlantForHarvest}
           />
 
           {/* Garden Overview beneath the garden */}
@@ -263,80 +364,51 @@ const DigitalGarden = () => {
                 <div className="stat-item">
                   <span className="stat-label">Completion:</span>
                   <span className="stat-value">
-                    {garden.completion_percentage?.toFixed(1) || 0}%
+                    {Math.round(((garden.total_plants_placed || 0) / 64) * 100)}%
                   </span>
-                </div>
-                <div className="stat-item">
-                  <span className="stat-label">Garden Level:</span>
-                  <span className="stat-value">{garden.garden_level || 1}</span>
                 </div>
               </div>
             </div>
           )}
-
-          {/* Mode instructions */}
-          <div className="mode-instructions">
-            {gardenMode === 'view' && !selectedPlantForMove && (
-              <p>Click on plants to see their details and growing tips!</p>
-            )}
-            {gardenMode === 'move' && !selectedPlantForMove && (
-              <p>Click a plant to select it for moving.</p>
-            )}
-            {gardenMode === 'move' && selectedPlantForMove && (
-              <p>Now click an empty tile to move your selected plant there.</p>
-            )}
-            {draggedPlant && (
-              <p>Drag your {draggedPlant.plant_details?.name} to an empty tile to place it.</p>
-            )}
-          </div>
         </main>
 
-        {/* Right sidebar container - Stack vertically */}
-        <div className="garden-sidebar-container">
-          {/* Plant Inventory with SVG background */}
-          <aside 
+        {/* Right Sidebar */}
+        <aside className="garden-sidebar-container">
+          <div 
             className="garden-inventory-sidebar"
             style={{
               backgroundImage: `url(${panelBackgroundSvg})`,
               backgroundSize: 'cover',
               backgroundPosition: 'center',
-              backgroundRepeat: 'no-repeat',
-              backgroundColor: 'transparent'
+              backgroundRepeat: 'no-repeat'
             }}
           >
             <PlantInventory
               inventory={inventory}
-              selectedPlant={selectedPlant}
-              onPlantSelect={setSelectedPlant}
               onDragStart={handleDragStart}
               onDragEnd={handleDragEnd}
+              loading={loading}
               supportsDragDrop={true}
               mode={gardenMode}
             />
-          </aside>
+          </div>
 
-          {/* Garden Stats with SVG background */}
-          <aside 
+          <div 
             className="garden-stats-sidebar"
             style={{
               backgroundImage: `url(${panelBackgroundSvg})`,
               backgroundSize: 'cover',
               backgroundPosition: 'center',
-              backgroundRepeat: 'no-repeat',
-              backgroundColor: 'transparent'
+              backgroundRepeat: 'no-repeat'
             }}
           >
-            <GardenStats 
-              stats={stats} 
-              garden={garden} 
-              compactMode={true}
-            />
-          </aside>
-        </div>
+            <GardenStats stats={stats} loading={loading} />
+          </div>
+        </aside>
       </div>
 
-      {/* Plant Details Modal - Only shows in view mode */}
-      {showPlantDetails && selectedPlantForDetails && gardenMode === 'view' && (
+      {/* Plant Details Modal */}
+      {showPlantDetails && selectedPlantForDetails && (
         <PlantDetails
           plant={selectedPlantForDetails}
           onClose={() => {
@@ -344,16 +416,6 @@ const DigitalGarden = () => {
             setSelectedPlantForDetails(null);
           }}
         />
-      )}
-
-      {/* Action loading overlay */}
-      {actionLoading && (
-        <div className="action-loading-overlay">
-          <div className="action-loading-content">
-            <div className="loading-spinner"></div>
-            <p>Processing garden action...</p>
-          </div>
-        </div>
       )}
     </div>
   );
