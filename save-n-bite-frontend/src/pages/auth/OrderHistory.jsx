@@ -1388,7 +1388,7 @@ const EnhancedOrderCard = ({ order, onOrderClick, onCancelClick, onReviewClick }
                 e.stopPropagation();
                 onOrderClick(order);
               }}
-              className="w-full px-3 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 text-sm font-medium transition-all transform hover:scale-105"
+              className="w-full px-3 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 text-sm font-medium transition-all transform hover:scale-105"
             >
               View Details
             </button>
@@ -1868,7 +1868,7 @@ const OrderHistory = () => {
         </div> */}
 
         {/* Impact Summary */}
-        <div className="bg-gradient-to-r from-emerald-600 to-blue-600 rounded-2xl shadow-lg p-6 mb-8 text-white">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6 mb-8 transition-colors duration-300">
           <h2 className="text-lg font-semibold mb-4 flex items-center">
             <LeafIcon size={20} className="mr-2" />
             Your Impact Summary
