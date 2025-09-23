@@ -1056,9 +1056,9 @@ import { useNavigate } from 'react-router-dom';
 import CustomerNavBar from '../../components/auth/CustomerNavBar';
 import OrderCard from '../../components/auth/OrderCard';
 import ImpactSummary from '../../components/auth/ImpactSummary';
-import schedulingAPI from '../../services/schedulingAPI'; // Keep using schedulingAPI for pickups
-import donationsAPI from '../../services/DonationsAPI'; // Add donationsAPI
-import reviewsAPI from '../../services/reviewsAPI'; // Use reviewsAPI only for interaction status
+import schedulingAPI from '../../services/schedulingAPI';
+import donationsAPI from '../../services/DonationsAPI';
+import reviewsAPI from '../../services/reviewsAPI';
 import {
   CheckCircleIcon,
   LeafIcon,
@@ -1075,401 +1075,16 @@ import {
   HeartIcon,
   GiftIcon,
   ShoppingBagIcon,
-  Calendar,
-  Package,
-  Search,
-  ArrowRight
+  CalendarIcon,
+  PackageIcon,
+  StarIcon,
+  Loader2Icon,
+  ShoppingCartIcon
 } from 'lucide-react';
 import { Toast } from '../../components/ui/Toast';
 import { ConfirmDialog } from '../../components/ui/ConfirmDialog';
 
-// Enhanced Status Tab Component
-const StatusTab = ({ status, label, count, isActive, onClick, color, icon: Icon }) => (
-  <button
-    onClick={onClick}
-    className={`relative px-4 py-3 rounded-xl font-medium text-sm transition-all duration-300 flex items-center gap-2 min-w-0 ${
-      isActive
-        ? `bg-${color}-100 dark:bg-${color}-900/30 text-${color}-700 dark:text-${color}-300 shadow-sm`
-        : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800/50'
-    }`}
-  >
-    <Icon className="w-4 h-4 flex-shrink-0" />
-    <span className="truncate">{label}</span>
-    {count > 0 && (
-      <span className={`ml-1 px-2 py-0.5 rounded-full text-xs font-semibold flex-shrink-0 ${
-        isActive 
-          ? `bg-${color}-200 dark:bg-${color}-800 text-${color}-800 dark:text-${color}-200`
-          : 'bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300'
-      }`}>
-        {count}
-      </span>
-    )}
-  </button>
-);
-
-// Enhanced Order Card Component
-const EnhancedOrderCard = ({ order, onOrderClick, onCancelOrder }) => {
-  const isDonation = order.interaction_type === 'Donation';
-  const itemName = isDonation ? order.items?.[0]?.name : order.food_listing?.name;
-  const providerName = isDonation ? (order.order?.providerName || 'Provider') : order.business?.business_name;
-  
-  // Status configuration
-  const getStatusConfig = (status) => {
-    const configs = {
-      completed: {
-        bg: 'bg-emerald-50 dark:bg-emerald-900/20',
-        border: 'border-emerald-200 dark:border-emerald-800',
-        text: 'text-emerald-700 dark:text-emerald-300',
-        badge: 'bg-emerald-100 dark:bg-emerald-900/40 text-emerald-800 dark:text-emerald-200',
-        icon: CheckCircleIcon,
-        label: 'Completed'
-      },
-      ready: {
-        bg: 'bg-blue-50 dark:bg-blue-900/20',
-        border: 'border-blue-200 dark:border-blue-800',
-        text: 'text-blue-700 dark:text-blue-300',
-        badge: 'bg-blue-100 dark:bg-blue-900/40 text-blue-800 dark:text-blue-200',
-        icon: Package,
-        label: 'Ready for Pickup'
-      },
-      scheduled: {
-        bg: 'bg-purple-50 dark:bg-purple-900/20',
-        border: 'border-purple-200 dark:border-purple-800',
-        text: 'text-purple-700 dark:text-purple-300',
-        badge: 'bg-purple-100 dark:bg-purple-900/40 text-purple-800 dark:text-purple-200',
-        icon: Calendar,
-        label: 'Scheduled'
-      },
-      confirmed: {
-        bg: 'bg-green-50 dark:bg-green-900/20',
-        border: 'border-green-200 dark:border-green-800',
-        text: 'text-green-700 dark:text-green-300',
-        badge: 'bg-green-100 dark:bg-green-900/40 text-green-800 dark:text-green-200',
-        icon: CheckCircleIcon,
-        label: 'Confirmed'
-      },
-      cancelled: {
-        bg: 'bg-red-50 dark:bg-red-900/20',
-        border: 'border-red-200 dark:border-red-800',
-        text: 'text-red-700 dark:text-red-300',
-        badge: 'bg-red-100 dark:bg-red-900/40 text-red-800 dark:text-red-200',
-        icon: XIcon,
-        label: 'Cancelled'
-      },
-      rejected: {
-        bg: 'bg-orange-50 dark:bg-orange-900/20',
-        border: 'border-orange-200 dark:border-orange-800',
-        text: 'text-orange-700 dark:text-orange-300',
-        badge: 'bg-orange-100 dark:bg-orange-900/40 text-orange-800 dark:text-orange-200',
-        icon: AlertCircleIcon,
-        label: 'Rejected'
-      },
-      missed: {
-        bg: 'bg-amber-50 dark:bg-amber-900/20',
-        border: 'border-amber-200 dark:border-amber-800',
-        text: 'text-amber-700 dark:text-amber-300',
-        badge: 'bg-amber-100 dark:bg-amber-900/40 text-amber-800 dark:text-amber-200',
-        icon: ClockIcon,
-        label: 'Missed'
-      }
-    };
-    return configs[status.toLowerCase()] || configs.scheduled;
-  };
-
-  const statusConfig = getStatusConfig(order.status);
-  const StatusIcon = statusConfig.icon;
-
-  // Get primary action button
-  const getPrimaryAction = () => {
-    switch (order.status) {
-      case 'completed':
-        return {
-          text: 'Leave Review',
-          action: () => order.interaction_id && navigate(`/reviews/${order.interaction_id}`),
-          className: 'bg-emerald-600 hover:bg-emerald-700 text-white'
-        };
-      case 'ready':
-      case 'scheduled':
-      case 'confirmed':
-        return {
-          text: 'View Details',
-          action: () => onOrderClick(order),
-          className: 'bg-blue-600 hover:bg-blue-700 text-white'
-        };
-      default:
-        return null;
-    }
-  };
-
-  const primaryAction = getPrimaryAction();
-
-  return (
-    <div 
-      className={`group relative rounded-xl border-2 transition-all duration-300 hover:shadow-lg ${statusConfig.bg} ${statusConfig.border} cursor-pointer`}
-      onClick={() => onOrderClick(order)}
-    >
-      {/* Status Badge - Top Right */}
-      <div className="absolute top-4 right-4 z-10">
-        <div className={`inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-semibold ${statusConfig.badge}`}>
-          <StatusIcon className="w-3 h-3" />
-          {statusConfig.label}
-        </div>
-      </div>
-
-      <div className="p-6">
-        {/* Header */}
-        <div className="flex items-start gap-4 mb-4">
-          {/* Order Type Icon */}
-          <div className={`w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 ${
-            isDonation ? 'bg-red-100 dark:bg-red-900/30' : 'bg-emerald-100 dark:bg-emerald-900/30'
-          }`}>
-            {isDonation ? (
-              <HeartIcon className="w-6 h-6 text-red-600 dark:text-red-400" />
-            ) : (
-              <GiftIcon className="w-6 h-6 text-emerald-600 dark:text-emerald-400" />
-            )}
-          </div>
-
-          <div className="flex-1 min-w-0 pr-20">
-            <h3 className="font-semibold text-gray-900 dark:text-white text-lg mb-1 truncate">
-              {itemName}
-            </h3>
-            <p className="text-sm text-gray-600 dark:text-gray-300 flex items-center gap-1 mb-2">
-              <StoreIcon className="w-4 h-4 flex-shrink-0" />
-              <span className="truncate">{providerName}</span>
-            </p>
-            {/* Order ID */}
-            <p className="text-xs text-gray-500 dark:text-gray-400 font-mono">
-              #{order.id?.slice(-8) || 'N/A'}
-            </p>
-          </div>
-        </div>
-
-        {/* Progress Bar for Active Orders */}
-        {['scheduled', 'confirmed', 'ready'].includes(order.status) && (
-          <div className="mb-4">
-            <div className="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400 mb-2">
-              <span>Order Progress</span>
-              <span>
-                {order.status === 'scheduled' ? '1/3' : 
-                 order.status === 'confirmed' ? '2/3' : '3/3'}
-              </span>
-            </div>
-            <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
-              <div 
-                className={`h-2 rounded-full transition-all duration-300 ${
-                  order.status === 'scheduled' ? 'w-1/3 bg-purple-400' :
-                  order.status === 'confirmed' ? 'w-2/3 bg-green-400' :
-                  'w-full bg-blue-400'
-                }`}
-              />
-            </div>
-            <div className="flex justify-between text-xs text-gray-500 dark:text-gray-400 mt-1">
-              <span>Placed</span>
-              <span>Confirmed</span>
-              <span>Ready</span>
-            </div>
-          </div>
-        )}
-
-        {/* Details Grid */}
-        <div className="grid grid-cols-2 gap-4 mb-6 text-sm">
-          <div className="flex items-center gap-2 text-gray-600 dark:text-gray-300">
-            <ClockIcon className="w-4 h-4 text-gray-400" />
-            <div>
-              <p className="font-medium">
-                {new Date(isDonation ? order.created_at : order.scheduled_date).toLocaleDateString()}
-              </p>
-              {!isDonation && order.scheduled_start_time && (
-                <p className="text-xs text-gray-500">
-                  {order.scheduled_start_time} - {order.scheduled_end_time}
-                </p>
-              )}
-            </div>
-          </div>
-
-          <div className="flex items-center gap-2 text-gray-600 dark:text-gray-300">
-            {isDonation ? (
-              <>
-                <InfoIcon className="w-4 h-4 text-gray-400" />
-                <div>
-                  <p className="font-medium">Qty: {order.quantity || 1}</p>
-                  {order.items?.[0]?.expiry_date && (
-                    <p className="text-xs text-gray-500">
-                      Expires: {new Date(order.items[0].expiry_date).toLocaleDateString()}
-                    </p>
-                  )}
-                </div>
-              </>
-            ) : (
-              <>
-                <MapPinIcon className="w-4 h-4 text-gray-400" />
-                <div>
-                  <p className="font-medium truncate">{order.location?.name}</p>
-                  {order.food_listing?.price && (
-                    <p className="text-xs text-emerald-600 dark:text-emerald-400 font-semibold">
-                      R{parseFloat(order.food_listing.price).toFixed(2)}
-                    </p>
-                  )}
-                </div>
-              </>
-            )}
-          </div>
-        </div>
-
-        {/* Action Buttons */}
-        <div className="flex items-center justify-between gap-3">
-          <div className="flex-1">
-            {primaryAction && (
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  primaryAction.action();
-                }}
-                className={`w-full px-4 py-2.5 rounded-lg font-medium text-sm transition-all duration-200 flex items-center justify-center gap-2 ${primaryAction.className}`}
-              >
-                {primaryAction.text}
-                <ArrowRight className="w-4 h-4" />
-              </button>
-            )}
-          </div>
-
-          {/* Cancel Button */}
-          {((isDonation && order.status === 'ready') || 
-            (!isDonation && order.can_cancel && order.status === 'scheduled')) && (
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                onCancelOrder(order);
-              }}
-              className="px-4 py-2.5 border border-red-300 dark:border-red-700 text-red-600 dark:text-red-400 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 font-medium text-sm transition-all duration-200"
-            >
-              Cancel
-            </button>
-          )}
-        </div>
-
-        {/* Quick Info for Active Orders */}
-        {order.status !== 'completed' && order.status !== 'cancelled' && order.status !== 'rejected' && (
-          <div className={`mt-4 p-3 rounded-lg border ${statusConfig.border.replace('border-', 'border-')} bg-white/50 dark:bg-gray-800/50`}>
-            <p className={`text-sm ${statusConfig.text}`}>
-              {order.status === 'ready' && (isDonation ? 'Ready for collection!' : 'Ready for pickup!')}
-              {order.status === 'confirmed' && (isDonation ? 'Donation confirmed' : 'Pickup confirmed')}
-              {order.status === 'scheduled' && 'Your order is confirmed'}
-              {order.status === 'missed' && 'This order was missed'}
-            </p>
-          </div>
-        )}
-      </div>
-
-      {/* Hover Effect Indicator */}
-      <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-transparent to-blue-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
-    </div>
-  );
-};
-
-// Enhanced Filters Component
-const EnhancedFilters = ({ filters, setFilters, orders = [], onResetFilters }) => {
-  const [showAdvanced, setShowAdvanced] = useState(false);
-  
-  const safeOrders = Array.isArray(orders) ? orders : [];
-  const uniqueProviders = [...new Set(safeOrders.map(order => {
-    return order.business?.business_name || order.order?.providerName || order.providerName;
-  }).filter(Boolean))];
-
-  return (
-    <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
-      <div className="p-6">
-        {/* Search Bar */}
-        <div className="relative mb-6">
-          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-            <Search className="h-5 w-5 text-gray-400" />
-          </div>
-          <input
-            type="text"
-            placeholder="Search orders, providers..."
-            value={filters.search || ''}
-            onChange={(e) => setFilters(prev => ({ ...prev, search: e.target.value }))}
-            className="block w-full pl-10 pr-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100"
-          />
-        </div>
-
-        {/* Quick Filters */}
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Filters</h3>
-          <div className="flex items-center gap-2">
-            <button
-              onClick={() => setShowAdvanced(!showAdvanced)}
-              className="text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 flex items-center gap-1"
-            >
-              <FilterIcon className="w-4 h-4" />
-              Advanced
-            </button>
-            <button
-              onClick={onResetFilters}
-              className="text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 flex items-center gap-1"
-            >
-              <RotateCcwIcon className="w-4 h-4" />
-              Reset
-            </button>
-          </div>
-        </div>
-
-        {/* Advanced Filters */}
-        {showAdvanced && (
-          <div className="space-y-4 pt-4 border-t border-gray-200 dark:border-gray-700">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Type</label>
-                <select
-                  value={filters.type}
-                  onChange={(e) => setFilters(prev => ({ ...prev, type: e.target.value }))}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100"
-                >
-                  <option value="all">All Types</option>
-                  <option value="pickup">Pickups</option>
-                  <option value="donation">Donations</option>
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Date Range</label>
-                <select
-                  value={filters.dateRange}
-                  onChange={(e) => setFilters(prev => ({ ...prev, dateRange: e.target.value }))}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100"
-                >
-                  <option value="all">All Time</option>
-                  <option value="week">Last Week</option>
-                  <option value="month">Last Month</option>
-                  <option value="year">Last Year</option>
-                </select>
-              </div>
-
-              {uniqueProviders.length > 0 && (
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Provider</label>
-                  <select
-                    value={filters.provider}
-                    onChange={(e) => setFilters(prev => ({ ...prev, provider: e.target.value }))}
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100"
-                  >
-                    <option value="all">All Providers</option>
-                    {uniqueProviders.map(provider => (
-                      <option key={provider} value={provider}>{provider}</option>
-                    ))}
-                  </select>
-                </div>
-              )}
-            </div>
-          </div>
-        )}
-      </div>
-    </div>
-  );
-};
-
-// Enhanced Pickup Modal Component (keeping your existing modal but with improved styling)
+// Enhanced Pickup Details Modal (keeping original functionality)
 const PickupDetailsModal = ({ order, isOpen, onClose, onStatusUpdate }) => {
   if (!isOpen || !order) return null;
 
@@ -1726,50 +1341,297 @@ const PickupDetailsModal = ({ order, isOpen, onClose, onStatusUpdate }) => {
   );
 };
 
+// Enhanced Order Card Component
+const EnhancedOrderCard = ({ order, onOrderClick, onCancelClick, onReviewClick }) => {
+  const isDonation = order.interaction_type === 'Donation';
+  const itemName = isDonation ? order.items?.[0]?.name : order.food_listing?.name;
+  const providerName = isDonation ? (order.order?.providerName || 'Provider') : order.business?.business_name;
+  const price = !isDonation ? order.food_listing?.price : null;
+
+  const getActionButton = () => {
+    switch (order.status) {
+      case 'completed':
+        return (
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              if (order.interaction_id) {
+                onReviewClick(order.interaction_id);
+              }
+            }}
+            className="w-full px-3 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 text-sm font-medium transition-all transform hover:scale-105"
+          >
+            <StarIcon className="w-4 h-4 inline mr-1" />
+            Leave Review
+          </button>
+        );
+      case 'ready':
+      case 'confirmed':
+        return (
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              onOrderClick(order);
+            }}
+            className="w-full px-3 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 text-sm font-medium transition-all transform hover:scale-105"
+          >
+            <QrCodeIcon className="w-4 h-4 inline mr-1" />
+            View Details
+          </button>
+        );
+      case 'scheduled':
+        return (
+          <div className="space-y-2">
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                onOrderClick(order);
+              }}
+              className="w-full px-3 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 text-sm font-medium transition-all transform hover:scale-105"
+            >
+              View Details
+            </button>
+            {((isDonation && order.status === 'ready') || (!isDonation && (order.can_cancel || order.status === 'scheduled'))) && (
+              <button
+                onClick={(e) => onCancelClick(order, e)}
+                className="w-full px-3 py-2 border border-red-300 text-red-600 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 text-sm font-medium transition-all"
+              >
+                Cancel
+              </button>
+            )}
+          </div>
+        );
+      case 'pending':
+        return (
+          <div className="w-full px-3 py-2 bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400 rounded-lg text-sm font-medium text-center">
+            Awaiting Response
+          </div>
+        );
+      default:
+        return null;
+    }
+  };
+
+  return (
+    <div
+      className="bg-white dark:bg-gray-800 rounded-xl shadow-sm hover:shadow-lg transition-all duration-300 transform hover:scale-105 cursor-pointer border border-gray-100 dark:border-gray-700 overflow-hidden"
+      onClick={() => onOrderClick(order)}
+    >
+      {/* Card Header with Type Icon */}
+      <div className="p-4 pb-2">
+        <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center space-x-2">
+            <div className={`p-2 rounded-lg ${isDonation ? 'bg-red-100 dark:bg-red-900/30' : 'bg-emerald-100 dark:bg-emerald-900/30'}`}>
+              {isDonation ? (
+                <HeartIcon className={`w-4 h-4 ${isDonation ? 'text-red-600 dark:text-red-400' : 'text-emerald-600 dark:text-emerald-400'}`} />
+              ) : (
+                <ShoppingBagIcon className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+              )}
+            </div>
+            <span className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">
+              {isDonation ? 'Donation' : 'Pickup'}
+            </span>
+          </div>
+          <span className="text-xs text-gray-400 dark:text-gray-500">
+            #{order.id?.slice(-4) || 'N/A'}
+          </span>
+        </div>
+
+        {/* Item Info */}
+        <div className="space-y-1 mb-3">
+          <h3 className="font-semibold text-gray-900 dark:text-white text-sm line-clamp-1">
+            {itemName}
+          </h3>
+          <p className="text-xs text-gray-600 dark:text-gray-400 flex items-center">
+            <StoreIcon className="w-3 h-3 mr-1" />
+            {providerName}
+          </p>
+          {price && (
+            <p className="text-sm font-bold text-emerald-600 dark:text-emerald-400">
+              R{parseFloat(price).toFixed(2)}
+            </p>
+          )}
+        </div>
+
+        {/* Timing Info */}
+        <div className="text-xs text-gray-500 dark:text-gray-400 mb-4">
+          <div className="flex items-center">
+            <ClockIcon className="w-3 h-3 mr-1" />
+            {new Date(isDonation ? order.created_at : order.scheduled_date).toLocaleDateString('en-US', {
+              month: 'short',
+              day: 'numeric'
+            })}
+          </div>
+        </div>
+
+        {/* Action Button */}
+        {getActionButton()}
+      </div>
+    </div>
+  );
+};
+
+// Tab Navigation Component
+const TabNavigation = ({ activeTab, setActiveTab, orderCounts, userType }) => {
+  const tabs = [
+    { 
+      id: 'confirmed', 
+      label: 'Ready', 
+      icon: CheckCircleIcon, 
+      tooltip: 'Your order is ready for pickup. Tap to view pickup details.',
+      color: 'text-emerald-600 dark:text-emerald-400'
+    },
+    { 
+      id: 'scheduled', 
+      label: 'Scheduled', 
+      icon: CalendarIcon, 
+      tooltip: 'Pickup is scheduled but not yet confirmed. You can still cancel.',
+      color: 'text-purple-600 dark:text-purple-400'
+    },
+    ...(userType === 'ngo' ? [{ 
+      id: 'pending', 
+      label: 'Pending', 
+      icon: ClockIcon, 
+      tooltip: 'Waiting for provider to accept or reject this request.',
+      color: 'text-amber-600 dark:text-amber-400'
+    }] : []),
+    { 
+      id: 'completed', 
+      label: 'Completed', 
+      icon: PackageIcon, 
+      tooltip: 'You\'ve successfully picked up this order. You can leave a review.',
+      color: 'text-blue-600 dark:text-blue-400'
+    }
+  ];
+
+  return (
+    <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-1 mb-6 transition-colors duration-300">
+      <div className="flex space-x-1">
+        {tabs.map((tab) => {
+          const Icon = tab.icon;
+          const isActive = activeTab === tab.id;
+          const count = orderCounts[tab.id] || 0;
+          
+          return (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id)}
+              title={tab.tooltip}
+              className={`flex-1 flex items-center justify-center space-x-2 px-4 py-3 rounded-lg text-sm font-medium transition-all duration-300 transform ${
+                isActive
+                  ? 'bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white scale-105 shadow-sm'
+                  : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-50 dark:hover:bg-gray-700/50'
+              }`}
+            >
+              <Icon className={`w-4 h-4 ${isActive ? tab.color : ''}`} />
+              <span>{tab.label}</span>
+              {count > 0 && (
+                <span className={`inline-flex items-center justify-center px-2 py-0.5 rounded-full text-xs font-bold ${
+                  isActive 
+                    ? 'bg-emerald-100 dark:bg-emerald-900 text-emerald-800 dark:text-emerald-200' 
+                    : 'bg-gray-200 dark:bg-gray-600 text-gray-700 dark:text-gray-300'
+                }`}>
+                  {count}
+                </span>
+              )}
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+};
+
+// Empty State Component
+const EmptyState = ({ activeTab, userType }) => {
+  const navigate = useNavigate();
+  
+  const emptyStates = {
+    confirmed: {
+      icon: CheckCircleIcon,
+      title: 'No pickups ready right now',
+      subtitle: 'Check back soon for confirmed orders!',
+      color: 'text-emerald-500'
+    },
+    scheduled: {
+      icon: CalendarIcon,
+      title: 'No upcoming pickups scheduled',
+      subtitle: 'Browse available food to schedule your next pickup.',
+      action: { text: 'Browse Food', onClick: () => navigate('/food-listing') },
+      color: 'text-purple-500'
+    },
+    pending: {
+      icon: ClockIcon,
+      title: 'No pending requests',
+      subtitle: 'Your donation requests will appear here while waiting for provider approval.',
+      color: 'text-amber-500'
+    },
+    completed: {
+      icon: PackageIcon,
+      title: 'No past orders yet',
+      subtitle: 'Your history will appear here once you complete pickups.',
+      action: { text: 'Start Browsing', onClick: () => navigate('/food-listing') },
+      color: 'text-blue-500'
+    }
+  };
+
+  const state = emptyStates[activeTab];
+  const Icon = state.icon;
+
+  return (
+    <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-12 text-center transition-colors duration-300">
+      <div className={`inline-flex items-center justify-center w-16 h-16 rounded-full bg-gray-100 dark:bg-gray-700 mb-4`}>
+        <Icon className={`w-8 h-8 ${state.color}`} />
+      </div>
+      <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
+        {state.title}
+      </h3>
+      <p className="text-gray-600 dark:text-gray-400 mb-6 max-w-sm mx-auto">
+        {state.subtitle}
+      </p>
+      {state.action && (
+        <button
+          onClick={state.action.onClick}
+          className="inline-flex items-center px-6 py-3 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 font-medium transition-all transform hover:scale-105"
+        >
+          <ShoppingCartIcon className="w-4 h-4 mr-2" />
+          {state.action.text}
+        </button>
+      )}
+    </div>
+  );
+};
+
 const OrderHistory = () => {
   const navigate = useNavigate();
   const [orders, setOrders] = useState([]);
-  const [filteredOrders, setFilteredOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [showPickupModal, setShowPickupModal] = useState(false);
   const [error, setError] = useState(null);
   const [toast, setToast] = useState(null);
-
-  const [filters, setFilters] = useState({
-    status: 'all',
-    type: 'all',
-    dateRange: 'all',
-    provider: 'all',
-    search: ''
-  });
-
-  // Add state for confirmation dialog
+  const [activeTab, setActiveTab] = useState('confirmed');
   const [showConfirmCancel, setShowConfirmCancel] = useState(false);
   const [orderToCancel, setOrderToCancel] = useState(null);
+  const [userType, setUserType] = useState('customer'); // Default to customer
 
-  // Calculate order counts for status tabs
-  const orderCounts = React.useMemo(() => {
-    const safeOrders = Array.isArray(filteredOrders) ? filteredOrders : [];
-    return {
-      all: safeOrders.length,
-      pending: safeOrders.filter(o => ['pending', 'scheduled'].includes(o.status)).length,
-      confirmed: safeOrders.filter(o => ['confirmed', 'ready'].includes(o.status)).length,
-      completed: safeOrders.filter(o => o.status === 'completed').length,
-      cancelled: safeOrders.filter(o => ['cancelled', 'rejected', 'missed'].includes(o.status)).length
-    };
-  }, [filteredOrders]);
-
-  // Load orders from API - both pickups and donations
+  // Load orders from API - both pickups and donations (keeping original logic)
   useEffect(() => {
     loadOrders();
+    // Detect user type from localStorage or user context
+    const storedUserType = localStorage.getItem('userType') || 'customer';
+    const userProfile = JSON.parse(localStorage.getItem('user') || '{}');
+    
+    // Check if user is NGO based on profile or stored type
+    if (storedUserType === 'ngo' || userProfile.user_type === 'ngo' || userProfile.account_type === 'ngo') {
+      setUserType('ngo');
+    }
   }, []);
 
   const loadOrders = async () => {
     setLoading(true);
     setError(null);
     try {
-      // Load both pickups and donations concurrently
       const [pickupsResponse, donationsResponse] = await Promise.all([
         schedulingAPI.getMyPickups(),
         donationsAPI.getMyDonationRequests()
@@ -1777,7 +1639,6 @@ const OrderHistory = () => {
 
       const allOrders = [];
 
-      // Add pickups if successful
       if (pickupsResponse.success) {
         const pickups = pickupsResponse.data.results?.pickups || pickupsResponse.data.results || [];
         const normalizedPickups = pickups.map(pickup => ({
@@ -1788,7 +1649,6 @@ const OrderHistory = () => {
         allOrders.push(...normalizedPickups);
       }
 
-      // Add donations if successful
       if (donationsResponse.success) {
         const donations = donationsResponse.data.results || [];
         const normalizedDonations = donations.map(donation => ({
@@ -1799,16 +1659,11 @@ const OrderHistory = () => {
         allOrders.push(...normalizedDonations);
       }
 
-      // Sort by creation date (most recent first)
       allOrders.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
-
-      // Check for completed orders and sync interaction status
       await syncCompletedInteractions(allOrders);
 
       setOrders(allOrders);
-      setFilteredOrders(allOrders);
 
-      // Set error only if both requests failed
       if (!pickupsResponse.success && !donationsResponse.success) {
         setError('Failed to load order history');
       }
@@ -1816,24 +1671,21 @@ const OrderHistory = () => {
       console.error('Error loading orders:', error);
       setError('Failed to load orders');
       setOrders([]);
-      setFilteredOrders([]);
     } finally {
       setLoading(false);
     }
   };
 
-  // Sync interaction status for completed orders
+  // Sync interaction status for completed orders (keeping original logic)
   const syncCompletedInteractions = async (allOrders) => {
     const completedOrders = allOrders.filter(order => order.status === 'completed');
 
     for (const order of completedOrders) {
       try {
         if (order.interaction_id) {
-          // Check if interaction is already marked as completed by checking review status
           const reviewStatus = await reviewsAPI.checkReviewStatus(order.interaction_id);
 
           if (reviewStatus.success && reviewStatus.data.interaction_status !== 'completed') {
-            // Interaction not yet marked as completed, so update it
             const updateResult = await reviewsAPI.markAsCompleted(
               order.interaction_id,
               'Order completed by food provider'
@@ -1852,108 +1704,7 @@ const OrderHistory = () => {
     }
   };
 
-  // Apply filters
-  useEffect(() => {
-    // Ensure orders is an array before filtering
-    if (!Array.isArray(orders)) {
-      setFilteredOrders([]);
-      return;
-    }
-
-    let filtered = [...orders];
-
-    // Filter by type
-    if (filters.type !== 'all') {
-      filtered = filtered.filter(order => {
-        if (filters.type === 'pickup') {
-          return order.order_type === 'pickup' || order.interaction_type === 'Pickup';
-        } else if (filters.type === 'donation') {
-          return order.order_type === 'donation' || order.interaction_type === 'Donation';
-        }
-        return true;
-      });
-    }
-
-    // Filter by status
-    if (filters.status !== 'all') {
-      filtered = filtered.filter(order => {
-        switch (filters.status) {
-          case 'completed':
-            return order.status === 'completed';
-          case 'confirmed':
-            return order.status === 'scheduled' || order.status === 'confirmed' || order.status === 'ready';
-          case 'pending':
-            return order.status === 'pending' || order.status === 'scheduled';
-          case 'cancelled':
-            return order.status === 'cancelled' || order.status === 'rejected' || order.status === 'missed';
-          default:
-            return true;
-        }
-      });
-    }
-
-    // Filter by date range
-    if (filters.dateRange !== 'all') {
-      const now = new Date();
-      const filterDate = new Date();
-
-      switch (filters.dateRange) {
-        case 'week':
-          filterDate.setDate(now.getDate() - 7);
-          break;
-        case 'month':
-          filterDate.setMonth(now.getMonth() - 1);
-          break;
-        case 'year':
-          filterDate.setFullYear(now.getFullYear() - 1);
-          break;
-      }
-
-      filtered = filtered.filter(order => {
-        const orderDate = new Date(order.scheduled_date || order.created_at);
-        return orderDate >= filterDate;
-      });
-    }
-
-    // Filter by business/provider
-    if (filters.provider !== 'all') {
-      filtered = filtered.filter(order => {
-        const providerName = order.business?.business_name || order.order?.providerName;
-        return providerName === filters.provider;
-      });
-    }
-
-    // Filter by search term
-    if (filters.search && filters.search.trim() !== '') {
-      const searchTerm = filters.search.toLowerCase().trim();
-      filtered = filtered.filter(order => {
-        const isDonation = order.interaction_type === 'Donation';
-        const itemName = isDonation ? order.items?.[0]?.name : order.food_listing?.name;
-        const providerName = isDonation ? (order.order?.providerName || '') : (order.business?.business_name || '');
-        const orderId = order.id || '';
-        
-        return (
-          itemName?.toLowerCase().includes(searchTerm) ||
-          providerName?.toLowerCase().includes(searchTerm) ||
-          orderId?.toLowerCase().includes(searchTerm)
-        );
-      });
-    }
-
-    setFilteredOrders(filtered);
-  }, [filters, orders]);
-
-  // Handle filter reset
-  const handleResetFilters = () => {
-    setFilters({
-      status: 'all',
-      type: 'all',
-      dateRange: 'all',
-      provider: 'all',
-      search: ''
-    });
-  };
-
+  // Handle order click (keeping original logic)
   const handleOrderClick = (order) => {
     if (order.status === 'scheduled' || order.status === 'confirmed' || order.status === 'ready') {
       setSelectedOrder(order);
@@ -1961,23 +1712,24 @@ const OrderHistory = () => {
     }
   };
 
-  // Handle status update
+  // Handle status update (keeping original logic)
   const handleStatusUpdate = async () => {
-    loadOrders(); // Refresh orders after status update
+    loadOrders();
   };
 
-  // Show toast message
+  // Show toast message (keeping original logic)
   const showToast = (message, type = 'info') => {
     setToast({ message, type });
   };
 
-  // Add handleCancelClick function
-  const handleCancelClick = (order) => {
+  // Handle cancel click (keeping original logic)
+  const handleCancelClick = (order, e) => {
+    e.stopPropagation();
     setOrderToCancel(order);
     setShowConfirmCancel(true);
   };
 
-  // Add handleConfirmCancel function
+  // Handle confirm cancel (keeping original logic)
   const handleConfirmCancel = async () => {
     if (!orderToCancel) return;
 
@@ -2004,10 +1756,30 @@ const OrderHistory = () => {
     }
   };
 
-  // Calculate impact summary
+  // Handle review click
+  const handleReviewClick = (interactionId) => {
+    navigate(`/reviews/${interactionId}`);
+  };
+
+  // Group orders by status for tabs
+  const groupedOrders = {
+    confirmed: orders.filter(order => order.status === 'ready' || order.status === 'confirmed'),
+    scheduled: orders.filter(order => order.status === 'scheduled'),
+    pending: orders.filter(order => order.status === 'pending'),
+    completed: orders.filter(order => order.status === 'completed')
+  };
+
+  // Calculate order counts for tabs
+  const orderCounts = {
+    confirmed: groupedOrders.confirmed.length,
+    scheduled: groupedOrders.scheduled.length,
+    pending: groupedOrders.pending.length,
+    completed: groupedOrders.completed.length
+  };
+
+  // Calculate impact summary (keeping original logic)
   const calculateImpact = () => {
-    // Ensure filteredOrders is an array before using reduce
-    if (!Array.isArray(filteredOrders) || filteredOrders.length === 0) {
+    if (!Array.isArray(orders) || orders.length === 0) {
       return {
         mealsSaved: 0,
         co2Reduced: 0,
@@ -2017,14 +1789,14 @@ const OrderHistory = () => {
       };
     }
 
-    return filteredOrders.reduce((acc, order) => {
+    return orders.reduce((acc, order) => {
       const isDonation = order.interaction_type === 'Donation';
       const quantity = isDonation ? (order.quantity || 1) : 1;
 
       return {
         mealsSaved: acc.mealsSaved + quantity,
         co2Reduced: acc.co2Reduced + (quantity * 0.5),
-        ordersCount: filteredOrders.length,
+        ordersCount: orders.length,
         donationsCount: isDonation ? acc.donationsCount + 1 : acc.donationsCount,
         pickupsCount: !isDonation ? acc.pickupsCount + 1 : acc.pickupsCount
       };
@@ -2038,16 +1810,17 @@ const OrderHistory = () => {
   };
 
   const impactData = calculateImpact();
+  const currentOrders = groupedOrders[activeTab] || [];
 
-  // Loading state - matches FoodProvidersPage pattern
-  if (loading && filteredOrders.length === 0) {
+  // Loading state
+  if (loading && orders.length === 0) {
     return (
       <div className="bg-gray-50 dark:bg-gray-900 min-h-screen w-full transition-colors duration-300">
         <CustomerNavBar />
         <div className="flex items-center justify-center min-h-[60vh]">
           <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-600 mx-auto mb-4"></div>
-            <p className="text-gray-600 dark:text-gray-200">Loading order history...</p>
+            <Loader2Icon className="animate-spin h-12 w-12 text-emerald-600 mx-auto mb-4" />
+            <p className="text-gray-600 dark:text-gray-200">Loading your orders...</p>
           </div>
         </div>
       </div>
@@ -2060,18 +1833,15 @@ const OrderHistory = () => {
       <div className="bg-gray-50 dark:bg-gray-900 min-h-screen w-full transition-colors duration-300">
         <CustomerNavBar />
         <div className="max-w-6xl mx-auto px-4 py-8">
-          <div className="mb-8">
-            <h1 className="text-2xl font-bold text-gray-800 dark:text-gray-100 mb-2">
-              Order History
-            </h1>
-            <p className="text-red-600 dark:text-red-400">{error}</p>
-          </div>
-          
-          <div className="text-center py-12">
-            <p className="text-xl text-gray-600 dark:text-gray-300 mb-4">Unable to load order history</p>
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-8 text-center">
+            <AlertCircleIcon className="w-12 h-12 text-red-500 mx-auto mb-4" />
+            <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
+              Unable to load order history
+            </h2>
+            <p className="text-red-600 dark:text-red-400 mb-6">{error}</p>
             <button 
               onClick={loadOrders} 
-              className="px-4 py-2 bg-emerald-600 text-white rounded-md hover:bg-emerald-700 transition-colors"
+              className="px-6 py-3 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-all transform hover:scale-105"
             >
               Try Again
             </button>
@@ -2086,164 +1856,110 @@ const OrderHistory = () => {
       <CustomerNavBar />
 
       <div className="max-w-7xl mx-auto px-4 py-8">
-        {/* Header */}
+        {/* Page Header */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
-            Order History
+            Your Orders
           </h1>
           <p className="text-gray-600 dark:text-gray-400">
-            Track and manage your food orders and donations
+            Track your pickups and donations in one place
           </p>
         </div>
 
-        {/* Enhanced Impact Summary */}
-        <div className="bg-gradient-to-r from-emerald-50 to-blue-50 dark:from-emerald-900/20 dark:to-blue-900/20 rounded-xl p-6 mb-8 border border-emerald-200 dark:border-emerald-800">
-          <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-4 flex items-center">
-            <LeafIcon size={24} className="mr-3 text-emerald-600 dark:text-emerald-400" />
+        {/* Impact Summary */}
+        <div className="bg-gradient-to-r from-emerald-600 to-blue-600 rounded-2xl shadow-lg p-6 mb-8 text-white">
+          <h2 className="text-lg font-semibold mb-4 flex items-center">
+            <LeafIcon size={20} className="mr-2" />
             Your Impact Summary
           </h2>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
             <div className="text-center">
-              <div className="text-3xl font-bold text-emerald-600 dark:text-emerald-400 mb-1">{impactData.mealsSaved}</div>
-              <div className="text-sm text-gray-600 dark:text-gray-300">Meals Saved</div>
+              <div className="text-3xl font-bold">{impactData.mealsSaved}</div>
+              <div className="text-sm opacity-90">Meals Saved</div>
             </div>
             <div className="text-center">
-              <div className="text-3xl font-bold text-blue-600 dark:text-blue-400 mb-1">{impactData.co2Reduced.toFixed(1)}kg</div>
-              <div className="text-sm text-gray-600 dark:text-gray-300">CO₂ Reduced</div>
+              <div className="text-3xl font-bold">{impactData.co2Reduced.toFixed(1)}kg</div>
+              <div className="text-sm opacity-90">CO₂ Reduced</div>
             </div>
             <div className="text-center">
-              <div className="text-3xl font-bold text-purple-600 dark:text-purple-400 mb-1">{impactData.pickupsCount}</div>
-              <div className="text-sm text-gray-600 dark:text-gray-300">Pickups</div>
+              <div className="text-3xl font-bold">{impactData.pickupsCount}</div>
+              <div className="text-sm opacity-90">Pickups</div>
             </div>
             <div className="text-center">
-              <div className="text-3xl font-bold text-red-600 dark:text-red-400 mb-1">{impactData.donationsCount}</div>
-              <div className="text-sm text-gray-600 dark:text-gray-300">Donations</div>
+              <div className="text-3xl font-bold">{impactData.donationsCount}</div>
+              <div className="text-sm opacity-90">Donations</div>
             </div>
           </div>
         </div>
 
-        {/* Status Tabs */}
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 mb-6">
-          <div className="flex flex-wrap gap-2 mb-6">
-            <StatusTab
-              status="all"
-              label="All Orders"
-              count={orderCounts.all}
-              color="gray"
-              icon={Package}
-              isActive={filters.status === 'all'}
-              onClick={() => setFilters(prev => ({ ...prev, status: 'all' }))}
-            />
-            <StatusTab
-              status="pending"
-              label="Pending"
-              count={orderCounts.pending}
-              color="yellow"
-              icon={ClockIcon}
-              isActive={filters.status === 'pending'}
-              onClick={() => setFilters(prev => ({ ...prev, status: 'pending' }))}
-            />
-            <StatusTab
-              status="confirmed"
-              label="Active"
-              count={orderCounts.confirmed}
-              color="blue"
-              icon={CheckCircleIcon}
-              isActive={filters.status === 'confirmed'}
-              onClick={() => setFilters(prev => ({ ...prev, status: 'confirmed' }))}
-            />
-            <StatusTab
-              status="completed"
-              label="Completed"
-              count={orderCounts.completed}
-              color="emerald"
-              icon={CheckCircleIcon}
-              isActive={filters.status === 'completed'}
-              onClick={() => setFilters(prev => ({ ...prev, status: 'completed' }))}
-            />
-            <StatusTab
-              status="cancelled"
-              label="Cancelled"
-              count={orderCounts.cancelled}
-              color="red"
-              icon={XIcon}
-              isActive={filters.status === 'cancelled'}
-              onClick={() => setFilters(prev => ({ ...prev, status: 'cancelled' }))}
-            />
-          </div>
-
-          {/* Filters */}
-          <EnhancedFilters
-            filters={filters}
-            setFilters={setFilters}
-            orders={orders}
-            onResetFilters={handleResetFilters}
-          />
-        </div>
-
-        {/* Show loading indicator while orders are being updated */}
-        {loading && filteredOrders.length > 0 && (
+        {/* Loading indicator for updates */}
+        {loading && orders.length > 0 && (
           <div className="mb-4 text-center">
-            <div className="inline-flex items-center px-4 py-2 bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-200 rounded-lg text-sm">
-              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600 mr-2"></div>
+            <div className="inline-flex items-center px-4 py-2 bg-emerald-50 dark:bg-emerald-900 text-emerald-600 dark:text-emerald-200 rounded-lg text-sm transition-colors duration-300">
+              <Loader2Icon className="animate-spin h-4 w-4 mr-2" />
               Updating orders...
             </div>
           </div>
         )}
 
+        {/* Tab Navigation */}
+        <TabNavigation 
+          activeTab={activeTab} 
+          setActiveTab={setActiveTab} 
+          orderCounts={orderCounts}
+          userType={userType}
+        />
+
         {/* Orders Grid */}
-        {!Array.isArray(filteredOrders) || filteredOrders.length === 0 ? (
-          <div className="text-center py-16 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
-            <div className="text-gray-400 dark:text-gray-500 mb-4">
-              <Package className="mx-auto h-16 w-16 mb-4" />
-            </div>
-            <h3 className="text-xl text-gray-600 dark:text-gray-300 mb-4">No orders found</h3>
-            <p className="text-gray-500 dark:text-gray-400 mb-6 max-w-md mx-auto">
-              {filters.status === 'all' && filters.search === '' && filters.type === 'all'
-                ? "You haven't placed any orders yet. Start by browsing available food or requesting donations."
-                : "No orders match your current filters. Try adjusting your search criteria."}
-            </p>
-            <div className="flex gap-4 justify-center">
-              {filters.status !== 'all' || filters.search !== '' || filters.type !== 'all' ? (
-                <button
-                  onClick={handleResetFilters}
-                  className="px-6 py-3 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors"
-                >
-                  Clear Filters
-                </button>
-              ) : (
-                <>
-                  <button
-                    onClick={() => navigate('/food-listing')}
-                    className="px-6 py-3 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors"
-                  >
-                    Browse Food
-                  </button>
-                  <button
-                    onClick={() => navigate('/donations')}
-                    className="px-6 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
-                  >
-                    Request Donations
-                  </button>
-                </>
-              )}
-            </div>
-          </div>
+        {currentOrders.length === 0 ? (
+          <EmptyState activeTab={activeTab} userType={userType} />
         ) : (
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {filteredOrders.map((order) => (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 animate-fadeIn">
+            {currentOrders.map((order) => (
               <EnhancedOrderCard
                 key={order.id}
                 order={order}
                 onOrderClick={handleOrderClick}
-                onCancelOrder={handleCancelClick}
+                onCancelClick={handleCancelClick}
+                onReviewClick={handleReviewClick}
               />
             ))}
           </div>
         )}
+
+        {/* Global Empty State - when no orders exist at all */}
+        {orders.length === 0 && !loading && (
+          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm p-12 text-center transition-colors duration-300">
+            <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-emerald-100 dark:bg-emerald-900/30 mb-6">
+              <ShoppingBagIcon className="w-10 h-10 text-emerald-600 dark:text-emerald-400" />
+            </div>
+            <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
+              Welcome to your order history!
+            </h3>
+            <p className="text-gray-600 dark:text-gray-400 mb-8 max-w-md mx-auto">
+              Start your food rescue journey by browsing available meals or requesting donations from local providers.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <button
+                onClick={() => navigate('/food-listing')}
+                className="inline-flex items-center px-6 py-3 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 font-medium transition-all transform hover:scale-105"
+              >
+                <ShoppingBagIcon className="w-5 h-5 mr-2" />
+                Browse Available Food
+              </button>
+              <button
+                onClick={() => navigate('/donations')}
+                className="inline-flex items-center px-6 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 font-medium transition-all transform hover:scale-105"
+              >
+                <HeartIcon className="w-5 h-5 mr-2" />
+                Request Donations
+              </button>
+            </div>
+          </div>
+        )}
       </div>
 
-      {/* Details Modal */}
+      {/* Modals and Dialogs */}
       <PickupDetailsModal
         order={selectedOrder}
         isOpen={showPickupModal}
@@ -2254,7 +1970,6 @@ const OrderHistory = () => {
         onStatusUpdate={handleStatusUpdate}
       />
 
-      {/* Confirmation Dialog */}
       <ConfirmDialog
         isOpen={showConfirmCancel}
         onClose={() => {
@@ -2268,7 +1983,6 @@ const OrderHistory = () => {
         cancelText="No, Keep It"
       />
 
-      {/* Toast Notification */}
       {toast && (
         <Toast
           message={toast.message}
