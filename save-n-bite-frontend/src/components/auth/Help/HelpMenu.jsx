@@ -111,7 +111,7 @@ const HelpMenu = ({ isOpen, onClose }) => {
         animate={{ x: 0 }}
         exit={{ x: '100%' }}
         transition={{ type: 'spring', damping: 30, stiffness: 400 }}
-        className="bg-white dark:bg-gray-900 w-full max-w-md h-full overflow-y-auto shadow-2xl"
+        className="fixed right-0 top-0 bg-white dark:bg-gray-900 w-full max-w-md h-full overflow-y-auto shadow-2xl"
       >
         <div className="sticky top-0 bg-gradient-to-r from-emerald-600 to-emerald-500 dark:from-emerald-700 dark:to-emerald-600 text-white px-6 py-5 flex justify-between items-center z-10">
           <div className="flex items-center">
