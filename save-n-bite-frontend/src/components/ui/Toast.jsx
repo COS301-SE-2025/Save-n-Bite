@@ -1,6 +1,12 @@
 import React, { useEffect } from 'react';
 import { XIcon, CheckCircleIcon, AlertCircleIcon, InfoIcon } from 'lucide-react';
 
+// Add this utility function for showing toasts
+export const showToast = (setToast, message, type = 'info') => {
+    setToast({ message, type });
+    setTimeout(() => setToast(null), 3000);
+};
+
 export const Toast = ({ message, type = 'info', onClose }) => {
     useEffect(() => {
         const timer = setTimeout(() => {
