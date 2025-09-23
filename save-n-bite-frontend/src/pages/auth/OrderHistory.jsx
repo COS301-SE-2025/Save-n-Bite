@@ -1308,10 +1308,10 @@ const PickupDetailsModal = ({ order, isOpen, onClose, onStatusUpdate }) => {
               <p className="text-sm text-blue-700 dark:text-blue-300">
                 {order.status === 'ready' && (isDonation ? 'Your donation is ready for collection' : 'Your order is ready for pickup')}
                 {order.status === 'confirmed' && (isDonation ? 'Your donation has been confirmed' : 'Your pickup has been confirmed')}
-                {order.status === 'cancelled' && '❌ ' + (isDonation ? 'This donation has been cancelled' : 'This pickup has been cancelled')}
-                {order.status === 'rejected' && '❌ This request has been rejected'}
-                {order.status === 'scheduled' && '📅 Your pickup is confirmed and ready to collect'}
-                {order.status === 'missed' && '⏰ ' + (isDonation ? 'This donation was missed' : 'This pickup was missed')}
+                {order.status === 'cancelled' &&  (isDonation ? 'This donation has been cancelled' : 'This pickup has been cancelled')}
+                {order.status === 'rejected' && 'This request has been rejected'}
+                {order.status === 'scheduled' && 'Your pickup is confirmed and ready to collect'}
+                {order.status === 'missed' && (isDonation ? 'This donation was missed' : 'This pickup was missed')}
               </p>
             </div>
           )}
@@ -1354,6 +1354,7 @@ const EnhancedOrderCard = ({ order, onOrderClick, onCancelClick, onReviewClick }
         return (
           <button
             onClick={(e) => {
+           
               e.stopPropagation();
               if (order.interaction_id) {
                 onReviewClick(order.interaction_id);
@@ -1857,14 +1858,14 @@ const OrderHistory = () => {
 
       <div className="max-w-7xl mx-auto px-4 py-8">
         {/* Page Header */}
-        <div className="mb-8">
+        {/* <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
             Your Orders
           </h1>
           <p className="text-gray-600 dark:text-gray-400">
             Track your pickups and donations in one place
           </p>
-        </div>
+        </div> */}
 
         {/* Impact Summary */}
         <div className="bg-gradient-to-r from-emerald-600 to-blue-600 rounded-2xl shadow-lg p-6 mb-8 text-white">
