@@ -7,14 +7,6 @@ import {
   StarIcon,
   XIcon,
   Loader,
-  UserIcon,
-  BuildingIcon,
-  MailIcon,
-  PhoneIcon,
-  CalendarIcon,
-  MapPinIcon,
-  ShieldCheckIcon,
-  ShieldIcon
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import CustomerNavBar from './CustomerNavBar';
@@ -88,116 +80,6 @@ const ProfilePage = () => {
     }
   };
 
-  // Helper function to get verification status display
-  const getVerificationStatusDisplay = (status, userType) => {
-    if (userType === 'customer') {
-      return {
-        text: 'Verified',
-        className: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300',
-        icon: <ShieldCheckIcon className="h-4 w-4" />
-      };
-    }
-
-    switch (status) {
-      case 'verified':
-        return {
-          text: 'Verified',
-          className: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300',
-          icon: <ShieldCheckIcon className="h-4 w-4" />
-        };
-      case 'pending_verification':
-        return {
-          text: 'Pending Verification',
-          className: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300',
-          icon: <ShieldIcon className="h-4 w-4" />
-        };
-      case 'rejected':
-        return {
-          text: 'Verification Rejected',
-          className: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300',
-          icon: <ShieldIcon className="h-4 w-4" />
-        };
-      default:
-        return {
-          text: 'Not Verified',
-          className: 'bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-300',
-          icon: <ShieldIcon className="h-4 w-4" />
-        };
-    }
-  };
-
-  // Helper function to render user type specific information
-  const renderUserTypeInfo = (userDetails) => {
-    switch (userDetails.user_type) {
-      case 'customer':
-        return (
-          <div className="space-y-2">
-            <div className="flex items-center text-gray-600 dark:text-gray-300">
-              <UserIcon className="h-4 w-4 mr-2" />
-              <span>Individual Consumer</span>
-            </div>
-          </div>
-        );
-      
-      case 'ngo':
-        return (
-          <div className="space-y-2">
-            <div className="flex items-center text-gray-600 dark:text-gray-300">
-              <BuildingIcon className="h-4 w-4 mr-2" />
-              <span>Non-Profit Organization</span>
-            </div>
-            {userDetails.organisation_name && (
-              <div className="flex items-center text-gray-600 dark:text-gray-300">
-                <span className="text-sm">Organization: {userDetails.organisation_name}</span>
-              </div>
-            )}
-            {userDetails.organisation_contact && (
-              <div className="flex items-center text-gray-600 dark:text-gray-300">
-                <PhoneIcon className="h-4 w-4 mr-2" />
-                <span className="text-sm">{userDetails.organisation_contact}</span>
-              </div>
-            )}
-            {userDetails.organisation_email && (
-              <div className="flex items-center text-gray-600 dark:text-gray-300">
-                <MailIcon className="h-4 w-4 mr-2" />
-                <span className="text-sm">{userDetails.organisation_email}</span>
-              </div>
-            )}
-          </div>
-        );
-      
-      case 'provider':
-        return (
-          <div className="space-y-2">
-            <div className="flex items-center text-gray-600 dark:text-gray-300">
-              <BuildingIcon className="h-4 w-4 mr-2" />
-              <span>Food Provider</span>
-            </div>
-            {userDetails.business_name && (
-              <div className="flex items-center text-gray-600 dark:text-gray-300">
-                <span className="text-sm">Business: {userDetails.business_name}</span>
-              </div>
-            )}
-            {userDetails.business_contact && (
-              <div className="flex items-center text-gray-600 dark:text-gray-300">
-                <PhoneIcon className="h-4 w-4 mr-2" />
-                <span className="text-sm">{userDetails.business_contact}</span>
-              </div>
-            )}
-            {userDetails.business_address && (
-              <div className="flex items-center text-gray-600 dark:text-gray-300">
-                <MapPinIcon className="h-4 w-4 mr-2" />
-                <span className="text-sm">{userDetails.business_address}</span>
-              </div>
-            )}
-          </div>
-        );
-      
-      default:
-        return null;
-    }
-  };
-
   // Loading state
   if (loading) {
     return (
@@ -240,22 +122,6 @@ const ProfilePage = () => {
   const impactStats = profileData.impact_statistics;
   const reviews = profileData.reviews;
   const followedBusinesses = profileData.followed_businesses;
-  const verificationStatus = getVerificationStatusDisplay(
-    userDetails.verification_status, 
-    userDetails.user_type
-  );
-
-  // Get profile image based on user type
-  const getProfileImage = () => {
-    if (userDetails.user_type === 'customer' && userDetails.profile_image) {
-      return userDetails.profile_image;
-    } else if (userDetails.user_type === 'ngo' && userDetails.organisation_logo) {
-      return userDetails.organisation_logo;
-    } else if (userDetails.user_type === 'provider' && userDetails.logo) {
-      return userDetails.logo;
-    }
-    return PLACEHOLDER_AVATAR;
-  };
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 w-full transition-colors duration-200">
@@ -278,7 +144,7 @@ const ProfilePage = () => {
           <div className="flex flex-col sm:flex-row items-center sm:items-start">
             <div className="relative mb-4 sm:mb-0">
               <img
-                src={getProfileImage()}
+                src={userDetails.profile_image || PLACEHOLDER_AVATAR}
                 alt={userDetails.full_name}
                 className="w-24 h-24 rounded-full object-cover border-4 border-white dark:border-gray-700 shadow-sm"
               />
@@ -291,24 +157,13 @@ const ProfilePage = () => {
                 {userDetails.email}
               </p>
               {userDetails.phone_number && (
-                <p className="text-gray-600 dark:text-gray-300 mb-2">
+                <p className="text-gray-600 dark:text-gray-300 mb-1">
                   {userDetails.phone_number}
                 </p>
               )}
-              
-              {/* User type specific info */}
-              <div className="mb-2">
-                {renderUserTypeInfo(userDetails)}
-              </div>
-
-              {/* Verification Status */}
-              <div className="flex items-center justify-center sm:justify-start mb-2">
-                <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${verificationStatus.className}`}>
-                  {verificationStatus.icon}
-                  <span className="ml-1">{verificationStatus.text}</span>
-                </span>
-              </div>
-
+              <p className="text-sm text-gray-500 dark:text-gray-400 mb-2">
+                {userDetails.profile_type} • {userDetails.verification_status}
+              </p>
               <p className="text-sm text-gray-500 dark:text-gray-400">
                 Member since {userDetails.member_since}
               </p>
@@ -325,22 +180,19 @@ const ProfilePage = () => {
           </div>
         </div>
 
-        {/* Impact Snapshot - Only show for customers and NGOs who have orders */}
-        {(userDetails.user_type === 'customer' || userDetails.user_type === 'ngo') && 
-         orderStats && orderStats.total_orders > 0 && (
-          <div className="bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-100 dark:border-emerald-800 rounded-lg p-4 mb-6">
-            <div className="flex items-center justify-center">
-              <div className="text-center">
-                <p className="text-emerald-700 dark:text-emerald-300 font-medium">
-                  You've rescued {impactStats.total_meals_rescued || 0} meals in total!
-                </p>
-                <p className="text-sm text-emerald-600 dark:text-emerald-400">
-                  That's approximately {impactStats.total_co2_prevented_kg || 0} kg of CO2 emissions prevented
-                </p>
-              </div>
+        {/* Impact Snapshot */}
+        <div className="bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-100 dark:border-emerald-800 rounded-lg p-4 mb-6">
+          <div className="flex items-center justify-center">
+            <div className="text-center">
+              <p className="text-emerald-700 dark:text-emerald-300 font-medium">
+                You've rescued {impactStats.total_meals_rescued} meals in total!
+              </p>
+              <p className="text-sm text-emerald-600 dark:text-emerald-400">
+                That's approximately {impactStats.total_co2_prevented_kg} kg of CO2 emissions prevented
+              </p>
             </div>
           </div>
-        )}
+        </div>
 
         {/* Navigation Tabs */}
         <div className="flex border-b border-gray-200 dark:border-gray-700 mb-6 overflow-x-auto">
@@ -350,16 +202,12 @@ const ProfilePage = () => {
           >
             Overview
           </button>
-          {/* Only show provider tab for customers and NGOs */}
-          {(userDetails.user_type === 'customer' || userDetails.user_type === 'ngo') && (
-            <button
-              className={`px-6 py-3 font-medium whitespace-nowrap ${activeTab === 'providers' ? 'text-emerald-600 dark:text-emerald-400 border-b-2 border-emerald-600 dark:border-emerald-400' : 'text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200'}`}
-              onClick={() => setActiveTab('providers')}
-            >
-              Followed Providers
-            </button>
-          )}
-          {/* Show reviews tab for all user types */}
+          <button
+            className={`px-6 py-3 font-medium whitespace-nowrap ${activeTab === 'providers' ? 'text-emerald-600 dark:text-emerald-400 border-b-2 border-emerald-600 dark:border-emerald-400' : 'text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200'}`}
+            onClick={() => setActiveTab('providers')}
+          >
+            Followed Providers
+          </button>
           <button
             className={`px-6 py-3 font-medium whitespace-nowrap ${activeTab === 'reviews' ? 'text-emerald-600 dark:text-emerald-400 border-b-2 border-emerald-600 dark:border-emerald-400' : 'text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200'}`}
             onClick={() => setActiveTab('reviews')}
@@ -375,95 +223,77 @@ const ProfilePage = () => {
               Account Overview
             </h3>
 
-            {/* Order Statistics - Only for customers and NGOs */}
-            {(userDetails.user_type === 'customer' || userDetails.user_type === 'ngo') && orderStats && (
-              <div className="mb-6">
-                <h4 className="text-md font-medium text-gray-700 dark:text-gray-300 mb-3">
-                  Order Statistics
-                </h4>
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                  <div className="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
-                    <div className="flex items-center">
-                      <div className="p-2 bg-emerald-100 dark:bg-emerald-800 rounded-full mr-3">
-                        <ShoppingBagIcon className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
-                      </div>
-                      <div>
-                        <p className="text-sm text-gray-500 dark:text-gray-400">
-                          Completed Orders
-                        </p>
-                        <p className="text-xl font-semibold text-gray-800 dark:text-white">
-                          {orderStats.completed_orders || 0}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
-                    <div className="flex items-center">
-                      <div className="p-2 bg-red-100 dark:bg-red-900/30 rounded-full mr-3">
-                        <ShoppingBagIcon className="h-5 w-5 text-red-600 dark:text-red-400" />
-                      </div>
-                      <div>
-                        <p className="text-sm text-gray-500 dark:text-gray-400">
-                          Cancelled Orders
-                        </p>
-                        <p className="text-xl font-semibold text-gray-800 dark:text-white">
-                          {orderStats.cancelled_orders || 0}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
-                    <div className="flex items-center">
-                      <div className="p-2 bg-amber-100 dark:bg-amber-900/30 rounded-full mr-3">
-                        <ShoppingBagIcon className="h-5 w-5 text-amber-600 dark:text-amber-400" />
-                      </div>
-                      <div>
-                        <p className="text-sm text-gray-500 dark:text-gray-400">
-                          Missed Pickups
-                        </p>
-                        <p className="text-xl font-semibold text-gray-800 dark:text-white">
-                          {orderStats.missed_pickups || 0}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="flex justify-center mt-4">
-                  <Link
-                    to="/orders"
-                    className="px-6 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-md hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
-                  >
-                    View Order History
-                  </Link>
-                </div>
-              </div>
-            )}
-
-            {/* Provider-specific content could go here */}
-            {userDetails.user_type === 'provider' && (
-              <div className="mb-6">
-                <h4 className="text-md font-medium text-gray-700 dark:text-gray-300 mb-3">
-                  Business Information
-                </h4>
+            {/* Order Statistics */}
+            <div className="mb-6">
+              <h4 className="text-md font-medium text-gray-700 dark:text-gray-300 mb-3">
+                Order Statistics
+              </h4>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div className="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
-                  <p className="text-gray-600 dark:text-gray-300 text-center">
-                    Business profile management features coming soon.
-                  </p>
+                  <div className="flex items-center">
+                    <div className="p-2 bg-emerald-100 dark:bg-emerald-800 rounded-full mr-3">
+                      <ShoppingBagIcon className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
+                    </div>
+                    <div>
+                      <p className="text-sm text-gray-500 dark:text-gray-400">
+                        Completed Orders
+                      </p>
+                      <p className="text-xl font-semibold text-gray-800 dark:text-white">
+                        {orderStats.completed_orders}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+                <div className="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
+                  <div className="flex items-center">
+                    <div className="p-2 bg-red-100 dark:bg-red-900/30 rounded-full mr-3">
+                      <ShoppingBagIcon className="h-5 w-5 text-red-600 dark:text-red-400" />
+                    </div>
+                    <div>
+                      <p className="text-sm text-gray-500 dark:text-gray-400">
+                        Cancelled Orders
+                      </p>
+                      <p className="text-xl font-semibold text-gray-800 dark:text-white">
+                        {orderStats.cancelled_orders}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+                <div className="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
+                  <div className="flex items-center">
+                    <div className="p-2 bg-amber-100 dark:bg-amber-900/30 rounded-full mr-3">
+                      <ShoppingBagIcon className="h-5 w-5 text-amber-600 dark:text-amber-400" />
+                    </div>
+                    <div>
+                      <p className="text-sm text-gray-500 dark:text-gray-400">
+                        Missed Pickups
+                      </p>
+                      <p className="text-xl font-semibold text-gray-800 dark:text-white">
+                        {orderStats.missed_pickups}
+                      </p>
+                    </div>
+                  </div>
                 </div>
               </div>
-            )}
+            </div>
+
+            <div className="flex justify-center">
+              <Link
+                to="/orders"
+                className="px-6 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-md hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+              >
+                View Order History
+              </Link>
+            </div>
           </div>
         )}
 
-        {/* Followed Providers Tab - Only for customers and NGOs */}
-        {(userDetails.user_type === 'customer' || userDetails.user_type === 'ngo') && 
-         activeTab === 'providers' && (
+        {activeTab === 'providers' && (
           <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6">
             <h3 className="text-lg font-medium text-gray-800 dark:text-white mb-4">
-              Followed Providers ({followedBusinesses?.count || 0})
+              Followed Providers ({followedBusinesses.count})
             </h3>
-            {followedBusinesses?.businesses && followedBusinesses.businesses.length > 0 ? (
+            {followedBusinesses.businesses && followedBusinesses.businesses.length > 0 ? (
               <div className="space-y-4">
                 {followedBusinesses.businesses.map((business) => (
                   <div
@@ -528,13 +358,12 @@ const ProfilePage = () => {
           </div>
         )}
 
-        {/* Reviews Tab */}
         {activeTab === 'reviews' && (
           <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6">
             <h3 className="text-lg font-medium text-gray-800 dark:text-white mb-4">
-              My Reviews ({reviews?.count || 0})
+              My Reviews ({reviews.count})
             </h3>
-            {reviews?.recent_reviews && reviews.recent_reviews.length > 0 ? (
+            {reviews.recent_reviews && reviews.recent_reviews.length > 0 ? (
               <div className="space-y-4">
                 {reviews.recent_reviews.map((review) => (
                   <div
@@ -549,7 +378,7 @@ const ProfilePage = () => {
                         {[...Array(5)].map((_, i) => (
                           <StarIcon
                             key={i}
-                            className={`h-4 w-4 ${i < (review.general_rating || 0) ? 'text-amber-400 fill-amber-400' : 'text-gray-300 dark:text-gray-600'}`}
+                            className={`h-4 w-4 ${i < review.general_rating ? 'text-amber-400 fill-amber-400' : 'text-gray-300 dark:text-gray-600'}`}
                           />
                         ))}
                       </div>
@@ -573,11 +402,6 @@ const ProfilePage = () => {
                       <span className="text-xs text-gray-500 dark:text-gray-400">
                         {review.created_at}
                       </span>
-                      {review.review_source && (
-                        <span className="text-xs text-gray-500 dark:text-gray-400">
-                          via {review.review_source}
-                        </span>
-                      )}
                     </div>
                   </div>
                 ))}
@@ -590,27 +414,16 @@ const ProfilePage = () => {
                 <h4 className="text-lg font-medium text-gray-700 dark:text-gray-300 mb-2">
                   No Reviews Yet
                 </h4>
-                <p className="text-gray-500 dark:text-gray-400 mb-4">
+                <p className="text-gray-500 dark:text-gray-400">
                   You haven't written any reviews yet.
                 </p>
-                <Link
-                  to="/orders"
-                  className="px-4 py-2 bg-emerald-600 dark:bg-emerald-500 text-white rounded-md hover:bg-emerald-700 dark:hover:bg-emerald-600 transition-colors"
-                >
-                  View Orders to Review
-                </Link>
               </div>
             )}
 
-            {reviews?.statistics && (
+            {reviews.statistics && (
               <div className="mt-6 pt-4 border-t border-gray-200 dark:border-gray-600">
                 <p className="text-sm text-gray-600 dark:text-gray-400">
-                  Total reviews: <span className="font-medium">{reviews.statistics.total_reviews || 0}</span>
-                  {reviews.statistics.average_rating_given > 0 && (
-                    <span className="ml-4">
-                      Average rating given: <span className="font-medium">{reviews.statistics.average_rating_given}/5</span>
-                    </span>
-                  )}
+                  Average rating given: <span className="font-medium">{reviews.statistics.average_rating_given}/5</span>
                 </p>
               </div>
             )}

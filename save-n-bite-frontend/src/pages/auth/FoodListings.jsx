@@ -7,6 +7,7 @@ import FoodProviderCarousel from '../../components/auth/FoodProviderCarousel';
 import CustomerNavBar from '../../components/auth/CustomerNavBar';
 import Sort from '../../components/auth/Sort';
 import foodListingsAPI from '../../services/foodListingsAPI';
+import { Search, Filter } from 'lucide-react';
 
 const FoodListings = () => {
   const navigate = useNavigate();
@@ -278,21 +279,63 @@ const FoodListings = () => {
   }
 
   return (
-    <div className="bg-gray-50 dark:bg-gray-900 min-h-screen w-full transition-colors duration-300">
+    <div className="bg-gradient-to-b from-gray-50 to-white dark:from-gray-900 dark:to-gray-800 min-h-screen w-full transition-colors duration-300">
       <CustomerNavBar />
-      <br />
-      <SearchBar
-        searchQuery={searchQuery}
-        setSearchQuery={setSearchQuery}
-        showFilters={showFilters}
-        setShowFilters={setShowFilters}
-        selectedSort={selectedSort}
-        setSelectedSort={setSelectedSort}
-      />
+      
+      {/* Search and Filter */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 pb-4">
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-4 mb-6 border border-gray-100 dark:border-gray-700">
+          <div className="flex flex-col space-y-4 md:space-y-0 md:flex-row md:items-center md:justify-between gap-4">
+            <div className="relative flex-grow max-w-2xl">
+              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <Search className="h-5 w-5 text-gray-400" />
+              </div>
+              <input
+                type="text"
+                placeholder="Search for meals, cuisines, or ingredients..."
+                className="block w-full pl-10 pr-4 py-3 border border-gray-200 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-400 transition-all duration-200"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
+            </div>
+            
+            <div className="flex items-center space-x-3">
+              <div className="relative">
+                <select
+                  value={selectedSort || ''}
+                  onChange={(e) => setSelectedSort(e.target.value)}
+                  className="appearance-none bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl pl-4 pr-10 py-3 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all duration-200 cursor-pointer"
+                >
+                  <option value="">Sort by</option>
+                  <option value="price-low">Price: Low to High</option>
+                  <option value="price-high">Price: High to Low</option>
+                  <option value="expiry">Expiry Date</option>
+                  <option value="newest">Newest First</option>
+                </select>
+                <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700 dark:text-gray-300">
+                  <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
+                  </svg>
+                </div>
+              </div>
+              
+              <button 
+                onClick={() => setShowFilters(!showFilters)}
+                className={`inline-flex items-center px-4 py-3 border rounded-xl text-sm font-medium transition-colors ${
+                  showFilters || selectedSort
+                    ? 'bg-emerald-50 dark:bg-emerald-900/30 border-emerald-200 dark:border-emerald-800 text-emerald-700 dark:text-emerald-300'
+                    : 'bg-white dark:bg-gray-700 border-gray-200 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600/50'
+                }`}
+              >
+                <Filter className="h-4 w-4 mr-2" />
+                Filters
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
 
-      <br />
-
-      <div className="container-responsive max-w-6xl mx-auto p-4 md:p-6">
+      <div className="container-responsive max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-12">
         {/* Error message */}
         {error && (
           <div className="mb-4 sm:mb-6 bg-red-50 dark:bg-red-900 border border-red-200 dark:border-red-800 text-red-600 dark:text-red-200 px-3 py-3 sm:px-4 sm:py-3 rounded-md transition-colors duration-300">

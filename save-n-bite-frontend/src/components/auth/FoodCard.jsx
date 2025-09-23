@@ -1,131 +1,12 @@
-// import React, { useState } from 'react';
-// import { Link } from 'react-router-dom';
-// import { MapPin, Clock } from 'lucide-react';
-// import { useAuth } from '../../context/AuthContext';
-
-// const FoodCard = ({ item }) => {
-//   const { isNGO } = useAuth();
-//   const [showExpiry, setShowExpiry] = useState(false);
-  
-//   const getLinkDestination = () => {
-//     if (isNGO() && item.type === 'Donation') {
-//       return `/donation-request/${item.id}`;
-//     }
-//     return `/item/${item.id}`;
-//   };
-
-//   const getButtonText = () => {
-//     if (item.type === 'Donation') return 'Request';
-//     return 'Order Now';
-//   };
-
-//   return (
-//     <div className="group relative bg-white dark:bg-gray-800 rounded-xl overflow-hidden shadow-sm hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1 border border-gray-100 dark:border-gray-700/50">
-//       <Link to={getLinkDestination()} className="block">
-//         {/* Image container */}
-//         <div className="relative pt-[75%] overflow-hidden">
-//           <img 
-//             src={item.image} 
-//             alt={item.title} 
-//             className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" 
-//           />
-          
-//           {/* Save Badge with hover effect for expiry */}
-//           {item.type === 'Discount' && (
-//             <div 
-//               className="absolute top-3 left-3 group/save"
-//               onMouseEnter={() => setShowExpiry(true)}
-//               onMouseLeave={() => setShowExpiry(false)}
-//             >
-//               <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-gradient-to-r from-red-500 to-red-600 text-white shadow-md">
-//                 Save R{(item.originalPrice - item.discountPrice).toFixed(2)}
-//               </span>
-//               {showExpiry && (
-//                 <div className="absolute left-0 bottom-full mb-2 w-48 px-3 py-2 bg-gray-900 text-white text-xs rounded-lg shadow-xl z-10">
-//                   <div className="flex items-center">
-//                     <Clock size={12} className="mr-1 flex-shrink-0" />
-//                     <span>Expires: {item.expirationTime}</span>
-//                   </div>
-//                 </div>
-//               )}
-//             </div>
-//           )}
-          
-//           {/* Item type badge */}
-//           <span className={`absolute top-3 right-3 text-xs font-medium px-2.5 py-1 rounded-full ${
-//             item.type === 'Donation' 
-//               ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/80 dark:text-emerald-200' 
-//               : 'bg-blue-100 text-blue-800 dark:bg-blue-900/80 dark:text-blue-200'
-//           }`}>
-//             {item.type}
-//           </span>
-//         </div>
-        
-//         {/* Content */}
-//         <div className="p-5">
-//           <h3 className="font-semibold text-gray-900 dark:text-white group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors line-clamp-2 mb-2 text-lg">
-//             {item.title}
-//           </h3>
-          
-//           <p className="text-sm text-gray-500 dark:text-gray-400 mb-4 flex items-center">
-//             <MapPin size={14} className="mr-1.5 flex-shrink-0" />
-//             <span className="truncate">{item.provider.business_name}</span>
-//           </p>
-          
-//           {/* Price section */}
-//           <div className="mb-4">
-//             {item.type === 'Discount' ? (
-//               <div className="space-y-1">
-//                 <div className="text-2xl font-bold text-gray-900 dark:text-white">
-//                   R{item.discountPrice.toFixed(2)}
-//                 </div>
-//                 <div className="text-sm text-gray-400 line-through">
-//                   R{item.originalPrice.toFixed(2)}
-//                 </div>
-//               </div>
-//             ) : (
-//               <div className="text-2xl font-bold text-emerald-600 dark:text-emerald-400">
-//                 Free
-//               </div>
-//             )}
-//           </div>
-          
-//           {/* Footer */}
-//           <div className="flex justify-between items-center pt-4 border-t border-gray-100 dark:border-gray-700">
-//             <div className="text-xs text-gray-500 dark:text-gray-400 flex items-center">
-//               <MapPin size={12} className="mr-1" />
-//               {item.distance}
-//             </div>
-//             <button 
-//               type="button"
-//               className="px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-medium rounded-lg transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2"
-//               onClick={(e) => {
-//                 e.preventDefault();
-//                 e.stopPropagation();
-//                 // Handle order/request logic here
-//               }}
-//             >
-//               {getButtonText()}
-//             </button>
-//           </div>
-//         </div>
-//       </Link>
-//     </div>
-//   );
-// };
-
-// export default FoodCard;
-
-
-
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { MapPin, Clock } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 
 const FoodCard = ({ item }) => {
   const { isNGO } = useAuth();
   const [showExpiry, setShowExpiry] = useState(false);
+  const navigate = useNavigate();
   
   const getLinkDestination = () => {
     if (isNGO() && item.type === 'Donation') {
@@ -134,36 +15,49 @@ const FoodCard = ({ item }) => {
     return `/item/${item.id}`;
   };
 
+  const handleButtonClick = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    if (item.type === 'Donation') {
+      // Navigate to donation request page for NGOs
+      navigate(`/donation-request/${item.id}`);
+    } else {
+      // Navigate to food item page for ordering
+      navigate(`/item/${item.id}`);
+    }
+  };
+
   const getButtonText = () => {
     if (item.type === 'Donation') return 'Request';
-    return 'Order Now';
+    return 'Order';
   };
 
   return (
-    <div className="group relative bg-white dark:bg-gray-800 rounded-xl overflow-hidden shadow-sm hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1 border border-gray-100 dark:border-gray-700/50">
-      <Link to={getLinkDestination()} className="block">
-        {/* Image container */}
-        <div className="relative pt-[75%] overflow-hidden">
+    <div className="group relative bg-white dark:bg-gray-800 rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-all duration-200 border border-gray-100 dark:border-gray-700/50">
+      <Link to={getLinkDestination()} className="block h-full flex flex-col">
+        {/* Image container - smaller on mobile */}
+        <div className="relative pt-[70%] sm:pt-[75%] overflow-hidden">
           <img 
             src={item.image} 
             alt={item.title} 
-            className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" 
+            className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" 
           />
           
-          {/* Save Badge with hover effect for expiry */}
+          {/* Save Badge - smaller on mobile */}
           {item.type === 'Discount' && (
             <div 
-              className="absolute top-3 left-3 group/save"
+              className="absolute top-1.5 left-1.5 sm:top-2 sm:left-2 group/save"
               onMouseEnter={() => setShowExpiry(true)}
               onMouseLeave={() => setShowExpiry(false)}
             >
-              <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-gradient-to-r from-red-500 to-red-600 text-white shadow-md">
-                Save R{(item.originalPrice - item.discountPrice).toFixed(2)}
+              <span className="inline-flex items-center px-1.5 py-0.5 sm:px-2 sm:py-1 rounded-md text-[10px] sm:text-xs font-bold bg-gradient-to-r from-red-500 to-red-600 text-white shadow-sm">
+                Save R{(item.originalPrice - item.discountPrice).toFixed(0)}
               </span>
               {showExpiry && (
-                <div className="absolute left-0 bottom-full mb-2 w-48 px-3 py-2 bg-gray-900 text-white text-xs rounded-lg shadow-xl z-10">
+                <div className="hidden sm:block absolute left-0 bottom-full mb-2 w-40 px-2 py-1.5 bg-gray-900 text-white text-xs rounded-lg shadow-xl z-10">
                   <div className="flex items-center">
-                    <Clock size={12} className="mr-1 flex-shrink-0" />
+                    <Clock size={10} className="mr-1 flex-shrink-0" />
                     <span>Expires: {item.expirationTime}</span>
                   </div>
                 </div>
@@ -171,8 +65,8 @@ const FoodCard = ({ item }) => {
             </div>
           )}
           
-          {/* Item type badge */}
-          <span className={`absolute top-3 right-3 text-xs font-medium px-2.5 py-1 rounded-full ${
+          {/* Item type badge - smaller on mobile */}
+          <span className={`absolute top-1.5 right-1.5 sm:top-2 sm:right-2 text-[10px] sm:text-xs font-medium px-1.5 py-0.5 sm:px-2 sm:py-1 rounded-full ${
             item.type === 'Donation' 
               ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/80 dark:text-emerald-200' 
               : 'bg-blue-100 text-blue-800 dark:bg-blue-900/80 dark:text-blue-200'
@@ -181,56 +75,56 @@ const FoodCard = ({ item }) => {
           </span>
         </div>
         
-        {/* Content */}
-        <div className="p-5">
-          <h3 className="font-semibold text-gray-900 dark:text-white group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors line-clamp-2 mb-2 text-lg">
+        {/* Content - more compact on mobile */}
+        <div className="p-2 sm:p-3 flex-1 flex flex-col">
+          <h3 className="font-medium text-sm sm:text-base text-gray-900 dark:text-white group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors line-clamp-2 mb-1 sm:mb-2">
             {item.title}
           </h3>
           
-          {/* Provider + Distance on the same line */}
-          <p className="text-sm text-gray-500 dark:text-gray-400 mb-4 flex items-center gap-1">
-            <MapPin size={14} className="flex-shrink-0" />
-            <span className="truncate">{item.provider.business_name}</span>
-            <span className="text-gray-400">| {item.distance}</span>
+          {/* Provider name - single line with ellipsis */}
+          <p className="text-xs text-gray-500 dark:text-gray-400 mb-2 sm:mb-3 truncate">
+            {item.provider?.business_name || 'Save-n-Bite'}
           </p>
           
-          {/* Price section - make it the most dominant visually */}
-<div className="mb-4">
-  {item.type === 'Discount' ? (
-    <div className="flex items-baseline gap-2">
-      {/* Discounted Price (big & bold) */}
-      <div className="text-2xl font-extrabold text-gray-900 dark:text-white">
-        R{item.discountPrice.toFixed(2)}
-      </div>
-
-      {/* Original Price (smaller, strikethrough) */}
-      <div className="text-sm text-gray-400 line-through">
-        R{item.originalPrice.toFixed(2)}
-      </div>
-    </div>
-  ) : (
-    <div className="text-2xl font-extrabold text-emerald-600 dark:text-emerald-400">
-      Free
-    </div>
-  )}
-</div>
-
-          
-          {/* Footer */}
-          <div className="pt-4 border-t border-gray-100 dark:border-gray-700">
-            {/* Full-width button */}
-            <button 
-              type="button"
-              className="w-full px-4 py-3 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-medium rounded-lg transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2"
-              onClick={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                // Handle order/request logic here
-              }}
-            >
-              {getButtonText()}
-            </button>
+          {/* Price section - compact layout */}
+          <div className="mt-auto">
+            {item.type === 'Discount' ? (
+              <div className="flex items-baseline gap-1.5">
+                <div className="text-base sm:text-lg font-bold text-gray-900 dark:text-white">
+                  R{item.discountPrice.toFixed(2)}
+                </div>
+                <div className="text-xs text-gray-400 line-through">
+                  R{item.originalPrice.toFixed(2)}
+                </div>
+              </div>
+            ) : (
+              <div className="text-base sm:text-lg font-bold text-emerald-600 dark:text-emerald-400">
+                Free
+              </div>
+            )}
           </div>
+          
+          {/* Order button - full width but smaller */}
+          <button
+  type="button"
+  className={`
+    mt-2 w-full px-3 py-2 sm:py-2.5
+    bg-gradient-to-r from-emerald-500 to-emerald-600
+    hover:from-emerald-600 hover:to-emerald-700
+    text-white text-sm font-medium
+    rounded-lg
+    transition-all duration-200
+    focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:ring-offset-2
+    shadow-sm hover:shadow
+    active:scale-[0.98] active:shadow-inner
+    dark:from-emerald-600 dark:to-emerald-700
+    dark:hover:from-emerald-700 dark:hover:to-emerald-800
+    dark:focus:ring-emerald-600/50
+  `}
+  onClick={handleButtonClick} 
+>
+  {getButtonText()}
+</button>
         </div>
       </Link>
     </div>
