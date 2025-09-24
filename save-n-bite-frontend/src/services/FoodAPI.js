@@ -265,17 +265,65 @@ const foodAPI = {
         }
     },
 
-    updateCartItemQuantity: async (cartItemId, quantity) => {
+    updateCartItemQuantity: async (cartItemId, newQuantity, currentQuantity, foodListingId) => {
         try {
-            const response = await apiClient.put(`/cart/items/${cartItemId}/`, {
-                quantity
-            });
+            console.log('Updating cart item:', { cartItemId, newQuantity, currentQuantity, foodListingId });
             
-            return {
-                success: true,
-                data: response.data,
-                message: 'Cart updated successfully'
-            };
+            // If new quantity is 0 or less, remove the item
+            if (newQuantity <= 0) {
+                const response = await apiClient.post('/cart/remove/', {
+                    cartItemId: cartItemId
+                });
+                
+                return {
+                    success: response.data?.success || true,
+                    data: response.data,
+                    message: 'Item removed from cart'
+                };
+            }
+            
+            // Calculate the difference
+            const quantityDifference = newQuantity - currentQuantity;
+            
+            if (quantityDifference > 0) {
+                // Need to add more items
+                const response = await apiClient.post('/cart/add/', {
+                    listingId: foodListingId,  // Changed from food_listing_id to listingId
+                    quantity: quantityDifference
+                });
+                
+                return {
+                    success: response.data?.success || true,
+                    data: response.data,
+                    message: 'Cart updated successfully'
+                };
+            } else if (quantityDifference < 0) {
+                // Need to reduce quantity - we'll do this by removing and re-adding
+                // First remove the entire item
+                await apiClient.post('/cart/remove/', {
+                    cartItemId: cartItemId
+                });
+                
+                // Then add back the correct quantity
+                const response = await apiClient.post('/cart/add/', {
+                    listingId: foodListingId,  // Changed from food_listing_id to listingId
+                    quantity: newQuantity
+                });
+                
+                return {
+                    success: response.data?.success || true,
+                    data: response.data,
+                    message: 'Cart updated successfully'
+                };
+            } else {
+                // No change needed
+                return {
+                    success: true,
+                    data: {},
+                    message: 'No changes needed'
+                };
+            }
+            
         } catch (error) {
             console.error('Error updating cart:', error);
             
@@ -286,7 +334,7 @@ const foodAPI = {
             };
         }
     },
-
+    
     processCheckout: async (checkoutData) => {
         try {
             const response = await apiClient.post('/cart/checkout/', checkoutData);

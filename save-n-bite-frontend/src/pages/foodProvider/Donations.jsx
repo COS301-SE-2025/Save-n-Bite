@@ -1,5 +1,4 @@
- 
-import React, { useState, useEffect } from 'react'
+ import React, { useState, useEffect } from 'react'
 import { Search as SearchIcon, Calendar as CalendarIcon, CheckCircle, XCircle, Clock, Package, Menu } from 'lucide-react'
 import { Button } from '../../components/foodProvider/Button'
 import SideBar from '../../components/foodProvider/SideBar'
@@ -15,12 +14,16 @@ function ManageDonations() {
   const [processedDonations, setProcessedDonations] = useState(new Set())
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false)
   const [toast, setToast] = useState(null)
+  const [rejectionModalOpen, setRejectionModalOpen] = useState(false)
+  const [selectedDonationId, setSelectedDonationId] = useState(null)
+  const [rejectionReason, setRejectionReason] = useState('')
   const [stats, setStats] = useState({
     pending: 0,
     ready_for_pickup: 0,
     completed: 0,
     total_donations: 0
   })
+
 
   // Toast helper function
   const showToast = (message, type = 'info') => {
@@ -29,8 +32,10 @@ function ManageDonations() {
 
   // Fetch donations data
   useEffect(() => {
-    fetchDonations()
-  }, [])
+    fetchDonations();
+    const interval = setInterval(fetchDonations, 30000); 
+    return () => clearInterval(interval);
+  }, []);
 
   const fetchDonations = async () => {
     try {
@@ -58,6 +63,18 @@ function ManageDonations() {
 
   const toggleMobileSidebar = () => {
     setIsMobileSidebarOpen(!isMobileSidebarOpen)
+  }
+
+  const openRejectModal = (donationId) => {
+    setSelectedDonationId(donationId)
+    setRejectionReason('')
+    setRejectionModalOpen(true)
+  }
+
+  const closeRejectModal = () => {
+    setRejectionModalOpen(false)
+    setSelectedDonationId(null)
+    setRejectionReason('')
   }
 
   const handleAcceptDonation = async (donationId) => {
@@ -91,20 +108,19 @@ function ManageDonations() {
     }
   }
 
-  const handleRejectDonation = async (donationId) => {
-    const reason = prompt('Please provide a reason for rejection:')
-    if (!reason) return
-
+  const handleRejectDonation = async () => {
+    if (!selectedDonationId) return
+    
     try {
-      setProcessedDonations(prev => new Set(prev).add(donationId))
+      setProcessedDonations(prev => new Set(prev).add(selectedDonationId))
       
-      const response = await donationsAPI.rejectDonation(donationId, reason)
+      const response = await donationsAPI.rejectDonation(selectedDonationId, rejectionReason || 'No reason provided')
       
       if (response.success) {
         // Update the donation status locally
         setDonations(prev => 
           prev.map(donation => 
-            donation.id === donationId 
+            donation.id === selectedDonationId 
               ? { ...donation, status: 'rejected' }
               : donation
           )
@@ -117,9 +133,10 @@ function ManageDonations() {
       console.error('Error rejecting donation:', error)
       showToast('Failed to reject donation request', 'error')
     } finally {
+      closeRejectModal()
       setProcessedDonations(prev => {
         const newSet = new Set(prev)
-        newSet.delete(donationId)
+        newSet.delete(selectedDonationId)
         return newSet
       })
     }
@@ -418,7 +435,7 @@ function ManageDonations() {
                                 {processedDonations.has(donation.id) ? 'Processing...' : 'Accept'}
                               </button>
                               <button
-                                onClick={() => handleRejectDonation(donation.id)}
+                                onClick={() => openRejectModal(donation.id)}
                                 disabled={processedDonations.has(donation.id)}
                                 className="flex items-center justify-center gap-2 px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base transition-colors"
                               >
@@ -431,7 +448,7 @@ function ManageDonations() {
                           {donation.status.toLowerCase() === 'ready_for_pickup' && (
                             <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-700 rounded-md p-3">
                               <p className="text-green-800 dark:text-green-300 text-xs sm:text-sm font-medium">
-                                ✅ Approved - Ready for NGO pickup
+                                Approved - Ready for NGO pickup
                               </p>
                             </div>
                           )}
@@ -439,7 +456,7 @@ function ManageDonations() {
                           {donation.status.toLowerCase() === 'completed' && (
                             <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700 rounded-md p-3">
                               <p className="text-blue-800 dark:text-blue-300 text-xs sm:text-sm font-medium">
-                                ✅ Completed - Donation picked up{donation.completed_at ? ` on ${new Date(donation.completed_at).toLocaleDateString()}` : ''}
+                                Completed - Donation picked up{donation.completed_at ? ` on ${new Date(donation.completed_at).toLocaleDateString()}` : ''}
                               </p>
                             </div>
                           )}
@@ -447,7 +464,7 @@ function ManageDonations() {
                           {donation.status.toLowerCase() === 'rejected' && (
                             <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-700 rounded-md p-3">
                               <p className="text-red-800 dark:text-red-300 text-xs sm:text-sm font-medium">
-                                ❌ Request rejected
+                                Request rejected
                               </p>
                             </div>
                           )}
@@ -469,6 +486,41 @@ function ManageDonations() {
           type={toast.type}
           onClose={() => setToast(null)}
         />
+      )}
+      
+      {/* Rejection Modal */}
+      {rejectionModalOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-md">
+            <h3 className="text-lg font-semibold mb-4 dark:text-white">Reject Donation</h3>
+            <p className="text-gray-600 dark:text-gray-300 mb-4">
+              You can provide an optional reason for rejecting this donation request.
+            </p>
+            <textarea
+              className="w-full p-2 border rounded-md mb-4 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+              rows="3"
+              placeholder="Reason for rejection (optional)"
+              value={rejectionReason}
+              onChange={(e) => setRejectionReason(e.target.value)}
+            />
+            <div className="flex justify-end space-x-3">
+              <Button
+                variant="outline"
+                onClick={closeRejectModal}
+                disabled={processedDonations.has(selectedDonationId)}
+              >
+                Cancel
+              </Button>
+              <Button
+                variant="destructive"
+                onClick={handleRejectDonation}
+                disabled={processedDonations.has(selectedDonationId)}
+              >
+                {processedDonations.has(selectedDonationId) ? 'Processing...' : 'Reject Donation'}
+              </Button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   )
