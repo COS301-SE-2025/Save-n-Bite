@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
+
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import {
   MenuIcon,
@@ -15,82 +16,84 @@ const CustomerNavBar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isHelpOpen, setIsHelpOpen] = useState(false);
   const [isNavVisible, setIsNavVisible] = useState(true);
-  const [lastScrollY, setLastScrollY] = useState(0);
+  const [isAtTop, setIsAtTop] = useState(true);
+  const lastScrollYRef = useRef(0);
+  const hideTimeoutRef = useRef(null);
+  const tickingRef = useRef(false);
+
   const navigate = useNavigate();
   const location = useLocation();
 
-  // Auto-hide navbar functionality
+  // Auto-hide navbar functionality (refined to avoid glitches)
   useEffect(() => {
-    let timeoutId;
+    const onScroll = () => {
+      if (tickingRef.current) return;
+      tickingRef.current = true;
 
-    const handleMouseMove = (e) => {
-      const currentScrollY = window.scrollY;
-      
-      // Only show navbar on hover if we're scrolled down (navbar is hidden)
-      if (currentScrollY > 100 && e.clientY <= 80) {
-        setIsNavVisible(true);
-        // Clear any existing timeout
-        if (timeoutId) {
-          clearTimeout(timeoutId);
+      window.requestAnimationFrame(() => {
+        const y = window.scrollY || 0;
+        const last = lastScrollYRef.current;
+
+        // Update top state (used for spacer decision if needed)
+        const atTopNow = y <= 100;
+        if (atTopNow !== isAtTop) setIsAtTop(atTopNow);
+
+        // Always show when at top
+        if (atTopNow) {
+          if (!isNavVisible) setIsNavVisible(true);
+        } else if (y > last && y > 100) {
+          // Scrolling down
+          if (!isMenuOpen && !isHelpOpen) {
+            if (hideTimeoutRef.current) {
+              clearTimeout(hideTimeoutRef.current);
+              hideTimeoutRef.current = null;
+            }
+            if (isNavVisible) setIsNavVisible(false);
+          }
+        } else if (y < last) {
+          // Scrolling up
+          if (!isNavVisible) setIsNavVisible(true);
         }
-      } 
-      // Hide navbar when mouse moves away from top and we're scrolled down
-      else if (currentScrollY > 100 && e.clientY > 120 && !isMenuOpen && !isHelpOpen) {
-        if (timeoutId) {
-          clearTimeout(timeoutId);
+
+        lastScrollYRef.current = y;
+        tickingRef.current = false;
+      });
+    };
+
+    const onMouseMove = (e) => {
+      const y = window.scrollY || 0;
+      if (y > 100) {
+        // If user moves near top edge, reveal quickly
+        if (e.clientY <= 80 && !isNavVisible) {
+          setIsNavVisible(true);
         }
-        timeoutId = setTimeout(() => {
-          setIsNavVisible(false);
-        }, 1500);
+        // If user moves away from top and menus are closed, schedule hide
+        if (e.clientY > 140 && !isMenuOpen && !isHelpOpen) {
+          if (hideTimeoutRef.current) clearTimeout(hideTimeoutRef.current);
+          hideTimeoutRef.current = setTimeout(() => {
+            setIsNavVisible(false);
+          }, 800);
+        }
       }
     };
 
-    const handleScroll = () => {
-      const currentScrollY = window.scrollY;
-      
-      // Always show navbar when at the top of the page
-      if (currentScrollY <= 100) {
-        setIsNavVisible(true);
-        // Clear any hide timeout when at top
-        if (timeoutId) {
-          clearTimeout(timeoutId);
-        }
-      } 
-      // Hide navbar when scrolling down past 100px
-      else if (currentScrollY > 100 && currentScrollY > lastScrollY) {
-        if (!isMenuOpen && !isHelpOpen) {
-          setIsNavVisible(false);
-        }
-      }
-      // Show navbar when scrolling up (regardless of position)
-      else if (currentScrollY < lastScrollY) {
-        setIsNavVisible(true);
-      }
-      
-      setLastScrollY(currentScrollY);
-    };
-
-    // Always show navbar when menus are open
+    // Always show when menus are open
     if (isMenuOpen || isHelpOpen) {
-      setIsNavVisible(true);
-      if (timeoutId) {
-        clearTimeout(timeoutId);
+      if (!isNavVisible) setIsNavVisible(true);
+      if (hideTimeoutRef.current) {
+        clearTimeout(hideTimeoutRef.current);
+        hideTimeoutRef.current = null;
       }
     }
 
-    // Add event listeners
-    document.addEventListener('mousemove', handleMouseMove);
-    window.addEventListener('scroll', handleScroll);
-
-    // Cleanup
+    window.addEventListener('scroll', onScroll, { passive: true });
+    document.addEventListener('mousemove', onMouseMove, { passive: true });
     return () => {
-      document.removeEventListener('mousemove', handleMouseMove);
-      window.removeEventListener('scroll', handleScroll);
-      if (timeoutId) {
-        clearTimeout(timeoutId);
-      }
+      window.removeEventListener('scroll', onScroll);
+      document.removeEventListener('mousemove', onMouseMove);
+      if (hideTimeoutRef.current) clearTimeout(hideTimeoutRef.current);
     };
-  }, [isMenuOpen, isHelpOpen, lastScrollY]);
+  }, [isMenuOpen, isHelpOpen, isNavVisible, isAtTop]);
 
   // Helper function to determine if a link is active
   const isActive = (path) => {
@@ -105,37 +108,11 @@ const CustomerNavBar = () => {
 
   return (
     <>
-      {/* Trigger zone - invisible area at the top for hover detection when scrolled */}
-      <div 
-        className="fixed top-0 left-0 w-full h-20 z-40 pointer-events-auto"
-        style={{ 
-          background: 'transparent',
-          // Only active when scrolled down and navbar is hidden
-          pointerEvents: (window.scrollY > 100 && !isNavVisible) ? 'auto' : 'none'
-        }}
-        onMouseEnter={() => {
-          if (window.scrollY > 100) {
-            setIsNavVisible(true);
-          }
-        }}
-      />
-      
-      <nav 
-        className={`fixed top-0 left-0 w-full bg-white dark:bg-gray-800 shadow-sm py-3 sm:py-4 px-4 sm:px-6 md:px-12 transition-all duration-300 ease-in-out z-50 ${
-          isNavVisible 
-            ? 'transform translate-y-0 opacity-100' 
-            : 'transform -translate-y-full opacity-0'
+      <nav
+        className={`fixed top-0 left-0 w-full bg-white dark:bg-gray-800 shadow-sm py-3 sm:py-4 px-4 sm:px-6 md:px-12 transition-transform duration-200 ease-out z-50 ${
+          isNavVisible ? 'translate-y-0' : '-translate-y-full'
         }`}
         onMouseEnter={() => setIsNavVisible(true)}
-        onMouseLeave={(e) => {
-          // Only start hide timer if mouse leaves the navbar area and we're scrolled down
-          const currentScrollY = window.scrollY;
-          if (e.clientY > 120 && currentScrollY > 100 && !isMenuOpen && !isHelpOpen) {
-            setTimeout(() => {
-              setIsNavVisible(false);
-            }, 1000);
-          }
-        }}
       >
         <div className="max-w-7xl mx-auto flex justify-between items-center">
           {/* Logo */}
@@ -375,8 +352,8 @@ const CustomerNavBar = () => {
         <HelpMenu isOpen={isHelpOpen} onClose={() => setIsHelpOpen(false)} />
       </nav>
 
-      {/* Spacer to prevent content from being hidden under fixed navbar when at top */}
-      <div className={`transition-all duration-300 ${window.scrollY <= 100 ? 'h-16 sm:h-20' : 'h-0'}`} />
+      {/* Constant spacer to prevent content jump and flicker */}
+      <div className="h-16 sm:h-20" />
     </>
   );
 };

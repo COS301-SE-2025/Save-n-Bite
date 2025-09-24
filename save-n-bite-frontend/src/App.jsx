@@ -61,6 +61,7 @@ function App() {
   return (
        <ThemeProvider>
     <AuthProvider>
+   
       <Router>
         <Routes>
           {/* Public routes - no authentication required */}

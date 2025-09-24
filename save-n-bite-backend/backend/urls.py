@@ -2,8 +2,8 @@
 
 from django.contrib import admin
 from django.urls import path, include
-from django.conf import settings
 from django.conf.urls.static import static
+from django.conf import settings
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -15,6 +15,7 @@ urlpatterns = [
     path('api/scheduling/', include('scheduling.urls')),
     path('api/', include('reviews.urls')),
     path('api/admin/', include('admin_system.urls')),
+    path('api/auth/', include('authentication.urls')),
     path('api/garden/', include('digital_garden.urls')),
     path('api/badges/', include('badges.urls')),
 ]+ static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

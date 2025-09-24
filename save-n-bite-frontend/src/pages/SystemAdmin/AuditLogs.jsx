@@ -165,50 +165,6 @@ const AuditLogs = () => {
   }
 
   /**
-   * Handle export functionality
-   */
-  const handleExport = async () => {
-    try {
-      // Convert filters for export
-      let startDate = ''
-      let endDate = ''
-      
-      if (dateFilter === 'Today') {
-        startDate = new Date().toISOString().split('T')[0]
-        endDate = startDate
-      } else if (dateFilter === 'This Week') {
-        const weekAgo = new Date()
-        weekAgo.setDate(weekAgo.getDate() - 7)
-        startDate = weekAgo.toISOString().split('T')[0]
-        endDate = new Date().toISOString().split('T')[0]
-      } else if (dateFilter === 'This Month') {
-        const monthAgo = new Date()
-        monthAgo.setMonth(monthAgo.getMonth() - 1)
-        startDate = monthAgo.toISOString().split('T')[0]
-        endDate = new Date().toISOString().split('T')[0]
-      }
-
-      const response = await AdminAPI.exportData('audit_logs', startDate, endDate)
-
-      if (response.success) {
-        // Create download link for the exported file
-        const url = window.URL.createObjectURL(new Blob([response.data]))
-        const link = document.createElement('a')
-        link.href = url
-        link.download = `audit_logs_${new Date().toISOString().split('T')[0]}.csv`
-        link.click()
-        window.URL.revokeObjectURL(url)
-        toast.success('Audit logs exported successfully')
-      } else {
-        toast.error('Failed to export audit logs')
-      }
-    } catch (err) {
-      console.error('Export error:', err)
-      toast.error('Failed to export audit logs')
-    }
-  }
-
-  /**
    * Handle refresh
    */
   const handleRefresh = () => {
@@ -310,13 +266,7 @@ const AuditLogs = () => {
             <RefreshCwIcon className="w-4 h-4 mr-2 inline" />
             Refresh
           </button>
-          <button
-            onClick={handleExport}
-            className="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
-          >
-            <DownloadIcon className="w-4 h-4 mr-2 inline" />
-            Export
-          </button>
+
         </div>
       </div>
 
