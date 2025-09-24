@@ -1,13 +1,13 @@
-import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
-import { Clock, MapPin } from 'lucide-react';
+import React, { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { MapPin, Clock } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
-import { useNavigate } from 'react-router-dom';
 
 const FoodCard = ({ item }) => {
   const { isNGO } = useAuth();
+  const [showExpiry, setShowExpiry] = useState(false);
+  const navigate = useNavigate();
   
-  // Fix the getLinkDestination function to match the debug logic
   const getLinkDestination = () => {
     if (isNGO() && item.type === 'Donation') {
       return `/donation-request/${item.id}`;
@@ -15,189 +15,119 @@ const FoodCard = ({ item }) => {
     return `/item/${item.id}`;
   };
 
-  console.log('FoodCard Debug:', {
-    itemType: item.type,
-    itemId: item.id,
-    isNGOResult: isNGO(),
-    linkDestination: getLinkDestination() // Use the actual function instead of duplicating logic
-  });
-
-  const getButtonText = () => {
-    if (item.type === 'Donation') {
-      return 'Request';
-    }
-    return 'Order';
-  };
-
-  const getButtonStyling = () => {
-    if (item.type === 'Donation') {
-      return 'bg-emerald-600 text-white hover:bg-emerald-700 hover:shadow-md';
-    }
-    return 'bg-emerald-600 text-white hover:bg-emerald-700 hover:shadow-md';
-  };
-
-  const [isFollowing, setIsFollowing] = useState(false);
-  const [followStatusLoading, setFollowStatusLoading] = useState(false);
-
-  useEffect(() => {
-    let mounted = true;
-    
-    async function checkFollow() {
-      if (item.id) {
-        try {
-          // Fix: Initialize isFollowing to false by default
-          const followed = localStorage.getItem(`liked_item_${item.id}`);
-          if (mounted) {
-            setIsFollowing(followed === 'true');
-          }
-          
-          // Optional: Check with backend if you have an API for item likes
-          // const res = await BusinessAPI.checkItemLikeStatus(item.id);
-          // if (mounted && res.success) {
-          //   setIsFollowing(res.isLiked);
-          //   localStorage.setItem(`liked_item_${item.id}`, res.isLiked ? 'true' : 'false');
-          // }
-        } catch (err) {
-          console.error('Error checking like status:', err);
-          // Fallback to localStorage
-          const followed = localStorage.getItem(`liked_item_${item.id}`);
-          if (mounted) {
-            setIsFollowing(followed === 'true');
-          }
-        }
-      }
-    }
-    
-    checkFollow();
-    return () => { mounted = false; };
-  }, [item.id]);
-
-  const handleFollowClick = async (e) => {
+  const handleButtonClick = (e) => {
     e.preventDefault();
     e.stopPropagation();
     
-    if (!item.id) {
-      alert('Item ID not found!');
-      return;
-    }
-    
-    setFollowStatusLoading(true);
-    
-    try {
-      // Toggle the like status for this specific item
-      const newFollowStatus = !isFollowing;
-      setIsFollowing(newFollowStatus);
-      
-      if (newFollowStatus) {
-        localStorage.setItem(`liked_item_${item.id}`, 'true');
-      } else {
-        localStorage.removeItem(`liked_item_${item.id}`);
-      }
-      
-      // Optional: Update backend if you have an API for item likes
-      // if (newFollowStatus) {
-      //   await BusinessAPI.likeItem(item.id);
-      // } else {
-      //   await BusinessAPI.unlikeItem(item.id);
-      // }
-      
-    } catch (error) {
-      console.error('Error updating like status:', error);
-      // Revert the change if there was an error
-      setIsFollowing(!isFollowing);
-      alert('Failed to update like status. Please try again.');
-    } finally {
-      setFollowStatusLoading(false);
+    if (item.type === 'Donation') {
+      // Navigate to donation request page for NGOs
+      navigate(`/donation-request/${item.id}`);
+    } else {
+      // Navigate to food item page for ordering
+      navigate(`/item/${item.id}`);
     }
   };
 
+  const getButtonText = () => {
+    if (item.type === 'Donation') return 'Request';
+    return 'Order';
+  };
+
   return (
-    <Link 
-      to={getLinkDestination()}  
-      className="bg-white dark:bg-gray-800 rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-all duration-300 transform hover:-translate-y-1 group border border-gray-100 dark:border-gray-700"
-    >
-      <div className="relative">
-        <img 
-          src={item.image} 
-          alt={item.title} 
-          className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300" 
-        />
-        <div className="absolute top-0 right-0 m-2">
-          <span className={`text-xs font-medium px-2 py-1 rounded-full backdrop-blur-sm ${
+    <div className="group relative bg-white dark:bg-gray-800 rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-all duration-200 border border-gray-100 dark:border-gray-700/50">
+      <Link to={getLinkDestination()} className="block h-full flex flex-col">
+        {/* Image container - smaller on mobile */}
+        <div className="relative pt-[70%] sm:pt-[75%] overflow-hidden">
+          <img 
+            src={item.image} 
+            alt={item.title} 
+            className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" 
+          />
+          
+          {/* Save Badge - smaller on mobile */}
+          {item.type === 'Discount' && (
+            <div 
+              className="absolute top-1.5 left-1.5 sm:top-2 sm:left-2 group/save"
+              onMouseEnter={() => setShowExpiry(true)}
+              onMouseLeave={() => setShowExpiry(false)}
+            >
+              <span className="inline-flex items-center px-1.5 py-0.5 sm:px-2 sm:py-1 rounded-md text-[10px] sm:text-xs font-bold bg-gradient-to-r from-red-500 to-red-600 text-white shadow-sm">
+                Save R{(item.originalPrice - item.discountPrice).toFixed(0)}
+              </span>
+              {showExpiry && (
+                <div className="hidden sm:block absolute left-0 bottom-full mb-2 w-40 px-2 py-1.5 bg-gray-900 text-white text-xs rounded-lg shadow-xl z-10">
+                  <div className="flex items-center">
+                    <Clock size={10} className="mr-1 flex-shrink-0" />
+                    <span>Expires: {item.expirationTime}</span>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+          
+          {/* Item type badge - smaller on mobile */}
+          <span className={`absolute top-1.5 right-1.5 sm:top-2 sm:right-2 text-[10px] sm:text-xs font-medium px-1.5 py-0.5 sm:px-2 sm:py-1 rounded-full ${
             item.type === 'Donation' 
-              ? 'bg-emerald-100/90 text-emerald-800 border border-emerald-200 dark:bg-emerald-900/90 dark:text-emerald-200 dark:border-emerald-800' 
-              : 'bg-emerald-100/90 text-emerald-800 border border-emerald-200 dark:bg-emerald-900/90 dark:text-emerald-200 dark:border-emerald-800'
+              ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/80 dark:text-emerald-200' 
+              : 'bg-blue-100 text-blue-800 dark:bg-blue-900/80 dark:text-blue-200'
           }`}>
             {item.type}
           </span>
         </div>
-        {/* Savings badge for discounted items */}
-        {item.type === 'Discount' && (
-          <div className="absolute top-0 left-0 m-2">
-            <span className="text-xs font-bold px-2 py-1 rounded-full bg-red-500 text-white dark:bg-red-700">
-              Save R{(item.originalPrice - item.discountPrice).toFixed(2)}
-            </span>
-          </div>
-        )}
-      </div>
-      
-      <div className="p-4">
-        <h3 className="font-semibold text-lg mb-1 text-gray-800 dark:text-gray-100 group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors">
-          {item.title}
-        </h3>
-        <div className="flex items-center justify-between mb-3">
-          <p className="text-gray-600 dark:text-gray-300 text-sm flex items-center">
-            <MapPin size={14} className="mr-1" />
-            {item.provider.business_name}
-          </p>
-
-          {/* <button
-            onClick={handleFollowClick}
-            className="text-2xl ml-2 transition-transform duration-200 hover:scale-110 disabled:opacity-50"
-            title={isFollowing ? 'Unlike item' : 'Like item'}
-            disabled={followStatusLoading}
-          >
-            {followStatusLoading ? '⏳' : (isFollowing ? '❤️' : '🤍')}
-          </button> */}
-
-        </div>
         
-        <div className="flex justify-between items-center mb-3">
-          <div>
+        {/* Content - more compact on mobile */}
+        <div className="p-2 sm:p-3 flex-1 flex flex-col">
+          <h3 className="font-medium text-sm sm:text-base text-gray-900 dark:text-white group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors line-clamp-2 mb-1 sm:mb-2">
+            {item.title}
+          </h3>
+          
+          {/* Provider name - single line with ellipsis */}
+          <p className="text-xs text-gray-500 dark:text-gray-400 mb-2 sm:mb-3 truncate">
+            {item.provider?.business_name || 'Save-n-Bite'}
+          </p>
+          
+          {/* Price section - compact layout */}
+          <div className="mt-auto">
             {item.type === 'Discount' ? (
-              <div className="flex items-center">
-                <span className="font-bold text-lg text-emerald-600 dark:text-emerald-400">
+              <div className="flex items-baseline gap-1.5">
+                <div className="text-base sm:text-lg font-bold text-gray-900 dark:text-white">
                   R{item.discountPrice.toFixed(2)}
-                </span>
-                <span className="text-sm text-gray-500 dark:text-gray-400 line-through ml-2">
+                </div>
+                <div className="text-xs text-gray-400 line-through">
                   R{item.originalPrice.toFixed(2)}
-                </span>
+                </div>
               </div>
             ) : (
-              <span className="font-bold text-lg text-emerald-600 dark:text-emerald-400">
+              <div className="text-base sm:text-lg font-bold text-emerald-600 dark:text-emerald-400">
                 Free
-              </span>
+              </div>
             )}
           </div>
-          <span className="text-sm text-gray-500 dark:text-gray-400 flex items-center">
-            <MapPin size={12} className="mr-1" />
-            {item.distance}
-          </span>
+          
+          {/* Order button - full width but smaller */}
+          <button
+  type="button"
+  className={`
+    mt-2 w-full px-3 py-2 sm:py-2.5
+    bg-gradient-to-r from-emerald-500 to-emerald-600
+    hover:from-emerald-600 hover:to-emerald-700
+    text-white text-sm font-medium
+    rounded-lg
+    transition-all duration-200
+    focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:ring-offset-2
+    shadow-sm hover:shadow
+    active:scale-[0.98] active:shadow-inner
+    dark:from-emerald-600 dark:to-emerald-700
+    dark:hover:from-emerald-700 dark:hover:to-emerald-800
+    dark:focus:ring-emerald-600/50
+  `}
+  onClick={handleButtonClick} 
+>
+  {getButtonText()}
+</button>
         </div>
-        
-        <div className="flex justify-between items-center">
-          <span className="text-xs text-gray-500 dark:text-gray-400 flex items-center">
-            <Clock size={12} className="mr-1" />
-            Expires: {item.expirationTime}
-          </span>
-          <button 
-          type="button"
-          className={`px-3 py-1 text-sm rounded-full font-medium transition-all duration-200 ${getButtonStyling()}`}>
-            {getButtonText()}
-          </button>
-        </div>
-      </div>
-    </Link>
+      </Link>
+    </div>
   );
 };
 

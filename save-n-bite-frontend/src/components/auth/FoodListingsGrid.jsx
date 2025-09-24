@@ -1,46 +1,65 @@
 import React from 'react';
 import FoodCard from './FoodCard';
+import { SlidersHorizontal } from 'lucide-react';
 
-const FoodListingsGrid = ({ listings }) => {
+const FoodListingsGrid = ({ 
+  listings, 
+  isLoading = false, 
+  onFilterClick, 
+  activeFiltersCount = 0,
+  sortOption = 'relevance',
+  onSortChange,
+  totalResults = 0
+}) => {
   return (
-    <div className="space-y-6 lg:space-y-8">
-      {/* Results count */}
-      <div className="flex items-center justify-between">
-<h2 className="text-lg sm:text-xl lg:text-2xl font-semibold text-gray-800 dark:text-gray-100">
-
-          Available Food ({listings.length})
-        </h2>
-      </div>
-      
-      {/* Enhanced Grid for Better Large Screen Display */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 2xl:grid-cols-4 gap-6 sm:gap-8 lg:gap-10 xl:gap-12">
-        {listings.map(item => (
-          <div key={item.id + '-' + (item.provider?.id || '')} className="w-full max-w-sm mx-auto">
-            <FoodCard item={item} />
+    <div>
+      {/* Grid of food cards */}
+      {isLoading ? (
+        <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2 sm:gap-3 md:gap-4">
+          {[...Array(8)].map((_, i) => (
+            <div key={i} className="animate-pulse bg-gray-100 dark:bg-gray-800 rounded-lg h-48 sm:h-64"></div>
+          ))}
+        </div>
+      ) : listings.length > 0 ? (
+        <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2 sm:gap-3 md:gap-4">
+          {listings.map((item) => (
+            <FoodCard key={`${item.id}-${item.provider?.id || ''}`} item={item} />
+          ))}
+        </div>
+      ) : (
+        <div className="text-center py-12 bg-white dark:bg-gray-800 rounded-xl shadow-sm">
+          <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center">
+            <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
           </div>
-        ))}
-      </div>
-      
-      {/* Empty state */}
-      {listings.length === 0 && (
-<div className="text-center py-16 lg:py-24">
-  <div className="mb-6">
-    <div className="inline-flex items-center justify-center w-20 h-20 lg:w-24 lg:h-24 bg-gray-100 dark:bg-gray-800 rounded-full mb-6">
-      <svg className="w-10 h-10 lg:w-12 lg:h-12 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-              </svg>
-            </div>
-          </div>
-<p className="text-xl lg:text-2xl text-gray-600 dark:text-gray-300 mb-4 font-medium">
-  No food listings found
-</p>
-<p className="text-gray-500 dark:text-gray-400 text-base lg:text-lg max-w-md mx-auto">
-
+          <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">No food listings found</h3>
+          <p className="text-gray-500 dark:text-gray-400 max-w-md mx-auto">
             Try adjusting your filters or check back later for new listings
           </p>
+          {onFilterClick && (
+            <button
+              onClick={onFilterClick}
+              className="mt-6 px-6 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-medium rounded-lg transition-colors"
+            >
+              Adjust Filters
+            </button>
+          )}
         </div>
       )}
+      
+      {/* View All Providers Button - Aligned with grid */}
+      {/* <div className="flex justify-end mt-6">
+        <a
+          href="/providers"
+          className="inline-flex items-center px-5 py-2.5 text-sm font-medium text-emerald-600 hover:text-emerald-700 dark:text-emerald-400 dark:hover:text-emerald-300 transition-colors"
+        >
+          View All Food Providers
+          <svg className="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+          </svg>
+        </a>
+      </div> */}
     </div>
   );
 };
