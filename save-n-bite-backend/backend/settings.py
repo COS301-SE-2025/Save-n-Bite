@@ -64,6 +64,7 @@ INSTALLED_APPS = [
     'reviews',
     'admin_system',
     'digital_garden',
+    'badges',
 ]
 
 MIDDLEWARE = [
