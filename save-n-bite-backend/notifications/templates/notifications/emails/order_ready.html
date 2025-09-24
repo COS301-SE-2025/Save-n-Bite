@@ -1,0 +1,70 @@
+<!-- notifications/templates/notifications/emails/order_ready.html -->
+{% extends "notifications/emails/base.html" %}
+
+{% block content %}
+<h2>🎉 Your Order is Ready for Pickup!</h2>
+
+<p>Hi {{ customer_name }},</p>
+
+<p>Excellent news! Your order from <strong>{{ business_name }}</strong> is now ready for collection.</p>
+
+<div class="business-info">
+    <h3>Order Details:</h3>
+    <p><strong>Item:</strong> {{ food_listing_name }}</p>
+    {% if food_listing_description %}
+    <p><strong>Description:</strong> {{ food_listing_description }}</p>
+    {% endif %}
+    <p><strong>Confirmation Code:</strong> <span style="font-family: monospace; font-size: 18px; font-weight: bold; color: #2E7D32;">{{ confirmation_code }}</span></p>
+    <p><strong>Quantity:</strong> {{ total_quantity }}</p>
+</div>
+
+<div style="background-color: #e8f5e8; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #4CAF50;">
+    <h3 style="color: #2E7D32; margin-top: 0;">⏰ Collection Instructions</h3>
+    <p style="margin: 10px 0;"><strong>Please collect your order during business hours:</strong></p>
+    <ul style="margin: 10px 0;">
+        <li>Visit the pickup location during operating hours</li>
+        <li>Bring your confirmation code: <strong>{{ confirmation_code }}</strong></li>
+        <li>Show this email or QR code to the staff</li>
+        {% if time_remaining_hours %}
+        <li><strong>Time remaining:</strong> {{ time_remaining_hours }} hours</li>
+        {% endif %}
+    </ul>
+</div>
+
+<div class="business-info">
+    <h3>Pickup Location:</h3>
+    <p><strong>{{ business_name }}</strong></p>
+    <p><strong>Location:</strong> {{ location_name }}</p>
+    <p><strong>Address:</strong> {{ location_address }}</p>
+    {% if location_instructions %}
+    <p><strong>Special Instructions:</strong> {{ location_instructions }}</p>
+    {% endif %}
+    <p><strong>Contact Person:</strong> {{ contact_person }}</p>
+    <p><strong>Contact Phone:</strong> {{ contact_phone }}</p>
+</div>
+
+{% if customer_notes %}
+<div style="background-color: #fff3cd; padding: 15px; border-radius: 4px; margin: 15px 0; border-left: 4px solid #ffc107;">
+    <p><strong>Your Notes:</strong></p>
+    <p style="font-style: italic;">"{{ customer_notes }}"</p>
+</div>
+{% endif %}
+
+<div style="background-color: #d1ecf1; padding: 15px; border-radius: 4px; margin: 15px 0; border-left: 4px solid #17a2b8;">
+    <p><strong>Important Reminders:</strong></p>
+    <ul>
+        <li>Please arrive during business operating hours</li>
+        <li>Bring a form of identification if requested</li>
+        <li>Have your confirmation code ready</li>
+        <li>Contact the business if you're running late or need to reschedule</li>
+        <li>Your order will be held during business hours today</li>
+    </ul>
+</div>
+
+<p>Thank you for choosing {{ business_name }} and helping us reduce food waste! Together, we're making a positive impact on our environment.</p>
+
+<p>If you have any questions or need to change your pickup time, please contact the business directly using the information provided above.</p>
+
+<p>Best regards,</p>
+<p>The Save n Bite Team</p>
+{% endblock %}
