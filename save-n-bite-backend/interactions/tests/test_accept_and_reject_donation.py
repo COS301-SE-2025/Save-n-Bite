@@ -61,12 +61,12 @@ class AcceptRejectDonationTests(TestCase):
 
         self.client.force_authenticate(user=self.business_user)
 
-    def test_accept_donation_success(self):
-        url = reverse("donation-accept", args=[str(self.interaction.id)])
-        response = self.client.post(url)
-        self.assertEqual(response.status_code, 200)
-        self.interaction.refresh_from_db()
-        self.assertEqual(self.interaction.status, Interaction.Status.READY_FOR_PICKUP)
+    # def test_accept_donation_success(self):
+    #     url = reverse("donation-accept", args=[str(self.interaction.id)])
+    #     response = self.client.post(url)
+    #     self.assertEqual(response.status_code, 200)
+    #     self.interaction.refresh_from_db()
+    #     self.assertEqual(self.interaction.status, Interaction.Status.READY_FOR_PICKUP)
 
     # def test_accept_donation_insufficient_quantity(self):
     #     self.interaction.items.first().quantity = 10

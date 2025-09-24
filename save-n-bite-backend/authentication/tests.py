@@ -14,7 +14,21 @@ from rest_framework_simplejwt.tokens import AccessToken
 from django.utils import timezone
 from datetime import timedelta
 import json
+import base64
 from unittest.mock import Mock
+from authentication.serializers import (
+    BaseRegistrationSerializer,
+    CustomerRegistrationSerializer,
+    NGORegistrationSerializer,
+    FoodProviderRegistrationSerializer,
+    FoodProviderProfileUpdateSerializer,
+    UserProfileSerializer,
+    BusinessPublicProfileSerializer,
+    BusinessTagSerializer,
+    PopularTagsSerializer,
+    LoginSerializer,
+    DeleteAccountSerializer
+)
 
 from authentication.jwt_auth import CustomJWTAuthentication
 from .models import User, CustomerProfile, NGOProfile, FoodProviderProfile
@@ -1672,6 +1686,438 @@ class GeocodeAddressesCommandTest(TestCase):
         # This test is mostly to ensure the command exists and has help
         self.assertTrue(True)
 
+class BaseRegistrationSerializerTest(TestCase):
+    def test_base_registration_validation(self):
+        data = {
+            'email': 'test@example.com',
+            'password': 'Testpass123!',
+            'role': 'normal'
+        }
+        serializer = BaseRegistrationSerializer(data=data)
+        self.assertTrue(serializer.is_valid())
+
+    def test_base_registration_invalid_password(self):
+        data = {
+            'email': 'test@example.com',
+            'password': 'weak',
+            'role': 'normal'
+        }
+        serializer = BaseRegistrationSerializer(data=data)
+        self.assertFalse(serializer.is_valid())
+        self.assertIn('password', serializer.errors)
+
+    def test_base_registration_invalid_email(self):
+        data = {
+            'email': 'invalid-email',
+            'password': 'Testpass123!',
+            'role': 'normal'
+        }
+        serializer = BaseRegistrationSerializer(data=data)
+        self.assertFalse(serializer.is_valid())
+        self.assertIn('email', serializer.errors)
+
+class CustomerRegistrationSerializerTest(TestCase):
+    def test_customer_registration_valid(self):
+        data = {
+            'email': 'customer@example.com',
+            'password': 'Testpass123!',
+            'role': 'normal',
+            'full_name': 'Test Customer'
+        }
+        serializer = CustomerRegistrationSerializer(data=data)
+        self.assertTrue(serializer.is_valid())
+
+    def test_customer_registration_missing_full_name(self):
+        data = {
+            'email': 'customer@example.com',
+            'password': 'Testpass123!',
+            'role': 'normal'
+        }
+        serializer = CustomerRegistrationSerializer(data=data)
+        self.assertFalse(serializer.is_valid())
+        self.assertIn('full_name', serializer.errors)
+
+    @patch('authentication.serializers.logger')
+    def test_customer_registration_with_profile_image(self, mock_logger):
+        # Create a simple base64 image
+        test_image = base64.b64encode(b"fake_image_data").decode('utf-8')
+        image_data = f"data:image/png;base64,{test_image}"
+        
+        data = {
+            'email': 'customer@example.com',
+            'password': 'Testpass123!',
+            'role': 'normal',
+            'full_name': 'Test Customer',
+            'profile_image': image_data
+        }
+        
+        serializer = CustomerRegistrationSerializer(data=data)
+        self.assertTrue(serializer.is_valid())
+        
+        # Test creation
+        user = serializer.save()
+        self.assertEqual(user.user_type, 'customer')
+        self.assertTrue(hasattr(user, 'customer_profile'))
+        mock_logger.info.assert_called()
+
+class NGORegistrationSerializerTest(TestCase):
+    def test_ngo_registration_valid(self):
+        data = {
+            'email': 'ngo@example.com',
+            'password': 'Testpass123!',
+            'role': 'normal',
+            'organisation_name': 'Test NGO',
+            'organisation_contact': '+1234567890',
+            'representative_name': 'John Doe',
+            'representative_email': 'john@ngo.com',
+            'organisational_email': 'org@test.com',
+            'organisation_street': '123 Test St',
+            'organisation_city': 'Test City',
+            'organisation_province': 'Test Province',
+            'organisation_postal_code': '1234',
+            'npo_document': 'data:application/pdf;base64,' + base64.b64encode(b"fake_pdf_data").decode('utf-8')
+        }
+        serializer = NGORegistrationSerializer(data=data)
+        self.assertTrue(serializer.is_valid())
+
+    def test_ngo_registration_missing_required_fields(self):
+        data = {
+            'email': 'ngo@example.com',
+            'password': 'Testpass123!',
+            'role': 'normal'
+        }
+        serializer = NGORegistrationSerializer(data=data)
+        self.assertFalse(serializer.is_valid())
+        self.assertIn('organisation_name', serializer.errors)
+
+    @patch('authentication.serializers.logger')
+    def test_ngo_registration_with_logo(self, mock_logger):
+        test_logo = base64.b64encode(b"fake_logo_data").decode('utf-8')
+        logo_data = f"data:image/png;base64,{test_logo}"
+        
+        data = {
+            'email': 'ngo@example.com',
+            'password': 'Testpass123!',
+            'role': 'normal',
+            'organisation_name': 'Test NGO',
+            'organisation_contact': '+1234567890',
+            'representative_name': 'John Doe',
+            'representative_email': 'john@ngo.com',
+            'organisational_email': 'org@test.com',
+            'organisation_street': '123 Test St',
+            'organisation_city': 'Test City',
+            'organisation_province': 'Test Province',
+            'organisation_postal_code': '1234',
+            'npo_document': 'data:application/pdf;base64,' + base64.b64encode(b"fake_pdf_data").decode('utf-8'),
+            'organisation_logo': logo_data
+        }
+        
+        serializer = NGORegistrationSerializer(data=data)
+        self.assertTrue(serializer.is_valid())
+        
+        user = serializer.save()
+        self.assertEqual(user.user_type, 'ngo')
+        self.assertTrue(hasattr(user, 'ngo_profile'))
+        mock_logger.info.assert_called()
+
+class FoodProviderRegistrationSerializerTest(TestCase):
+    def test_provider_registration_valid(self):
+        data = {
+            'email': 'provider@example.com',
+            'password': 'Testpass123!',
+            'role': 'normal',
+            'business_name': 'Test Restaurant',
+            'business_contact': '+1234567890',
+            'business_email': 'test@restaurant.com',
+            'business_street': '123 Test St',
+            'business_city': 'Test City',
+            'business_province': 'Test Province',
+            'business_postal_code': '1234',
+            'cipc_document': 'data:application/pdf;base64,' + base64.b64encode(b"fake_pdf_data").decode('utf-8')
+        }
+        serializer = FoodProviderRegistrationSerializer(data=data)
+        self.assertTrue(serializer.is_valid())
+
+    def test_provider_registration_invalid_cipc_document(self):
+        data = {
+            'email': 'provider@example.com',
+            'password': 'Testpass123!',
+            'role': 'normal',
+            'business_name': 'Test Restaurant',
+            'business_contact': '+1234567890',
+            'business_email': 'test@restaurant.com',
+            'business_street': '123 Test St',
+            'business_city': 'Test City',
+            'business_province': 'Test Province',
+            'business_postal_code': '1234',
+            'cipc_document': 'invalid_data'
+        }
+        serializer = FoodProviderRegistrationSerializer(data=data)
+        self.assertFalse(serializer.is_valid())
+        self.assertIn('cipc_document', serializer.errors)
+
+    def test_provider_registration_business_tags_validation(self):
+        data = {
+            'email': 'provider@example.com',
+            'password': 'Testpass123!',
+            'role': 'normal',
+            'business_name': 'Test Restaurant',
+            'business_contact': '+1234567890',
+            'business_email': 'test@restaurant.com',
+            'business_street': '123 Test St',
+            'business_city': 'Test City',
+            'business_province': 'Test Province',
+            'business_postal_code': '1234',
+            'cipc_document': 'data:application/pdf;base64,' + base64.b64encode(b"fake_pdf_data").decode('utf-8'),
+            'business_tags': ['tag1', 'tag2', 'tag3', 'tag4', 'tag5', 'tag6', 'tag7', 'tag8', 'tag9', 'tag10', 'tag11']
+        }
+        serializer = FoodProviderRegistrationSerializer(data=data)
+        self.assertFalse(serializer.is_valid())
+        self.assertIn('business_tags', serializer.errors)
+
+    @patch('authentication.serializers.logger')
+    def test_provider_registration_with_banner(self, mock_logger):
+        test_banner = base64.b64encode(b"fake_banner_data").decode('utf-8')
+        banner_data = f"data:image/jpg;base64,{test_banner}"
+        
+        data = {
+            'email': 'provider@example.com',
+            'password': 'Testpass123!',
+            'role': 'normal',
+            'business_name': 'Test Restaurant',
+            'business_contact': '+1234567890',
+            'business_email': 'test@restaurant.com',
+            'business_street': '123 Test St',
+            'business_city': 'Test City',
+            'business_province': 'Test Province',
+            'business_postal_code': '1234',
+            'cipc_document': 'data:application/pdf;base64,' + base64.b64encode(b"fake_pdf_data").decode('utf-8'),
+            'banner': banner_data
+        }
+        
+        serializer = FoodProviderRegistrationSerializer(data=data)
+        self.assertTrue(serializer.is_valid())
+        
+        user = serializer.save()
+        self.assertEqual(user.user_type, 'provider')
+        self.assertTrue(hasattr(user, 'provider_profile'))
+        mock_logger.info.assert_called()
+
+class FoodProviderProfileUpdateSerializerTest(TestCase):
+    def setUp(self):
+        self.user = User.objects.create_user(
+            email='provider@example.com',
+            username='provider',
+            password='testpass123',
+            user_type='provider'
+        )
+        self.provider = FoodProviderProfile.objects.create(
+            user=self.user,
+            business_name='Test Restaurant',
+            business_address='123 Test St',
+            business_contact='+1234567890',
+            business_email='test@restaurant.com',
+            cipc_document=SimpleUploadedFile("test.pdf", b"file_content", content_type="application/pdf")
+        )
+
+    def test_provider_update_valid(self):
+        data = {
+            'business_name': 'Updated Restaurant',
+            'business_description': 'Updated description'
+        }
+        serializer = FoodProviderProfileUpdateSerializer(instance=self.provider, data=data)
+        is_valid = serializer.is_valid()
+        if not is_valid:
+            print(f"Validation errors: {serializer.errors}")  # Debug output
+        self.assertTrue(is_valid)
+        
+        updated = serializer.save()
+        self.assertEqual(updated.business_name, 'Updated Restaurant')
+        self.assertEqual(updated.business_description, 'Updated description')
+
+    def test_provider_update_business_tags(self):
+        data = {
+            'business_tags': ['Italian', 'Pizza', 'Delivery']
+        }
+        serializer = FoodProviderProfileUpdateSerializer(instance=self.provider, data=data)
+        is_valid = serializer.is_valid()
+        if not is_valid:
+            print(f"Validation errors: {serializer.errors}")  # Debug output
+        self.assertTrue(is_valid)
+        
+        updated = serializer.save()
+        self.assertEqual(updated.business_tags, ['Italian', 'Pizza', 'Delivery'])
+
+    @patch('authentication.serializers.logger')
+    def test_provider_update_with_logo(self, mock_logger):
+        test_logo = base64.b64encode(b"fake_logo_data").decode('utf-8')
+        logo_data = f"data:image/png;base64,{test_logo}"
+        
+        data = {
+            'logo': logo_data
+        }
+        
+        serializer = FoodProviderProfileUpdateSerializer(instance=self.provider, data=data)
+        is_valid = serializer.is_valid()
+        if not is_valid:
+            print(f"Validation errors: {serializer.errors}")  # Debug output
+        self.assertTrue(is_valid)
+        
+        updated = serializer.save()
+        mock_logger.info.assert_called()
+
+class UserProfileSerializerTest(TestCase):
+    def setUp(self):
+        self.user = User.objects.create_user(
+            email='test@example.com',
+            username='testuser',
+            password='testpass123',
+            user_type='customer'
+        )
+        self.customer_profile = CustomerProfile.objects.create(
+            user=self.user,
+            full_name='Test Customer'
+        )
+
+    def test_user_profile_serialization(self):
+        serializer = UserProfileSerializer(instance=self.user)
+        data = serializer.data
+        
+        self.assertEqual(data['email'], 'test@example.com')
+        self.assertEqual(data['user_type'], 'customer')
+        self.assertEqual(data['full_name'], 'Test Customer')
+
+    def test_user_profile_verification_status(self):
+        serializer = UserProfileSerializer(instance=self.user)
+        data = serializer.data
+        
+        self.assertEqual(data['verification_status'], 'verified')
+
+class BusinessPublicProfileSerializerTest(TestCase):
+    def setUp(self):
+        self.user = User.objects.create_user(
+            email='provider@example.com',
+            username='provider',
+            password='testpass123',
+            user_type='provider'
+        )
+        self.provider = FoodProviderProfile.objects.create(
+            user=self.user,
+            business_name='Test Restaurant',
+            business_address='123 Test St',
+            business_contact='+1234567890',
+            business_email='test@restaurant.com',
+            cipc_document=SimpleUploadedFile("test.pdf", b"file_content", content_type="application/pdf"),
+            business_tags=['Italian', 'Pizza']
+        )
+
+    def test_business_profile_serialization(self):
+        serializer = BusinessPublicProfileSerializer(instance=self.provider)
+        data = serializer.data
+        
+        self.assertEqual(data['business_name'], 'Test Restaurant')
+        self.assertEqual(data['business_tags'], ['Italian', 'Pizza'])
+
+class BusinessTagSerializerTest(TestCase):
+    def test_tag_serializer_add_action(self):
+        data = {
+            'action': 'add',
+            'tag': 'Italian'
+        }
+        serializer = BusinessTagSerializer(data=data)
+        self.assertTrue(serializer.is_valid())
+
+    def test_tag_serializer_remove_action(self):
+        data = {
+            'action': 'remove',
+            'tag': 'Italian'
+        }
+        serializer = BusinessTagSerializer(data=data)
+        self.assertTrue(serializer.is_valid())
+
+    def test_tag_serializer_set_action(self):
+        data = {
+            'action': 'set',
+            'tags': ['Italian', 'Pizza']
+        }
+        serializer = BusinessTagSerializer(data=data)
+        self.assertTrue(serializer.is_valid())
+
+    def test_tag_serializer_invalid_action(self):
+        data = {
+            'action': 'invalid',
+            'tag': 'Italian'
+        }
+        serializer = BusinessTagSerializer(data=data)
+        self.assertFalse(serializer.is_valid())
+
+class PopularTagsSerializerTest(TestCase):
+    def test_popular_tags_serialization(self):
+        data = {
+            'tag': 'Italian',
+            'count': 5,
+            'providers': ['Provider1', 'Provider2']
+        }
+        serializer = PopularTagsSerializer(data=data)
+        self.assertTrue(serializer.is_valid())
+
+class LoginSerializerTest(TestCase):
+    def setUp(self):
+        self.user = User.objects.create_user(
+            email='test@example.com',
+            username='testuser',
+            password='testpass123',
+            user_type='customer'
+        )
+
+    def test_login_valid(self):
+        data = {
+            'email': 'test@example.com',
+            'password': 'testpass123'
+        }
+        serializer = LoginSerializer(data=data)
+        self.assertTrue(serializer.is_valid())
+
+    def test_login_invalid_credentials(self):
+        data = {
+            'email': 'test@example.com',
+            'password': 'wrongpassword'
+        }
+        serializer = LoginSerializer(data=data)
+        
+        # Check if validation fails OR if it passes but has errors in non_field_errors
+        is_valid = serializer.is_valid()
+        if is_valid:
+            # If it's valid, check if there are validation errors
+            self.assertTrue('non_field_errors' in serializer.errors)
+        else:
+            # If it's invalid, that's also correct
+            self.assertFalse(is_valid)
+            self.assertIn('non_field_errors', serializer.errors)
+
+class DeleteAccountSerializerTest(TestCase):
+    def setUp(self):
+        self.user = User.objects.create_user(
+            email='test@example.com',
+            username='testuser',
+            password='testpass123',
+            user_type='customer'
+        )
+
+    def test_delete_account_valid_password(self):
+        data = {
+            'password': 'testpass123'
+        }
+        serializer = DeleteAccountSerializer(data=data, context={'request': MagicMock(user=self.user)})
+        self.assertTrue(serializer.is_valid())
+
+    def test_delete_account_invalid_password(self):
+        data = {
+            'password': 'wrongpassword'
+        }
+        serializer = DeleteAccountSerializer(data=data, context={'request': MagicMock(user=self.user)})
+        self.assertFalse(serializer.is_valid())
+        self.assertIn('password', serializer.errors)
 
 # Run all tests
 if __name__ == '__main__':
