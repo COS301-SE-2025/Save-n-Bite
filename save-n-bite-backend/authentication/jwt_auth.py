@@ -43,9 +43,7 @@ class CustomJWTAuthentication(JWTAuthentication):
         """
         try:
             user_id = validated_token[api_settings.USER_ID_CLAIM]
-            logger.debug(f"Token user_id claim: {user_id}")
         except KeyError:
-            logger.error("Token contained no recognizable user identification")
             raise InvalidToken(_("Token contained no recognizable user identification"))
 
         try:
@@ -54,7 +52,6 @@ class CustomJWTAuthentication(JWTAuthentication):
             
             # Use UserID instead of the default 'id' field
             user = User.objects.get(UserID=user_id_str)
-            logger.debug(f"Successfully found user: {user.email}")
             
         except User.DoesNotExist:
             logger.error(f"User not found with UserID: {user_id_str}")
