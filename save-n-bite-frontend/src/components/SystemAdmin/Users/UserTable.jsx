@@ -14,7 +14,7 @@ import {
   ShieldIcon
 } from 'lucide-react'
 import InfoTooltip from '../UI/InfoTooltip'
-import { useOnClickOutside } from '../../../../hooks/useOnClickOutside'
+import { useOnClickOutside } from '../../../hooks/useOnClickOutside'
 
 const ActionMenu = ({ user, onActionClick, onClose }) => {
   const menuRef = useRef()
