@@ -31,6 +31,7 @@ urlpatterns = [
     
     # ==================== SECURITY & ANOMALY DETECTION ====================
     path('security/anomalies/', views.get_security_anomalies, name='get_security_anomalies'),
+    path('test-system-log/', views.test_system_log_email, name='test_system_log_email'),
     
     # ==================== DATA EXPORT ====================
     path('export/', views.export_data, name='export_data'),
