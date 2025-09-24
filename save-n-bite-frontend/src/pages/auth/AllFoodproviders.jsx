@@ -1,8 +1,6 @@
-
-
 import React, { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
-import { SearchIcon, StarIcon, MapPinIcon } from 'lucide-react'
+import { Search, Star, MapPin, Filter, X, Loader2, ArrowRight } from 'lucide-react'
 import CustomerNavBar from '../../components/auth/CustomerNavBar'
 import FoodProvidersAPI, { getApiBaseUrl } from '../../services/FoodProvidersAPI'
 import reviewsAPI from '../../services/reviewsAPI'
@@ -14,6 +12,7 @@ const FoodProvidersPage = () => {
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedCategory, setSelectedCategory] = useState('All')
   const [providersWithReviews, setProvidersWithReviews] = useState([])
+  const [showFilters, setShowFilters] = useState(false)
 
   // Load providers from API
   useEffect(() => {
@@ -25,8 +24,6 @@ const FoodProvidersPage = () => {
         if (result.success && result.data?.providers) {
           setProviders(result.data.providers)
           setError(null)
-          
-          // Load review data for each provider
           await loadProvidersReviewData(result.data.providers)
         } else {
           setError(result.error || 'Failed to load providers')
@@ -45,37 +42,31 @@ const FoodProvidersPage = () => {
   // Load review data for all providers
   const loadProvidersReviewData = async (providersList) => {
     try {
-      // Create an array to store providers with their review data
       const providersWithReviewData = await Promise.all(
         providersList.map(async (provider) => {
           try {
-            // Fetch review data for this provider
             const reviewResult = await reviewsAPI.getProviderReviews(provider.id, {
               page: 1,
-              page_size: 1 // We only need summary data, not individual reviews
+              page_size: 1
             })
             
             if (reviewResult.success && reviewResult.data?.results) {
               const { reviews_summary } = reviewResult.data.results
-              
               return {
                 ...provider,
                 rating: reviews_summary?.average_rating || provider.rating || 0,
                 total_reviews: reviews_summary?.total_reviews || 0,
                 rating_distribution: reviews_summary?.rating_distribution || null
               }
-            } else {
-              // If API fails, keep original provider data with fallback rating
-              return {
-                ...provider,
-                rating: provider.rating || 0,
-                total_reviews: 0,
-                rating_distribution: null
-              }
+            }
+            return {
+              ...provider,
+              rating: provider.rating || 0,
+              total_reviews: 0,
+              rating_distribution: null
             }
           } catch (error) {
             console.error(`Error loading reviews for provider ${provider.business_name}:`, error)
-            // Return provider with fallback data on error
             return {
               ...provider,
               rating: provider.rating || 0,
@@ -89,7 +80,6 @@ const FoodProvidersPage = () => {
       setProvidersWithReviews(providersWithReviewData)
     } catch (error) {
       console.error('Error loading providers review data:', error)
-      // Fallback to original providers if review loading fails
       setProvidersWithReviews(providersList.map(provider => ({
         ...provider,
         rating: provider.rating || 0,
@@ -104,20 +94,13 @@ const FoodProvidersPage = () => {
     const baseUrl = getApiBaseUrl()
     
     if (provider.banner) {
-      if (provider.banner.startsWith('http')) {
-        return provider.banner
-      }
-      return `${baseUrl}${provider.banner}`
+      return provider.banner.startsWith('http') ? provider.banner : `${baseUrl}${provider.banner}`
     }
     
     if (provider.logo) {
-      if (provider.logo.startsWith('http')) {
-        return provider.logo
-      }
-      return `${baseUrl}${provider.logo}`
+      return provider.logo.startsWith('http') ? provider.logo : `${baseUrl}${provider.logo}`
     }
     
-    // Fallback to a generic food provider image
     return 'src/assets/images/SnB_leaf_icon.png'
   }
 
@@ -129,55 +112,34 @@ const FoodProvidersPage = () => {
     'All',
     ...new Set(
       dataToFilter
-        .filter(provider => provider.business_tags && provider.business_tags.length > 0)
+        .filter(provider => provider.business_tags?.length > 0)
         .flatMap(provider => provider.business_tags)
     )
-  ]
+  ].sort()
 
   // Filter providers based on search and category
   const filteredProviders = dataToFilter.filter((provider) => {
-    const matchesSearch =
+    const matchesSearch = searchQuery === '' ||
       provider.business_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      (provider.business_description && provider.business_description.toLowerCase().includes(searchQuery.toLowerCase())) ||
-      (provider.business_tags && provider.business_tags.some(tag => 
-        tag.toLowerCase().includes(searchQuery.toLowerCase())
-      ))
+      provider.business_description?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      provider.business_tags?.some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase()))
     
-    const matchesCategory =
-      selectedCategory === 'All' ||
-      (provider.business_tags && provider.business_tags.includes(selectedCategory))
+    const matchesCategory = selectedCategory === 'All' ||
+      provider.business_tags?.includes(selectedCategory)
     
     return matchesSearch && matchesCategory
   })
 
-  // Helper function to format rating display
-  const formatRating = (rating) => {
-    if (typeof rating === 'number') {
-      return rating.toFixed(1)
-    }
-    return '0' // Fallback
-  }
-
-  // Helper function to get review count text
-  const getReviewCountText = (totalReviews) => {
-    if (totalReviews === 0) {
-      return 'No reviews yet'
-    } else if (totalReviews === 1) {
-      return '1 review'
-    } else {
-      return `${totalReviews} reviews`
-    }
-  }
-
-  // Loading state - matches FoodListings pattern
+  // Loading state
   if (loading && filteredProviders.length === 0) {
     return (
-      <div className="bg-gray-50 dark:bg-gray-900 min-h-screen w-full transition-colors duration-300">
+      <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white dark:from-gray-900 dark:to-gray-800 transition-colors duration-300">
         <CustomerNavBar />
         <div className="flex items-center justify-center min-h-[60vh]">
           <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-600 mx-auto mb-4"></div>
-            <p className="text-gray-600 dark:text-gray-200">Loading food providers...</p>
+            <div className="animate-spin rounded-full h-12 w-12 border-4 border-emerald-500 border-t-transparent mx-auto mb-4"></div>
+            <p className="text-gray-600 dark:text-gray-300 text-lg font-medium">Loading food providers...</p>
+            <p className="text-gray-400 dark:text-gray-500 text-sm mt-1">Finding the best local options for you</p>
           </div>
         </div>
       </div>
@@ -187,24 +149,27 @@ const FoodProvidersPage = () => {
   // Error state
   if (error) {
     return (
-      <div className="bg-gray-50 dark:bg-gray-900 min-h-screen w-full transition-colors duration-300">
+      <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white dark:from-gray-900 dark:to-gray-800 transition-colors duration-300">
         <CustomerNavBar />
-        <div className="max-w-6xl mx-auto p-4 md:p-6">
-          <div className="mb-8">
-            <h1 className="text-3xl font-bold text-gray-800 dark:text-gray-100 mb-2">
-              Food Providers
-            </h1>
-            <p className="text-red-600 dark:text-red-400">{error}</p>
-          </div>
-          
-          <div className="text-center py-12">
-            <p className="text-xl text-gray-600 dark:text-gray-300 mb-4">Unable to load providers</p>
-            <button 
-              onClick={() => window.location.reload()} 
-              className="px-4 py-2 bg-emerald-600 text-white rounded-md hover:bg-emerald-700 transition-colors"
-            >
-              Try Again
-            </button>
+        <div className="max-w-7xl mx-auto p-4 md:p-6">
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 border border-red-100 dark:border-red-900/50">
+            <div className="text-center py-8">
+              <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100 dark:bg-red-900/30">
+                <X className="h-6 w-6 text-red-600 dark:text-red-400" />
+              </div>
+              <h3 className="mt-3 text-lg font-medium text-gray-900 dark:text-white">Something went wrong</h3>
+              <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
+                We're having trouble loading the food providers. Please try again.
+              </p>
+              <div className="mt-6">
+                <button
+                  onClick={() => window.location.reload()}
+                  className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-emerald-600 hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 transition-colors"
+                >
+                  Try Again
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -212,136 +177,142 @@ const FoodProvidersPage = () => {
   }
 
   return (
-    <div className="bg-gray-50 dark:bg-gray-900 min-h-screen w-full transition-colors duration-300">
+    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white dark:from-gray-900 dark:to-gray-800 transition-colors duration-300">
       <CustomerNavBar />
-      <div className="max-w-6xl mx-auto p-4 md:p-6">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-800 dark:text-gray-100 mb-2">
-            Food Providers
-          </h1>
-          <p className="text-gray-600 dark:text-gray-300">
-            Discover local businesses committed to reducing food waste
-          </p>
-        </div>
-
-        {/* Search and Filter */}
-        <div className="mb-8">
-          <div className="flex flex-col md:flex-row gap-4">
+      
+      {/* Search and Filter */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 pb-4">
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-4 mb-6 border border-gray-100 dark:border-gray-700">
+          <div className="flex flex-col space-y-4 md:space-y-0 md:flex-row md:items-center gap-4">
             <div className="relative flex-grow">
+              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <Search className="h-5 w-5 text-gray-400" />
+              </div>
               <input
                 type="text"
-                placeholder="Search providers..."
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md focus:ring-emerald-500 focus:border-emerald-500 bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-100"
+                placeholder="Search providers by name, cuisine, or location..."
+                className="block w-full pl-10 pr-4 py-3 border border-gray-200 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-400 transition-all duration-200"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
-              <SearchIcon
-                size={20}
-                className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-gray-500"
-              />
             </div>
-            <div className="md:w-64">
-              <select
-                className="w-full p-2 border border-gray-300 dark:border-gray-700 rounded-md focus:ring-emerald-500 focus:border-emerald-500 bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-100"
-                value={selectedCategory}
-                onChange={(e) => setSelectedCategory(e.target.value)}
-              >
-                {allCategories.map((category) => (
-                  <option key={category} value={category}>
-                    {category}
-                  </option>
-                ))}
-              </select>
+            
+            <div className="w-full md:w-auto">
+              <div className="relative">
+                <select
+                  className="appearance-none w-full bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl pl-4 pr-10 py-3 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all duration-200 cursor-pointer"
+                  value={selectedCategory}
+                  onChange={(e) => setSelectedCategory(e.target.value)}
+                >
+                  {allCategories.map((category) => (
+                    <option key={category} value={category} className="bg-white dark:bg-gray-800">
+                      {category === 'All' ? 'All Categories' : category}
+                    </option>
+                  ))}
+                </select>
+                <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700 dark:text-gray-300">
+                  <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
+                  </svg>
+                </div>
+              </div>
             </div>
           </div>
         </div>
+      </div>
 
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-12">
         {/* Show loading indicator while providers are being updated */}
         {loading && filteredProviders.length > 0 && (
-          <div className="mb-4 text-center">
-            <div className="inline-flex items-center px-3 py-2 sm:px-4 sm:py-2 bg-emerald-50 dark:bg-emerald-900 text-emerald-600 dark:text-emerald-200 rounded-md text-sm transition-colors duration-300">
-              <div className="animate-spin rounded-full h-3 w-3 sm:h-4 sm:w-4 border-b-2 border-emerald-600 mr-2"></div>
+          <div className="mb-6 flex items-center justify-center">
+            <div className="inline-flex items-center px-4 py-2.5 rounded-full bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 text-sm font-medium">
+              <Loader2 className="animate-spin -ml-1 mr-2 h-4 w-4" />
               Updating providers...
             </div>
           </div>
         )}
 
         {/* Providers Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredProviders.map((provider) => (
-            <Link
-              to={`/provider/${provider.id}`}
-              key={provider.id}
-              className="bg-white dark:bg-gray-800 rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow"
-            >
-              <div className="relative h-48">
-                <img
-                  src={getProviderImage(provider)}
-                  alt={provider.business_name}
-                  className="w-full h-full object-cover"
-                  onError={(e) => {
-                    e.target.src = 'src/assets/images/SnB_leaf_icon.png'
-                  }}
-                />
-              </div>
-              <div className="p-4">
-                <h3 className="font-semibold text-lg text-gray-800 dark:text-gray-100">
-                  {provider.business_name}
-                </h3>
-                <p className="text-gray-600 dark:text-gray-300 text-sm mt-1 line-clamp-2">
-                  {provider.business_description || 'Local food provider committed to reducing waste'}
-                </p>
-
-                <div className="flex items-center mt-2">
-                  <div className="flex items-center text-amber-500">
-                    <StarIcon size={16} className="fill-current" />
-                    <span className="ml-1 text-sm">{formatRating(provider.rating)}</span>
+        {filteredProviders.length > 0 ? (
+          <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4">
+            {filteredProviders.map((provider) => (
+              <Link
+                to={`/provider/${provider.id}`}
+                key={provider.id}
+                className="group bg-white dark:bg-gray-800 rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-all duration-200 border border-gray-100 dark:border-gray-700/50 flex flex-col h-full"
+              >
+                <div className="relative pt-[70%] sm:pt-[75%] overflow-hidden">
+                  <img
+                    src={getProviderImage(provider)}
+                    alt={provider.business_name}
+                    className="absolute inset-0 w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                    onError={(e) => {
+                      e.target.src = 'src/assets/images/SnB_leaf_icon.png'
+                      e.target.className = 'absolute inset-0 w-full h-full object-contain p-6 bg-gray-50 dark:bg-gray-700/30 transition-transform duration-300 group-hover:scale-105'
+                    }}
+                  />
+                  <div className="absolute top-1.5 right-1.5 bg-white/90 dark:bg-gray-900/90 backdrop-blur-sm text-xs font-medium px-2 py-1 rounded-full shadow-sm">
+                    <div className="flex items-center">
+                      <Star className="h-3 w-3 text-amber-500 fill-amber-500 mr-0.5" />
+                      <span className="font-semibold">{provider.rating?.toFixed(1) || 'N/A'}</span>
+                    </div>
                   </div>
-                  <span className="mx-2 text-gray-300 dark:text-gray-700">•</span>
-                  <span className="text-sm text-gray-600 dark:text-gray-300">
-                    {getReviewCountText(provider.total_reviews)}
-                  </span>
                 </div>
-                
-                {provider.business_address && (
-                  <div className="flex items-center mt-2 text-gray-600 dark:text-gray-300">
-                    <MapPinIcon size={14} className="mr-1" />
-                    <span className="text-xs truncate">{provider.business_address}</span>
-                  </div>
-                )}
-                
-                <div className="flex flex-wrap gap-1 mt-3">
-                  {provider.business_tags && provider.business_tags.slice(0, 3).map((tag) => (
-                    <span
-                      key={tag}
-                      className="px-2 py-1 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 text-xs rounded-full"
-                    >
-                      {tag}
-                    </span>
-                  ))}
-                  {(!provider.business_tags || provider.business_tags.length === 0) && (
-                    <span className="px-2 py-1 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 text-xs rounded-full">
-                      Food Provider
-                    </span>
+                <div className="p-2 sm:p-3 flex-grow flex flex-col">
+                  <h3 className="text-sm font-medium text-gray-900 dark:text-white group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors line-clamp-2 mb-1">
+                    {provider.business_name}
+                  </h3>
+                  
+                  {provider.business_address && (
+                    <div className="flex items-center text-gray-500 dark:text-gray-400 text-xs mt-auto">
+                      <MapPin className="h-3 w-3 mr-1 flex-shrink-0" />
+                      <span className="truncate">{provider.business_address.split(',')[0]}</span>
+                    </div>
+                  )}
+
+                  {provider.business_tags?.length > 0 && (
+                    <div className="mt-1.5 flex flex-wrap gap-1">
+                      {provider.business_tags.slice(0, 2).map((tag, index) => (
+                        <span 
+                          key={index}
+                          className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300"
+                        >
+                          {tag}
+                        </span>
+                      ))}
+                      {provider.business_tags.length > 2 && (
+                        <span className="text-[10px] text-gray-400 dark:text-gray-500">
+                          +{provider.business_tags.length - 2}
+                        </span>
+                      )}
+                    </div>
                   )}
                 </div>
-                <div className="mt-3 text-sm text-gray-600 dark:text-gray-300">
-                  {provider.active_listings_count || 0} items available
-                </div>
-              </div>
-            </Link>
-          ))}
-        </div>
-
-        {/* Empty state */}
-        {filteredProviders.length === 0 && !loading && (
-          <div className="text-center py-12 bg-white dark:bg-gray-800 rounded-lg shadow-sm transition-colors duration-300">
-            <p className="text-xl text-gray-600 dark:text-gray-300 mb-4">
-              No providers found
+              </Link>
+            ))}
+          </div>
+        ) : (
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-8 sm:p-12 text-center border border-gray-100 dark:border-gray-700">
+            <div className="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-gray-100 dark:bg-gray-700 mb-4">
+              <Search className="h-8 w-8 text-gray-400" />
+            </div>
+            <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-1">No providers found</h3>
+            <p className="text-gray-500 dark:text-gray-400 mb-6">
+              {searchQuery || selectedCategory !== 'All' 
+                ? 'Try adjusting your search or filter criteria.'
+                : 'There are currently no food providers available.'}
             </p>
-            <p className="text-gray-500 dark:text-gray-400">
-              Try adjusting your search or filter
-            </p>
+            {(searchQuery || selectedCategory !== 'All') && (
+              <button
+                onClick={() => {
+                  setSearchQuery('')
+                  setSelectedCategory('All')
+                }}
+                className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-lg shadow-sm text-white bg-emerald-600 hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 transition-colors"
+              >
+                Clear all filters
+              </button>
+            )}
           </div>
         )}
       </div>

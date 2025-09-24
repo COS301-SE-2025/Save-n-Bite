@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState, useRef } from 'react';
 
 import { ChevronLeft, ChevronRight, Star } from 'lucide-react';
@@ -297,16 +296,24 @@ const FoodProviderCarousel = () => {
 
   return (
     <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-100 dark:border-gray-700 p-6 transition-colors">
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
         <div>
-          <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-100 mb-2">
+          <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-100 mb-1">
             Shop by Food Provider
           </h2>
-          <p className="text-gray-600 dark:text-gray-300">
+          <p className="text-gray-600 dark:text-gray-300 text-sm">
             Discover your favorite local businesses and their available food
           </p>
         </div>
-
+        <Link
+          to="/providers"
+          className="inline-flex items-center justify-center px-4 py-2 bg-white dark:bg-gray-800 border border-emerald-600 dark:border-emerald-500 text-emerald-600 dark:text-emerald-400 text-sm font-medium rounded-md hover:bg-emerald-50 dark:hover:bg-emerald-900/30 transition-colors whitespace-nowrap"
+        >
+          View All Providers
+          <svg className="w-4 h-4 ml-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+          </svg>
+        </Link>
       </div>
 
       <div className="relative overflow-hidden">
