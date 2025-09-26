@@ -262,7 +262,7 @@ def food_listing_pickup_schedules(request):
 @permission_classes([IsAuthenticated])
 def generate_time_slots(request):
     """Generate time slots for a food listing on a specific date"""
-    if request.user.user_type != 'provider':
+    if request.user.user_type not in ['provider', 'customer', 'ngo']:
         return Response({
             'error': {
                 'code': 'FORBIDDEN',
@@ -664,42 +664,116 @@ def schedule_pickup(request):
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
+# def customer_pickups(request):
+#     """Get customer's scheduled pickups"""
+#     if request.user.user_type not in ['customer', 'ngo']:
+#         return Response({
+#             'error': {
+#                 'code': 'FORBIDDEN',
+#                 'message': 'Only customers and NGOs can view their pickups'
+#             }
+#         }, status=status.HTTP_403_FORBIDDEN)
+
+#     # Filter parameters
+#     status_filter = request.query_params.get('status')
+#     upcoming_only = request.query_params.get('upcoming', 'false').lower() == 'true'
+    
+#     pickups = ScheduledPickup.objects.filter(
+#         order__interaction__user=request.user
+#     ).select_related('food_listing', 'location', 'order', 'order__interaction').order_by('-scheduled_date', '-scheduled_start_time')
+    
+#     if status_filter:
+#         pickups = pickups.filter(status=status_filter)
+    
+#     if upcoming_only:
+#         pickups = pickups.filter(
+#             scheduled_date__gte=timezone.now().date()
+#         )
+    
+#     # Pagination
+#     paginator = PickupPagination()
+#     paginated_pickups = paginator.paginate_queryset(pickups, request)
+    
+#     # Create simple response without using the problematic serializer
+#     pickup_data = []
+#     for pickup in paginated_pickups:
+#         pickup_data.append({
+#             'id': str(pickup.id),
+#             'interaction_id': str(pickup.order.interaction.id),  # Added this line
+#             'scheduled_date': pickup.scheduled_date,
+#             'scheduled_start_time': pickup.scheduled_start_time,
+#             'scheduled_end_time': pickup.scheduled_end_time,
+#             'status': pickup.status,
+#             'confirmation_code': pickup.confirmation_code,
+#             'food_listing': {
+#                 'id': str(pickup.food_listing.id),
+#                 'name': pickup.food_listing.name,
+#                 'pickup_window': pickup.food_listing.pickup_window,
+#                 'expiry_date': pickup.food_listing.expiry_date
+#             },
+#             'business': {
+#                 'id': str(pickup.location.business.id),
+#                 'business_name': pickup.location.business.business_name,
+#                 'business_address': pickup.location.business.business_address,
+#                 'business_contact': pickup.location.business.business_contact
+#             },
+#             'location': {
+#                 'id': str(pickup.location.id),
+#                 'name': pickup.location.name,
+#                 'address': pickup.location.address,
+#                 'instructions': pickup.location.instructions,
+#                 'contact_person': pickup.location.contact_person,
+#                 'contact_phone': pickup.location.contact_phone
+#             },
+            
+#             'customer_notes': pickup.customer_notes,
+#             'is_upcoming': pickup.is_upcoming,
+#             'is_today': pickup.is_today
+#         })
+    
+#     return paginator.get_paginated_response({
+#         'pickups': pickup_data
+#     })
+
 def customer_pickups(request):
-    """Get customer's scheduled pickups"""
+    """Get customer's scheduled pickups with email and phone included"""
     if request.user.user_type not in ['customer', 'ngo']:
         return Response({
             'error': {
                 'code': 'FORBIDDEN',
                 'message': 'Only customers and NGOs can view their pickups'
             }
-        }, status=status.HTTP_403_FORBIDDEN)
+        }, status=403)
 
     # Filter parameters
     status_filter = request.query_params.get('status')
     upcoming_only = request.query_params.get('upcoming', 'false').lower() == 'true'
-    
+
     pickups = ScheduledPickup.objects.filter(
         order__interaction__user=request.user
-    ).select_related('food_listing', 'location', 'order', 'order__interaction').order_by('-scheduled_date', '-scheduled_start_time')
-    
+    ).select_related(
+        'food_listing', 'location', 'order', 'order__interaction'
+    ).order_by('-scheduled_date', '-scheduled_start_time')
+
     if status_filter:
         pickups = pickups.filter(status=status_filter)
-    
+
     if upcoming_only:
-        pickups = pickups.filter(
-            scheduled_date__gte=timezone.now().date()
-        )
-    
+        pickups = pickups.filter(scheduled_date__gte=timezone.now().date())
+
     # Pagination
     paginator = PickupPagination()
     paginated_pickups = paginator.paginate_queryset(pickups, request)
-    
-    # Create simple response without using the problematic serializer
+
     pickup_data = []
     for pickup in paginated_pickups:
+        # Define user and customer_profile for each pickup
+        user = pickup.order.interaction.user
+        customer_profile = getattr(user, 'customer_profile', None)
+
         pickup_data.append({
             'id': str(pickup.id),
-            'interaction_id': str(pickup.order.interaction.id),  # Added this line
+            'interaction_id': str(pickup.order.interaction.id),
             'scheduled_date': pickup.scheduled_date,
             'scheduled_start_time': pickup.scheduled_start_time,
             'scheduled_end_time': pickup.scheduled_end_time,
@@ -725,16 +799,18 @@ def customer_pickups(request):
                 'contact_person': pickup.location.contact_person,
                 'contact_phone': pickup.location.contact_phone
             },
+            'customer': {
+                'id': str(user.id),
+                'full_name': customer_profile.full_name if customer_profile else '',
+                'email': user.email,
+                'phone': user.phone_number if hasattr(user, 'phone_number') else ''
+            },
             'customer_notes': pickup.customer_notes,
             'is_upcoming': pickup.is_upcoming,
             'is_today': pickup.is_today
         })
-    
-    return paginator.get_paginated_response({
-        'pickups': pickup_data
-    })
 
-
+    return paginator.get_paginated_response({'pickups': pickup_data})
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def pickup_details(request, pickup_id):
@@ -1026,3 +1102,99 @@ def pickup_locations_public(request, business_id):
                 'message': 'Business not found'
             }
         }, status=status.HTTP_404_NOT_FOUND)
+    
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def verify_pickup_code(request):
+    """Verify pickup confirmation code"""
+    if request.user.user_type != 'provider':
+        return Response({
+            'error': {
+                'code': 'FORBIDDEN',
+                'message': 'Only food providers can verify pickup codes'
+            }
+        }, status=status.HTTP_403_FORBIDDEN)
+
+    business = request.user.provider_profile
+    serializer = PickupVerificationSerializer(
+        data=request.data,
+        context={'business': business}
+    )
+    
+    if serializer.is_valid():
+        try:
+            pickup = PickupSchedulingService.verify_pickup_code(
+                serializer.validated_data['confirmation_code'],
+                business
+            )
+            
+            # NEW: Send order ready notification
+            try:
+                from notifications.services import NotificationService
+                NotificationService.send_order_ready_notification(pickup)
+                logger.info(f"Order ready notification sent for pickup {pickup.confirmation_code}")
+            except Exception as e:
+                logger.error(f"Failed to send order ready notification: {str(e)}")
+                # Don't fail the verification if notification fails
+            
+            # Create manual response to avoid serializer issues
+            user = pickup.order.interaction.user
+            customer_profile = getattr(user, 'customer_profile', None)
+            
+            pickup_data = {
+                'id': str(pickup.id),
+                'order': str(pickup.order.id),
+                'food_listing': {
+                    'id': str(pickup.food_listing.id),
+                    'name': pickup.food_listing.name,
+                    'description': pickup.food_listing.description,
+                    'quantity': sum(item.quantity for item in pickup.order.interaction.items.all()),
+                    'pickup_window': pickup.food_listing.pickup_window
+                },
+                'location': {
+                    'id': str(pickup.location.id),
+                    'name': pickup.location.name,
+                    'address': pickup.location.address,
+                    'instructions': pickup.location.instructions,
+                    'contact_person': pickup.location.contact_person,
+                    'contact_phone': pickup.location.contact_phone
+                },
+                'scheduled_date': pickup.scheduled_date,
+                'scheduled_start_time': pickup.scheduled_start_time,
+                'scheduled_end_time': pickup.scheduled_end_time,
+                'status': pickup.status,
+                'confirmation_code': pickup.confirmation_code,
+                'customer': {
+                    'id': str(user.id),
+                    'full_name': customer_profile.full_name if customer_profile else '',
+                    'email': user.email,
+                    'phone': user.phone_number if hasattr(user, 'phone_number') else ''
+                },
+                'customer_notes': pickup.customer_notes,
+                'business_notes': pickup.business_notes,
+                'is_upcoming': pickup.is_upcoming,
+                'is_today': pickup.is_today,
+                'created_at': pickup.created_at,
+                'updated_at': pickup.updated_at
+            }
+            
+            return Response({
+                'message': 'Pickup verified successfully and customer notified',
+                'pickup': pickup_data
+            }, status=status.HTTP_200_OK)
+            
+        except Exception as e:
+            return Response({
+                'error': {
+                    'code': 'VERIFICATION_ERROR',
+                    'message': str(e)
+                }
+            }, status=status.HTTP_400_BAD_REQUEST)
+    
+    return Response({
+        'error': {
+            'code': 'VALIDATION_ERROR',
+            'message': 'Invalid verification data',
+            'details': serializer.errors
+        }
+    }, status=status.HTTP_400_BAD_REQUEST)

@@ -1,8 +1,10 @@
+// pages/SystemAdmin/SystemLogs.jsx - ENHANCED with Prac 2 Algorithm
 import React, { useState, useEffect } from 'react'
 import SystemLogFilters from '../../components/SystemAdmin/System/SystemLogFilters'
 import SystemLogTable from '../../components/SystemAdmin/System/SystemLogTable'
 import SystemLogDetails from '../../components/SystemAdmin/System/SystemLogDetails'
 import ResolveLogModal from '../../components/SystemAdmin/System/ResolveLogModal'
+import AnomalyDetectionCard from '../../components/SystemAdmin/System/AnomalyDetectionCard'
 import AdminAPI from '../../services/AdminAPI'
 import { apiClient } from '../../services/FoodAPI.js'
 import { toast } from 'sonner'
@@ -12,12 +14,15 @@ import {
   AlertTriangleIcon,
   InfoIcon,
   RefreshCwIcon,
-  DownloadIcon
+  DownloadIcon,
+  ShieldAlertIcon
 } from 'lucide-react'
 
 const SystemLogs = () => {
   const [logs, setLogs] = useState([])
+  const [anomalies, setAnomalies] = useState([])
   const [loading, setLoading] = useState(true)
+  const [anomaliesLoading, setAnomaliesLoading] = useState(true)
   const [error, setError] = useState(null)
   const [selectedLog, setSelectedLog] = useState(null)
   const [showDetailsModal, setShowDetailsModal] = useState(false)
@@ -38,10 +43,10 @@ const SystemLogs = () => {
 
   // Authentication setup
   useEffect(() => {
-    setupAuthAndFetchLogs()
+    setupAuthAndFetchData()
   }, [])
 
-  const setupAuthAndFetchLogs = async () => {
+  const setupAuthAndFetchData = async () => {
     try {
       const token = localStorage.getItem('adminToken')
       if (!token) {
@@ -49,12 +54,17 @@ const SystemLogs = () => {
       }
       apiClient.defaults.headers.common['Authorization'] = `Bearer ${token}`
       
-      await fetchSystemLogs()
+      // Load both system logs and anomalies
+      await Promise.all([
+        fetchSystemLogs(),
+        fetchAnomalies()
+      ])
       
     } catch (error) {
       console.error('Authentication setup error:', error)
       setError('Authentication failed. Please log in again.')
       setLoading(false)
+      setAnomaliesLoading(false)
     }
   }
 
@@ -90,17 +100,6 @@ const SystemLogs = () => {
       const status = statusFilter === 'All' ? '' : statusFilter.toLowerCase()
       const category = serviceFilter === 'All' ? '' : serviceFilter.toLowerCase()
 
-      console.log('API call parameters:', {
-        page: Number(currentPage) || 1,
-        search,
-        severity,
-        status,
-        category,
-        startDate,
-        endDate,
-        perPage: 20
-      })
-      
       // Build query parameters for the API call
       const params = new URLSearchParams({
         page: (Number(currentPage) || 1).toString(),
@@ -114,19 +113,16 @@ const SystemLogs = () => {
       if (startDate) params.append('start_date', startDate)
       if (endDate) params.append('end_date', endDate)
 
-      // Make direct API call since AdminAPI method may need parameter adjustment
+      // Make API call
       const response = await apiClient.get(`/api/admin/logs/system/?${params.toString()}`)
-      
-      console.log('Raw API response:', response.data)
-      console.log('Individual logs from API:', response.data.logs)
       
       if (response.data.logs) {
         // Transform backend data to frontend format
         const transformedLogs = response.data.logs.map(log => ({
           id: log.id,
-          level: (log.severity || 'info').toUpperCase(),    // severity -> level
-          message: log.title || log.description || 'No message',  // title -> message
-          service: log.category || 'unknown',               // category -> service
+          level: (log.severity || 'info').toUpperCase(),
+          message: log.title || log.description || 'No message',
+          service: log.category || 'unknown',
           timestamp: log.timestamp,
           status: log.status || 'open',
           description: log.description,
@@ -134,18 +130,13 @@ const SystemLogs = () => {
           resolved_by_name: log.resolved_by_name,
           resolution_notes: log.resolution_notes,
           resolved_at: log.resolved_at,
-          // Map backend fields for modals
           title: log.title,
           severity: log.severity,
           category: log.category,
           details: log.description,
           stack: log.error_details ? JSON.stringify(log.error_details, null, 2) : null,
-          // Keep original data for reference
           originalData: log
         }))
-        
-        console.log('Transformed logs:', transformedLogs)
-        console.log('First transformed log:', transformedLogs[0])
         
         setLogs(transformedLogs)
         setCurrentPage(Number(response.data.pagination.current_page) || 1)
@@ -163,6 +154,30 @@ const SystemLogs = () => {
       setError(err.response?.data?.error?.message || err.message || 'Failed to fetch system logs')
     } finally {
       setLoading(false)
+    }
+  }
+
+  /**
+   * Fetch anomalies using the enhanced Prac 2 algorithm
+   */
+  const fetchAnomalies = async () => {
+    try {
+      setAnomaliesLoading(true)
+      
+      const response = await AdminAPI.getSecurityAnomalies()
+      
+      if (response.success) {
+        setAnomalies(response.data.anomalies || [])
+      } else {
+        console.error('Failed to fetch anomalies:', response.error)
+        setAnomalies([])
+      }
+      
+    } catch (err) {
+      console.error('Anomalies fetch error:', err)
+      setAnomalies([])
+    } finally {
+      setAnomaliesLoading(false)
     }
   }
 
@@ -193,54 +208,11 @@ const SystemLogs = () => {
   }
 
   /**
-   * Handle export functionality
-   */
-  const handleExport = async () => {
-    try {
-      // Convert filters for export
-      let startDate = ''
-      let endDate = ''
-      
-      if (statusFilter === 'Today') {
-        startDate = new Date().toISOString().split('T')[0]
-        endDate = startDate
-      } else if (statusFilter === 'This Week') {
-        const weekAgo = new Date()
-        weekAgo.setDate(weekAgo.getDate() - 7)
-        startDate = weekAgo.toISOString().split('T')[0]
-        endDate = new Date().toISOString().split('T')[0]
-      } else if (statusFilter === 'This Month') {
-        const monthAgo = new Date()
-        monthAgo.setMonth(monthAgo.getMonth() - 1)
-        startDate = monthAgo.toISOString().split('T')[0]
-        endDate = new Date().toISOString().split('T')[0]
-      }
-
-      const response = await AdminAPI.exportData('system_logs', startDate, endDate)
-
-      if (response.success) {
-        // Create download link for the exported file
-        const url = window.URL.createObjectURL(new Blob([response.data]))
-        const link = document.createElement('a')
-        link.href = url
-        link.download = `system_logs_${new Date().toISOString().split('T')[0]}.csv`
-        link.click()
-        window.URL.revokeObjectURL(url)
-        toast.success('System logs exported successfully')
-      } else {
-        toast.error('Failed to export system logs')
-      }
-    } catch (err) {
-      console.error('Export error:', err)
-      toast.error('Failed to export system logs')
-    }
-  }
-
-  /**
    * Handle refresh
    */
   const handleRefresh = () => {
     fetchSystemLogs()
+    fetchAnomalies()
     toast.success('System logs refreshed')
   }
 
@@ -250,7 +222,7 @@ const SystemLogs = () => {
   const handleRetry = async () => {
     setLoading(true)
     setError(null)
-    await fetchSystemLogs()
+    await setupAuthAndFetchData()
   }
 
   /**
@@ -272,25 +244,10 @@ const SystemLogs = () => {
     setShowResolveModal(true)
   }
 
-  // Get unique services for filter from current logs - FIXED
+  // Get unique services for filter from current logs
   const services = ['All', ...Array.from(new Set(logs.map(log => log.service).filter(Boolean)))]
 
-  const getSeverityIcon = (severity) => {
-    switch (severity) {
-      case 'critical':
-        return <AlertCircleIcon className="w-5 h-5 text-red-600" />
-      case 'error':
-        return <AlertTriangleIcon className="w-5 h-5 text-red-500" />
-      case 'warning':
-        return <AlertTriangleIcon className="w-5 h-5 text-yellow-500" />
-      case 'info':
-        return <InfoIcon className="w-5 h-5 text-blue-500" />
-      default:
-        return <InfoIcon className="w-5 h-5 text-gray-500" />
-    }
-  }
-
-  if (loading) {
+  if (loading && anomaliesLoading) {
     return (
       <div className="space-y-6">
         <div className="flex items-center justify-between">
@@ -309,7 +266,7 @@ const SystemLogs = () => {
         <div className="flex items-center justify-center h-64">
           <div className="flex flex-col items-center space-y-3">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-            <div className="text-gray-500">Loading system logs...</div>
+            <div className="text-gray-500">Loading system logs and anomaly detection...</div>
           </div>
         </div>
       </div>
@@ -343,7 +300,7 @@ const SystemLogs = () => {
       <div className="flex flex-col md:flex-row md:items-center md:justify-between">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">System Logs</h1>
-          <p className="text-gray-500">Monitor system errors, warnings, and issues ({totalCount} total logs)</p>
+          <p className="text-gray-500">Monitor system errors, warnings, and issues with enhanced anomaly detection ({totalCount} total logs)</p>
         </div>
         <div className="mt-4 md:mt-0 flex space-x-2">
           <button
@@ -352,13 +309,6 @@ const SystemLogs = () => {
           >
             <RefreshCwIcon className="w-4 h-4 mr-2 inline" />
             Refresh
-          </button>
-          <button 
-            onClick={handleExport}
-            className="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
-          >
-            <DownloadIcon className="w-4 h-4 mr-2 inline" />
-            Export
           </button>
         </div>
       </div>
@@ -409,17 +359,20 @@ const SystemLogs = () => {
         <div className="bg-white rounded-lg shadow p-6">
           <div className="flex items-center">
             <div className="flex-shrink-0">
-              <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
-                <InfoIcon className="w-5 h-5 text-blue-600" />
+              <div className="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center">
+                <ShieldAlertIcon className="w-5 h-5 text-purple-600" />
               </div>
             </div>
             <div className="ml-4">
-              <p className="text-sm font-medium text-gray-500">Total Logs</p>
-              <p className="text-2xl font-semibold text-gray-900">{totalCount}</p>
+              <p className="text-sm font-medium text-gray-500">Anomalies</p>
+              <p className="text-2xl font-semibold text-gray-900">{anomalies.length}</p>
             </div>
           </div>
         </div>
       </div>
+
+      {/* Enhanced Anomaly Detection Card */}
+      <AnomalyDetectionCard anomalies={anomalies} />
 
       {/* Show message if no logs */}
       {logs.length === 0 && !loading && !error && (
@@ -536,7 +489,7 @@ const SystemLogs = () => {
       <div className="bg-gray-50 rounded-lg border p-4">
         <div className="flex items-center text-sm text-gray-600">
           <div className={`w-2 h-2 rounded-full mr-2 ${!error ? 'bg-green-500' : 'bg-red-500'}`}></div>
-          {!error ? 'Connected to system log API' : 'API connection failed'}
+          {!error ? 'Connected to system log API with enhanced anomaly detection' : 'API connection failed'}
         </div>
       </div>
     </div>

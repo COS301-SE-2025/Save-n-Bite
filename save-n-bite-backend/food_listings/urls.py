@@ -22,3 +22,14 @@ urlpatterns = [
     path('admin/listings/', admin_views.admin_get_all_listings, name='admin_get_all_listings'),
     path('admin/listings/moderate/', admin_views.admin_moderate_listing, name='admin_moderate_listing'),
 ]
+
+# Alternative URL for food listings admin endpoint
+# Add this to your main food_listings/urls.py:
+"""
+# food_listings/urls.py - Add this endpoint
+
+urlpatterns = [
+    # ... existing patterns ...
+    path('admin/listings/', admin_views.get_all_listings_admin, name='admin_listings'),
+]
+"""

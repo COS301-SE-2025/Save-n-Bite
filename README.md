@@ -162,7 +162,6 @@ save-n-bite/
 
 ---
 
-<<<<<<< HEAD
 <details open>
 <summary><strong>✅ Demo 3 Deliverables (20 August 2025)</strong></summary>
 
@@ -292,6 +291,7 @@ save-n-bite/
 
 ## 📫 Contact Us
  [![Email](https://img.shields.io/badge/Email-swmguild@gmail.com-D14836?logo=gmail)](mailto:swmguild@gmail.com)
+
 
 
 

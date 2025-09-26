@@ -328,83 +328,101 @@ class CheckoutView(APIView):
                 status=status.HTTP_400_BAD_REQUEST
             )
 
-        # Store subtotal before clearing cart
-        order_subtotal = cart.subtotal
-        first_item = cart.items.first()
-        provider_profile = first_item.food_listing.provider.provider_profile
+        # Check if specific items are requested for checkout
+        requested_item_ids = serializer.validated_data.get('items', [])
+        if requested_item_ids:
+            # Filter cart items to only process requested items
+            cart_items_to_process = cart.items.filter(id__in=requested_item_ids)
+            if cart_items_to_process.count() != len(requested_item_ids):
+                return Response(
+                    {'error': 'Some requested items are not in your cart'}, 
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+        else:
+            # Process all cart items
+            cart_items_to_process = cart.items.all()
 
+        # Store total amount for all items being processed
+        total_checkout_amount = sum(
+            item.quantity * item.food_listing.discounted_price 
+            for item in cart_items_to_process
+        )
+
+        created_orders = []
+        
         with db_transaction.atomic():
-            # 1. Create Interaction
-            interaction = Interaction.objects.create(
-                user=request.user,
-                business=provider_profile,
-                interaction_type='Purchase',
-                quantity=cart.total_items,
-                total_amount=order_subtotal,
-                special_instructions=serializer.validated_data.get('specialInstructions', '')
-            )
-
-            # 2. Create Interaction Items and update FoodListing quantities
-            for cart_item in cart.items.all():
-                # Update FoodListing quantity
+            # Create individual interaction and order for each cart item
+            for cart_item in cart_items_to_process:
                 food_listing = cart_item.food_listing
+                provider_profile = food_listing.provider.provider_profile
+                item_total = cart_item.quantity * food_listing.discounted_price
+                
+                # Check quantity availability
                 if food_listing.quantity_available < cart_item.quantity:
                     raise ValidationError(f"Not enough quantity available for {food_listing.name}")
                 
+                # 1. Create individual Interaction for this item
+                interaction = Interaction.objects.create(
+                    user=request.user,
+                    business=provider_profile,
+                    interaction_type='Purchase',
+                    quantity=cart_item.quantity,
+                    total_amount=item_total,
+                    special_instructions=serializer.validated_data.get('specialInstructions', '')
+                )
+
+                # 2. Update FoodListing quantity
                 food_listing.quantity_available -= cart_item.quantity
                 food_listing.save()
 
-                # Create InteractionItem
+                # 3. Create InteractionItem
                 InteractionItem.objects.create(
                     interaction=interaction,
                     food_listing=food_listing,
                     name=food_listing.name,
                     quantity=cart_item.quantity,
                     price_per_item=food_listing.discounted_price,
-                    total_price=cart_item.quantity * food_listing.discounted_price,
+                    total_price=item_total,
                     expiry_date=food_listing.expiry_date,
                     image_url=food_listing.images[0] if food_listing.images else ''
                 )
 
-            # 3. Create Payment
-            payment = Payment.objects.create(
-                interaction=interaction,
-                method=serializer.validated_data['paymentMethod'],
-                amount=order_subtotal,
-                details=serializer.validated_data['paymentDetails'],
-                status=Payment.Status.PENDING
-            )
-
-            # Simulate payment processing
-            if serializer.validated_data['paymentMethod'] != 'cash':
-                payment.status = Payment.Status.COMPLETED
-                payment.processed_at = timezone.now()
-                payment.save()
-            else:
-                payment.status = Payment.Status.COMPLETED
-                payment.processed_at = timezone.now()
-                payment.save()
-
-            # 4. Create Order (only if payment succeeded)
-            if payment.status == Payment.Status.COMPLETED:
-                order = Order.objects.create(
+                # 4. Create individual Payment for this item
+                payment = Payment.objects.create(
                     interaction=interaction,
-                    pickup_window=first_item.food_listing.pickup_window,
-                    pickup_code=str(uuid.uuid4())[:6].upper(),
-                    status=Order.Status.CONFIRMED
+                    method=serializer.validated_data['paymentMethod'],
+                    amount=item_total,
+                    details=serializer.validated_data['paymentDetails'],
+                    status=Payment.Status.PENDING
                 )
 
-                # 5. Clear cart
-                cart.items.all().delete()
+                # Simulate payment processing
+                payment.status = Payment.Status.COMPLETED
+                payment.processed_at = timezone.now()
+                payment.save()
 
-        # Prepare response
+                # 5. Create individual Order (only if payment succeeded)
+                if payment.status == Payment.Status.COMPLETED:
+                    order = Order.objects.create(
+                        interaction=interaction,
+                        pickup_window=food_listing.pickup_window,
+                        pickup_code=str(uuid.uuid4())[:6].upper(),
+                        status=Order.Status.CONFIRMED
+                    )
+                    created_orders.append(order)
+
+            # 6. Remove processed items from cart
+            cart_items_to_process.delete()
+
+        # Prepare response with all created orders
         response_data = CheckoutResponseSerializer({
             'message': 'Checkout successful',
-            'orders': [order] if payment.status == Payment.Status.COMPLETED else [],
+            'orders': created_orders,
             'summary': {
-                'totalAmount': float(order_subtotal),
+                'totalAmount': float(total_checkout_amount),
                 'totalSavings': 0,
-                'paymentStatus': payment.status
+                'paymentStatus': 'completed',
+                'itemsProcessed': len(created_orders)
             }
         }).data
 

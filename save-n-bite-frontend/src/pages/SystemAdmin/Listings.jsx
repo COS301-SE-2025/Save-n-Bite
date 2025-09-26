@@ -78,20 +78,21 @@ const getListings = async () => {
     }
   }
 
-  //UR OVER HERE !!!efq#($y!g$(346247@#)r@#)))
 
-
-
-  const filteredListings = listings.filter((listing) => {
-    const matchesSearch =
-      listing.name.toLowerCase().includes(search.toLowerCase()) ||
-      listing.provider.toLowerCase().includes(search.toLowerCase()) ||
-      listing.id.toLowerCase().includes(search.toLowerCase())
-    const matchesType = typeFilter === 'All' || listing.type === typeFilter
-    const matchesStatus =
-      statusFilter === 'All' || listing.status === statusFilter
-    return matchesSearch && matchesType && matchesStatus
-  })
+const filteredListings = listings.filter((listing) => {
+  const matchesSearch =
+    (listing.name?.toLowerCase() || '').includes(search.toLowerCase()) ||
+    (listing.provider?.toLowerCase() || '').includes(search.toLowerCase()) ||
+    (listing.id?.toLowerCase() || '').includes(search.toLowerCase())
+  
+  const matchesType = typeFilter === 'All' || listing.type === typeFilter
+  
+  // Make sure this matches the backend status values exactly
+  const matchesStatus =
+    statusFilter === 'All' || listing.status === statusFilter
+  
+  return matchesSearch && matchesType && matchesStatus
+})
 
   const handleViewListing = (listing) => {
     setSelectedListing(listing)
@@ -121,43 +122,58 @@ const getListings = async () => {
     setShowConfirmModal(true)
   }
 
-  const executeAction = () => {
-    if (!confirmAction) return
-    
-    const { type, listingId, reason } = confirmAction
+const executeAction = async () => {
+  if (!confirmAction) return
+  
+  const { type, listingId, reason } = confirmAction
 
-    if (type === 'remove') {
-      setListings(
-        listings.map((listing) =>
-          listing.id === listingId
-            ? { 
-                ...listing, 
-                status: 'removed',
-                reason: reason || 'No reason provided'
-              }
-            : listing
+  try {
+    console.log('Processing listing action:', type, listingId, reason)
+
+    // Call the CORRECTED API
+    const response = await AdminAPI.moderateListing(listingId, type, reason)
+
+    if (response.success) {
+      // Update local state after successful API call (same pattern as reviews)
+      if (type === 'flag') {
+        setListings(
+          listings.map((listing) =>
+            listing.id === listingId
+              ? { ...listing, status: 'flagged', admin_flagged: true }
+              : listing
+          )
         )
-      )
-      toast.success(`Listing ${listingId} has been removed`)
-    } else if (type === 'flag') {
-      setListings(
-        listings.map((listing) =>
-          listing.id === listingId
-            ? { 
-                ...listing, 
-                status: 'flagged',
-                reason: reason || 'No reason provided'
-              }
-            : listing
+        toast.success('Listing flagged successfully')
+      } else if (type === 'unflag') {
+        setListings(
+          listings.map((listing) =>
+            listing.id === listingId
+              ? { ...listing, status: 'active', admin_flagged: false }
+              : listing
+          )
         )
-      )
-      toast.success(`Listing ${listingId} has been flagged for review`)
+        toast.success('Listing unflagged successfully')
+      } else if (type === 'remove') {
+        setListings(
+          listings.map((listing) =>
+            listing.id === listingId
+              ? { ...listing, status: 'removed' }
+              : listing
+          )
+        )
+        toast.success('Listing removed successfully')
+      }
+    } else {
+      toast.error(`Failed to ${type} listing: ${response.error}`)
     }
-
-    setShowConfirmModal(false)
+  } catch (error) {
+    console.error(`Error ${type}ing listing:`, error)
+    toast.error(`Failed to ${type} listing`)
+  } finally {
     setConfirmAction(null)
-    setShowListingModal(false)
+    setShowConfirmModal(false)
   }
+}
 
   return (
     <div className="space-y-6">
@@ -211,5 +227,7 @@ const getListings = async () => {
     </div>
   )
 }
+
+
 
 export default Listings

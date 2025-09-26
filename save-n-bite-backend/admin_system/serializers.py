@@ -155,6 +155,19 @@ class ListingModerationSerializer(serializers.Serializer):
     action = serializers.ChoiceField(choices=['remove', 'restore', 'flag'])
     reason = serializers.CharField(required=False, allow_blank=True)
 
+class ListingModerationActionSerializer(serializers.Serializer):
+    """Serializer for listing moderation actions - COPIED from working review moderation"""
+    
+    ACTION_CHOICES = [
+        ('flag', 'Flag'),
+        ('remove', 'Remove'),
+        ('restore', 'Restore'),
+    ]
+    
+    action = serializers.ChoiceField(choices=ACTION_CHOICES)
+    reason = serializers.CharField(max_length=500)
+    moderation_notes = serializers.CharField(max_length=1000, required=False, allow_blank=True)
+
 class SimpleAnalyticsSerializer(serializers.Serializer):
     """Serializer for simple analytics data"""
     total_users = serializers.IntegerField()
@@ -211,6 +224,8 @@ class CustomNotificationSerializer(serializers.Serializer):
         ],
         help_text="Target audience for the notification"
     )
+    
+    # REMOVED: scheduling fields
     
     def validate_subject(self, value):
         """Validate subject line"""
