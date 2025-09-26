@@ -848,7 +848,7 @@ const sortedPickups = [...filteredPickups].sort((a, b) => {
                               disabled={verifyingCode}
                               className="text-sm"
                             >
-                              {verifyingCode ? 'Verifying...' : 'Verify Code'}
+                              {verifyingCode ? 'Verifying...' : 'Mark as ready'}
                             </Button>
                             <Button
                               variant="success"
@@ -859,7 +859,7 @@ const sortedPickups = [...filteredPickups].sort((a, b) => {
                               title={!customerDetails[pickup.id] ? 'Please verify customer first' : ''}
                             >
 
-                              {completingPickup === pickup.id ? 'Completing...' : 'Input confirmation code to mark as Completed'}
+                              {completingPickup === pickup.id ? 'Completing...' : 'Mark as completed'}
 
                             </Button>
                             <Button

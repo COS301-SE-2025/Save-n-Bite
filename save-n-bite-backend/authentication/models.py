@@ -2,6 +2,8 @@
 
 from django.contrib.auth.models import AbstractUser
 from django.db import models
+from django.db.models.signals import post_save
+from django.dispatch import receiver
 import uuid
 from blob_storage import (
     get_customer_profile_storage, get_ngo_document_storage, get_ngo_logo_storage,
@@ -455,3 +457,13 @@ class FoodProviderProfile(models.Model):
         has_tags = bool(self.business_tags and len(self.business_tags) > 0)
         
         return has_description or has_tags  # At least one should be filled for a "complete" profile
+
+@receiver(post_save, sender=User)
+def create_user_profile(sender, instance, created, **kwargs):
+    if created:
+        if instance.user_type == 'customer':
+            CustomerProfile.objects.create(user=instance)
+        elif instance.user_type == 'ngo':
+            NGOProfile.objects.create(user=instance)
+        elif instance.user_type == 'provider':
+            FoodProviderProfile.objects.create(user=instance)

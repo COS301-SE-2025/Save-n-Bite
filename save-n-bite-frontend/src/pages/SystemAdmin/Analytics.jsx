@@ -71,15 +71,17 @@ const Analytics = () => {
     }
   }
 
-  /**
-   * Handle manual refresh
-   */
-  const handleRefresh = async () => {
-    setRefreshing(true)
-    await fetchAnalyticsData()
-    setRefreshing(false)
-    toast.success('Analytics data refreshed')
-  }
+  // Add auto-refresh effect
+  useEffect(() => {
+    // Initial fetch
+    fetchAnalyticsData()
+    
+    // Set up interval for auto-refresh every 3 seconds
+    const intervalId = setInterval(fetchAnalyticsData, 3000)
+    
+    // Clean up interval on component unmount
+    return () => clearInterval(intervalId)
+  }, []) // Empty dependency array means this runs once on mount
 
   /**
    * Handle retry when there's an error
@@ -226,8 +228,15 @@ const Analytics = () => {
 
   if (loading) {
     return (
-      <div className="space-y-6">
-        <AnalyticsHeader timeframe={timeframe} setTimeframe={setTimeframe} />
+      <div className="space-y-8">
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between">
+          <div className="mb-4 md:mb-0">
+            <h1 className="text-2xl font-bold text-gray-900">Analytics Dashboard</h1>
+            <p className="mt-1 text-gray-600">
+              Real-time insights and platform metrics
+            </p>
+          </div>
+        </div>
         <div className="flex items-center justify-center h-64">
           <div className="flex flex-col items-center space-y-3">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
@@ -240,8 +249,15 @@ const Analytics = () => {
 
   if (error) {
     return (
-      <div className="space-y-6">
-        <AnalyticsHeader timeframe={timeframe} setTimeframe={setTimeframe} />
+      <div className="space-y-8">
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between">
+          <div className="mb-4 md:mb-0">
+            <h1 className="text-2xl font-bold text-gray-900">Analytics Dashboard</h1>
+            <p className="mt-1 text-gray-600">
+              Real-time insights and platform metrics
+            </p>
+          </div>
+        </div>
         <div className="flex items-center justify-center h-64">
           <div className="text-center">
             <div className="text-red-500 text-lg mb-4">Error: {error}</div>
@@ -258,19 +274,23 @@ const Analytics = () => {
   }
 
   return (
-    <div className="space-y-6">
-      {/* Header with Refresh Button */}
-      <div className="flex items-center justify-between">
-        <AnalyticsHeader timeframe={timeframe} setTimeframe={setTimeframe} />
-        <button
-          onClick={handleRefresh}
-          disabled={refreshing}
-          className="flex items-center px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50"
-        >
-          <RefreshCwIcon className={`w-4 h-4 mr-2 ${refreshing ? 'animate-spin' : ''}`} />
-          {refreshing ? 'Refreshing...' : 'Refresh'}
-        </button>
+    <div className="space-y-8">
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between">
+        <div className="mb-4 md:mb-0">
+          <h1 className="text-2xl font-bold text-gray-900">Analytics Dashboard</h1>
+          <p className="mt-1 text-gray-600">
+            Real-time insights and platform metrics
+          </p>
+        </div>
       </div>
+
+      {/* Add a subtle loading indicator when refreshing */}
+      {refreshing && (
+        <div className="flex items-center text-sm text-gray-500">
+          <RefreshCwIcon className="w-4 h-4 mr-2 animate-spin" />
+          Updating data...
+        </div>
+      )}
 
       {/* Key Metrics Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">

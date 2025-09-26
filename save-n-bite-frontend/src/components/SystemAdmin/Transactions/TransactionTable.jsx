@@ -40,13 +40,19 @@ const TransactionTable = ({
                 Transaction ID
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Parties
+                Provider
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Consumer
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Item
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Type/Amount
+                Type
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Amount
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Status
@@ -69,11 +75,15 @@ const TransactionTable = ({
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="flex flex-col">
                       <div className="text-sm font-medium text-gray-900">
-                        {transaction.provider.name}
+                        {transaction.provider?.name || 'N/A'}
                       </div>
                       <div className="text-xs text-gray-500">Provider</div>
-                      <div className="text-sm font-medium text-gray-900 mt-1">
-                        {transaction.consumer.name}
+                    </div>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <div className="flex flex-col">
+                      <div className="text-sm font-medium text-gray-900">
+                        {transaction.consumer?.name || 'N/A'}
                       </div>
                       <div className="text-xs text-gray-500">Consumer</div>
                     </div>
@@ -82,20 +92,18 @@ const TransactionTable = ({
                     {transaction.item}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="flex flex-col">
-                      <span
-                        className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                          transaction.type === 'Sale'
-                            ? 'bg-blue-100 text-blue-800'
-                            : 'bg-green-100 text-green-800'
-                        }`}
-                      >
-                        {transaction.type}
-                      </span>
-                      <span className="text-sm text-gray-900 mt-1">
-                        {transaction.amount}
-                      </span>
-                    </div>
+                    <span
+                      className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                        transaction.type === 'Sale'
+                          ? 'bg-blue-100 text-blue-800'
+                          : 'bg-green-100 text-green-800'
+                      }`}
+                    >
+                      {transaction.type}
+                    </span>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                    {transaction.amount}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <span
@@ -138,7 +146,7 @@ const TransactionTable = ({
             ) : (
               <tr>
                 <td
-                  colSpan="7"
+                  colSpan="9"
                   className="px-6 py-4 text-center text-sm text-gray-500"
                 >
                   No transactions found matching your filters.

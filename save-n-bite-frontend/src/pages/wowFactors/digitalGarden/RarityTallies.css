@@ -1,0 +1,140 @@
+/* RarityTallies.css - Earthy, Calming Colors */
+
+/* Rarity Tallies Section Styles */
+.rarity-tallies {
+  margin-top: 20px;
+  padding-top: 20px;
+  border-top: 1px solid #d1d5db;
+}
+
+.rarity-tallies h4 {
+  margin: 0 0 15px 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: #4b5563;
+  text-align: center;
+}
+
+.rarity-breakdown {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+  gap: 10px;
+}
+
+.rarity-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 12px 8px;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+  border: 2px solid transparent;
+  background: #f9fafb;
+}
+
+.rarity-stat:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+/* Earthy, calming rarity-specific colors */
+.rarity-stat.common {
+  background: linear-gradient(135deg, #f0f9f0 0%, #e8f5e8 100%);
+  border-color: #6b8e6b;
+}
+
+.rarity-stat.uncommon {
+  background: linear-gradient(135deg, #f0f4f8 0%, #e2e8f0 100%);
+  border-color: #64748b;
+}
+
+.rarity-stat.rare {
+  background: linear-gradient(135deg, #f5f3ff 0%, #ede9fe 100%);
+  border-color: #8b7bb8;
+}
+
+.rarity-stat.epic {
+  background: linear-gradient(135deg, #fef7ed 0%, #fed7aa 100%);
+  border-color: #c2810c;
+}
+
+.rarity-stat.legendary {
+  background: linear-gradient(135deg, #fef2f2 0%, #fecaca 100%);
+  border-color: #b91c1c;
+  animation: legendaryGlow 3s ease-in-out infinite;
+}
+
+@keyframes legendaryGlow {
+  0%, 100% {
+    box-shadow: 0 0 6px rgba(185, 28, 28, 0.2);
+  }
+  50% {
+    box-shadow: 0 0 12px rgba(185, 28, 28, 0.3);
+  }
+}
+
+.rarity-label {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 4px;
+}
+
+.rarity-stat.common .rarity-label {
+  color: #365314;
+}
+
+.rarity-stat.uncommon .rarity-label {
+  color: #334155;
+}
+
+.rarity-stat.rare .rarity-label {
+  color: #553c7b;
+}
+
+.rarity-stat.epic .rarity-label {
+  color: #92400e;
+}
+
+.rarity-stat.legendary .rarity-label {
+  color: #7f1d1d;
+}
+
+.rarity-count {
+  font-size: 18px;
+  font-weight: 800;
+  color: #374151;
+}
+
+/* Responsive design for rarity tallies */
+@media (max-width: 1024px) {
+  .rarity-breakdown {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .rarity-breakdown {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+  }
+  
+  .rarity-stat {
+    padding: 8px 6px;
+  }
+  
+  .rarity-count {
+    font-size: 16px;
+  }
+  
+  .rarity-label {
+    font-size: 10px;
+  }
+}
+
+@media (max-width: 480px) {
+  .rarity-breakdown {
+    grid-template-columns: 1fr;
+  }
+}

@@ -1,0 +1,298 @@
+.plant-details-modal {
+  max-width: 600px;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.plant-details {
+  background: white;
+  border-radius: 20px;
+  overflow: hidden;
+}
+
+.plant-header {
+  /* Updated to dark green gradient */
+  background: linear-gradient(135deg, #1a4a3a 0%, #2d5a2d 25%, #1e3a2e 50%, #0f2922 100%);
+  color: white;
+  padding: 30px;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  border-bottom: 4px solid;
+}
+
+.plant-icon-large {
+  /* Increased size from 80px to 120px */
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(10px);
+  overflow: hidden;
+  position: relative;
+}
+
+/* New styles for plant SVG and loading states */
+.plant-image-large {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  border-radius: 50%;
+  filter: drop-shadow(2px 2px 8px rgba(0, 0, 0, 0.3));
+}
+
+.svg-wrapper {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.svg-wrapper svg {
+  max-width: 90%;
+  max-height: 90%;
+  border-radius: 50%;
+}
+
+.loading-spinner {
+  font-size: 30px;
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.7;
+    transform: scale(1.1);
+  }
+}
+
+.plant-emoji-large {
+  /* Increased from 40px to 60px */
+  font-size: 60px;
+  filter: drop-shadow(2px 2px 4px rgba(0, 0, 0, 0.2));
+}
+
+.plant-title h2 {
+  margin: 0 0 5px 0;
+  font-size: 28px;
+  font-weight: 700;
+}
+
+.scientific-name {
+  margin: 0 0 15px 0;
+  font-style: italic;
+  opacity: 0.9;
+  font-size: 16px;
+}
+
+.plant-badges {
+  display: flex;
+  gap: 10px;
+}
+
+.rarity-badge,
+.category-badge {
+  padding: 5px 12px;
+  border-radius: 15px;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.category-badge {
+  background: rgba(255, 255, 255, 0.2);
+  color: white;
+}
+
+.plant-content {
+  padding: 30px;
+}
+
+.plant-section {
+  margin-bottom: 25px;
+}
+
+.plant-section:last-child {
+  margin-bottom: 0;
+}
+
+.plant-section h3 {
+  margin: 0 0 15px 0;
+  color: #333;
+  font-size: 18px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.plant-section p {
+  margin: 0 0 10px 0;
+  line-height: 1.6;
+  color: #555;
+}
+
+.common-names {
+  margin-top: 10px;
+  padding: 10px;
+  background: #f8f9fa;
+  border-radius: 8px;
+  font-size: 14px;
+  color: #666;
+}
+
+.care-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 15px;
+}
+
+.care-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 15px;
+  background: #f8f9fa;
+  border-radius: 12px;
+  border-left: 4px solid #62BD38;
+}
+
+.care-icon {
+  font-size: 24px;
+  flex-shrink: 0;
+}
+
+.care-item div {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.care-item strong {
+  font-size: 12px;
+  color: #666;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.care-item span {
+  font-size: 14px;
+  font-weight: 600;
+  color: #333;
+  text-transform: capitalize;
+}
+
+.fun-facts,
+.growing-tips {
+  padding: 20px;
+  border-radius: 12px;
+  line-height: 1.7;
+}
+
+.fun-facts {
+  background: linear-gradient(135deg, #fff3e0 0%, #ffcc02 10%, #fff3e0 100%);
+  border-left: 4px solid #ff9800;
+}
+
+.growing-tips {
+  background: linear-gradient(135deg, #e8f5e8 0%, #62BD38 10%, #e8f5e8 100%);
+  border-left: 4px solid #4CAF50;
+}
+
+.fun-facts p,
+.growing-tips p {
+  margin: 0;
+  color: #333;
+}
+
+.plant-footer {
+  padding: 20px 30px;
+  background: #f8f9fa;
+  display: flex;
+  justify-content: center;
+}
+
+.plant-footer .btn-primary {
+  min-width: 120px;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .plant-header {
+    flex-direction: column;
+    text-align: center;
+    padding: 20px;
+  }
+  
+  .plant-icon-large {
+    /* Responsive size adjustment */
+    width: 100px;
+    height: 100px;
+  }
+  
+  .plant-emoji-large {
+    font-size: 50px;
+  }
+  
+  .plant-title h2 {
+    font-size: 24px;
+  }
+  
+  .scientific-name {
+    font-size: 14px;
+  }
+  
+  .plant-content {
+    padding: 20px;
+  }
+  
+  .care-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .plant-footer {
+    padding: 15px 20px;
+  }
+}
+
+@media (max-width: 480px) {
+  .plant-details-modal {
+    margin: 10px;
+    max-height: calc(100vh - 20px);
+  }
+  
+  .plant-header {
+    padding: 15px;
+  }
+  
+  .plant-icon-large {
+    width: 80px;
+    height: 80px;
+  }
+  
+  .plant-emoji-large {
+    font-size: 40px;
+  }
+  
+  .plant-content {
+    padding: 15px;
+  }
+  
+  .plant-section {
+    margin-bottom: 20px;
+  }
+  
+  .fun-facts,
+  .growing-tips {
+    padding: 15px;
+  }
+}

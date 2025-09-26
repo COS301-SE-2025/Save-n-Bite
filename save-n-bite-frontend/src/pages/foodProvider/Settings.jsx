@@ -1,10 +1,11 @@
+import React, { useState, useContext, useEffect } from 'react'
 
-import React, { useState, useContext } from 'react'
 import { AlertCircleIcon, CheckIcon, XIcon, InfoIcon, EyeIcon, EyeOffIcon, Menu } from 'lucide-react'
 
 import { useNavigate } from 'react-router-dom'
 import SideBar from '../../components/foodProvider/SideBar';
 import { ThemeContext } from '../../context/ThemeContext' // <-- Import ThemeContext
+import SettingsAPI from '../../services/SettingsAPI'
 
 function SettingsPage() {
 const { theme, toggleTheme } = useContext(ThemeContext)
@@ -36,11 +37,76 @@ const darkMode = theme === 'dark'
     allInApp: true,
   })
 
-
   const [communicationPrefs, setCommunicationPrefs] = useState({
     platformAnnouncements: true,
     appFeedback: true,
   })
+
+  // Provider settings state (loaded from backend)
+  const [providerSettings, setProviderSettings] = useState({
+    businessHours: '',
+    phoneNumber: '',
+    website: '',
+    description: '',
+    tagsText: '', // comma-separated string for UI, sent as array to backend
+  })
+  const [isSavingSettings, setIsSavingSettings] = useState(false)
+
+  // Load provider settings on mount
+  useEffect(() => {
+    const api = new SettingsAPI()
+    ;(async () => {
+      const res = await api.getProviderSettings()
+      if (res.success) {
+        const s = res.data || {}
+        setProviderSettings({
+          businessHours: s.business_hours || '',
+          phoneNumber: s.phone_number || '',
+          website: s.website || '',
+          description: s.business_description || '',
+          tagsText: Array.isArray(s.business_tags) ? s.business_tags.join(', ') : (s.business_tags || ''),
+        })
+      }
+    })()
+  }, [])
+
+  const handleProviderSettingsChange = (e) => {
+    const { name, value } = e.target
+    setProviderSettings(prev => ({ ...prev, [name]: value }))
+  }
+
+  const saveProviderSettings = async () => {
+    setIsSavingSettings(true)
+    const api = new SettingsAPI()
+    const payload = {
+      business_hours: providerSettings.businessHours,
+      phone_number: providerSettings.phoneNumber,
+      website: providerSettings.website,
+      business_description: providerSettings.description,
+      business_tags: providerSettings.tagsText
+        .split(',')
+        .map(t => t.trim())
+        .filter(Boolean),
+    }
+    const res = await api.updateProviderSettings(payload)
+    if (res.success) {
+      setProviderSettings(ps => ({
+        ...ps,
+        // Normalize with response
+        businessHours: res.data.business_hours || '',
+        phoneNumber: res.data.phone_number || '',
+        website: res.data.website || '',
+        description: res.data.business_description || '',
+        tagsText: Array.isArray(res.data.business_tags) ? res.data.business_tags.join(', ') : (res.data.business_tags || ''),
+      }))
+      setSuccessMessage('Settings updated successfully')
+      setShowSuccessModal(true)
+    } else {
+      setSuccessMessage(res.error || 'Failed to update settings')
+      setShowSuccessModal(true)
+    }
+    setIsSavingSettings(false)
+  }
 
   const toggleMobileSidebar = () => {
     setIsMobileSidebarOpen(!isMobileSidebarOpen)
@@ -184,117 +250,80 @@ const darkMode = theme === 'dark'
         </div>
 
         <div className="max-w-3xl mx-auto p-4 sm:p-6">
-          {/* General Settings Section */}
+          {/* Provider Settings Section */}
           <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden mb-6 sm:mb-8 transition-colors duration-300">
             <div className="p-4 sm:p-6">
-              <h2 className="text-lg sm:text-xl font-semibold mb-4 text-gray-800 dark:text-gray-100">General Settings</h2>
-              {/* Change Password Form */}
-              <div className="mb-6 sm:mb-8">
-                <h3 className="text-base sm:text-lg font-medium mb-4 text-gray-800 dark:text-gray-100">Change Password</h3>
-                <form onSubmit={handlePasswordSubmit} className="space-y-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
-                      Current Password
-                    </label>
-                    <div className="relative">
-                      <input
-                        type={showPasswords.currentPassword ? "text" : "password"}
-                        name="currentPassword"
-                        value={passwordData.currentPassword}
-                        onChange={handlePasswordChange}
-                        required
-                        className="w-full p-2 sm:p-3 border border-gray-300 dark:border-gray-700 rounded-md pr-10 text-sm sm:text-base bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500"
-                      />
-                      <button
-                        type="button"
-                        onClick={() => togglePasswordVisibility('currentPassword')}
-                        className="absolute right-2 sm:right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
-                      >
-                        {showPasswords.currentPassword ? (
-                          <EyeOffIcon className="h-4 w-4 sm:h-5 sm:w-5" />
-                        ) : (
-                          <EyeIcon className="h-4 w-4 sm:h-5 sm:w-5" />
-                        )}
-                      </button>
-                    </div>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
-                      New Password
-                    </label>
-                    <div className="relative">
-                      <input
-                        type={showPasswords.newPassword ? "text" : "password"}
-                        name="newPassword"
-                        value={passwordData.newPassword}
-                        onChange={handlePasswordChange}
-                        required
-                        className={`w-full p-2 sm:p-3 border rounded-md pr-10 text-sm sm:text-base ${passwordErrors.newPassword ? 'border-red-500' : 'border-gray-300 dark:border-gray-700'} bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500`}
-                      />
-                      <button
-                        type="button"
-                        onClick={() => togglePasswordVisibility('newPassword')}
-                        className="absolute right-2 sm:right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
-                      >
-                        {showPasswords.newPassword ? (
-                          <EyeOffIcon className="h-4 w-4 sm:h-5 sm:w-5" />
-                        ) : (
-                          <EyeIcon className="h-4 w-4 sm:h-5 sm:w-5" />
-                        )}
-                      </button>
-                    </div>
-                    {passwordErrors.newPassword && (
-                      <p className="mt-1 text-sm text-red-600">
-                        {passwordErrors.newPassword}
-                      </p>
-                    )}
-                    <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                      Password must be at least 8 characters and include uppercase,
-                      lowercase, number, and special character.
-                    </p>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
-                      Confirm New Password
-                    </label>
-                    <div className="relative">
-                      <input
-                        type={showPasswords.confirmPassword ? "text" : "password"}
-                        name="confirmPassword"
-                        value={passwordData.confirmPassword}
-                        onChange={handlePasswordChange}
-                        required
-                        className={`w-full p-2 sm:p-3 border rounded-md pr-10 text-sm sm:text-base ${passwordErrors.confirmPassword ? 'border-red-500' : 'border-gray-300 dark:border-gray-700'} bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500`}
-                      />
-                      <button
-                        type="button"
-                        onClick={() => togglePasswordVisibility('confirmPassword')}
-                        className="absolute right-2 sm:right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
-                      >
-                        {showPasswords.confirmPassword ? (
-                          <EyeOffIcon className="h-4 w-4 sm:h-5 sm:w-5" />
-                        ) : (
-                          <EyeIcon className="h-4 w-4 sm:h-5 sm:w-5" />
-                        )}
-                      </button>
-                    </div>
-                    {passwordErrors.confirmPassword && (
-                      <p className="mt-1 text-sm text-red-600">
-                        {passwordErrors.confirmPassword}
-                      </p>
-                    )}
-                  </div>
+              <h2 className="text-lg sm:text-xl font-semibold mb-4 text-gray-800 dark:text-gray-100">Business Settings</h2>
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Business Hours</label>
+                  <input
+                    type="text"
+                    name="businessHours"
+                    value={providerSettings.businessHours}
+                    onChange={handleProviderSettingsChange}
+                    placeholder="e.g., Mon-Fri: 9AM-6PM"
+                    className="w-full p-2 sm:p-3 border border-gray-300 dark:border-gray-700 rounded-md text-sm sm:text-base bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Business Phone</label>
+                  <input
+                    type="tel"
+                    name="phoneNumber"
+                    value={providerSettings.phoneNumber}
+                    onChange={handleProviderSettingsChange}
+                    className="w-full p-2 sm:p-3 border border-gray-300 dark:border-gray-700 rounded-md text-sm sm:text-base bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Website</label>
+                  <input
+                    type="url"
+                    name="website"
+                    value={providerSettings.website}
+                    onChange={handleProviderSettingsChange}
+                    placeholder="https://example.com"
+                    className="w-full p-2 sm:p-3 border border-gray-300 dark:border-gray-700 rounded-md text-sm sm:text-base bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Business Description</label>
+                  <textarea
+                    name="description"
+                    value={providerSettings.description}
+                    onChange={handleProviderSettingsChange}
+                    rows="3"
+                    className="w-full p-2 sm:p-3 border border-gray-300 dark:border-gray-700 rounded-md text-sm sm:text-base bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Business Tags</label>
+                  <input
+                    type="text"
+                    name="tagsText"
+                    value={providerSettings.tagsText}
+                    onChange={handleProviderSettingsChange}
+                    placeholder="Comma separated e.g. Bakery, Vegan Options"
+                    className="w-full p-2 sm:p-3 border border-gray-300 dark:border-gray-700 rounded-md text-sm sm:text-base bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500"
+                  />
+                  <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">Separate tags with commas. Max 10 tags.</p>
+                </div>
+                <div className="flex justify-end">
                   <button
-                    type="submit"
-                    className="w-full sm:w-auto px-4 py-2 bg-blue-600 dark:bg-blue-700 text-white rounded-md hover:bg-blue-700 dark:hover:bg-blue-800 transition-colors text-sm sm:text-base"
+                    type="button"
+                    onClick={saveProviderSettings}
+                    disabled={isSavingSettings}
+                    className="px-4 py-2 bg-blue-600 dark:bg-blue-700 text-white rounded-md hover:bg-blue-700 dark:hover:bg-blue-800 transition-colors text-sm sm:text-base disabled:opacity-60"
                   >
-                    Update Password
+                    {isSavingSettings ? 'Saving...' : 'Save Settings'}
                   </button>
-                </form>
+                </div>
               </div>
             </div>
           </div>
 
+          
           {/* Notification Preferences Section */}
           <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden mb-6 sm:mb-8 transition-colors duration-300">
             <div className="p-4 sm:p-6">

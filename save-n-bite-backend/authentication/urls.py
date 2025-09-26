@@ -69,6 +69,17 @@ urlpatterns = [
     path('auth/delete-account/', views.delete_account, name='delete_account'),
     path('auth/check-email/', views.check_email_exists, name='check_email_exists'),  # Optional
 
+    # Profile endpoints
+    path('profile/customer/', views.get_customer_profile, name='get-customer-profile'),
+    path('profile/ngo/', views.get_ngo_profile, name='get-ngo-profile'),
+    path('profile/provider/', views.get_provider_profile, name='get-provider-profile'),
+    path('profile/customer/update/', views.update_customer_profile, name='update-customer-profile'),
+    path('profile/ngo/update/', views.update_ngo_profile, name='update-ngo-profile'),
+    path('profile/provider/update/', views.update_provider_profile, name='update-provider-profile'),
+    # Provider settings endpoints
+    path('auth/provider/settings/', views.get_provider_settings, name='get_provider_settings'),
+    path('auth/provider/settings/update/', views.update_provider_settings, name='update_provider_settings'),
+
     #Admin urls
     # Admin profile endpoints - ADD THESE
     path('auth/admin/profile/', admin_views.get_admin_profile, name='get_admin_profile'),

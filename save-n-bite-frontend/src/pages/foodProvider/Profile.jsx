@@ -1,14 +1,32 @@
-import React, { useState, useRef } from 'react'
+import React, { useState, useRef, useEffect } from 'react'
 import { Edit2Icon, CheckIcon, XIcon, Menu } from 'lucide-react'
-import { profileData, sustainabilityData } from '../../utils/MockData'
+import { sustainabilityData } from '../../utils/MockData'
+
 import SideBar from '../../components/foodProvider/SideBar';
+import ProfileAPI from '../../services/ProfileAPI';
+import { showToast, Toast } from '../../components/ui/Toast';
 
 function ProfilePage() {
   const [isEditing, setIsEditing] = useState(false)
-  const [formData, setFormData] = useState(profileData)
-  const [tags, setTags] = useState(profileData.tags)
+  const [formData, setFormData] = useState({
+    businessName: '',
+    email: '',
+    phone: '',
+    address: '',
+    description: '',
+    logoUrl: '',
+    bannerUrl: '',
+    verificationStatus: 'Pending',
+  })
+  const [originalData, setOriginalData] = useState(null)
+  const [tags, setTags] = useState([])
+
   const [newTag, setNewTag] = useState('')
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false)
+  const [isLoading, setIsLoading] = useState(false)
+  const [bannerFile, setBannerFile] = useState(null)
+  const [logoFile, setLogoFile] = useState(null)
+  const [toast, setToast] = useState(null)
   const bannerInputRef = useRef(null)
   const logoInputRef = useRef(null)
 
@@ -24,9 +42,34 @@ function ProfilePage() {
     })
   }
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault()
-    setIsEditing(false)
+    setIsLoading(true)
+
+    const profileAPI = new ProfileAPI()
+    // Send only fields guaranteed to be accepted by the provider update endpoint
+    const payload = {
+      business_name: formData.businessName,
+      business_email: formData.email,
+      business_contact: formData.phone,
+      business_address: formData.address,
+      // Note: business_description and business_tags are omitted to avoid 400 errors.
+    }
+    const files = {}
+    if (bannerFile) files.banner_image = bannerFile
+    if (logoFile) files.logo = logoFile
+
+    const response = await profileAPI.updateSpecificProfile('provider', payload, files)
+
+    if (response.success) {
+      // Re-fetch profile to sync UI with backend
+      await loadProfile()
+      setIsEditing(false)
+      showToast(setToast, 'Profile updated successfully', 'success')
+    } else {
+      showToast(setToast, response.error || 'Failed to update profile', 'error')
+    }
+    setIsLoading(false)
   }
 
   const handleAddTag = () => {
@@ -58,28 +101,72 @@ function ProfilePage() {
         })
       }
       reader.readAsDataURL(file)
+      // Track files separately for upload
+      if (type === 'bannerUrl') setBannerFile(file)
+      if (type === 'logoUrl') setLogoFile(file)
     }
   }
 
+  const mapProviderToForm = (provider) => {
+    return {
+      businessName: provider.business_name || '',
+      email: provider.business_email || '',
+      phone: provider.business_contact || provider.phone_number || '',
+      address: provider.business_address || '',
+      description: provider.business_description || '',
+      logoUrl: provider.logo || '',
+      bannerUrl: provider.banner || provider.banner_image || '',
+      verificationStatus: provider.status ? provider.status.charAt(0).toUpperCase() + provider.status.slice(1) : 'Pending',
+    }
+  }
+
+  const loadProfile = async () => {
+    const profileAPI = new ProfileAPI()
+    const response = await profileAPI.getSpecificProfile('provider')
+    if (response.success) {
+      const data = response.data?.provider || response.data
+      const mapped = mapProviderToForm(data)
+      setFormData(mapped)
+      setOriginalData(mapped)
+      // Normalize tags: API may return array or string; ensure array
+      const apiTags = data?.business_tags || []
+      setTags(Array.isArray(apiTags) ? apiTags : (typeof apiTags === 'string' && apiTags ? [apiTags] : []))
+    } else {
+      showToast(setToast, response.error || 'Failed to load provider profile', 'error')
+    }
+  }
+
+  useEffect(() => {
+    loadProfile()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
   return (
     <div className="flex h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
+      {toast && (
+        <Toast
+          message={toast.message}
+          type={toast.type}
+          onClose={() => setToast(null)}
+        />
+      )}
       {/* Desktop Sidebar - Hidden on mobile */}
       <div className="hidden md:flex">
-        <SideBar onNavigate={() => {}} currentPage="foodprovider-profile" />
+        <SideBar onNavigate={() => { }} currentPage="foodprovider-profile" />
       </div>
 
       {/* Mobile Sidebar Overlay */}
       {isMobileSidebarOpen && (
         <div className="fixed inset-0 z-50 md:hidden">
           {/* Backdrop */}
-          <div 
+          <div
             className="fixed inset-0 bg-black bg-opacity-50"
             onClick={toggleMobileSidebar}
           />
           {/* Sidebar */}
           <div className="fixed left-0 top-0 h-full w-64 z-50">
-            <SideBar 
-              onNavigate={() => setIsMobileSidebarOpen(false)} 
+            <SideBar
+              onNavigate={() => setIsMobileSidebarOpen(false)}
               currentPage="foodprovider-profile"
               onClose={() => setIsMobileSidebarOpen(false)}
             />
@@ -154,7 +241,9 @@ function ProfilePage() {
                     <button
                       onClick={() => {
                         setIsEditing(false)
-                        setFormData(profileData)
+                        if (originalData) setFormData(originalData)
+                        setBannerFile(null)
+                        setLogoFile(null)
                       }}
                       className="px-4 py-2 bg-gray-500 text-white rounded-md hover:bg-gray-600 transition-colors flex items-center justify-center text-sm sm:text-base"
                     >
