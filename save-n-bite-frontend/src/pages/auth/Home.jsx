@@ -1,4 +1,4 @@
-import React, { useContext, useEffect } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import {
   LeafIcon,
@@ -19,6 +19,7 @@ import {
 import NavBar from '../../components/auth/NavBar';
 import Footer from '../../components/auth/Footer';
 import { ThemeContext } from '../../context/ThemeContext';
+import { HomeAPI } from '../../services/HomeAPI';
 
 // Abstract Blob Component
 const Blob = ({ className, color = 'emerald' }) => (
@@ -48,6 +49,33 @@ const AnimatedCircle = ({ size, color, delay, className = '' }) => (
 const HomePage = () => {
   const { theme } = useContext(ThemeContext);
   const navigate = useNavigate();
+  const [stats, setStats] = useState({ total_users: 0, total_orders: 0 });
+  const [statsLoaded, setStatsLoaded] = useState(false);
+
+  const formatNumber = (num) => {
+    if (num >= 1000000) return `${(num / 1000000).toFixed(1)}M+`;
+    if (num >= 1000) return `${num.toLocaleString()}+`;
+    return `${num}`;
+  };
+
+  useEffect(() => {
+    let isMounted = true;
+    (async () => {
+      const res = await HomeAPI.getStats();
+      if (isMounted && res.success && res.data) {
+        setStats({
+          total_users: res.data.total_users || 0,
+          total_orders: res.data.total_orders || 0,
+        });
+        setStatsLoaded(true);
+      } else if (isMounted) {
+        setStatsLoaded(true);
+      }
+    })();
+    return () => {
+      isMounted = false;
+    };
+  }, []);
   
   const handleGetStarted = () => {
     window.scrollTo(0, 0);
@@ -75,7 +103,7 @@ const HomePage = () => {
           <div className="text-center max-w-4xl mx-auto">
             {/* Animated Tagline */}
             <div className="inline-flex items-center gap-2 mb-6 px-4 py-2 rounded-full bg-emerald-100 dark:bg-emerald-900/50 text-emerald-700 dark:text-emerald-300 text-sm font-medium border border-emerald-200 dark:border-emerald-800 animate-fade-in-up" style={{ animationDelay: '0.2s' }}>
-              <SparklesIcon className="w-4 h-4" />
+              {/* <SparklesIcon className="w-4 h-4" /> */}
               <span>Join the Food Rescue Revolution</span>
             </div>
             
@@ -113,29 +141,35 @@ const HomePage = () => {
 
           {/* Stats Grid */}
           <div className="mt-12 grid grid-cols-1 sm:grid-cols-3 gap-4 text-center">
-            {[
-              { 
-                icon: <UtensilsCrossedIcon size={20} />, 
-                value: "15,000+", 
-                label: "Meals Rescued", 
-                color: "emerald",
-                delay: "0.1s"
-              },
-              { 
-                icon: <UsersIcon size={20} />, 
-                value: "2,500+", 
-                label: "Active Users", 
-                color: "blue",
-                delay: "0.2s"
-              },
-              { 
-                icon: <LeafIcon size={20} />, 
-                value: "5 tons", 
-                label: "CO₂ Saved", 
-                color: "teal",
-                delay: "0.3s"
-              }
-            ].map((stat, index) => (
+            {(() => {
+              const mealsRescued = stats.total_orders; // use total orders as proxy for meals
+              const activeUsers = stats.total_users;
+              const co2SavedTons = (stats.total_orders * 0.01).toFixed(1); // conservative derived metric
+              const items = [
+                {
+                  icon: <UtensilsCrossedIcon size={20} />,
+                  value: statsLoaded ? formatNumber(mealsRescued) : "15,000+",
+                  label: "Meals Rescued",
+                  color: "emerald",
+                  delay: "0.1s",
+                },
+                {
+                  icon: <UsersIcon size={20} />,
+                  value: statsLoaded ? formatNumber(activeUsers) : "2,500+",
+                  label: "Active Users",
+                  color: "blue",
+                  delay: "0.2s",
+                },
+                {
+                  icon: <LeafIcon size={20} />,
+                  value: statsLoaded ? `${co2SavedTons} tons` : "5 tons",
+                  label: "CO₂ Saved",
+                  color: "teal",
+                  delay: "0.3s",
+                },
+              ];
+              return items;
+            })().map((stat, index) => (
               <div 
                 key={index}
                 className="group relative bg-white dark:bg-gray-800/80 backdrop-blur-sm rounded-2xl p-4 border border-gray-100 dark:border-gray-700 hover:shadow-lg transition-all duration-300 overflow-hidden animate-fade-in-up"
@@ -325,11 +359,17 @@ const HomePage = () => {
               </p>
               
               <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
-                {[
-                  { value: "15,000+", label: "Meals Rescued" },
-                  { value: "2,500+", label: "Active Users" },
-                  { value: "5 tons", label: "CO₂ Saved" }
-                ].map((stat, index) => (
+                {(() => {
+                  const mealsRescued = stats.total_orders;
+                  const activeUsers = stats.total_users;
+                  const co2SavedTons = (stats.total_orders * 0.01).toFixed(1);
+                  const items = [
+                    { value: statsLoaded ? formatNumber(mealsRescued) : "15,000+", label: "Meals Rescued" },
+                    { value: statsLoaded ? formatNumber(activeUsers) : "2,500+", label: "Active Users" },
+                    { value: statsLoaded ? `${co2SavedTons} tons` : "5 tons", label: "CO₂ Saved" },
+                  ];
+                  return items;
+                })().map((stat, index) => (
                   <div key={index} className="bg-white/10 backdrop-blur-sm p-6 rounded-xl">
                     <div className="text-3xl font-bold mb-2">{stat.value}</div>
                     <div className="text-emerald-100">{stat.label}</div>
@@ -346,7 +386,7 @@ const HomePage = () => {
                     <blockquote className="text-emerald-100 italic mb-4">
                       "Save n Bite has changed how I think about food shopping. I'm saving money while helping local businesses reduce waste. Win-win!"
                     </blockquote>
-                    <div className="font-semibold">— Jason de Bruin, Regular User</div>
+                    <div className="font-semibold">— Capleton, Regular User</div>
                   </div>
                 </div>
               </div>

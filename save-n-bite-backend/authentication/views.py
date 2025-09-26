@@ -536,7 +536,33 @@ def search_businesses(request):
                 'details': str(e)
             }
         }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-    
+
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def get_platform_stats(request):
+    """Return simple platform-wide stats for the Home page.
+
+    Response format:
+    {
+        "total_users": <int>,
+        "total_orders": <int>
+    }
+    """
+    try:
+        total_users = User.objects.count()
+        total_orders = Order.objects.count()
+        return Response({
+            'total_users': int(total_users),
+            'total_orders': int(total_orders),
+        }, status=status.HTTP_200_OK)
+    except Exception as e:
+        logger.error(f"Failed to compute platform stats: {e}")
+        return Response({
+            'error': {
+                'code': 'STATS_ERROR',
+                'message': 'Failed to retrieve platform stats'
+            }
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 # ====================Admin Code===============
 
