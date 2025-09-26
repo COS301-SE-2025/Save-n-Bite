@@ -487,30 +487,6 @@ html.dark .garden-overview .rarity-count,
   color: #f9fafb !important;
 }
 
-html.dark .garden-overview .rarity-stat {
-  border: 1px solid #4b5563 !important;
-}
-
-html.dark .garden-overview .rarity-stat.common {
-  background-color: rgba(34, 197, 94, 0.25) !important;
-}
-
-html.dark .garden-overview .rarity-stat.uncommon {
-  background-color: rgba(59, 130, 246, 0.25) !important;
-}
-
-html.dark .garden-overview .rarity-stat.rare {
-  background-color: rgba(168, 85, 247, 0.25) !important; 
-}
-
-html.dark .garden-overview .rarity-stat.epic {
-  background-color: rgba(245, 158, 11, 0.25) !important;
-}
-
-html.dark .garden-overview .rarity-stat.legendary {
-  background-color: rgba(239, 68, 68, 0.25) !important; 
-}
-
 /* System dark mode detection for rarity text */
 @media (prefers-color-scheme: dark) {
   .garden-overview .rarity-label {
@@ -526,55 +502,6 @@ html.dark .garden-overview .rarity-stat.legendary {
   }
 }
 
-/* Light mode backgrounds and text */
-.garden-overview .rarity-stat.common {
-  background-color: rgba(34, 197, 94, 0.12); /* green-500 */
-  color: #166534; /* green-800 */
-}
-.garden-overview .rarity-stat.uncommon {
-  background-color: rgba(59, 130, 246, 0.12); /* blue-500 */
-  color: #1e3a8a; /* blue-900 */
-}
-.garden-overview .rarity-stat.rare {
-  background-color: rgba(168, 85, 247, 0.12); /* purple-500 */
-  color: #6d28d9; /* purple-800 */
-}
-.garden-overview .rarity-stat.epic {
-  background-color: rgba(245, 158, 11, 0.12); /* amber-400 */
-  color: #92400e; /* amber-900 */
-}
-.garden-overview .rarity-stat.legendary {
-  background-color: rgba(239, 68, 68, 0.12); /* red-500 */
-  color: #991b1b; /* red-900 */
-}
-
-/* Dark mode backgrounds and text */
-html.dark .garden-overview .rarity-stat,
-.dark .garden-overview .rarity-stat {
-  color: #f9fafb !important;
-  border: 1px solid #4b5563 !important;
-}
-
-html.dark .garden-overview .rarity-stat.common,
-.dark .garden-overview .rarity-stat.common {
-  background-color: rgba(34, 197, 94, 0.25) !important;
-}
-html.dark .garden-overview .rarity-stat.uncommon,
-.dark .garden-overview .rarity-stat.uncommon {
-  background-color: rgba(59, 130, 246, 0.25) !important;
-}
-html.dark .garden-overview .rarity-stat.rare,
-.dark .garden-overview .rarity-stat.rare {
-  background-color: rgba(168, 85, 247, 0.25) !important;
-}
-html.dark .garden-overview .rarity-stat.epic,
-.dark .garden-overview .rarity-stat.epic {
-  background-color: rgba(245, 158, 11, 0.25) !important;
-}
-html.dark .garden-overview .rarity-stat.legendary,
-.dark .garden-overview .rarity-stat.legendary {
-  background-color: rgba(239, 68, 68, 0.25) !important;
-}
 
 .garden-overview .rarity-label,
 .garden-overview .rarity-count {
