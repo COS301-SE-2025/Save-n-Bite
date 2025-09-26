@@ -294,7 +294,7 @@ const Login = () => {
                   onEmailChange={setCurrentEmail}
                 />
 
-                {/* <div className="flex items-center justify-between">
+                <div className="flex items-center justify-between">
                   <div className="flex items-center">
                     <input
                       id="remember-me"
@@ -312,13 +312,14 @@ const Login = () => {
 
                   <div className="text-sm">
                     <button
+                      type="button"
                       onClick={handleForgotPasswordClick}
                       className="font-medium text-emerald-600 hover:text-emerald-500 dark:text-emerald-400 dark:hover:text-emerald-300"
                     >
                       Forgot your password?
                     </button>
                   </div>
-                </div> */}
+                </div>
 
                 {/* <div>
                   <button
