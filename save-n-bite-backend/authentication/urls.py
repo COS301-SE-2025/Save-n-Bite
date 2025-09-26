@@ -52,6 +52,9 @@ urlpatterns = [
     path('auth/password-status/', views.check_password_status, name='check_password_status'),
     path('auth/login-enhanced/', views.login_with_password_check, name='login_with_password_check'),
 
+    # Public stats endpoint for Home page
+    path('auth/stats/summary/', views.get_platform_stats, name='platform_stats'),
+
     # Self-service password reset endpoints
     path('auth/forgot-password/', views.request_password_reset, name='request_password_reset'),
     path('auth/check-email/', views.check_email_exists, name='check_email_exists'),
