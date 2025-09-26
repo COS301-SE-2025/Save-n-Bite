@@ -71,15 +71,17 @@ const Analytics = () => {
     }
   }
 
-  /**
-   * Handle manual refresh
-   */
-  const handleRefresh = async () => {
-    setRefreshing(true)
-    await fetchAnalyticsData()
-    setRefreshing(false)
-    toast.success('Analytics data refreshed')
-  }
+  // Add auto-refresh effect
+  useEffect(() => {
+    // Initial fetch
+    fetchAnalyticsData()
+    
+    // Set up interval for auto-refresh every 3 seconds
+    const intervalId = setInterval(fetchAnalyticsData, 3000)
+    
+    // Clean up interval on component unmount
+    return () => clearInterval(intervalId)
+  }, []) // Empty dependency array means this runs once on mount
 
   /**
    * Handle retry when there's an error
@@ -94,30 +96,75 @@ const Analytics = () => {
    * Transform user distribution data for pie chart
    */
   const getUserTypeData = () => {
-    if (!analyticsData?.user_distribution) return []
-    
-    const distribution = analyticsData.user_distribution
-    return [
-      { name: 'Customers', value: distribution.customer || 0, color: '#3B82F6' },
-      { name: 'Food Providers', value: distribution.provider || 0, color: '#8B5CF6' },
-      { name: 'NGOs', value: distribution.ngo || 0, color: '#10B981' }
-    ]
+  if (!analyticsData?.user_distribution) {
+    console.log('No user distribution data available')
+    return []
   }
+  
+  const distribution = analyticsData.user_distribution
+  console.log('User distribution raw data:', distribution)
+  
+  // Convert percentage strings to numbers
+  const data = []
+  
+  if (distribution.customer) {
+    const value = parseFloat(distribution.customer.replace('%', ''))
+    if (value > 0) {
+      data.push({ name: 'Customers', value: value, color: '#3B82F6' })
+    }
+  }
+  
+  if (distribution.provider) {
+    const value = parseFloat(distribution.provider.replace('%', ''))
+    if (value > 0) {
+      data.push({ name: 'Food Providers', value: value, color: '#8B5CF6' })
+    }
+  }
+  
+  if (distribution.ngo) {
+    const value = parseFloat(distribution.ngo.replace('%', ''))
+    if (value > 0) {
+      data.push({ name: 'NGOs', value: value, color: '#10B981' })
+    }
+  }
+  
+  if (distribution.admin) {
+    const value = parseFloat(distribution.admin.replace('%', ''))
+    if (value > 0) {
+      data.push({ name: 'Admins', value: value, color: '#F59E0B' })
+    }
+  }
+  
+  console.log('Transformed user type data:', data)
+  return data
+}
+
 
   /**
    * Transform top providers data for bar chart
    */
   const getTopProvidersChartData = () => {
-    if (!analyticsData?.top_providers) return []
-    
-    return analyticsData.top_providers.map(provider => ({
-      name: provider.name.length > 20 ? 
-        provider.name.substring(0, 20) + '...' : 
-        provider.name,
-      listings: provider.listings,
-      transactions: provider.completed_transactions
-    }))
+  if (!analyticsData?.top_providers || analyticsData.top_providers.length === 0) {
+    console.log('No top providers data available')
+    // Return sample data if no providers exist
+    return [
+      { name: 'No Data Available', listings: 0, transactions: 0 }
+    ]
   }
+  
+  console.log('Top providers raw data:', analyticsData.top_providers)
+  
+  const transformedData = analyticsData.top_providers.map(provider => ({
+    name: provider.name && provider.name.length > 20 ? 
+          provider.name.substring(0, 20) + '...' : 
+          provider.name || 'Unknown Provider',
+    listings: provider.listings || 0,
+    transactions: provider.completed_transactions || provider.transactions || 0
+  }))
+  
+  console.log('Transformed top providers data:', transformedData)
+  return transformedData
+}
 
   /**
    * Generate time-series data for user growth
@@ -181,8 +228,15 @@ const Analytics = () => {
 
   if (loading) {
     return (
-      <div className="space-y-6">
-        <AnalyticsHeader timeframe={timeframe} setTimeframe={setTimeframe} />
+      <div className="space-y-8">
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between">
+          <div className="mb-4 md:mb-0">
+            <h1 className="text-2xl font-bold text-gray-900">Analytics Dashboard</h1>
+            <p className="mt-1 text-gray-600">
+              Real-time insights and platform metrics
+            </p>
+          </div>
+        </div>
         <div className="flex items-center justify-center h-64">
           <div className="flex flex-col items-center space-y-3">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
@@ -195,8 +249,15 @@ const Analytics = () => {
 
   if (error) {
     return (
-      <div className="space-y-6">
-        <AnalyticsHeader timeframe={timeframe} setTimeframe={setTimeframe} />
+      <div className="space-y-8">
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between">
+          <div className="mb-4 md:mb-0">
+            <h1 className="text-2xl font-bold text-gray-900">Analytics Dashboard</h1>
+            <p className="mt-1 text-gray-600">
+              Real-time insights and platform metrics
+            </p>
+          </div>
+        </div>
         <div className="flex items-center justify-center h-64">
           <div className="text-center">
             <div className="text-red-500 text-lg mb-4">Error: {error}</div>
@@ -213,19 +274,23 @@ const Analytics = () => {
   }
 
   return (
-    <div className="space-y-6">
-      {/* Header with Refresh Button */}
-      <div className="flex items-center justify-between">
-        <AnalyticsHeader timeframe={timeframe} setTimeframe={setTimeframe} />
-        <button
-          onClick={handleRefresh}
-          disabled={refreshing}
-          className="flex items-center px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50"
-        >
-          <RefreshCwIcon className={`w-4 h-4 mr-2 ${refreshing ? 'animate-spin' : ''}`} />
-          {refreshing ? 'Refreshing...' : 'Refresh'}
-        </button>
+    <div className="space-y-8">
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between">
+        <div className="mb-4 md:mb-0">
+          <h1 className="text-2xl font-bold text-gray-900">Analytics Dashboard</h1>
+          <p className="mt-1 text-gray-600">
+            Real-time insights and platform metrics
+          </p>
+        </div>
       </div>
+
+      {/* Add a subtle loading indicator when refreshing */}
+      {refreshing && (
+        <div className="flex items-center text-sm text-gray-500">
+          <RefreshCwIcon className="w-4 h-4 mr-2 animate-spin" />
+          Updating data...
+        </div>
+      )}
 
       {/* Key Metrics Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">

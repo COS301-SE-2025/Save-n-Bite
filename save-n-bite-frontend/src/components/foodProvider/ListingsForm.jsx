@@ -25,6 +25,12 @@ export function ListingForm({
   const [userData, setUserData] = useState(null);
   const [toast, setToast] = useState(null);
 
+  // Mock business hours - these will be used instead of user input
+  const MOCK_BUSINESS_HOURS = {
+    start: '08:00',
+    end: '17:00'
+  };
+
   // Fields that can be edited according to the API
   const editableFields = [
     'name',
@@ -97,8 +103,6 @@ export function ListingForm({
     original_price: '',
     discounted_price: '',
     expiry_date: '',
-    pickup_start_time: '',
-    pickup_end_time: '',
     image: null,
     // Pickup location fields
     pickup_address: '',
@@ -269,14 +273,12 @@ export function ListingForm({
           );
         }
 
-        // Validate all required fields
+        // Validate all required fields - REMOVED pickup time validation
         const requiredFields = [
           'name',
           'description',
           'quantity',
           'expiry_date',
-          'pickup_start_time',
-          'pickup_end_time',
           'pickup_address',
           'pickup_contact_person',
           'pickup_contact_phone',
@@ -298,19 +300,10 @@ export function ListingForm({
           throw new Error('Please fill in all required fields');
         }
 
-        // Validate pickup time range
-        if (formData.pickup_start_time >= formData.pickup_end_time) {
-          setErrors((prev) => ({
-            ...prev,
-            pickup_end_time: 'End time must be after start time',
-          }));
-          throw new Error('Invalid pickup time range');
-        }
-
         console.log('=== VALIDATION PASSED ===');
 
-        // Create pickup_window from start and end times
-        const pickup_window = `${formData.pickup_start_time}-${formData.pickup_end_time}`;
+        // Use mock business hours instead of user input
+        const pickup_window = `${MOCK_BUSINESS_HOURS.start}-${MOCK_BUSINESS_HOURS.end}`;
 
         // Format the date to YYYY-MM-DD
         const expiryDate = new Date(formData.expiry_date);
@@ -407,7 +400,7 @@ export function ListingForm({
               const scheduleData = {
                 food_listing_id: createdListingId,
                 location_id: createdLocationId,
-                pickup_window: pickup_window,
+                pickup_window: pickup_window, // Using mock business hours
                 total_slots: parseInt(formData.total_slots),
                 max_orders_per_slot: parseInt(formData.max_orders_per_slot),
                 slot_buffer_minutes: parseInt(formData.slot_buffer_minutes),
@@ -464,14 +457,6 @@ export function ListingForm({
             <p className="text-red-600 dark:text-red-400">{errors.submit}</p>
           </div>
         )}
-
-        {/* {editMode && (
-          <div className="mb-6 p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
-            <p className="text-blue-600 dark:text-blue-400 text-sm">
-              <strong>Edit Mode:</strong> You can only modify the name, description, quantity, and discounted price. Other fields are read-only.
-            </p>
-          </div>
-        )} */}
 
         <div className="space-y-6">
           {/* Food Name */}
@@ -656,7 +641,7 @@ export function ListingForm({
             </div>
           )}
 
-          {/* Expiration Date and Pickup Time Row */}
+          {/* Expiration Date */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
@@ -686,57 +671,22 @@ export function ListingForm({
                 </p>
               )}
             </div>
+            {/* Pickup Hours Info Display */}
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
-                Pickup Time Range *
+                Pickup Hours
               </label>
-              <div className="grid grid-cols-2 gap-2">
-                <input
-                  type="time"
-                  name="pickup_start_time"
-                  value={formData.pickup_start_time}
-                  onChange={handleInputChange}
-                  disabled={isFieldDisabled('pickup_start_time')}
-                  className={`w-full p-2 border rounded-lg ${
-                    errors.pickup_start_time
-                      ? 'border-red-500'
-                      : 'border-gray-300 dark:border-gray-700'
-                  } bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 ${
-                    isFieldDisabled('pickup_start_time')
-                      ? 'opacity-60 cursor-not-allowed'
-                      : ''
-                  }`}
-                  required
-                />
-                <input
-                  type="time"
-                  name="pickup_end_time"
-                  value={formData.pickup_end_time}
-                  onChange={handleInputChange}
-                  disabled={isFieldDisabled('pickup_end_time')}
-                  className={`w-full p-2 border rounded-lg ${
-                    errors.pickup_end_time
-                      ? 'border-red-500'
-                      : 'border-gray-300 dark:border-gray-700'
-                  } bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 ${
-                    isFieldDisabled('pickup_end_time')
-                      ? 'opacity-60 cursor-not-allowed'
-                      : ''
-                  }`}
-                  required
-                />
+              <div className="w-full p-2 border rounded-lg border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-gray-700 dark:text-gray-300">
+                <div className="flex items-center">
+                  <ClockIcon className="w-4 h-4 mr-2 text-gray-500" />
+                  <span className="text-sm">
+                    Standard business hours: {MOCK_BUSINESS_HOURS.start} - {MOCK_BUSINESS_HOURS.end}
+                  </span>
+                </div>
               </div>
-              {formData.pickup_start_time && formData.pickup_end_time && (
-                <p className="text-sm text-gray-600 dark:text-gray-300 mt-1">
-                  Pickup window: {formData.pickup_start_time}-
-                  {formData.pickup_end_time}
-                </p>
-              )}
-              {(errors.pickup_start_time || errors.pickup_end_time) && (
-                <p className="text-red-500 dark:text-red-400 text-sm mt-1">
-                  {errors.pickup_start_time || errors.pickup_end_time}
-                </p>
-              )}
+              <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                All pickups are available during standard business hours
+              </p>
             </div>
           </div>
 

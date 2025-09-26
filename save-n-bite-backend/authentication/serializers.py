@@ -47,14 +47,14 @@ class CustomerRegistrationSerializer(BaseRegistrationSerializer):
         profile_image_data = validated_data.pop('profile_image', None)
         validated_data['user_type'] = 'customer'
 
+        # Create user (this triggers post_save signal to create CustomerProfile)
         user = super().create(validated_data)
 
-        customer_profile = CustomerProfile.objects.create(
-            user=user,
-            full_name=full_name
-        )
+        # Get the profile created by the signal and update it
+        customer_profile = user.customer_profile
+        customer_profile.full_name = full_name
 
-        # UPDATED: Handle profile image upload to blob storage
+        # Handle profile image upload to blob storage
         if profile_image_data:
             try:
                 # Parse base64 data
@@ -69,11 +69,11 @@ class CustomerRegistrationSerializer(BaseRegistrationSerializer):
                 image_data = base64.b64decode(data_part)
                 image_file = ContentFile(image_data, name=f'profile_{user.UserID}.{ext}')
                 
-                # Save to blob storage (Django will handle this automatically)
+                # Save to blob storage
                 customer_profile.profile_image.save(
                     f'profile_{user.UserID}.{ext}',
                     image_file,
-                    save=True
+                    save=False  # Don't save yet
                 )
                 
                 logger.info(f"Successfully uploaded profile image for customer {user.email}")
@@ -82,6 +82,7 @@ class CustomerRegistrationSerializer(BaseRegistrationSerializer):
                 logger.error(f"Failed to upload profile image for customer {user.email}: {str(e)}")
                 # Don't fail registration for image upload errors
 
+        customer_profile.save()
         return user
 
 class NGORegistrationSerializer(BaseRegistrationSerializer):
@@ -127,16 +128,17 @@ class NGORegistrationSerializer(BaseRegistrationSerializer):
         logo_data = validated_data.pop('organisation_logo', None)
         validated_data['user_type'] = 'ngo'
 
-        # Create user (only with User model fields)
+        # Create user (this triggers post_save signal to create NGOProfile)
         user = super().create(validated_data)
 
-        # Create NGO profile with extracted data
-        ngo_profile = NGOProfile.objects.create(
-            user=user,
-            **organisation_data
-        )
+        # Get the profile created by the signal and update it
+        ngo_profile = user.ngo_profile
+        
+        # Update profile with extracted data
+        for field, value in organisation_data.items():
+            setattr(ngo_profile, field, value)
 
-        # UPDATED: Handle document upload to blob storage
+        # Handle document upload to blob storage
         if npo_document_data:
             try:
                 # Parse base64 data
@@ -164,7 +166,7 @@ class NGORegistrationSerializer(BaseRegistrationSerializer):
                 logger.error(f"Failed to upload NPO document for {user.email}: {str(e)}")
                 raise serializers.ValidationError("Failed to process NPO document")
 
-        # UPDATED: Handle logo upload to blob storage
+        # Handle logo upload to blob storage
         if logo_data:
             try:
                 # Parse base64 data
@@ -280,17 +282,20 @@ class FoodProviderRegistrationSerializer(BaseRegistrationSerializer):
             
             cipc_document_data = validated_data.pop('cipc_document')
             logo_data = validated_data.pop('logo', None)
-            banner_data = validated_data.pop('banner', None)  # NEW: Handle banner
+            banner_data = validated_data.pop('banner', None)
             validated_data['user_type'] = 'provider'
 
+            # Create user (this triggers post_save signal to create FoodProviderProfile)
             user = super().create(validated_data)
 
-            provider_profile = FoodProviderProfile.objects.create(
-                user=user,
-                **provider_data
-            )
+            # Get the profile created by the signal and update it
+            provider_profile = user.provider_profile
+            
+            # Update profile with extracted data
+            for field, value in provider_data.items():
+                setattr(provider_profile, field, value)
 
-            # UPDATED: Handle CIPC document upload to blob storage
+            # Handle CIPC document upload to blob storage
             if cipc_document_data:
                 try:
                     # Parse base64 data
@@ -318,7 +323,7 @@ class FoodProviderRegistrationSerializer(BaseRegistrationSerializer):
                     logger.error(f"Failed to upload CIPC document for {user.email}: {str(e)}")
                     raise serializers.ValidationError("Failed to process CIPC document")
 
-            # UPDATED: Handle logo upload to blob storage
+            # Handle logo upload to blob storage
             if logo_data:
                 try:
                     # Parse base64 data
@@ -346,7 +351,7 @@ class FoodProviderRegistrationSerializer(BaseRegistrationSerializer):
                     logger.error(f"Failed to upload provider logo for {user.email}: {str(e)}")
                     # Logo is optional, so don't fail registration
 
-            # UPDATED: Handle banner upload to blob storage
+            # Handle banner upload to blob storage
             if banner_data:
                 try:
                     # Parse base64 data
@@ -707,10 +712,6 @@ class PopularTagsSerializer(serializers.Serializer):
     count = serializers.IntegerField()
     providers = serializers.ListField(child=serializers.CharField(), required=False)
 
-class LoginSerializer(serializers.Serializer):
-    # ... (keep existing LoginSerializer unchanged)
-    pass
-
 class DeleteAccountSerializer(serializers.Serializer):
     """Serializer for deleting account (requires password confirmation)"""
     password = serializers.CharField(write_only=True)
@@ -720,3 +721,19 @@ class DeleteAccountSerializer(serializers.Serializer):
         if not user.check_password(value):
             raise serializers.ValidationError("Password is incorrect")
         return value
+
+# Individual profile serializers
+class CustomerProfileSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CustomerProfile
+        fields = ['full_name', 'profile_image']
+
+class NGOProfileSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = NGOProfile
+        fields = ['representative_name', 'organisation_name', 'organisation_contact', 'organisation_email', 'organisation_logo', 'status']
+
+class ProviderProfileSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = FoodProviderProfile
+        fields = ['business_name', 'business_email', 'business_contact', 'business_address', 'logo', 'banner', 'business_description', 'business_tags', 'status']
