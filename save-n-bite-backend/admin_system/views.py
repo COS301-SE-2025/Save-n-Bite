@@ -501,7 +501,6 @@ def update_verification_status(request):
         }, status=status.HTTP_200_OK)
         
     except ValueError as e:
-        # Provide a clear 404 with reason (e.g., profile not found)
         return Response({
             'error': {
                 'code': 'NOT_FOUND',
@@ -509,13 +508,11 @@ def update_verification_status(request):
             }
         }, status=status.HTTP_404_NOT_FOUND)
     except Exception as e:
-        # Log full exception for server diagnostics and surface basic details to client
-        logger.error(f"Update verification error: {str(e)}", exc_info=True)
+        logger.error(f"Update verification error: {str(e)}")
         return Response({
             'error': {
                 'code': 'VERIFICATION_UPDATE_ERROR',
-                'message': 'Failed to update verification status',
-                'details': str(e)
+                'message': 'Failed to update verification status'
             }
         }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 

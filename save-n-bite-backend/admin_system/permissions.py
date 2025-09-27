@@ -1,6 +1,5 @@
 # admin_panel/permissions.py
 from rest_framework.permissions import BasePermission
-from django.conf import settings
 
 class IsSystemAdmin(BasePermission):
     """
@@ -9,41 +8,17 @@ class IsSystemAdmin(BasePermission):
     """
     
     def has_permission(self, request, view):
-        # Feature flag: relax only verification endpoints if enabled
-        try:
-            relax_verification = bool(getattr(settings, 'RELAX_ADMIN_VERIFICATION', False))
-        except Exception:
-            relax_verification = False
-
-        if relax_verification:
-            path = getattr(request, 'path', '') or ''
-            # Only relax for admin verification endpoints
-            if path.startswith('/api/admin/verifications/'):
-                return request.user.is_authenticated
-
         return (
-            request.user.is_authenticated and (
-                getattr(request.user, 'admin_rights', False) is True or
-                getattr(request.user, 'is_superuser', False) is True
-            )
+            request.user.is_authenticated and 
+            hasattr(request.user, 'admin_rights') and
+            request.user.admin_rights == True
         )
     
     def has_object_permission(self, request, view, obj):
-        try:
-            relax_verification = bool(getattr(settings, 'RELAX_ADMIN_VERIFICATION', False))
-        except Exception:
-            relax_verification = False
-
-        if relax_verification:
-            path = getattr(request, 'path', '') or ''
-            if path.startswith('/api/admin/verifications/'):
-                return request.user.is_authenticated
-
         return (
-            request.user.is_authenticated and (
-                getattr(request.user, 'admin_rights', False) is True or
-                getattr(request.user, 'is_superuser', False) is True
-            )
+            request.user.is_authenticated and 
+            hasattr(request.user, 'admin_rights') and
+            request.user.admin_rights == True
         )
 
 class CanModerateContent(BasePermission):
