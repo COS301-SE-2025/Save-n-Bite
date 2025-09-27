@@ -3,8 +3,7 @@
 import os
 from azure.storage.blob import BlobServiceClient, PublicAccess
 from django.conf import settings
-from django.core.files.storage import Storage, FileSystemStorage
-
+from django.core.files.storage import Storage
 from django.core.files.base import ContentFile
 from django.utils.deconstruct import deconstructible
 from urllib.parse import urljoin
@@ -22,8 +21,8 @@ class AzureBlobStorage(Storage):
     """
     
     def __init__(self, container_name=None):
-        self.container_name = container_name or getattr(settings, 'AZURE_CONTAINER_NAME', 'savenbite-media')
-        self.connection_string = getattr(settings, 'AZURE_STORAGE_CONNECTION_STRING', None)
+        self.container_name = container_name or settings.AZURE_CONTAINER_NAME
+        self.connection_string = settings.AZURE_STORAGE_CONNECTION_STRING
         self.account_url = getattr(settings, 'AZURE_ACCOUNT_URL', None)
         self.custom_domain = getattr(settings, 'AZURE_CUSTOM_DOMAIN', None)
         
@@ -243,44 +242,30 @@ class AzureBlobStorage(Storage):
 # Utility functions for different file types
 def get_customer_profile_storage():
     """Storage for customer profile images"""
-    if getattr(settings, 'TESTING', False):
-        return FileSystemStorage(location=settings.MEDIA_ROOT, base_url=settings.MEDIA_URL)
     return AzureBlobStorage('customer-profiles')
 
 def get_ngo_document_storage():
     """Storage for NGO documents"""
-    if getattr(settings, 'TESTING', False):
-        return FileSystemStorage(location=settings.MEDIA_ROOT, base_url=settings.MEDIA_URL)
     return AzureBlobStorage('ngo-documents')
 
 def get_ngo_logo_storage():
     """Storage for NGO logos"""
-    if getattr(settings, 'TESTING', False):
-        return FileSystemStorage(location=settings.MEDIA_ROOT, base_url=settings.MEDIA_URL)
     return AzureBlobStorage('ngo-logos')
 
 def get_provider_document_storage():
     """Storage for provider CIPC documents"""
-    if getattr(settings, 'TESTING', False):
-        return FileSystemStorage(location=settings.MEDIA_ROOT, base_url=settings.MEDIA_URL)
     return AzureBlobStorage('provider-documents')
 
 def get_provider_logo_storage():
     """Storage for provider logos"""
-    if getattr(settings, 'TESTING', False):
-        return FileSystemStorage(location=settings.MEDIA_ROOT, base_url=settings.MEDIA_URL)
     return AzureBlobStorage('provider-logos')
 
 def get_provider_banner_storage():
     """Storage for provider banners"""
-    if getattr(settings, 'TESTING', False):
-        return FileSystemStorage(location=settings.MEDIA_ROOT, base_url=settings.MEDIA_URL)
     return AzureBlobStorage('provider-banners')
 
 def get_food_listing_storage():
     """Storage for food listing images"""
-    if getattr(settings, 'TESTING', False):
-        return FileSystemStorage(location=settings.MEDIA_ROOT, base_url=settings.MEDIA_URL)
     return AzureBlobStorage('food-listings')
 
 
