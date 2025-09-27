@@ -39,6 +39,11 @@ jobs:
     steps:
     - uses: actions/checkout@v4
 
+    - name: Ensure static and media directories exist
+      run: |
+        mkdir -p static
+        mkdir -p media
+
     - name: Set up Python
       uses: actions/setup-python@v5
       with:
