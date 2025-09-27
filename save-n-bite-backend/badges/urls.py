@@ -19,12 +19,12 @@ urlpatterns = [
     # Badge Management
     path('pin/', views.BadgePinView.as_view(), name='badge-pin'),
     path('download/<uuid:badge_id>/', views.download_badge, name='badge-download'),
-    path('recalculate/', views.recalculate_badges, name='recalculate-badges'),
+    path('refresh/', views.refresh_my_badges, name='refresh-badges'),
     
     # Leaderboards
     path('leaderboard/', views.get_badge_leaderboard, name='badge-leaderboard'),
     path('leaderboard/monthly/', views.get_monthly_leaderboards, name='monthly-leaderboards'),
     
-    # Admin endpoints
-    path('admin/calculate-all/', views.admin_calculate_all_badges, name='admin-calculate-badges'),
+    # Admin endpoints (optional)
+    path('admin/initialize-types/', views.admin_initialize_badge_types, name='admin-initialize-types'),
 ]
