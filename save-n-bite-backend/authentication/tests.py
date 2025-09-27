@@ -1,4 +1,6 @@
 from django.test import TestCase, RequestFactory
+from django.db.models.signals import post_save
+
 from django.contrib.admin.sites import AdminSite
 from django.contrib.auth import get_user_model
 from django.core.files.uploadedfile import SimpleUploadedFile
@@ -31,7 +33,8 @@ from authentication.serializers import (
 )
 
 from authentication.jwt_auth import CustomJWTAuthentication
-from .models import User, CustomerProfile, NGOProfile, FoodProviderProfile
+from .models import User, CustomerProfile, NGOProfile, FoodProviderProfile, create_user_profile
+
 from unittest.mock import patch, MagicMock
 from authentication.middleware import PasswordChangeMiddleware
 from authentication.admin import (
@@ -40,7 +43,9 @@ from authentication.admin import (
 
 
 class AuthenticationTests(TestCase):
+
     def setUp(self):
+        post_save.disconnect(create_user_profile, sender=User)
         self.client = APIClient()
         self.register_customer_url = reverse('register_customer')
         self.register_ngo_url = reverse('register_ngo')
@@ -315,6 +320,14 @@ class AdminViewsTests(TestCase):
             print(f"DEBUG: Server error response: {response.status_code}")
             print(f"DEBUG: Response data: {response.data}")
             
+def setUpModule():
+    """Disconnect auto profile creation to avoid duplicate profiles in tests."""
+    post_save.disconnect(receiver=create_user_profile, sender=User)
+
+def tearDownModule():
+    """Reconnect the signal after tests complete."""
+    post_save.connect(receiver=create_user_profile, sender=User)
+
 class MockRequest:
     def __init__(self, user=None):
         self.user = user
@@ -380,9 +393,9 @@ class CustomerProfileAdminTest(TestCase):
             password='testpass123',
             user_type='customer'
         )
-        self.profile = CustomerProfile.objects.create(
+        self.profile, _ = CustomerProfile.objects.get_or_create(
             user=self.user,
-            full_name='Test Customer'
+            defaults={'full_name': 'Test Customer'}
         )
 
     def test_list_display(self):
@@ -1195,9 +1208,9 @@ class UserModelTest(TestCase):
         self.assertEqual(self.user.id, self.user.UserID)
 
     def test_get_full_name_customer(self):
-        customer_profile = CustomerProfile.objects.create(
+        customer_profile, _ = CustomerProfile.objects.get_or_create(
             user=self.user,
-            full_name='Test Customer'
+            defaults={'full_name': 'Test Customer'}
         )
         self.assertEqual(self.user.get_full_name(), 'Test Customer')
 
@@ -1339,9 +1352,9 @@ class CustomerProfileModelTest(TestCase):
             password='testpass123',
             user_type='customer'
         )
-        self.profile = CustomerProfile.objects.create(
+        self.profile, _ = CustomerProfile.objects.get_or_create(
             user=self.user,
-            full_name='Test Customer'
+            defaults={'full_name': 'Test Customer'}
         )
 
     def test_customer_profile_creation(self):
@@ -1974,9 +1987,9 @@ class UserProfileSerializerTest(TestCase):
             password='testpass123',
             user_type='customer'
         )
-        self.customer_profile = CustomerProfile.objects.create(
+        self.customer_profile, _ = CustomerProfile.objects.get_or_create(
             user=self.user,
-            full_name='Test Customer'
+            defaults={'full_name': 'Test Customer'}
         )
 
     def test_user_profile_serialization(self):

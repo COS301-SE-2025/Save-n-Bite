@@ -33,6 +33,7 @@ SECRET_KEY = os.getenv("SECRET_KEY", get_random_secret_key())
 # SECURITY WARNING: don't run with debug turned on in production!
 #DEBUG = os.getenv("DEBUG") == "false"
 DEBUG = os.getenv("DEBUG", "True").lower() == "true"
+GEOCODING_ENABLED = os.getenv("GEOCODING_ENABLED", "True").lower() == "true"
 
 
 ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", "localhost,127.0.0.1,169.254.134.3,savenbiteservice-hzghg8gcgddtcfg7.southafricanorth-01.azurewebsites.net").split(",")

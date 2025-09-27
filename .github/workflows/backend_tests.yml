@@ -99,6 +99,7 @@ jobs:
         # Disable Azure Storage for testing
         USE_AZURE_STORAGE=False
         TESTING=True
+        GEOCODING_ENABLED=False
         AZURE_STORAGE_CONNECTION_STRING=UseDevelopmentStorage=true
         AZURE_CONTAINER_NAME=test-container
         EOF
