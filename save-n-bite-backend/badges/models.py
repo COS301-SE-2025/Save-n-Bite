@@ -187,9 +187,6 @@ class ProviderBadgeStats(models.Model):
     # Calculation tracking
     last_calculated_at = models.DateTimeField(auto_now=True)
     
-    # Milestone tracking (like digital garden system)
-    achieved_milestones = models.JSONField(default=dict, blank=True, help_text="Track which milestones have been achieved")
-    
     class Meta:
         verbose_name = 'Provider Badge Statistics'
         verbose_name_plural = 'Provider Badge Statistics'
