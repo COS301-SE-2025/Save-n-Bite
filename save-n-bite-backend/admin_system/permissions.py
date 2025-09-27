@@ -9,16 +9,18 @@ class IsSystemAdmin(BasePermission):
     
     def has_permission(self, request, view):
         return (
-            request.user.is_authenticated and 
-            hasattr(request.user, 'admin_rights') and
-            request.user.admin_rights == True
+            request.user.is_authenticated and (
+                getattr(request.user, 'admin_rights', False) is True or
+                getattr(request.user, 'is_superuser', False) is True
+            )
         )
     
     def has_object_permission(self, request, view, obj):
         return (
-            request.user.is_authenticated and 
-            hasattr(request.user, 'admin_rights') and
-            request.user.admin_rights == True
+            request.user.is_authenticated and (
+                getattr(request.user, 'admin_rights', False) is True or
+                getattr(request.user, 'is_superuser', False) is True
+            )
         )
 
 class CanModerateContent(BasePermission):

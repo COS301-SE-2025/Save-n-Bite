@@ -60,8 +60,8 @@ class VerificationService:
                 # Try to find by profile ID first
                 try:
                     profile = NGOProfile.objects.select_for_update().get(id=profile_id)
-                except NGOProfile.DoesNotExist:
-                    # If not found, try to find by user ID
+                except (NGOProfile.DoesNotExist, ValueError, TypeError):
+                    # If not found or invalid UUID, try to find by user ID
                     profile = NGOProfile.objects.select_for_update().get(user__UserID=profile_id)
 
                 old_status = profile.status
@@ -95,8 +95,8 @@ class VerificationService:
                 # Try to find by profile ID first
                 try:
                     profile = FoodProviderProfile.objects.select_for_update().get(id=profile_id)
-                except FoodProviderProfile.DoesNotExist:
-                    # If not found, try to find by user ID
+                except (FoodProviderProfile.DoesNotExist, ValueError, TypeError):
+                    # If not found or invalid UUID, try to find by user ID
                     profile = FoodProviderProfile.objects.select_for_update().get(user__UserID=profile_id)
 
                 old_status = profile.status
