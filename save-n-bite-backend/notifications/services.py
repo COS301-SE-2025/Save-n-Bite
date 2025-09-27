@@ -1207,3 +1207,246 @@ class NotificationService:
             logger.error(f"Failed to send order ready notification for pickup {scheduled_pickup.id}: {str(e)}")
             # Don't re-raise the exception to avoid breaking the verification process
             return None
+        
+    @staticmethod
+    def send_plant_earned_notification(customer, plant, quantity=1, reason='order', order=None, milestone_details=None):
+        """
+        Send in-app notification when a customer earns a plant
+        
+        Args:
+            customer: User who earned the plant
+            plant: Plant object that was earned
+            quantity: Number of plants earned (default 1)
+            reason: Why the plant was earned ('order', 'milestone_orders', etc.)
+            order: Order object if earned from an order
+            milestone_details: Dict with milestone information if applicable
+        """
+        try:
+            # Create notification title and message based on reason
+            title, message = NotificationService._get_plant_earning_message(
+                plant, quantity, reason, milestone_details
+            )
+            
+            # Prepare notification data
+            notification_data = {
+                'plant_id': str(plant.id),
+                'plant_name': plant.name,
+                'plant_rarity': plant.rarity,
+                'plant_category': plant.category,
+                'quantity_earned': quantity,
+                'earning_reason': reason,
+                'garden_action': 'plant_earned'
+            }
+            
+            # Add order information if applicable
+            if order:
+                notification_data.update({
+                    'order_id': str(order.id),
+                    'pickup_code': order.pickup_code,
+                    'order_total': str(order.interaction.total_amount)
+                })
+            
+            # Add milestone information if applicable
+            if milestone_details:
+                notification_data.update(milestone_details)
+            
+            # Create the notification
+            notification = NotificationService.create_notification(
+                recipient=customer,
+                notification_type='plant_earned',
+                title=title,
+                message=message,
+                data=notification_data
+            )
+            
+            logger.info(f"Plant earned notification sent to {customer.email}: {plant.name} ({reason})")
+            return notification
+            
+        except Exception as e:
+            logger.error(f"Failed to send plant earned notification to {customer.email}: {str(e)}")
+            # Don't raise exception to avoid breaking the plant earning process
+            return None
+
+    @staticmethod
+    def _get_plant_earning_message(plant, quantity, reason, milestone_details=None):
+        """Generate appropriate title and message for plant earning notification"""
+        
+        # Rarity emojis for visual appeal
+        rarity_emojis = {
+            'common': '🌱',
+            'uncommon': '🌿', 
+            'rare': '🌺',
+            'epic': '✨',
+            'legendary': '👑'
+        }
+        
+        plant_emoji = rarity_emojis.get(plant.rarity, '🌱')
+        quantity_text = f"{quantity}x " if quantity > 1 else ""
+        
+        # Generate title and message based on earning reason
+        if reason == 'order':
+            title = f"{plant_emoji} New Plant Earned!"
+            message = f"Congratulations! You've earned {quantity_text}{plant.name} for completing your order. Check your garden inventory to plant it!"
+            
+        elif reason == 'milestone_orders':
+            milestone_count = milestone_details.get('milestone_count', 'multiple') if milestone_details else 'multiple'
+            title = f"🎉 Order Milestone Reached!"
+            message = f"Amazing! You've completed {milestone_count} orders and earned {quantity_text}{plant.name} ({plant.rarity})! Your dedication to reducing food waste is paying off!"
+            
+        elif reason == 'milestone_amount':
+            milestone_amount = milestone_details.get('milestone_amount', 'significant') if milestone_details else 'significant'
+            title = f"💰 Spending Milestone Achieved!"
+            message = f"Fantastic! You've reached R{milestone_amount} in total orders and earned {quantity_text}{plant.name} ({plant.rarity})! Keep supporting local businesses!"
+            
+        elif reason == 'milestone_businesses':
+            business_count = milestone_details.get('business_count', 'multiple') if milestone_details else 'multiple'
+            title = f"🏪 Business Explorer Bonus!"
+            message = f"Incredible! You've ordered from {business_count} different businesses and earned {quantity_text}{plant.name} ({plant.rarity})! Your community impact is growing!"
+            
+        elif reason == 'special_event':
+            event_name = milestone_details.get('event_name', 'special event') if milestone_details else 'special event'
+            title = f"🎁 Special Event Reward!"
+            message = f"Hooray! You've earned {quantity_text}{plant.name} from {event_name}! Limited-time rewards like this help make your garden truly unique!"
+            
+        elif reason == 'admin_grant':
+            title = f"{plant_emoji} Plant Granted!"
+            message = f"You've received {quantity_text}{plant.name}! This special grant has been added to your garden inventory."
+            
+        else:
+            # Fallback for unknown reasons
+            title = f"{plant_emoji} New Plant Earned!"
+            message = f"Congratulations! You've earned {quantity_text}{plant.name}. Add it to your garden inventory!"
+        
+        return title, message
+
+    @staticmethod
+    def send_multiple_plants_earned_notification(customer, plants_earned_list, order=None):
+        """
+        Send notification when multiple plants are earned at once (e.g., order + milestones)
+        
+        Args:
+            customer: User who earned the plants
+            plants_earned_list: List of dicts with plant earning information
+            order: Order object if earned from an order
+        """
+        try:
+            if not plants_earned_list:
+                return None
+                
+            if len(plants_earned_list) == 1:
+                # Single plant - use regular notification
+                plant_info = plants_earned_list[0]
+                milestone_details = plant_info.get('milestone_details')
+                return NotificationService.send_plant_earned_notification(
+                    customer=customer,
+                    plant=plant_info['plant'],
+                    quantity=plant_info['quantity'],
+                    reason=plant_info.get('reason', 'order'),
+                    order=order,
+                    milestone_details=milestone_details
+                )
+            
+            # Multiple plants earned
+            total_plants = sum(item['quantity'] for item in plants_earned_list)
+            plant_names = [item['plant'].name for item in plants_earned_list]
+            
+            # Check if any are milestone rewards
+            has_milestones = any('milestone' in item.get('reason', '') for item in plants_earned_list)
+            
+            if has_milestones:
+                title = "🎉 Multiple Rewards Earned!"
+                message = f"Incredible achievement! You've earned {total_plants} plants: {', '.join(plant_names)}. You've unlocked milestone rewards for your dedication!"
+            else:
+                title = "🌱 Multiple Plants Earned!"
+                message = f"Amazing! You've earned {total_plants} plants: {', '.join(plant_names)}. Your garden is flourishing!"
+            
+            # Prepare comprehensive notification data
+            notification_data = {
+                'total_plants_earned': total_plants,
+                'plants_details': [
+                    {
+                        'plant_id': str(item['plant'].id),
+                        'plant_name': item['plant'].name,
+                        'plant_rarity': item['plant'].rarity,
+                        'quantity': item['quantity'],
+                        'reason': item.get('reason', 'order')
+                    }
+                    for item in plants_earned_list
+                ],
+                'garden_action': 'multiple_plants_earned',
+                'has_milestone_rewards': has_milestones
+            }
+            
+            # Add order information if applicable
+            if order:
+                notification_data.update({
+                    'order_id': str(order.id),
+                    'pickup_code': order.pickup_code,
+                    'order_total': str(order.interaction.total_amount)
+                })
+            
+            # Create the notification
+            notification = NotificationService.create_notification(
+                recipient=customer,
+                notification_type='plant_earned',
+                title=title,
+                message=message,
+                data=notification_data
+            )
+            
+            logger.info(f"Multiple plants earned notification sent to {customer.email}: {total_plants} plants")
+            return notification
+            
+        except Exception as e:
+            logger.error(f"Failed to send multiple plants earned notification to {customer.email}: {str(e)}")
+            return None
+
+    @staticmethod
+    def send_garden_milestone_notification(customer, milestone_type, milestone_value):
+        """
+        Send notification for garden-specific milestones
+        
+        Args:
+            customer: User who reached the milestone
+            milestone_type: Type of milestone ('plants_collected', 'garden_completion', etc.)
+            milestone_value: Value of milestone reached
+        """
+        try:
+            title_messages = {
+                'plants_collected': f"🌿 Plant Collector Milestone!",
+                'garden_completion': f"🌻 Garden Progress Milestone!",
+                'rare_plant_collection': f"💎 Rare Plant Collector!",
+                'diversity_milestone': f"🌈 Garden Diversity Champion!"
+            }
+            
+            content_messages = {
+                'plants_collected': f"Congratulations! You've collected {milestone_value} plants in your digital garden! Your collection is growing beautifully!",
+                'garden_completion': f"Amazing progress! Your garden is {milestone_value}% complete! Keep placing plants to create your perfect digital ecosystem!",
+                'rare_plant_collection': f"Impressive! You've collected {milestone_value} rare or higher plants! Your garden is becoming truly extraordinary!",
+                'diversity_milestone': f"Fantastic! You have {milestone_value} different plant categories in your garden! Your biodiversity efforts are commendable!"
+            }
+            
+            title = title_messages.get(milestone_type, f"🎯 Garden Milestone!")
+            message = content_messages.get(milestone_type, f"You've reached a garden milestone: {milestone_value}!")
+            
+            notification_data = {
+                'milestone_type': milestone_type,
+                'milestone_value': milestone_value,
+                'garden_action': 'garden_milestone',
+                'celebration_worthy': True
+            }
+            
+            notification = NotificationService.create_notification(
+                recipient=customer,
+                notification_type='garden_milestone',
+                title=title,
+                message=message,
+                data=notification_data
+            )
+            
+            logger.info(f"Garden milestone notification sent to {customer.email}: {milestone_type} - {milestone_value}")
+            return notification
+            
+        except Exception as e:
+            logger.error(f"Failed to send garden milestone notification to {customer.email}: {str(e)}")
+            return None

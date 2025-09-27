@@ -55,6 +55,7 @@ INSTALLED_APPS = [
     'rest_framework.authtoken',
     'rest_framework_simplejwt',
     'corsheaders',
+    'backend.apps.BackendConfig',  # Use the app config to register signals
     'authentication',
     'interactions',
     'food_listings',
@@ -63,6 +64,8 @@ INSTALLED_APPS = [
     'scheduling',
     'reviews',
     'admin_system',
+    'digital_garden',
+    'badges',
 ]
 
 MIDDLEWARE = [

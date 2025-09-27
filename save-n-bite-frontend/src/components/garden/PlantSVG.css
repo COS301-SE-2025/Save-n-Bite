@@ -1,0 +1,170 @@
+/* components/garden/PlantSVG.css */
+/* Enhanced CSS for PlantSVG component in garden tiles */
+
+.plant-svg-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+  width: 100%;
+  height: 100%;
+}
+
+.plant-svg-container:hover {
+  transform: scale(1.05);
+}
+
+.plant-svg-container.loading {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  border: 1px dashed #ccc;
+}
+
+.loading-spinner {
+  font-size: 20px;
+  animation: spin 2s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.svg-wrapper {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.svg-wrapper svg {
+  max-width: 100%;
+  max-height: 100%;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.svg-placeholder {
+  font-size: 24px;
+  opacity: 0.6;
+  color: #666;
+}
+
+.plant-svg-container.error .svg-placeholder {
+  color: #ef4444;
+}
+
+/* Rarity indicator */
+.rarity-indicator {
+  position: absolute;
+  top: -2px;
+  right: -2px;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  border: 2px solid white;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  z-index: 10;
+}
+
+.rarity-indicator.uncommon { background: #3b82f6; }
+.rarity-indicator.rare { background: #a855f7; }
+.rarity-indicator.epic { background: #f59e0b; }
+.rarity-indicator.legendary { background: #ef4444; }
+
+.rarity-dot {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  background: inherit;
+}
+
+/* Selection ring */
+.selection-ring {
+  position: absolute;
+  inset: -4px;
+  border: 2px solid #3b82f6;
+  border-radius: 8px;
+  background: rgba(59, 130, 246, 0.1);
+  animation: selectionPulse 1.5s ease-in-out infinite;
+  z-index: 5;
+}
+
+@keyframes selectionPulse {
+  0%, 100% {
+    opacity: 0.6;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.05);
+  }
+}
+
+/* Plant SVG specific styles */
+.plant-svg {
+  transition: all 0.3s ease;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
+  width: 100% !important;
+  height: 100% !important;
+}
+
+.plant-svg.selected {
+  filter: drop-shadow(0 4px 8px rgba(59, 130, 246, 0.3));
+}
+
+.plant-svg:hover {
+  transform: scale(1.1);
+}
+
+/* Debug info styling */
+.debug-info {
+  position: absolute;
+  bottom: -20px;
+  left: 0;
+  font-size: 10px;
+  color: red;
+  white-space: nowrap;
+  background: rgba(0, 0, 0, 0.7);
+  padding: 2px 4px;
+  border-radius: 3px;
+  z-index: 15;
+}
+
+/* Specific styling for plants in garden tiles */
+.plant-in-tile {
+  width: 100%;
+  height: 100%;
+}
+
+.tile-plant .plant-svg-container {
+  width: 100%;
+  height: 100%;
+  min-height: 40px;
+  min-width: 40px;
+}
+
+/* Ensure SVG content fills the container properly */
+.tile-plant .svg-wrapper svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  max-width: none;
+  max-height: none;
+}
+
+/* Loading state for garden tiles */
+.tile-plant .plant-svg-container.loading {
+  background: rgba(34, 84, 61, 0.2);
+  border: 1px dashed #16a34a;
+  border-radius: 4px;
+}
+
+.tile-plant .loading-spinner {
+  font-size: 16px;
+  color: #16a34a;
+}

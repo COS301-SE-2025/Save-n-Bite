@@ -41,15 +41,15 @@ class InteractionModelTest(TestCase):
             status='verified'
         )
         
-        # FoodListing provider should be a User, not FoodProviderProfile
+        # CORRECTED: Using quantity_available instead of quantity
         self.food_listing = FoodListing.objects.create(
             name='Test Food',
             description='Test Description',
-            quantity_available=10,
+            quantity_available=10,  # This matches your FoodListing model
             original_price=50.00,
             discounted_price=25.00,
             expiry_date=date.today() + timedelta(days=7),
-            provider=self.business_owner  # Use User instance, not FoodProviderProfile
+            provider=self.business_owner
         )
 
     def test_create_interaction(self):
@@ -222,15 +222,15 @@ class CartModelTest(TestCase):
             status='verified'
         )
         
-        # FoodListing provider should be a User, not FoodProviderProfile
+        # CORRECTED: Using quantity_available instead of quantity
         self.food_listing = FoodListing.objects.create(
             name='Test Food',
             description='Test Description',
-            quantity_available=10,
+            quantity_available=10,  # This matches your FoodListing model
             original_price=50.00,
             discounted_price=25.00,
             expiry_date=date.today() + timedelta(days=7),
-            provider=self.business_owner  # Use User instance, not FoodProviderProfile
+            provider=self.business_owner
         )
 
     def test_create_cart(self):
@@ -282,11 +282,11 @@ class CartModelTest(TestCase):
         large_listing = FoodListing.objects.create(
             name='Large Quantity Food',
             description='Test',
-            quantity_available=100,
+            quantity_available=100,  # CORRECTED
             original_price=10.00,
             discounted_price=5.00,
             expiry_date=date.today() + timedelta(days=7),
-            provider=self.business_owner  # Use User instance
+            provider=self.business_owner
         )
         
         # Try to add more than MAX_ITEMS - this should be caught in CartItem validation
@@ -331,15 +331,15 @@ class CartItemModelTest(TestCase):
             status='verified'
         )
         
-        # FoodListing provider should be a User, not FoodProviderProfile
+        # CORRECTED: Using quantity_available instead of quantity
         self.food_listing = FoodListing.objects.create(
             name='Test Food',
             description='Test Description',
-            quantity_available=10,
+            quantity_available=10,  # This matches your FoodListing model
             original_price=50.00,
             discounted_price=25.00,
             expiry_date=date.today() + timedelta(days=7),
-            provider=self.business_owner  # Use User instance, not FoodProviderProfile
+            provider=self.business_owner
         )
         
         self.cart = Cart.objects.create(user=self.user)
@@ -464,11 +464,11 @@ class OrderModelTest(TestCase):
         food_listing = FoodListing.objects.create(
             name='Test Food',
             description='Test Description',
-            quantity_available=10,
+            quantity_available=10,  # CORRECTED
             original_price=50.00,
             discounted_price=25.00,
             expiry_date=date.today() + timedelta(days=7),
-            provider=self.business_owner  # Use User instance
+            provider=self.business_owner
         )
         
         InteractionItem.objects.create(
@@ -625,15 +625,15 @@ class InteractionItemModelTest(TestCase):
             total_amount=100.00
         )
         
-        # FoodListing provider should be a User, not FoodProviderProfile
+        # CORRECTED: Using quantity_available instead of quantity
         self.food_listing = FoodListing.objects.create(
             name='Test Food',
             description='Test Description',
-            quantity_available=10,
+            quantity_available=10,  # This matches your FoodListing model
             original_price=50.00,
             discounted_price=25.00,
             expiry_date=date.today() + timedelta(days=7),
-            provider=self.business_owner  # Use User instance, not FoodProviderProfile
+            provider=self.business_owner
         )
 
     def test_create_interaction_item(self):

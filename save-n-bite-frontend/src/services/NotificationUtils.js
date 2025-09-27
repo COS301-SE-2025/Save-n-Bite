@@ -177,5 +177,5 @@ export class NotificationUtils {
    * @param {string} type - Notification type
    * @returns {string} Icon name or emoji
    */
-  static getNotificationTypeIcon(type) {
-    const iconMap
+  // static getNotificationTypeIcon(type) {
+  //   const iconMa

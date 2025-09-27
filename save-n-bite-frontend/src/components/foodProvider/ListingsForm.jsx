@@ -19,6 +19,7 @@ export function ListingForm({
 }) {
   const navigate = useNavigate();
   const formRef = useRef(null);
+  const imageSectionRef = useRef(null);
   const [isDonation, setIsDonation] = useState(false);
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -30,6 +31,9 @@ export function ListingForm({
     start: '08:00',
     end: '17:00'
   };
+
+  // Feature flag: hide scheduling UI while we use mocked values
+  const SHOW_SCHEDULING_UI = false;
 
   // Fields that can be edited according to the API
   const editableFields = [
@@ -112,8 +116,8 @@ export function ListingForm({
     pickup_latitude: '',
     pickup_longitude: '',
     // Scheduling fields
-    total_slots: '4',
-    max_orders_per_slot: '2',
+    total_slots: '10',
+    max_orders_per_slot: '5',
     slot_buffer_minutes: '10',
   });
 
@@ -295,8 +299,19 @@ export function ListingForm({
           }
         });
 
+        // Require image upload in create mode
+        if (!formData.image) {
+          validationErrors.image = 'upload an image';
+        }
+
         if (Object.keys(validationErrors).length > 0) {
           setErrors(validationErrors);
+          // If image is missing, bring the image section into view
+          if (validationErrors.image && imageSectionRef.current) {
+            try {
+              imageSectionRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            } catch {}
+          }
           throw new Error('Please fill in all required fields');
         }
 
@@ -815,90 +830,92 @@ export function ListingForm({
             </div>
           </div>
 
-          {/* Scheduling Section */}
-          <div className="border-t pt-6">
-            <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4 flex items-center">
-              <ClockIcon className="w-5 h-5 mr-2 text-blue-600 dark:text-blue-400" />
-              Scheduling Settings
-              {editMode && (
-                <span className="ml-2 text-sm text-gray-500 dark:text-gray-400">
-                  (Editing is not available for this section.)
-                </span>
-              )}
-            </h3>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
-                  Total Time Slots
-                </label>
-                <select
-                  name="total_slots"
-                  value={formData.total_slots}
-                  onChange={handleInputChange}
-                  disabled={isFieldDisabled('total_slots')}
-                  className={`w-full p-2 border rounded-lg border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 ${
-                    isFieldDisabled('total_slots')
-                      ? 'opacity-60 cursor-not-allowed'
-                      : ''
-                  }`}
-                >
-                  <option value="2">2 slots</option>
-                  <option value="3">3 slots</option>
-                  <option value="4">4 slots</option>
-                  <option value="5">5 slots</option>
-                  <option value="6">6 slots</option>
-                </select>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
-                  Max Orders per Slot
-                </label>
-                <select
-                  name="max_orders_per_slot"
-                  value={formData.max_orders_per_slot}
-                  onChange={handleInputChange}
-                  disabled={isFieldDisabled('max_orders_per_slot')}
-                  className={`w-full p-2 border rounded-lg border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 ${
-                    isFieldDisabled('max_orders_per_slot')
-                      ? 'opacity-60 cursor-not-allowed'
-                      : ''
-                  }`}
-                >
-                  <option value="1">1 order</option>
-                  <option value="2">2 orders</option>
-                  <option value="3">3 orders</option>
-                  <option value="5">5 orders</option>
-                  <option value="10">10 orders</option>
-                </select>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
-                  Buffer Time (minutes)
-                </label>
-                <select
-                  name="slot_buffer_minutes"
-                  value={formData.slot_buffer_minutes}
-                  onChange={handleInputChange}
-                  disabled={isFieldDisabled('slot_buffer_minutes')}
-                  className={`w-full p-2 border rounded-lg border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 ${
-                    isFieldDisabled('slot_buffer_minutes')
-                      ? 'opacity-60 cursor-not-allowed'
-                      : ''
-                  }`}
-                >
-                  <option value="5">5 minutes</option>
-                  <option value="10">10 minutes</option>
-                  <option value="15">15 minutes</option>
-                  <option value="20">20 minutes</option>
-                </select>
+          {/* Scheduling Section (hidden while timeslots are mocked) */}
+          {SHOW_SCHEDULING_UI && (
+            <div className="border-t pt-6">
+              <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4 flex items-center">
+                <ClockIcon className="w-5 h-5 mr-2 text-blue-600 dark:text-blue-400" />
+                Scheduling Settings
+                {editMode && (
+                  <span className="ml-2 text-sm text-gray-500 dark:text-gray-400">
+                    (Editing is not available for this section.)
+                  </span>
+                )}
+              </h3>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
+                    Total Time Slots
+                  </label>
+                  <select
+                    name="total_slots"
+                    value={formData.total_slots}
+                    onChange={handleInputChange}
+                    disabled={isFieldDisabled('total_slots')}
+                    className={`w-full p-2 border rounded-lg border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 ${
+                      isFieldDisabled('total_slots')
+                        ? 'opacity-60 cursor-not-allowed'
+                        : ''
+                    }`}
+                  >
+                    <option value="2">2 slots</option>
+                    <option value="3">3 slots</option>
+                    <option value="4">4 slots</option>
+                    <option value="5">5 slots</option>
+                    <option value="6">6 slots</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
+                    Max Orders per Slot
+                  </label>
+                  <select
+                    name="max_orders_per_slot"
+                    value={formData.max_orders_per_slot}
+                    onChange={handleInputChange}
+                    disabled={isFieldDisabled('max_orders_per_slot')}
+                    className={`w-full p-2 border rounded-lg border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 ${
+                      isFieldDisabled('max_orders_per_slot')
+                        ? 'opacity-60 cursor-not-allowed'
+                        : ''
+                    }`}
+                  >
+                    <option value="1">1 order</option>
+                    <option value="2">2 orders</option>
+                    <option value="3">3 orders</option>
+                    <option value="5">5 orders</option>
+                    <option value="10">10 orders</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
+                    Buffer Time (minutes)
+                  </label>
+                  <select
+                    name="slot_buffer_minutes"
+                    value={formData.slot_buffer_minutes}
+                    onChange={handleInputChange}
+                    disabled={isFieldDisabled('slot_buffer_minutes')}
+                    className={`w-full p-2 border rounded-lg border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 ${
+                      isFieldDisabled('slot_buffer_minutes')
+                        ? 'opacity-60 cursor-not-allowed'
+                        : ''
+                    }`}
+                  >
+                    <option value="5">5 minutes</option>
+                    <option value="10">10 minutes</option>
+                    <option value="15">15 minutes</option>
+                    <option value="20">20 minutes</option>
+                  </select>
+                </div>
               </div>
             </div>
-          </div>
+          )}
 
           {/* Image Upload */}
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
-              Upload Image (Optional)
+              Upload Image *
               {editMode && (
                 <span className="ml-2 text-sm text-gray-500 dark:text-gray-400">
                   (Editing is not available for this section.)
@@ -906,9 +923,13 @@ export function ListingForm({
               )}
             </label>
             <div
-              className={`border-2 border-dashed border-gray-300 dark:border-gray-700 rounded-lg p-8 text-center bg-white dark:bg-gray-900 transition-colors duration-300 ${
-                editMode ? 'opacity-60' : ''
-              }`}
+              ref={imageSectionRef}
+              className={`border-2 border-dashed rounded-lg p-8 text-center transition-colors duration-300 ${
+                errors.image
+                  ? 'border-red-500 dark:border-red-500 bg-red-50 dark:bg-red-900/10'
+                  : 'border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900'
+              } ${editMode ? 'opacity-60' : ''}`}
+              aria-invalid={!!errors.image}
             >
               {!editMode && (
                 <input
