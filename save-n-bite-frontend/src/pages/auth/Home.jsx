@@ -2,7 +2,7 @@ import React, { useContext, useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import {
   LeafIcon,
-  DollarSignIcon,
+  PiggyBankIcon ,
   RecycleIcon,
   ShoppingBagIcon,
   QrCodeIcon,
@@ -10,11 +10,11 @@ import {
   UsersIcon,
   SearchIcon,
   ArrowRightIcon,
-  SparklesIcon,
+  HeartHandshakeIcon,
   CheckIcon,
   MapPinIcon,
   HeartIcon,
-  ClockIcon
+  AppleIcon
 } from 'lucide-react';
 import NavBar from '../../components/auth/NavBar';
 import Footer from '../../components/auth/Footer';
@@ -87,7 +87,9 @@ const HomePage = () => {
       <NavBar />
       
       {/* 1. Hero Section */}
-      <div className="relative overflow-hidden bg-gradient-to-br from-gray-50 to-white dark:from-gray-900 dark:to-gray-800 py-20 md:py-28 px-6">
+      <div
+      id="hero"
+      className="relative overflow-hidden bg-gradient-to-br from-gray-50 to-white dark:from-gray-900 dark:to-gray-800 py-20 md:py-28 px-6">
         {/* Animated Background Elements */}
         <div className="absolute inset-0 overflow-hidden">
           <Blob className="-top-32 -left-32 w-96 h-96" color="emerald" />
@@ -102,10 +104,13 @@ const HomePage = () => {
         <div className="relative max-w-6xl mx-auto">
           <div className="text-center max-w-4xl mx-auto">
             {/* Animated Tagline */}
-            <div className="inline-flex items-center gap-2 mb-6 px-4 py-2 rounded-full bg-emerald-100 dark:bg-emerald-900/50 text-emerald-700 dark:text-emerald-300 text-sm font-medium border border-emerald-200 dark:border-emerald-800 animate-fade-in-up" style={{ animationDelay: '0.2s' }}>
-              {/* <SparklesIcon className="w-4 h-4" /> */}
-              <span>Join the Food Rescue Revolution</span>
-            </div>
+            <div
+  className="inline-block mb-6 px-2 py-1 bg-emerald-100 dark:bg-emerald-900/50 text-emerald-700 dark:text-emerald-300 text-sm font-semibold border-l-4 border-emerald-400 animate-fade-in-up"
+  style={{ animationDelay: '0.2s' }}
+>
+  <span>Join the Food Rescue Revolution</span>
+</div>
+
             
             <h1 className="text-5xl md:text-6xl lg:text-7xl font-extrabold text-gray-900 dark:text-white tracking-tight mb-6 leading-tight">
               <span className="relative inline-block animate-fade-in-up" style={{ animationDelay: '0.3s' }}>
@@ -191,7 +196,9 @@ const HomePage = () => {
       </div>
 
       {/* 2. What is Save n Bite? */}
-      <div className="py-12 px-6 bg-gray-50 dark:bg-gray-800/50">
+      <div 
+      id="about"
+      className="py-12 px-6 bg-gray-50 dark:bg-gray-800/50">
         <div className="max-w-6xl mx-auto">
           <div className="flex flex-col md:flex-row items-center gap-12">
             <div className="md:w-1/2">
@@ -204,7 +211,8 @@ const HomePage = () => {
                       <h4 className="font-semibold text-gray-900 dark:text-white">Local Businesses</h4>
                     </div>
                     <div className="bg-blue-50 dark:bg-gray-700 p-4 rounded-xl">
-                      <ClockIcon className="w-8 h-8 text-blue-600 dark:text-blue-400 mb-2" />
+                      <AppleIcon
+                      className="w-8 h-8 text-blue-600 dark:text-blue-400 mb-2" />
                       <h4 className="font-semibold text-gray-900 dark:text-white">Fresh Surplus</h4>
                     </div>
                     <div className="bg-teal-50 dark:bg-gray-700 p-4 rounded-xl">
@@ -229,13 +237,13 @@ const HomePage = () => {
               <p className="text-lg text-gray-600 dark:text-gray-300 mb-8">
                 Our mission is to create a sustainable food ecosystem where everyone benefits - you get amazing food at great prices, businesses reduce waste, and together we make a positive impact on our planet.
               </p>
-              <Link 
+              {/* <Link 
                 to="/about" 
                 className="inline-flex items-center text-emerald-600 dark:text-emerald-400 font-medium hover:text-emerald-700 dark:hover:text-emerald-300 transition-colors"
               >
                 Learn more about our mission
                 <ArrowRightIcon className="w-4 h-4 ml-2" />
-              </Link>
+              </Link> */}
             </div>
           </div>
         </div>
@@ -262,7 +270,7 @@ const HomePage = () => {
                 color: "emerald"
               },
               {
-                icon: <DollarSignIcon size={32} className="text-blue-600 dark:text-blue-400" />,
+                icon: <PiggyBankIcon  size={32} className="text-blue-600 dark:text-blue-400" />,
                 title: "Save Money",
                 description: "Enjoy quality food at discounted prices from local businesses.",
                 color: "blue"
@@ -294,7 +302,9 @@ const HomePage = () => {
       </div>
 
       {/* 4. How It Works */}
-      <div className="py-12 px-6 bg-gray-50 dark:bg-gray-800/30">
+      <div 
+       id="how-it-works"
+      className="py-12 px-6 bg-gray-50 dark:bg-gray-800/30">
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-16">
             <h2 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-4">
@@ -400,7 +410,7 @@ const HomePage = () => {
         <div className="max-w-4xl mx-auto text-center">
           <div className="bg-white dark:bg-gray-800 rounded-2xl p-8 md:p-12 shadow-sm border border-gray-100 dark:border-gray-700">
             <div className="w-16 h-16 rounded-2xl bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center mx-auto mb-6">
-              <SparklesIcon className="w-8 h-8 text-emerald-600 dark:text-emerald-400" />
+              <HeartHandshakeIcon className="w-8 h-8 text-emerald-600 dark:text-emerald-400" />
             </div>
             <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">
               Ready to join the movement?

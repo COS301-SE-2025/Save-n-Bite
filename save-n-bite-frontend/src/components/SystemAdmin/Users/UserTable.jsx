@@ -19,7 +19,7 @@ import { useOnClickOutside } from '../../../hooks/useOnClickOutside'
 const ActionMenu = ({ user, onActionClick, onClose }) => {
   const menuRef = useRef()
   
-  // Close menu when clicking outside
+  // Close menu when clicking outside 
   useOnClickOutside(menuRef, onClose)
 
   const actions = [
