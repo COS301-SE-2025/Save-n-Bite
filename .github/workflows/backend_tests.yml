@@ -136,8 +136,8 @@ jobs:
     - name: Run analytics app tests only
       run: poetry run python manage.py test analytics
 
-    - name: Run admin app tests only
-      run: poetry run pytest admin_system/tests.py
+    - name: Run reviews app tests only
+      run: poetry run pytest reviews/tests.py
 
     - name: Run interactions app tests only
       run: poetry run pytest interactions/tests
