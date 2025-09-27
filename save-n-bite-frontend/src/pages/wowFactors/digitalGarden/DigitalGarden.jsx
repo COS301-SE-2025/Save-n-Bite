@@ -300,11 +300,11 @@ const calculateRarityTallies = useCallback(() => {
 
   if (loading) {
     return (
-      <div className="digital-garden-loading">
-        <div className="loading-content">
-          <div className="loading-spinner"></div>
-          <h2>Loading your digital garden...</h2>
-          <p>Preparing your plants and garden space</p>
+      <div className="min-h-screen bg-white dark:bg-gray-900 flex items-center justify-center transition-colors duration-300">
+        <div className="loading-content text-center">
+          <div className="loading-spinner mx-auto mb-4"></div>
+          <h2 className="text-gray-800 dark:text-gray-100">Loading your digital garden...</h2>
+          <p className="text-gray-600 dark:text-gray-300">Preparing your plants and garden space</p>
         </div>
       </div>
     );
@@ -312,10 +312,10 @@ const calculateRarityTallies = useCallback(() => {
 
   if (error && !garden) {
     return (
-      <div className="digital-garden-error">
-        <div className="error-content">
-          <h2>Unable to load garden</h2>
-          <p>{error}</p>
+      <div className="min-h-screen bg-white dark:bg-gray-900 flex items-center justify-center transition-colors duration-300">
+        <div className="error-content bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-xl p-8 text-center">
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">Unable to load garden</h2>
+          <p className="text-gray-600 dark:text-gray-300 mb-4">{error}</p>
           <button onClick={handleInitializeGarden} className="btn-primary">
             Create New Garden
           </button>
@@ -326,11 +326,11 @@ const calculateRarityTallies = useCallback(() => {
 
   if (!garden) {
     return (
-      <div className="digital-garden-welcome">
-        <div className="welcome-content">
-          <h1>Welcome to Your Digital Garden!</h1>
-          <p>Start your gardening journey by creating your personal 8×8 garden space.</p>
-          <p>Complete orders to earn plants and build your collection!</p>
+      <div className="min-h-screen bg-white dark:bg-gray-900 flex items-center justify-center transition-colors duration-300">
+        <div className="welcome-content bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-xl p-8 text-center">
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">Welcome to Your Digital Garden!</h1>
+          <p className="text-gray-600 dark:text-gray-300 mb-2">Start your gardening journey by creating your personal 8×8 garden space.</p>
+          <p className="text-gray-600 dark:text-gray-300 mb-6">Complete orders to earn plants and build your collection!</p>
           <button onClick={handleInitializeGarden} className="btn-primary btn-large">
             Create My Garden
           </button>
@@ -360,12 +360,12 @@ if (inventory && inventory.length > 0) {
 //console.o('A garden tile with plant:', garden.garden_tiles.find(tile => tile.plant));
 
   return (
-    <div className="digital-garden">
+    <div className="min-h-screen bg-white dark:bg-gray-900 transition-colors duration-300">
       <CustomerNavBar />
       
       {/* Header with SVG background */}
       <div 
-        className="garden-header"
+        className="garden-header relative"
         style={{
           backgroundImage: `url(${headerBackgroundSvg})`,
           backgroundSize: 'cover',
@@ -374,12 +374,12 @@ if (inventory && inventory.length > 0) {
         }}
       >
         <div className="header-left">
-          <h1 style={{ color: 'whitesmoke' }}>My Digital Garden</h1>
+          <h1 className="text-2xl md:text-3xl font-bold" style={{ color: 'whitesmoke' }}>My Digital Garden</h1>
         </div>
-        <div className="garden-controls">
+        <div className="garden-controls flex gap-2">
           {/* Toggle button for Move/View mode */}
           <button
-            className={`mode-toggle ${gardenMode === 'move' ? 'active' : ''}`}
+            className={`mode-toggle ${gardenMode === 'move' ? 'active' : ''} bg-emerald-600 hover:bg-emerald-700 text-white dark:bg-emerald-700 dark:hover:bg-emerald-800 rounded-lg px-4 py-2 transition-colors`}
             onClick={handleModeToggle}
             disabled={actionLoading}
           >
@@ -388,7 +388,7 @@ if (inventory && inventory.length > 0) {
           
           {/* Harvest button */}
           <button
-            className={`mode-toggle harvest-toggle ${gardenMode === 'harvest' ? 'active' : ''}`}
+            className={`mode-toggle harvest-toggle ${gardenMode === 'harvest' ? 'active' : ''} bg-amber-500 hover:bg-amber-600 text-white dark:bg-amber-600 dark:hover:bg-amber-700 rounded-lg px-4 py-2 transition-colors`}
             onClick={handleHarvestToggle}
             disabled={actionLoading}
           >
@@ -399,30 +399,30 @@ if (inventory && inventory.length > 0) {
 
       {/* Notification */}
       {notification && (
-        <div className={`notification ${notification.type}`}>
-          <span>{notification.message}</span>
-          <button onClick={clearNotification}>×</button>
+        <div className={`notification ${notification.type} fixed top-20 left-1/2 transform -translate-x-1/2 z-50 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-lg rounded-lg px-6 py-3 flex items-center gap-4`}>
+          <span className={`font-medium ${notification.type === 'success' ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400'}`}>{notification.message}</span>
+          <button onClick={clearNotification} className="ml-auto text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 text-xl">&times;</button>
         </div>
       )}
 
       {/* Move Mode Prompt */}
       {movePrompt && (
-        <div className="move-prompt">
+        <div className="move-prompt fixed top-28 left-1/2 transform -translate-x-1/2 z-40 bg-emerald-100 dark:bg-emerald-900 text-emerald-800 dark:text-emerald-200 px-6 py-2 rounded-lg shadow">
           <span>{movePrompt}</span>
         </div>
       )}
 
       {/* Harvest Mode Prompt */}
       {harvestPrompt && (
-        <div className="harvest-prompt">
+        <div className="harvest-prompt fixed top-36 left-1/2 transform -translate-x-1/2 z-40 bg-amber-100 dark:bg-amber-900 text-amber-800 dark:text-amber-200 px-6 py-2 rounded-lg shadow">
           <span>{harvestPrompt}</span>
         </div>
       )}
 
       {/* Main content */}
-      <div className="garden-main">
+      <div className="garden-main flex flex-col md:flex-row gap-6 max-w-7xl mx-auto px-4 py-8">
         {/* Center - Garden Grid (enlarged) */}
-        <main className="garden-content">
+        <main className="garden-content flex-1">
           <GardenGrid
             gardenData={garden}
             selectedPlant={draggedPlant}
@@ -435,45 +435,45 @@ if (inventory && inventory.length > 0) {
             selectedTileForHarvest={selectedPlantForHarvest}
           />
 
-          {/* Garden Overview beneath the garden */}
-          {garden && (
-            <div className="garden-overview">
-              <h3>Garden Overview</h3>
-              <div className="overview-stats">
-                <div className="stat-item">
-                  <span className="stat-label">Unique Plants:</span>
-                  <span className="stat-value">{uniquePlantsEarned}</span>
-                </div>
-                <div className="stat-item">
-                  <span className="stat-label">Plants Placed:</span>
-                  <span className="stat-value">{garden.total_plants_placed || 0}/64</span>
-                </div>
-                <div className="stat-item">
-                  <span className="stat-label">Completion:</span>
-                  <span className="stat-value">
-                    {Math.round(((garden.total_plants_placed || 0) / 64) * 100)}%
-                  </span>
-                </div>
-              </div>
-                           <div className="rarity-tallies">
-                <h4>Plants by Rarity</h4>
-                <div className="rarity-breakdown">
-                  {Object.entries(rarityTallies).map(([rarity, count]) => (
-                    <div key={rarity} className={`rarity-stat ${rarity}`}>
-                      <span className="rarity-label">{rarity.charAt(0).toUpperCase() + rarity.slice(1)}:</span>
-                      <span className="rarity-count">{count}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-          )}
+{/* Garden Overview beneath the garden */}
+{garden && (
+  <div className="garden-overview mt-8 bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-xl p-6 shadow">
+    <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Garden Overview</h3>
+    <div className="overview-stats flex flex-wrap gap-6 mb-4">
+      <div className="stat-item">
+        <span className="stat-label text-gray-600 dark:text-gray-300">Unique Plants:</span>
+        <span className="stat-value text-gray-900 dark:text-gray-100 font-semibold ml-2">{uniquePlantsEarned}</span>
+      </div>
+      <div className="stat-item">
+        <span className="stat-label text-gray-600 dark:text-gray-300">Plants Placed:</span>
+        <span className="stat-value text-gray-900 dark:text-gray-100 font-semibold ml-2">{garden.total_plants_placed || 0}/64</span>
+      </div>
+      <div className="stat-item">
+        <span className="stat-label text-gray-600 dark:text-gray-300">Completion:</span>
+        <span className="stat-value text-gray-900 dark:text-gray-100 font-semibold ml-2">
+          {Math.round(((garden.total_plants_placed || 0) / 64) * 100)}%
+        </span>
+      </div>
+    </div>
+    <div className="rarity-tallies">
+      <h4 className="text-md font-semibold text-gray-900 dark:text-white mb-2">Plants by Rarity</h4>
+      <div className="rarity-breakdown flex flex-wrap gap-4">
+        {Object.entries(rarityTallies).map(([rarity, count]) => (
+        <div key={rarity} className={`rarity-stat ${rarity} flex items-center gap-2`}>
+          <span className="rarity-label">{rarity.charAt(0).toUpperCase() + rarity.slice(1)}:</span>
+          <span className="rarity-count font-semibold">{count}</span>
+        </div>
+        ))}
+      </div>
+    </div>
+  </div>
+)}
         </main>
 
         {/* Right Sidebar */}
-        <aside className="garden-sidebar-container">
+        <aside className="garden-sidebar-container flex flex-col gap-6 w-full md:w-80">
           <div 
-            className="garden-inventory-sidebar"
+            className="garden-inventory-sidebar bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-xl shadow"
             style={{
               backgroundImage: `url(${panelBackgroundSvg})`,
               backgroundSize: 'cover',
@@ -492,7 +492,7 @@ if (inventory && inventory.length > 0) {
           </div>
 
           <div 
-            className="garden-stats-sidebar"
+            className="garden-stats-sidebar bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-xl shadow"
             style={{
               backgroundImage: `url(${panelBackgroundSvg})`,
               backgroundSize: 'cover',
@@ -507,13 +507,17 @@ if (inventory && inventory.length > 0) {
 
       {/* Plant Details Modal */}
       {showPlantDetails && selectedPlantForDetails && (
-        <PlantDetails
-          plant={selectedPlantForDetails}
-          onClose={() => {
-            setShowPlantDetails(false);
-            setSelectedPlantForDetails(null);
-          }}
-        />
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+          <div className="bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-700 rounded-xl shadow-xl p-6 max-w-lg w-full">
+            <PlantDetails
+              plant={selectedPlantForDetails}
+              onClose={() => {
+                setShowPlantDetails(false);
+                setSelectedPlantForDetails(null);
+              }}
+            />
+          </div>
+        </div>
       )}
     </div>
   );

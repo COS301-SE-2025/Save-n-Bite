@@ -145,6 +145,23 @@
   background: linear-gradient(135deg, #dbeafe 0%, #93c5fd 100%) !important;
 }
 
+/* Faint border for each rarity */
+.garden-tile.rarity-common {
+  border: 4px solid rgba(21, 197, 86, 0.507);      /* green-500 */
+}
+.garden-tile.rarity-uncommon {
+  border: 4px solid rgba(59, 131, 246, 0.555);     /* blue-500 */
+}
+.garden-tile.rarity-rare {
+  border: 4px solid rgba(164, 68, 255, 0.534);     /* purple-500 */
+}
+.garden-tile.rarity-epic {
+  border: 4px solid rgba(245, 159, 11, 0.459);     /* amber-400 */
+}
+.garden-tile.rarity-legendary {
+  border: 4px solid rgba(239, 68, 68, 0.514);      /* red-500 */
+}
+
 /* Responsive design */
 @media (max-width: 768px) {
   .garden-container {
