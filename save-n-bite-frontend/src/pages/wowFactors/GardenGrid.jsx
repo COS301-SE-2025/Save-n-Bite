@@ -170,7 +170,12 @@ const GardenGrid = ({
             onDragOver={handleDragOver}
             onDragLeave={handleDragLeave}
             onDrop={handleDrop}
-            className={getTileClassName(tile)}
+            className={
+              [
+                getTileClassName(tile),
+                tile.plant_details?.rarity ? `rarity-${tile.plant_details.rarity}` : ''
+              ].join(' ')
+            }
             showCoordinates={false}
           />
         ))}
