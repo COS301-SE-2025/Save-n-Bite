@@ -38,13 +38,15 @@ const ReviewModal = ({ review, onClose, onFlag, onDelete }) => {
   }
 
   const renderStars = (rating) => {
+    const validRating = rating || 0;
+    
     return (
       <div className="flex items-center">
         {[1, 2, 3, 4, 5].map((star) => (
           <svg
             key={star}
             className={`w-5 h-5 ${
-              star <= rating ? 'text-yellow-400' : 'text-gray-300'
+              star <= validRating ? 'text-yellow-400' : 'text-gray-300'
             }`}
             fill="currentColor"
             viewBox="0 0 20 20"
@@ -52,9 +54,26 @@ const ReviewModal = ({ review, onClose, onFlag, onDelete }) => {
             <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
           </svg>
         ))}
-        <span className="ml-2 text-lg font-medium text-gray-700">({rating}/5)</span>
+        <span className="ml-2 text-lg font-medium text-gray-700">({validRating}/5)</span>
       </div>
     )
+  }
+
+  // Safe accessor function to handle missing nested properties
+  const safeGet = (obj, path, defaultValue = 'N/A') => {
+    return path.split('.').reduce((current, key) => {
+      return current && current[key] !== undefined ? current[key] : defaultValue;
+    }, obj);
+  }
+
+  // Get all review content combined
+  const getReviewContent = (review) => {
+    const contents = [];
+    if (review.general_comment) contents.push(`General: ${review.general_comment}`);
+    if (review.food_review) contents.push(`Food: ${review.food_review}`);
+    if (review.business_review) contents.push(`Service: ${review.business_review}`);
+    
+    return contents.length > 0 ? contents.join('\n\n') : 'No written review provided.';
   }
 
   const handleFlag = () => {
@@ -125,17 +144,29 @@ const ReviewModal = ({ review, onClose, onFlag, onDelete }) => {
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <h4 className="text-sm font-medium text-gray-500">Reviewer</h4>
-                    <p className="mt-1 text-sm text-gray-900">{review.reviewer.name}</p>
+                    <p className="mt-1 text-sm text-gray-900">
+                      {/* FIXED: Safe access to reviewer name */}
+                      {safeGet(review, 'reviewer.name', 'Anonymous')}
+                    </p>
                   </div>
                   <div>
-                    <h4 className="text-sm font-medium text-gray-500">Subject</h4>
-                    <p className="mt-1 text-sm text-gray-900">{review.subject.name}</p>
-                    <p className="text-xs text-gray-500">{review.subject.type}</p>
+                    <h4 className="text-sm font-medium text-gray-500">Business</h4>
+                    <p className="mt-1 text-sm text-gray-900">
+                      {/* FIXED: Changed from review.subject.name to review.business.business_name */}
+                      {safeGet(review, 'business.business_name', 'Unknown Business')}
+                    </p>
+                    <p className="text-xs text-gray-500">
+                      {/* FIXED: Show reviewer type instead of subject type */}
+                      {safeGet(review, 'reviewer.user_type', 'customer').charAt(0).toUpperCase() + 
+                       safeGet(review, 'reviewer.user_type', 'customer').slice(1)} Review
+                    </p>
                   </div>
                   <div>
                     <h4 className="text-sm font-medium text-gray-500">Date</h4>
                     <p className="mt-1 text-sm text-gray-900">
-                      {new Date(review.date).toLocaleDateString()}
+                      {/* FIXED: Handle different date formats */}
+                      {review.time_ago || 
+                       (review.created_at ? new Date(review.created_at).toLocaleDateString() : 'Unknown date')}
                     </p>
                   </div>
                   <div>
@@ -153,24 +184,45 @@ const ReviewModal = ({ review, onClose, onFlag, onDelete }) => {
                 <div>
                   <h4 className="text-sm font-medium text-gray-500">Rating</h4>
                   <div className="mt-1">
-                    {renderStars(review.rating)}
+                    {/* FIXED: Use general_rating instead of rating */}
+                    {renderStars(review.general_rating)}
                   </div>
                 </div>
 
                 <div>
                   <h4 className="text-sm font-medium text-gray-500">Review Content</h4>
                   <div className="mt-1 p-3 bg-gray-50 rounded-md">
-                    <p className="text-sm text-gray-900">{review.content}</p>
+                    <div className="text-sm text-gray-900 whitespace-pre-wrap">
+                      {/* FIXED: Get content from correct fields */}
+                      {getReviewContent(review)}
+                    </div>
                   </div>
                 </div>
 
-                {(review.status === 'flagged' || review.status === 'deleted') && review.reason && (
+                {/* Show interaction details if available */}
+                {review.interaction_details && (
+                  <div>
+                    <h4 className="text-sm font-medium text-gray-500">Interaction Details</h4>
+                    <div className="mt-1 p-3 bg-blue-50 rounded-md">
+                      <p className="text-sm text-blue-900">
+                        Type: {review.interaction_details.type || 'N/A'}
+                      </p>
+                      <p className="text-sm text-blue-900">
+                        Amount: ${review.interaction_details.total_amount || '0.00'}
+                      </p>
+                    </div>
+                  </div>
+                )}
+
+                {/* FIXED: Check for moderation_notes instead of reason */}
+                {(review.status === 'flagged' || review.status === 'deleted') && 
+                 (review.moderation_notes || review.reason) && (
                   <div className={`p-3 rounded-md ${review.status === 'flagged' ? 'bg-amber-50' : 'bg-red-50'}`}>
                     <h4 className={`text-sm font-medium ${review.status === 'flagged' ? 'text-amber-800' : 'text-red-800'}`}>
                       {review.status === 'flagged' ? 'Flag Reason' : 'Deletion Reason'}
                     </h4>
                     <p className={`mt-1 text-sm ${review.status === 'flagged' ? 'text-amber-700' : 'text-red-700'}`}>
-                      {review.reason}
+                      {review.moderation_notes || review.reason}
                     </p>
                   </div>
                 )}

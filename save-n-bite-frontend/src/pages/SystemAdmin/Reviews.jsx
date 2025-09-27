@@ -91,19 +91,35 @@ const Reviews = () => {
   }
 
   const filteredReviews = (reviews || []).filter((review) => {
-    const matchesSearch =
-      review.reviewer?.name?.toLowerCase().includes(search.toLowerCase()) ||
-      review.subject?.name?.toLowerCase().includes(search.toLowerCase()) ||
-      review.content?.toLowerCase().includes(search.toLowerCase());
+  // Safe accessor function
+  const safeGet = (obj, path, defaultValue = '') => {
+    return path.split('.').reduce((current, key) => {
+      return current && current[key] !== undefined ? current[key] : defaultValue;
+    }, obj);
+  };
 
-    const matchesRating =
-      ratingFilter === 'All' || review.rating?.toString() === ratingFilter;
+  // Get all review content to search through
+  const getSearchableContent = (review) => {
+    const contents = [
+      safeGet(review, 'reviewer.name'),
+      safeGet(review, 'business.business_name'), // FIXED: Changed from review.subject.name
+      review.general_comment || '',
+      review.food_review || '',
+      review.business_review || ''
+    ];
+    return contents.join(' ').toLowerCase();
+  };
 
-    const matchesStatus =
-      statusFilter === 'All' || review.status === statusFilter;
+  const matchesSearch = search === '' || 
+    getSearchableContent(review).includes(search.toLowerCase());
 
-    return matchesSearch && matchesRating && matchesStatus;
-  });
+  const matchesRating = ratingFilter === 'All' || 
+    (review.general_rating && review.general_rating.toString() === ratingFilter);
+
+  const matchesStatus = statusFilter === 'All' || review.status === statusFilter;
+
+  return matchesSearch && matchesRating && matchesStatus;
+});
 
   const handleViewReview = (review) => {
     setSelectedReview(review);
