@@ -380,9 +380,9 @@ class CustomerProfileAdminTest(TestCase):
             password='testpass123',
             user_type='customer'
         )
-        self.profile = CustomerProfile.objects.create(
+        self.profile, created = CustomerProfile.objects.get_or_create(
             user=self.user,
-            full_name='Test Customer'
+            defaults={'full_name': 'Test Customer'}
         )
 
     def test_list_display(self):
@@ -408,12 +408,14 @@ class NGOProfileAdminTest(TestCase):
             password='testpass123',
             user_type='ngo'
         )
-        self.profile = NGOProfile.objects.create(
+        self.profile, created = NGOProfile.objects.get_or_create(
             user=self.user,
-            organisation_name='Test NGO',
-            representative_name='John Doe',
-            representative_email='john@ngo.com',
-            status='pending_verification'
+            defaults={
+                'organisation_name': 'Test NGO',
+                'representative_name': 'John Doe',
+                'representative_email': 'john@ngo.com',
+                'status': 'pending_verification'
+            }
         )
 
     def test_list_display(self):
@@ -455,14 +457,18 @@ class FoodProviderProfileAdminTest(TestCase):
             user_type='food_provider'
         )
         
-        self.provider = FoodProviderProfile.objects.create(
+        self.provider, created = FoodProviderProfile.objects.get_or_create(
             user=self.user,
-            business_name='Test Restaurant',
-            business_email='test@restaurant.com',
-            business_contact='+1234567890',
-            status='pending_verification',
-            business_description='A test restaurant',
-            business_tags=['fast-food', 'vegetarian']
+            defaults={
+                'business_name': 'Test Restaurant',
+                'business_email': 'test@restaurant.com',
+                'business_contact': '+1234567890',
+                'business_address': '123 Test St',
+                'cipc_document': 'test_doc.pdf',
+                'status': 'pending_verification',
+                'business_description': 'A test restaurant',
+                'business_tags': ['fast-food', 'vegetarian']
+            }
         )
 
     def test_list_display(self):
@@ -1195,10 +1201,14 @@ class UserModelTest(TestCase):
         self.assertEqual(self.user.id, self.user.UserID)
 
     def test_get_full_name_customer(self):
-        customer_profile = CustomerProfile.objects.create(
+        customer_profile, created = CustomerProfile.objects.get_or_create(
             user=self.user,
-            full_name='Test Customer'
+            defaults={'full_name': 'Test Customer'}
         )
+        # Ensure profile has expected values for testing
+        if not created and not customer_profile.full_name:
+            customer_profile.full_name = 'Test Customer'
+            customer_profile.save()
         self.assertEqual(self.user.get_full_name(), 'Test Customer')
 
     def test_get_full_name_ngo(self):
@@ -1208,19 +1218,21 @@ class UserModelTest(TestCase):
             password='ngopass123',
             user_type='ngo'
         )
-        ngo_profile = NGOProfile.objects.create(
+        ngo_profile, created = NGOProfile.objects.get_or_create(
             user=ngo_user,
-            organisation_name='Test NGO',
-            organisation_contact='+1234567890',
-            organisation_email='ngo@test.com',
-            representative_name='John Doe',  # This should be returned by get_full_name
-            representative_email='john@ngo.com',
-            address_line1='123 Test St',
-            city='Test City',
-            province_or_state='Test Province',
-            postal_code='1234',
-            country='Test Country',
-            npo_document=SimpleUploadedFile("test.pdf", b"file_content", content_type="application/pdf")
+            defaults={
+                'organisation_name': 'Test NGO',
+                'organisation_contact': '+1234567890',
+                'organisation_email': 'ngo@test.com',
+                'representative_name': 'John Doe',  # This should be returned by get_full_name
+                'representative_email': 'john@ngo.com',
+                'address_line1': '123 Test St',
+                'city': 'Test City',
+                'province_or_state': 'Test Province',
+                'postal_code': '1234',
+                'country': 'Test Country',
+                'npo_document': SimpleUploadedFile("test.pdf", b"file_content", content_type="application/pdf")
+            }
         )
         # get_full_name should return representative_name for NGOs
         self.assertEqual(ngo_user.get_full_name(), 'John Doe')
@@ -1232,13 +1244,15 @@ class UserModelTest(TestCase):
             password='providerpass123',
             user_type='provider'
         )
-        provider_profile = FoodProviderProfile.objects.create(
+        provider_profile, created = FoodProviderProfile.objects.get_or_create(
             user=provider_user,
-            business_name='Test Restaurant',
-            business_address='123 Test St',
-            business_contact='+1234567890',
-            business_email='test@restaurant.com',
-            cipc_document=SimpleUploadedFile("test.pdf", b"file_content", content_type="application/pdf")
+            defaults={
+                'business_name': 'Test Restaurant',
+                'business_address': '123 Test St',
+                'business_contact': '+1234567890',
+                'business_email': 'test@restaurant.com',
+                'cipc_document': SimpleUploadedFile("test.pdf", b"file_content", content_type="application/pdf")
+            }
         )
         self.assertEqual(provider_user.get_full_name(), 'Test Restaurant')
 
@@ -1339,10 +1353,14 @@ class CustomerProfileModelTest(TestCase):
             password='testpass123',
             user_type='customer'
         )
-        self.profile = CustomerProfile.objects.create(
+        self.profile, created = CustomerProfile.objects.get_or_create(
             user=self.user,
-            full_name='Test Customer'
+            defaults={'full_name': 'Test Customer'}
         )
+        # Ensure profile has expected values for testing
+        if not created and not self.profile.full_name:
+            self.profile.full_name = 'Test Customer'
+            self.profile.save()
 
     def test_customer_profile_creation(self):
         self.assertEqual(self.profile.full_name, 'Test Customer')
@@ -1357,20 +1375,27 @@ class NGOProfileModelTest(TestCase):
             password='testpass123',
             user_type='ngo'
         )
-        self.profile = NGOProfile.objects.create(
+        self.profile, created = NGOProfile.objects.get_or_create(
             user=self.user,
-            organisation_name='Test NGO',
-            organisation_contact='+1234567890',
-            organisation_email='ngo@test.com',
-            representative_name='John Doe',
-            representative_email='john@ngo.com',
-            address_line1='123 Test St',
-            city='Test City',
-            province_or_state='Test Province',
-            postal_code='1234',
-            country='Test Country',
-            npo_document=SimpleUploadedFile("test.pdf", b"file_content", content_type="application/pdf")
+            defaults={
+                'organisation_name': 'Test NGO',
+                'organisation_contact': '+1234567890',
+                'organisation_email': 'ngo@test.com',
+                'representative_name': 'John Doe',
+                'representative_email': 'john@ngo.com',
+                'address_line1': '123 Test St',
+                'city': 'Test City',
+                'province_or_state': 'Test Province',
+                'postal_code': '1234',
+                'country': 'Test Country',
+                'npo_document': SimpleUploadedFile("test.pdf", b"file_content", content_type="application/pdf")
+            }
         )
+        # Ensure profile has expected values for testing
+        if not created and not self.profile.organisation_name:
+            self.profile.organisation_name = 'Test NGO'
+            self.profile.representative_name = 'John Doe'
+            self.profile.save()
 
     def test_ngo_profile_creation(self):
         self.assertEqual(self.profile.organisation_name, 'Test NGO')
@@ -1974,10 +1999,14 @@ class UserProfileSerializerTest(TestCase):
             password='testpass123',
             user_type='customer'
         )
-        self.customer_profile = CustomerProfile.objects.create(
+        self.customer_profile, created = CustomerProfile.objects.get_or_create(
             user=self.user,
-            full_name='Test Customer'
+            defaults={'full_name': 'Test Customer'}
         )
+        # Ensure profile has expected values for testing
+        if not created and not self.customer_profile.full_name:
+            self.customer_profile.full_name = 'Test Customer'
+            self.customer_profile.save()
 
     def test_user_profile_serialization(self):
         serializer = UserProfileSerializer(instance=self.user)

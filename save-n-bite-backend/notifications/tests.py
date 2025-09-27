@@ -14,7 +14,7 @@ from unittest.mock import patch, Mock, MagicMock
 import uuid
 
 from .models import (
-    Notification, NotificationPreferences, BusinessFollower,
+    Notification, NotificationPreferences, BusinessFollower, 
     EmailNotificationLog
 )
 from .services import NotificationService
@@ -28,7 +28,7 @@ from authentication.models import FoodProviderProfile, CustomerProfile, NGOProfi
 from food_listings.models import FoodListing
 from interactions.models import Interaction, Order, InteractionItem
 from scheduling.models import (
-    PickupLocation, FoodListingPickupSchedule,
+    PickupLocation, FoodListingPickupSchedule, 
     PickupTimeSlot, ScheduledPickup
 )
 from decimal import Decimal
@@ -50,7 +50,7 @@ def provider_user(db):
         password='testpass123',
         user_type='provider'
     )
-
+    
     FoodProviderProfile.objects.create(
         user=user,
         business_name='Test Restaurant',
@@ -59,7 +59,7 @@ def provider_user(db):
         business_email='business@test.com',
         status='verified'
     )
-
+    
     return user
 
 @pytest.fixture
@@ -71,12 +71,12 @@ def customer_user(db):
         password='testpass123',
         user_type='customer'
     )
-
+    
     CustomerProfile.objects.create(
         user=user,
         full_name='Test Customer'
     )
-
+    
     return user
 
 @pytest.fixture
@@ -88,7 +88,7 @@ def ngo_user(db):
         password='testpass123',
         user_type='ngo'
     )
-
+    
     NGOProfile.objects.create(
         user=user,
         organisation_name='Test NGO',
@@ -103,7 +103,7 @@ def ngo_user(db):
         country='Test Country',
         status='verified'
     )
-
+    
     return user
 
 @pytest.fixture
@@ -227,7 +227,7 @@ def order(interaction, food_listing):
         pickup_window='17:00-19:00',
         pickup_code='ABC123'
     )
-
+    
     # Create interaction item
     InteractionItem.objects.create(
         interaction=interaction,
@@ -238,7 +238,7 @@ def order(interaction, food_listing):
         total_price=Decimal('15.00'),
         expiry_date=food_listing.expiry_date
     )
-
+    
     return order
 
 @pytest.fixture
@@ -261,7 +261,7 @@ def scheduled_pickup(order, food_listing, time_slot, pickup_location):
 
 @pytest.mark.django_db
 class TestNotificationModel:
-
+    
     def test_create_notification(self, customer_user, provider_user):
         """Test creating a notification"""
         notification = Notification.objects.create(
@@ -273,7 +273,7 @@ class TestNotificationModel:
             message='This is a test notification',
             data={'test': 'data'}
         )
-
+        
         assert notification.recipient == customer_user
         assert notification.sender == provider_user
         assert notification.notification_type == 'new_listing'
@@ -283,12 +283,12 @@ class TestNotificationModel:
         assert notification.data == {'test': 'data'}
         assert notification.created_at is not None
         assert notification.read_at is None
-
+        
     def test_notification_string_representation(self, notification):
         """Test notification __str__ method"""
         expected = f"{notification.title} -> {notification.recipient.email}"
         assert str(notification) == expected
-
+    
     def test_notification_ordering(self, customer_user, provider_user):
         """Test that notifications are ordered by creation date (newest first)"""
         older_notification = Notification.objects.create(
@@ -382,18 +382,18 @@ class TestNotificationModel:
 
 @pytest.mark.django_db
 class TestBusinessFollowerModel:
-
+    
     def test_create_business_follower(self, customer_user, provider_user):
         """Test creating a business follower relationship"""
         follower = BusinessFollower.objects.create(
             user=customer_user,
             business=provider_user.provider_profile
         )
-
+        
         assert follower.user == customer_user
         assert follower.business == provider_user.provider_profile
         assert follower.created_at is not None
-
+    
     def test_business_follower_unique_constraint(self, customer_user, provider_user):
         """Test that user can't follow the same business twice"""
         BusinessFollower.objects.create(
@@ -406,7 +406,7 @@ class TestBusinessFollowerModel:
                 user=customer_user,
                 business=provider_user.provider_profile
             )
-
+    
     def test_business_follower_string_representation(self, business_follower):
         """Test business follower __str__ method"""
         expected = f"{business_follower.user.email} follows {business_follower.business.business_name}"
@@ -468,7 +468,7 @@ class TestBusinessFollowerModel:
 
 @pytest.mark.django_db
 class TestEmailNotificationLogModel:
-
+    
     def test_email_log_string_representation(self, customer_user):
         """Test email log __str__ method"""
         log = EmailNotificationLog.objects.create(
@@ -478,7 +478,7 @@ class TestEmailNotificationLogModel:
             template_name='test_template',
             status='pending'
         )
-
+        
         expected = f"Email to {customer_user.email} - pending"
         assert str(log) == expected
 
@@ -603,7 +603,7 @@ class TestNotificationPreferencesModel:
 
 @pytest.mark.django_db
 class TestNotificationSerializers:
-
+    
     def test_notification_serializer(self, notification):
         """Test NotificationSerializer"""
         serializer = NotificationSerializer(notification)
@@ -702,12 +702,12 @@ class TestNotificationSerializers:
         assert updated_prefs.new_listing_notifications is True
         assert updated_prefs.promotional_notifications is True
         assert updated_prefs.weekly_digest is False
-
+    
     def test_business_follower_serializer(self, business_follower):
         """Test BusinessFollowerSerializer"""
         serializer = BusinessFollowerSerializer(business_follower)
         data = serializer.data
-
+        
         assert data['business_name'] == business_follower.business.business_name
         assert data['business_id'] == str(business_follower.business.user.UserID)
         assert 'business_logo' in data
@@ -737,7 +737,7 @@ class TestNotificationSerializers:
         data = serializer.data
 
         assert data['business_logo'] is None
-
+    
     def test_follow_business_serializer_validation(self, customer_user, provider_user):
         """Test FollowBusinessSerializer validation"""
         # Test valid business ID
@@ -745,7 +745,7 @@ class TestNotificationSerializers:
             'business_id': str(provider_user.UserID)
         })
         assert serializer.is_valid()
-
+        
         # Test invalid business ID
         serializer = FollowBusinessSerializer(data={
             'business_id': str(uuid.uuid4())
@@ -826,7 +826,7 @@ class TestNotificationSerializers:
 
 @pytest.mark.django_db
 class TestNotificationService:
-
+    
     def test_create_notification(self, customer_user, provider_user):
         """Test NotificationService.create_notification"""
         notification = NotificationService.create_notification(
@@ -838,7 +838,7 @@ class TestNotificationService:
             business=provider_user.provider_profile,
             data={'test': 'data'}
         )
-
+        
         assert notification.recipient == customer_user
         assert notification.title == 'Service Test'
         assert notification.data == {'test': 'data'}
@@ -895,7 +895,7 @@ class TestNotificationService:
         assert notification.notification_type == 'password_reset'
         assert notification.recipient == customer_user
         mock_send_mail.assert_called_once()
-
+    
     def test_mark_notifications_as_read(self, customer_user, provider_user):
         """Test NotificationService.mark_notifications_as_read"""
         # Create multiple notifications
@@ -906,7 +906,7 @@ class TestNotificationService:
             title='Notification 1',
             message='Message 1'
         )
-
+        
         notification2 = Notification.objects.create(
             recipient=customer_user,
             sender=provider_user,
@@ -914,15 +914,15 @@ class TestNotificationService:
             title='Notification 2',
             message='Message 2'
         )
-
+        
         # Mark as read
         count = NotificationService.mark_notifications_as_read(
             customer_user,
             [notification1.id, notification2.id]
         )
-
+        
         assert count == 2
-
+        
         # Verify they are marked as read
         notification1.refresh_from_db()
         notification2.refresh_from_db()
@@ -930,7 +930,7 @@ class TestNotificationService:
         assert notification2.is_read is True
         assert notification1.read_at is not None
         assert notification2.read_at is not None
-
+    
     def test_get_unread_count(self, customer_user, provider_user):
         """Test NotificationService.get_unread_count"""
         # Create notifications
@@ -962,27 +962,27 @@ class TestNotificationService:
 
         count = NotificationService.get_unread_count(customer_user)
         assert count == 1  # Only the unread, non-deleted notification
-
+    
     def test_follow_business(self, customer_user, provider_user):
         """Test NotificationService.follow_business"""
         follower, created = NotificationService.follow_business(
-            customer_user,
+            customer_user, 
             provider_user.UserID
         )
-
+        
         assert created is True
         assert follower.user == customer_user
         assert follower.business == provider_user.provider_profile
-
+        
         # Test following again (should not create duplicate)
         follower2, created2 = NotificationService.follow_business(
-            customer_user,
+            customer_user, 
             provider_user.UserID
         )
-
+        
         assert created2 is False
         assert follower == follower2
-
+    
     def test_follow_business_unverified(self, customer_user):
         """Test following unverified business fails"""
         unverified_provider = User.objects.create_user(
@@ -1019,18 +1019,18 @@ class TestNotificationService:
             user=customer_user,
             business=provider_user.provider_profile
         )
-
+        
         success = NotificationService.unfollow_business(
-            customer_user,
+            customer_user, 
             provider_user.UserID
         )
-
+        
         assert success is True
         assert not BusinessFollower.objects.filter(
             user=customer_user,
             business=provider_user.provider_profile
         ).exists()
-
+    
     def test_unfollow_business_not_following(self, customer_user, provider_user):
         """Test unfollowing business that user is not following"""
         success = NotificationService.unfollow_business(
@@ -1047,9 +1047,9 @@ class TestNotificationService:
             user=customer_user,
             business=provider_user.provider_profile
         )
-
+        
         following_data = NotificationService.get_user_following(customer_user)
-
+        
         assert len(following_data) == 1
         assert following_data[0]['business_name'] == provider_user.provider_profile.business_name
         assert following_data[0]['business_id'] == str(provider_user.UserID)
@@ -1195,7 +1195,7 @@ class TestNotificationService:
 
 @pytest.mark.django_db
 class TestNotificationViews:
-
+    
     def test_mark_notifications_read(self, authenticated_customer_client, customer_user, provider_user):
         """Test POST /api/notifications/mark-read/"""
         notification1 = Notification.objects.create(
@@ -1205,7 +1205,7 @@ class TestNotificationViews:
             title='Notification 1',
             message='Message 1'
         )
-
+        
         notification2 = Notification.objects.create(
             recipient=customer_user,
             sender=provider_user,
@@ -1213,28 +1213,28 @@ class TestNotificationViews:
             title='Notification 2',
             message='Message 2'
         )
-
+        
         url = reverse('mark_notifications_read')
         data = {
             'notification_ids': [str(notification1.id), str(notification2.id)]
         }
-
+        
         response = authenticated_customer_client.post(
             url,
             data=json.dumps(data),
             content_type='application/json'
         )
-
+        
         assert response.status_code == status.HTTP_200_OK
         assert response.data['marked_count'] == 2
         assert 'unread_count' in response.data
-
+        
         # Verify notifications are marked as read
         notification1.refresh_from_db()
         notification2.refresh_from_db()
         assert notification1.is_read is True
         assert notification2.is_read is True
-
+    
     def test_mark_notifications_read_invalid_data(self, authenticated_customer_client):
         """Test POST /api/notifications/mark-read/ with invalid data"""
         url = reverse('mark_notifications_read')
@@ -1303,7 +1303,7 @@ class TestNotificationViews:
 
         assert response.status_code == status.HTTP_200_OK
         assert response.data['unread_count'] == 1
-
+    
     def test_delete_notification(self, authenticated_customer_client, customer_user, provider_user):
         """Test DELETE /api/notifications/<id>/delete/"""
         notification = Notification.objects.create(
@@ -1313,12 +1313,12 @@ class TestNotificationViews:
             title='Test',
             message='Message'
         )
-
+        
         url = reverse('delete_notification', args=[notification.id])
         response = authenticated_customer_client.delete(url)
-
+        
         assert response.status_code == status.HTTP_200_OK
-
+        
         # Verify notification is soft deleted
         notification.refresh_from_db()
         assert notification.is_deleted is True
@@ -1345,22 +1345,22 @@ class TestNotificationViews:
 
 @pytest.mark.django_db
 class TestNotificationPreferencesViews:
-
+    
     def test_get_notification_preferences(self, authenticated_customer_client, customer_user):
         """Test GET /api/notifications/preferences/"""
         url = reverse('notification_preferences')
         response = authenticated_customer_client.get(url)
-
+        
         assert response.status_code == status.HTTP_200_OK
         assert 'preferences' in response.data
-
+        
         # Check default values are returned
         prefs = response.data['preferences']
         assert prefs['email_notifications'] is True
         assert prefs['new_listing_notifications'] is True
         assert prefs['promotional_notifications'] is False
         assert prefs['weekly_digest'] is True
-
+    
     def test_get_notification_preferences_creates_default(self, authenticated_customer_client, customer_user):
         """Test GET /api/notifications/preferences/ creates default preferences if none exist"""
         # Ensure no preferences exist
@@ -1385,17 +1385,17 @@ class TestNotificationPreferencesViews:
             'promotional_notifications': True,
             'weekly_digest': False
         }
-
+        
         response = authenticated_customer_client.put(
             url,
             data=json.dumps(data),
             content_type='application/json'
         )
-
+        
         assert response.status_code == status.HTTP_200_OK
         assert response.data['preferences']['email_notifications'] is False
         assert response.data['preferences']['promotional_notifications'] is True
-
+        
         # Verify preferences were saved
         prefs = NotificationPreferences.objects.get(user=customer_user)
         assert prefs.email_notifications is False
@@ -1449,30 +1449,30 @@ class TestNotificationPreferencesViews:
 
 @pytest.mark.django_db
 class TestBusinessFollowingViews:
-
+    
     def test_follow_business(self, authenticated_customer_client, customer_user, provider_user):
         """Test POST /api/follow/"""
         url = reverse('follow_business')
         data = {
             'business_id': str(provider_user.UserID)
         }
-
+        
         response = authenticated_customer_client.post(
             url,
             data=json.dumps(data),
             content_type='application/json'
         )
-
+        
         assert response.status_code == status.HTTP_201_CREATED
         assert response.data['created'] is True
         assert 'follower_id' in response.data
-
+        
         # Verify follower relationship was created
         assert BusinessFollower.objects.filter(
             user=customer_user,
             business=provider_user.provider_profile
         ).exists()
-
+    
     def test_follow_business_already_following(self, authenticated_customer_client, customer_user, provider_user):
         """Test following a business already being followed"""
         # Create existing follower relationship
@@ -1541,7 +1541,7 @@ class TestBusinessFollowingViews:
 
         assert response.status_code == status.HTTP_400_BAD_REQUEST
         assert 'error' in response.data
-
+    
     def test_unfollow_business(self, authenticated_customer_client, customer_user, provider_user):
         """Test DELETE /api/unfollow/<business_id>/"""
         # Create follower relationship
@@ -1549,20 +1549,20 @@ class TestBusinessFollowingViews:
             user=customer_user,
             business=provider_user.provider_profile
         )
-
+        
         url = reverse('unfollow_business', args=[provider_user.UserID])
         response = authenticated_customer_client.delete(url)
-
+        
         assert response.status_code == status.HTTP_200_OK
         assert 'Successfully unfollowed' in response.data['message']
         assert response.data['business_id'] == str(provider_user.UserID)
-
+        
         # Verify follower relationship was deleted
         assert not BusinessFollower.objects.filter(
             user=customer_user,
             business=provider_user.provider_profile
         ).exists()
-
+    
     def test_unfollow_business_not_following(self, authenticated_customer_client, customer_user, provider_user):
         """Test unfollowing business that user is not following"""
         url = reverse('unfollow_business', args=[provider_user.UserID])
@@ -1587,10 +1587,10 @@ class TestBusinessFollowingViews:
             user=customer_user,
             business=provider_user.provider_profile
         )
-
+        
         url = reverse('get_following')
         response = authenticated_customer_client.get(url)
-
+        
         assert response.status_code == status.HTTP_200_OK
         assert 'following' in response.data
         assert response.data['count'] == 1
@@ -1606,7 +1606,7 @@ class TestBusinessFollowingViews:
         assert response.status_code == status.HTTP_200_OK
         assert response.data['count'] == 0
         assert response.data['following'] == []
-
+    
     def test_get_followers(self, authenticated_provider_client, customer_user, provider_user):
         """Test GET /api/followers/ (business owner only)"""
         # Create follower relationship
@@ -1614,38 +1614,38 @@ class TestBusinessFollowingViews:
             user=customer_user,
             business=provider_user.provider_profile
         )
-
+        
         url = reverse('get_followers')
         response = authenticated_provider_client.get(url)
-
+        
         assert response.status_code == status.HTTP_200_OK
         assert 'followers' in response.data
         assert 'summary' in response.data
         assert response.data['summary']['total_followers'] == 1
         assert response.data['followers'][0]['user_id'] == str(customer_user.UserID)
         assert response.data['followers'][0]['user_type'] == 'customer'
-
+    
     def test_get_followers_forbidden_for_non_provider(self, authenticated_customer_client):
         """Test that non-providers cannot view followers"""
         url = reverse('get_followers')
         response = authenticated_customer_client.get(url)
-
+        
         assert response.status_code == status.HTTP_403_FORBIDDEN
         assert 'Only business owners' in response.data['error']['message']
-
+    
     def test_provider_cannot_follow_business(self, authenticated_provider_client, provider_user):
         """Test that providers cannot follow businesses"""
         url = reverse('follow_business')
         data = {
             'business_id': str(provider_user.UserID)
         }
-
+        
         response = authenticated_provider_client.post(
             url,
             data=json.dumps(data),
             content_type='application/json'
         )
-
+        
         assert response.status_code == status.HTTP_403_FORBIDDEN
         assert 'Only customers and organizations' in response.data['error']['message']
 
@@ -1670,29 +1670,29 @@ class TestBusinessFollowingViews:
             user=ngo_user,
             business=provider_user.provider_profile
         ).exists()
-
+    
     def test_get_follow_status(self, authenticated_customer_client, customer_user, provider_user):
         """Test GET /api/follow-status/<business_id>/"""
         url = reverse('get_follow_status', args=[provider_user.UserID])
         response = authenticated_customer_client.get(url)
-
+        
         assert response.status_code == status.HTTP_200_OK
         assert 'follow_status' in response.data
         assert response.data['follow_status']['is_following'] is False
         assert response.data['follow_status']['follower_count'] == 0
         assert response.data['follow_status']['business_name'] == provider_user.provider_profile.business_name
-
+        
         # Create follower relationship and test again
         BusinessFollower.objects.create(
             user=customer_user,
             business=provider_user.provider_profile
         )
-
+        
         response = authenticated_customer_client.get(url)
         assert response.status_code == status.HTTP_200_OK
         assert response.data['follow_status']['is_following'] is True
         assert response.data['follow_status']['follower_count'] == 1
-
+    
     def test_get_follow_status_invalid_business(self, authenticated_customer_client):
         """Test GET /api/follow-status/<business_id>/ with invalid business ID"""
         fake_id = uuid.uuid4()
@@ -1706,7 +1706,7 @@ class TestBusinessFollowingViews:
         """Test GET /api/recommendations/"""
         url = reverse('get_follow_recommendations')
         response = authenticated_customer_client.get(url)
-
+        
         assert response.status_code == status.HTTP_200_OK
         assert 'recommendations' in response.data
         assert 'count' in response.data
@@ -1765,7 +1765,7 @@ class TestBusinessFollowingViews:
 
 # ============ INTEGRATION TESTS ============
 
-@pytest.mark.django_db
+    @pytest.mark.django_db
 class TestNotificationIntegration:
 
     def test_business_following_workflow(self, authenticated_customer_client, customer_user, provider_user):
@@ -1786,8 +1786,8 @@ class TestNotificationIntegration:
         follow_response = authenticated_customer_client.post(
             follow_url,
             data=json.dumps(follow_data),
-            content_type='application/json'
-        )
+                content_type='application/json'
+            )
         assert follow_response.status_code == status.HTTP_201_CREATED
 
         # 3. Check follow status again
