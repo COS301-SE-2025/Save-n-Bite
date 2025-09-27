@@ -133,8 +133,8 @@ jobs:
     - name: Run Django system check
       run: poetry run python manage.py check
 
-    - name: Run authentication app tests only
-      run: poetry run python manage.py test authentication
+    - name: Run analytics app tests only
+      run: poetry run python manage.py test analytics
 
     - name: Run coverage report (if requested)
       if: ${{ github.event.inputs.run_coverage == 'true' || github.event_name == 'pull_request' }}
