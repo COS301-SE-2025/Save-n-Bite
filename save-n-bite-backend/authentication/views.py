@@ -4,6 +4,8 @@ from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
+from .models import CustomerProfile, NGOProfile, FoodProviderProfile
+from .serializers import CustomerProfileSerializer, NGOProfileSerializer, ProviderProfileSerializer
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.settings import api_settings
@@ -320,6 +322,38 @@ def update_user_profile(request):
             for field in update_fields:
                 if field in request.data:
                     setattr(profile, field, request.data[field])
+            # Handle organisation logo update from base64 data URL
+            if 'organisation_logo' in request.data and request.data['organisation_logo']:
+                try:
+                    logo_data = request.data['organisation_logo']
+                    if logo_data.startswith('data:'):
+                        header, data = logo_data.split(',', 1)
+                        format_part = header.split(':')[1].split(';')[0]
+                        ext = format_part.split('/')[-1]
+
+                        from django.core.files.base import ContentFile
+                        import base64
+                        decoded_data = base64.b64decode(data)
+                        file_content = ContentFile(decoded_data, name=f'ngo_logo_{user.UserID}.{ext}')
+
+                        # Delete old logo if exists
+                        if profile.organisation_logo:
+                            profile.organisation_logo.delete(save=False)
+
+                        # Save new logo
+                        profile.organisation_logo.save(
+                            f'ngo_logo_{user.UserID}_{int(timezone.now().timestamp())}.{ext}',
+                            file_content,
+                            save=False
+                        )
+                except Exception as e:
+                    logger.error(f"Failed to process NGO logo for user {user.email}: {str(e)}")
+                    return Response({
+                        'error': {
+                            'code': 'IMAGE_UPLOAD_ERROR',
+                            'message': 'Failed to process organisation logo'
+                        }
+                    }, status=status.HTTP_400_BAD_REQUEST)
             profile.save()
             
         elif user.user_type == 'provider' and hasattr(user, 'provider_profile'):
@@ -328,6 +362,38 @@ def update_user_profile(request):
             for field in update_fields:
                 if field in request.data:
                     setattr(profile, field, request.data[field])
+            # Handle provider logo update from base64 data URL
+            if 'logo' in request.data and request.data['logo']:
+                try:
+                    logo_data = request.data['logo']
+                    if logo_data.startswith('data:'):
+                        header, data = logo_data.split(',', 1)
+                        format_part = header.split(':')[1].split(';')[0]
+                        ext = format_part.split('/')[-1]
+
+                        from django.core.files.base import ContentFile
+                        import base64
+                        decoded_data = base64.b64decode(data)
+                        file_content = ContentFile(decoded_data, name=f'provider_logo_{user.UserID}.{ext}')
+
+                        # Delete old logo if exists
+                        if profile.logo:
+                            profile.logo.delete(save=False)
+
+                        # Save new logo
+                        profile.logo.save(
+                            f'provider_logo_{user.UserID}_{int(timezone.now().timestamp())}.{ext}',
+                            file_content,
+                            save=False
+                        )
+                except Exception as e:
+                    logger.error(f"Failed to process provider logo for user {user.email}: {str(e)}")
+                    return Response({
+                        'error': {
+                            'code': 'IMAGE_UPLOAD_ERROR',
+                            'message': 'Failed to process provider logo'
+                        }
+                    }, status=status.HTTP_400_BAD_REQUEST)
             profile.save()
 
         # Return updated profile
@@ -470,7 +536,33 @@ def search_businesses(request):
                 'details': str(e)
             }
         }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-    
+
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def get_platform_stats(request):
+    """Return simple platform-wide stats for the Home page.
+
+    Response format:
+    {
+        "total_users": <int>,
+        "total_orders": <int>
+    }
+    """
+    try:
+        total_users = User.objects.count()
+        total_orders = Order.objects.count()
+        return Response({
+            'total_users': int(total_users),
+            'total_orders': int(total_orders),
+        }, status=status.HTTP_200_OK)
+    except Exception as e:
+        logger.error(f"Failed to compute platform stats: {e}")
+        return Response({
+            'error': {
+                'code': 'STATS_ERROR',
+                'message': 'Failed to retrieve platform stats'
+            }
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 # ====================Admin Code===============
 
@@ -1492,7 +1584,8 @@ def get_my_profile(request):
                     'profile_type': 'Organization',
                     'verification_status': ngo_profile.status,
                     'organisation_contact': ngo_profile.organisation_contact,
-                    'organisation_email': ngo_profile.organisation_email
+                    'organisation_email': ngo_profile.organisation_email,
+                    'organisation_logo': (ngo_profile.organisation_logo.url if ngo_profile.organisation_logo else None),
                 }
             except NGOProfile.DoesNotExist:
                 profile_data = {
@@ -1511,7 +1604,8 @@ def get_my_profile(request):
                     'verification_status': provider_profile.status,
                     'business_email': provider_profile.business_email,
                     'business_contact': provider_profile.business_contact,
-                    'business_address': provider_profile.business_address
+                    'business_address': provider_profile.business_address,
+                    'logo': (provider_profile.logo.url if provider_profile.logo else None),
                 }
             except FoodProviderProfile.DoesNotExist:
                 profile_data = {
@@ -1819,86 +1913,148 @@ def get_order_history(request):
 @api_view(['PUT'])
 @permission_classes([IsAuthenticated])
 def update_my_profile(request):
-    """
-    Update user profile information
-    """
+    """Update user profile information - FIXED VERSION"""
     user = request.user
-    data = request.data
     
     try:
-        # Update base user fields
-        if 'email' in data:
-            user.email = data['email']
-        if 'phone_number' in data:
-            user.phone_number = data['phone_number']
-        if 'profile_picture' in data:
-            user.profile_picture = data['profile_picture']
-        
-        user.save()
-        
-        # Update profile-specific fields based on user type
+        # Update basic user info if provided
+        if 'email' in request.data:
+            # Check if email is already taken by another user
+            if User.objects.filter(email=request.data['email']).exclude(UserID=user.UserID).exists():
+                return Response({
+                    'error': {
+                        'code': 'EMAIL_EXISTS',
+                        'message': 'Email already exists'
+                    }
+                }, status=status.HTTP_400_BAD_REQUEST)
+            user.email = request.data['email']
+            user.username = request.data['email']  # Keep username synced with email
+            user.save()
+
+        # Handle phone number update
+        if 'phone_number' in request.data:
+            user.phone_number = request.data['phone_number']
+            user.save()
+
+        # Update profile based on user type
         if user.user_type == 'customer':
             try:
-                customer_profile = user.customer_profile
-                if 'full_name' in data:
-                    customer_profile.full_name = data['full_name']
-                # Note: CustomerProfile doesn't have dietary_restrictions or preferred_pickup_areas
-                # Only update fields that actually exist
-                customer_profile.save()
+                profile = user.customer_profile
             except CustomerProfile.DoesNotExist:
-                # Create profile if it doesn't exist
-                CustomerProfile.objects.create(
-                    user=user,
-                    full_name=data.get('full_name', user.get_full_name() or user.username)
-                )
-                
-        elif user.user_type == 'ngo':
-            try:
-                ngo_profile = user.ngo_profile
-                if 'representative_name' in data:
-                    ngo_profile.representative_name = data['representative_name']
-                if 'organisation_contact' in data:
-                    ngo_profile.organisation_contact = data['organisation_contact']
-                if 'organisation_email' in data:
-                    ngo_profile.organisation_email = data['organisation_email']
-                ngo_profile.save()
-            except NGOProfile.DoesNotExist:
-                pass  # Cannot create NGO profile without required verification docs
-                
-        elif user.user_type == 'provider':
-            try:
-                provider_profile = user.provider_profile
-                if 'business_name' in data:
-                    provider_profile.business_name = data['business_name']
-                if 'business_email' in data:
-                    provider_profile.business_email = data['business_email']
-                if 'business_contact' in data:
-                    provider_profile.business_contact = data['business_contact']
-                if 'business_address' in data:
-                    provider_profile.business_address = data['business_address']
-                provider_profile.save()
-            except FoodProviderProfile.DoesNotExist:
-                pass  # Cannot create provider profile without required verification docs
-        
+                return Response({
+                    'error': {
+                        'code': 'PROFILE_NOT_FOUND',
+                        'message': 'Customer profile not found'
+                    }
+                }, status=status.HTTP_404_NOT_FOUND)
+            
+            if 'full_name' in request.data:
+                profile.full_name = request.data['full_name']
+            
+            # Handle profile image update - FIXED VERSION
+            if 'profile_image' in request.data and request.data['profile_image']:
+                try:
+                    image_data = request.data['profile_image']
+                    if image_data.startswith('data:'):
+                        # Split the data URL properly
+                        header, data = image_data.split(',', 1)
+                        format_part = header.split(':')[1].split(';')[0]  # Extract MIME type
+                        ext = format_part.split('/')[-1]  # Get file extension
+                        
+                        # Decode base64 data
+                        from django.core.files.base import ContentFile
+                        import base64
+                        decoded_data = base64.b64decode(data)
+                        
+                        # Create file with proper naming using UserID
+                        file_content = ContentFile(decoded_data, name=f'profile_{user.UserID}.{ext}')
+                        
+                        # Delete old image if exists
+                        if profile.profile_image:
+                            profile.profile_image.delete(save=False)
+                        
+                        # Save new image
+                        profile.profile_image.save(
+                            f'profile_{user.UserID}_{int(timezone.now().timestamp())}.{ext}',
+                            file_content,
+                            save=False
+                        )
+                        
+                except Exception as e:
+                    logger.error(f"Failed to process profile image for user {user.email}: {str(e)}")
+                    return Response({
+                        'error': {
+                            'code': 'IMAGE_UPLOAD_ERROR',
+                            'message': 'Failed to process profile image'
+                        }
+                    }, status=status.HTTP_400_BAD_REQUEST)
+            
+            profile.save()
+            
+        elif user.user_type == 'ngo' and hasattr(user, 'ngo_profile'):
+            profile = user.ngo_profile
+            update_fields = ['representative_name', 'organisation_contact', 'organisation_email']
+            for field in update_fields:
+                if field in request.data:
+                    setattr(profile, field, request.data[field])
+            # Handle organisation logo update (base64 data URL)
+            if 'organisation_logo' in request.data and request.data['organisation_logo']:
+                try:
+                    logo_data = request.data['organisation_logo']
+                    if logo_data.startswith('data:'):
+                        header, data = logo_data.split(',', 1)
+                        format_part = header.split(':')[1].split(';')[0]
+                        ext = format_part.split('/')[-1]
+
+                        from django.core.files.base import ContentFile
+                        import base64
+                        decoded_data = base64.b64decode(data)
+                        file_content = ContentFile(decoded_data, name=f'ngo_logo_{user.UserID}.{ext}')
+
+                        # Delete old logo if exists
+                        if profile.organisation_logo:
+                            profile.organisation_logo.delete(save=False)
+
+                        # Save new logo
+                        profile.organisation_logo.save(
+                            f'ngo_logo_{user.UserID}_{int(timezone.now().timestamp())}.{ext}',
+                            file_content,
+                            save=False
+                        )
+                except Exception as e:
+                    logger.error(f"Failed to process NGO logo for user {user.email}: {str(e)}")
+                    return Response({
+                        'error': {
+                            'code': 'IMAGE_UPLOAD_ERROR',
+                            'message': 'Failed to process organisation logo'
+                        }
+                    }, status=status.HTTP_400_BAD_REQUEST)
+            profile.save()
+            
+        elif user.user_type == 'provider' and hasattr(user, 'provider_profile'):
+            profile = user.provider_profile
+            update_fields = ['business_name', 'business_contact', 'business_email', 'business_address']
+            for field in update_fields:
+                if field in request.data:
+                    setattr(profile, field, request.data[field])
+            profile.save()
+
+        # Return updated profile using the comprehensive profile serializer
+        serializer = UserProfileSerializer(user)
         return Response({
             'message': 'Profile updated successfully',
-            'user': {
-                'id': str(user.UserID),
-                'email': user.email,
-                'phone_number': user.phone_number,
-                'profile_picture': user.profile_picture
-            }
+            'user': serializer.data
         }, status=status.HTTP_200_OK)
-        
+
     except Exception as e:
-        logger.error(f"Error updating profile for user {user.email}: {str(e)}")
+        logger.error(f"Profile update error for user {user.email}: {str(e)}")
         return Response({
             'error': {
-                'code': 'PROFILE_UPDATE_ERROR',
+                'code': 'UPDATE_ERROR',
                 'message': 'Failed to update profile',
                 'details': str(e)
             }
-        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        }, status=status.HTTP_400_BAD_REQUEST)
     
 @api_view(['GET'])
 @permission_classes([AllowAny])
@@ -2571,3 +2727,206 @@ def delete_account(request):
             {"error": {"code": "DELETE_ERROR", "message": "Account deletion failed."}},
             status=status.HTTP_500_INTERNAL_SERVER_ERROR
         )
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_customer_profile(request):
+    """Get customer profile information"""
+    try:
+        if not hasattr(request.user, 'customer_profile'):
+            return Response({
+                'error': 'Customer profile not found'
+            }, status=status.HTTP_404_NOT_FOUND)
+        
+        serializer = CustomerProfileSerializer(request.user.customer_profile)
+        return Response(serializer.data)
+    except Exception as e:
+        return Response({
+            'error': str(e)
+        }, status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_ngo_profile(request):
+    """Get NGO profile information"""
+    try:
+        if not hasattr(request.user, 'ngo_profile'):
+            return Response({
+                'error': 'NGO profile not found'
+            }, status=status.HTTP_404_NOT_FOUND)
+        
+        serializer = NGOProfileSerializer(request.user.ngo_profile)
+        return Response(serializer.data)
+    except Exception as e:
+        return Response({
+            'error': str(e)
+        }, status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_provider_profile(request):
+    """Get food provider profile information"""
+    try:
+        if not hasattr(request.user, 'provider_profile'):
+            return Response({
+                'error': 'Provider profile not found'
+            }, status=status.HTTP_404_NOT_FOUND)
+        
+        serializer = ProviderProfileSerializer(request.user.provider_profile)
+        return Response(serializer.data)
+    except Exception as e:
+        return Response({
+            'error': str(e)
+        }, status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['PUT'])
+@permission_classes([IsAuthenticated])
+def update_customer_profile(request):
+    """Update customer profile information"""
+    try:
+        if not hasattr(request.user, 'customer_profile'):
+            return Response({
+                'error': 'Customer profile not found'
+            }, status=status.HTTP_404_NOT_FOUND)
+        
+        serializer = CustomerProfileSerializer(
+            request.user.customer_profile,
+            data=request.data,
+            partial=True
+        )
+        if serializer.is_valid():
+            serializer.save()
+            return Response({
+                'message': 'Profile updated successfully',
+                'data': serializer.data
+            })
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    except Exception as e:
+        return Response({
+            'error': str(e)
+        }, status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['PUT'])
+@permission_classes([IsAuthenticated])
+def update_ngo_profile(request):
+    """Update NGO profile information"""
+    try:
+        if not hasattr(request.user, 'ngo_profile'):
+            return Response({
+                'error': 'NGO profile not found'
+            }, status=status.HTTP_404_NOT_FOUND)
+        
+        serializer = NGOProfileSerializer(
+            request.user.ngo_profile,
+            data=request.data,
+            partial=True
+        )
+        if serializer.is_valid():
+            serializer.save()
+            return Response({
+                'message': 'Profile updated successfully',
+                'data': serializer.data
+            })
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    except Exception as e:
+        return Response({
+            'error': str(e)
+        }, status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['PUT'])
+@permission_classes([IsAuthenticated])
+def update_provider_profile(request):
+    """Update food provider profile information"""
+    try:
+        if not hasattr(request.user, 'provider_profile'):
+            return Response({
+                'error': 'Provider profile not found'
+            }, status=status.HTTP_404_NOT_FOUND)
+        
+        serializer = ProviderProfileSerializer(
+            request.user.provider_profile,
+            data=request.data,
+            partial=True
+        )
+        if serializer.is_valid():
+            serializer.save()
+            return Response({
+                'message': 'Profile updated successfully',
+                'data': serializer.data
+            })
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    except Exception as e:
+        return Response({
+            'error': str(e)
+        }, status=status.HTTP_400_BAD_REQUEST)
+
+# ================= Provider Settings Endpoints =================
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_provider_settings(request):
+    """Return settings for the authenticated provider user"""
+    try:
+        user = request.user
+        if user.user_type != 'provider' or not hasattr(user, 'provider_profile'):
+            return Response({'error': 'Provider profile not found'}, status=status.HTTP_404_NOT_FOUND)
+
+        profile = user.provider_profile
+        settings_data = {
+            'business_hours': profile.business_hours or '',
+            'phone_number': profile.phone_number or '',
+            'website': profile.website or '',
+            'business_description': profile.business_description or '',
+            'business_tags': profile.get_tag_display(),
+            'notifications': {
+                # Placeholder for future provider notification preferences
+                'email_notifications': True,
+                'in_app_notifications': True,
+            }
+        }
+        return Response({'settings': settings_data}, status=status.HTTP_200_OK)
+    except Exception as e:
+        logger.error(f"Error fetching provider settings for {request.user.email}: {str(e)}")
+        return Response({'error': 'Failed to fetch settings'}, status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(['PUT'])
+@permission_classes([IsAuthenticated])
+def update_provider_settings(request):
+    """Update provider settings fields safely (no images here)"""
+    try:
+        user = request.user
+        if user.user_type != 'provider' or not hasattr(user, 'provider_profile'):
+            return Response({'error': 'Provider profile not found'}, status=status.HTTP_404_NOT_FOUND)
+
+        # Only allow specific settings fields to be updated
+        allowed_fields = ['business_hours', 'phone_number', 'website', 'business_description', 'business_tags']
+        incoming = {k: v for k, v in request.data.items() if k in allowed_fields}
+
+        # Ensure business_tags is a list if provided
+        tags = incoming.get('business_tags', None)
+        if tags is not None and not isinstance(tags, list):
+            # Accept comma-separated string as well
+            if isinstance(tags, str):
+                incoming['business_tags'] = [t.strip() for t in tags.split(',') if t.strip()]
+            else:
+                return Response({'error': 'business_tags must be a list of strings'}, status=status.HTTP_400_BAD_REQUEST)
+
+        serializer = FoodProviderProfileUpdateSerializer(
+            user.provider_profile,
+            data=incoming,
+            partial=True
+        )
+        if serializer.is_valid():
+            profile = serializer.save()
+            updated = {
+                'business_hours': profile.business_hours or '',
+                'phone_number': profile.phone_number or '',
+                'website': profile.website or '',
+                'business_description': profile.business_description or '',
+                'business_tags': profile.get_tag_display(),
+            }
+            return Response({'message': 'Settings updated successfully', 'settings': updated}, status=status.HTTP_200_OK)
+        return Response({'error': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+    except Exception as e:
+        logger.error(f"Error updating provider settings for {request.user.email}: {str(e)}")
+        return Response({'error': 'Failed to update settings'}, status=status.HTTP_400_BAD_REQUEST)

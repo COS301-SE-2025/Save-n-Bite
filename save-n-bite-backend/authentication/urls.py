@@ -52,6 +52,9 @@ urlpatterns = [
     path('auth/password-status/', views.check_password_status, name='check_password_status'),
     path('auth/login-enhanced/', views.login_with_password_check, name='login_with_password_check'),
 
+    # Public stats endpoint for Home page
+    path('auth/stats/summary/', views.get_platform_stats, name='platform_stats'),
+
     # Self-service password reset endpoints
     path('auth/forgot-password/', views.request_password_reset, name='request_password_reset'),
     path('auth/check-email/', views.check_email_exists, name='check_email_exists'),
@@ -68,6 +71,17 @@ urlpatterns = [
     path('auth/providers/search/tags/', views.search_providers_by_tags, name='search_providers_by_tags'),
     path('auth/delete-account/', views.delete_account, name='delete_account'),
     path('auth/check-email/', views.check_email_exists, name='check_email_exists'),  # Optional
+
+    # Profile endpoints
+    path('profile/customer/', views.get_customer_profile, name='get-customer-profile'),
+    path('profile/ngo/', views.get_ngo_profile, name='get-ngo-profile'),
+    path('profile/provider/', views.get_provider_profile, name='get-provider-profile'),
+    path('profile/customer/update/', views.update_customer_profile, name='update-customer-profile'),
+    path('profile/ngo/update/', views.update_ngo_profile, name='update-ngo-profile'),
+    path('profile/provider/update/', views.update_provider_profile, name='update-provider-profile'),
+    # Provider settings endpoints
+    path('auth/provider/settings/', views.get_provider_settings, name='get_provider_settings'),
+    path('auth/provider/settings/update/', views.update_provider_settings, name='update_provider_settings'),
 
     #Admin urls
     # Admin profile endpoints - ADD THESE
