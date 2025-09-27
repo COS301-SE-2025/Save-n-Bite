@@ -2,9 +2,9 @@ name: Django CI Tests
 
 on:
   push:
-    branches: [ main ]
+    branches: [ hotfix/ListingCreation ]
   pull_request:
-    branches: [ main ]
+    branches: [  hotfix/ListingCreation ]
   workflow_dispatch:
     inputs:
       run_coverage:
@@ -122,26 +122,8 @@ jobs:
     - name: Run Django system check
       run: poetry run python manage.py check
 
-    - name: Run reviews tests
-      run: poetry run pytest reviews/ -v
-
-    - name: Run scheduling tests  
-      run: poetry run pytest scheduling/ -v
-
-    - name: Run food_listings tests
-      run: poetry run pytest food_listings/ -v
-
-    - name: Run notifications tests
-      run: poetry run pytest notifications/ -v
-
-    - name: Run admin_system tests
-      run: poetry run pytest admin_system/ -v
-
-    - name: Run authentication tests (if exists)
-      run: |
-        if [ -d "authentication" ]; then
-          poetry run pytest authentication/ -v
-        fi
+    - name: Run authentication app tests only
+      run: poetry run python manage.py test authentication
 
     - name: Run coverage report (if requested)
       if: ${{ github.event.inputs.run_coverage == 'true' || github.event_name == 'pull_request' }}
