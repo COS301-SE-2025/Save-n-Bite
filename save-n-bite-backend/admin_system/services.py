@@ -854,11 +854,436 @@ class AdminNotificationService:
         }
     
 class SimpleAnalyticsService:
-    """Enhanced analytics with proper data handling - FIXED"""
-    
+    """Enhanced analytics with proper data handling"""
+            # In admin_system/services.py - Add these methods to SimpleAnalyticsService class
+
+    @staticmethod
+    def get_monthly_user_growth():
+        """Get REAL monthly user growth based on actual user creation dates"""
+        from django.db.models import Count
+        from django.db.models.functions import TruncMonth
+        from collections import defaultdict
+        import calendar
+        
+        try:
+            # Get current date and calculate 12 months back
+            now = timezone.now()
+            twelve_months_ago = now - timedelta(days=365)
+            
+            # Get users created in the last 12 months, grouped by month
+            monthly_signups = User.objects.filter(
+                created_at__gte=twelve_months_ago
+            ).annotate(
+                month=TruncMonth('created_at')
+            ).values('month').annotate(
+                new_users=Count('id')
+            ).order_by('month')
+            
+            # Get total users before our 12-month window for cumulative calculation
+            users_before_period = User.objects.filter(created_at__lt=twelve_months_ago).count()
+            
+            # Create a lookup dict for monthly signups
+            signup_lookup = {
+                item['month'].strftime('%Y-%m'): item['new_users'] 
+                for item in monthly_signups
+            }
+            
+            # Generate data for each month in the last 12 months
+            growth_data = []
+            cumulative_users = users_before_period
+            
+            for i in range(12):
+                # Calculate the month we're looking at
+                month_date = now.replace(day=1) - timedelta(days=30*i)
+                month_key = month_date.strftime('%Y-%m')
+                month_name = month_date.strftime('%b %Y')
+                
+                # Get new users for this month
+                new_users_this_month = signup_lookup.get(month_key, 0)
+                cumulative_users += new_users_this_month
+                
+                # Insert at beginning to maintain chronological order
+                growth_data.insert(0, {
+                    'name': month_name,
+                    'total_users': cumulative_users,
+                    'new_users': new_users_this_month,
+                    'month_key': month_key
+                })
+            
+            return growth_data
+            
+        except Exception as e:
+            logger.error(f"Error getting monthly user growth: {e}")
+            # Fallback to current total only
+            current_total = User.objects.count()
+            current_month = now.strftime('%b %Y')
+            return [{
+                'name': current_month,
+                'total_users': current_total,
+                'new_users': 0,
+                'month_key': now.strftime('%Y-%m')
+            }]
+
+    @staticmethod
+    def get_monthly_activity_growth():
+        """Get REAL monthly platform activity based on actual creation dates"""
+        from django.db.models import Count
+        from django.db.models.functions import TruncMonth
+        
+        try:
+            from food_listings.models import FoodListing
+            from interactions.models import Interaction
+        except ImportError:
+            logger.warning("Food listings or interactions models not available")
+            return []
+        
+        try:
+            now = timezone.now()
+            twelve_months_ago = now - timedelta(days=365)
+            
+            # Get monthly listing creation data
+            monthly_listings = []
+            if FoodListing:
+                try:
+                    monthly_listings = FoodListing.objects.filter(
+                        created_at__gte=twelve_months_ago
+                    ).annotate(
+                        month=TruncMonth('created_at')
+                    ).values('month').annotate(
+                        count=Count('id')
+                    ).order_by('month')
+                except Exception as e:
+                    logger.warning(f"Error getting listing data: {e}")
+            
+            # Get monthly transaction data  
+            monthly_transactions = []
+            if Interaction:
+                try:
+                    monthly_transactions = Interaction.objects.filter(
+                        created_at__gte=twelve_months_ago
+                    ).annotate(
+                        month=TruncMonth('created_at')
+                    ).values('month').annotate(
+                        count=Count('id')
+                    ).order_by('month')
+                except Exception as e:
+                    logger.warning(f"Error getting transaction data: {e}")
+            
+            # Create lookup dicts
+            listing_lookup = {
+                item['month'].strftime('%Y-%m'): item['count'] 
+                for item in monthly_listings
+            }
+            transaction_lookup = {
+                item['month'].strftime('%Y-%m'): item['count'] 
+                for item in monthly_transactions
+            }
+            
+            # Generate data for last 12 months
+            activity_data = []
+            for i in range(12):
+                month_date = now.replace(day=1) - timedelta(days=30*i)
+                month_key = month_date.strftime('%Y-%m')
+                month_name = month_date.strftime('%b %Y')
+                
+                activity_data.insert(0, {
+                    'name': month_name,
+                    'listings': listing_lookup.get(month_key, 0),
+                    'transactions': transaction_lookup.get(month_key, 0),
+                    'month_key': month_key
+                })
+            
+            return activity_data
+            
+        except Exception as e:
+            logger.error(f"Error getting monthly activity growth: {e}")
+            return []
+
+# Update the main get_analytics_data method to use these new functions
     @staticmethod
     def get_analytics_data():
-        """Get comprehensive analytics data - CRASH FIXED"""
+        """Get comprehensive analytics data with REAL monthly historical data - ENHANCED V2"""
+        try:
+            from food_listings.models import FoodListing
+        except ImportError:
+            FoodListing = None
+            
+        try:
+            from interactions.models import Interaction
+        except ImportError:
+            Interaction = None
+        
+        # Calculate date ranges
+        now = timezone.now()
+        week_ago = now - timedelta(days=7)
+        month_ago = now - timedelta(days=30)
+        
+        # User analytics with proper distribution
+        total_users = User.objects.count()
+        new_users_week = User.objects.filter(created_at__gte=week_ago).count()
+        new_users_month = User.objects.filter(created_at__gte=month_ago).count()
+        
+        # Calculate user growth
+        prev_month_users = User.objects.filter(
+            created_at__lt=month_ago,
+            created_at__gte=month_ago - timedelta(days=30)
+        ).count()
+        user_growth = ((new_users_month - prev_month_users) / max(prev_month_users, 1)) * 100
+        
+        # User distribution with actual counts and percentages
+        user_distribution = {}
+        if total_users > 0:
+            user_type_counts = User.objects.values('user_type').annotate(count=Count('user_type'))
+            
+            for item in user_type_counts:
+                user_type = item['user_type'] or 'unknown'
+                count = item['count']
+                percentage = (count / total_users) * 100
+                user_distribution[user_type] = f"{percentage:.1f}%"
+            
+            # Ensure all expected user types are represented
+            for user_type in ['customer', 'provider', 'ngo', 'admin']:
+                if user_type not in user_distribution:
+                    user_distribution[user_type] = "0.0%"
+        else:
+            user_distribution = {
+                'customer': "0.0%",
+                'provider': "0.0%", 
+                'ngo': "0.0%",
+                'admin': "0.0%"
+            }
+        
+        # Listing analytics
+        if FoodListing:
+            try:
+                total_listings = FoodListing.objects.count()
+                active_listings = FoodListing.objects.filter(status='active').count()
+                new_listings_week = FoodListing.objects.filter(created_at__gte=week_ago).count()
+                
+                prev_week_listings = FoodListing.objects.filter(
+                    created_at__lt=week_ago,
+                    created_at__gte=week_ago - timedelta(days=7)
+                ).count()
+                listing_growth = ((new_listings_week - prev_week_listings) / max(prev_week_listings, 1)) * 100
+            except Exception as e:
+                logger.warning(f"Error in listing analytics: {e}")
+                total_listings = active_listings = new_listings_week = listing_growth = 0
+        else:
+            total_listings = active_listings = new_listings_week = listing_growth = 0
+        
+        # Transaction analytics
+        if Interaction:
+            try:
+                total_transactions = Interaction.objects.count()
+                completed_transactions = Interaction.objects.filter(status='completed').count()
+                success_rate = (completed_transactions / max(total_transactions, 1)) * 100
+            except Exception as e:
+                logger.warning(f"Error in transaction analytics: {e}")
+                total_transactions = completed_transactions = success_rate = 0
+        else:
+            total_transactions = completed_transactions = success_rate = 0
+        
+        # Top providers data (simplified to avoid errors)
+        top_providers_data = []
+        try:
+            providers = FoodProviderProfile.objects.filter(
+                status='verified'
+            ).select_related('user')[:5]
+            
+            for provider in providers:
+                try:
+                    listing_count = 0
+                    if FoodListing:
+                        listing_count = FoodListing.objects.filter(
+                            provider=provider.user
+                        ).count()
+                    
+                    top_providers_data.append({
+                        'name': provider.business_name,
+                        'listings': listing_count,
+                        'transactions': 0,  # Simplified to avoid complex queries
+                        'completed_transactions': 0
+                    })
+                except Exception as e:
+                    logger.warning(f"Error getting provider stats for {provider.business_name}: {e}")
+                    continue
+            
+            top_providers_data.sort(key=lambda x: x['listings'], reverse=True)
+            top_providers_data = top_providers_data[:5]
+                    
+        except Exception as e:
+            logger.warning(f"Error getting top providers: {e}")
+            top_providers_data = []
+
+        if not top_providers_data:
+            top_providers_data = [{
+                'name': 'No Active Providers',
+                'listings': 0,
+                'transactions': 0,
+                'completed_transactions': 0
+            }]
+        
+        # NEW: Get real monthly historical data
+        try:
+            monthly_user_growth = SimpleAnalyticsService.get_monthly_user_growth()
+            monthly_activity_growth = SimpleAnalyticsService.get_monthly_activity_growth()
+        except Exception as e:
+            logger.warning(f"Error getting monthly historical data: {e}")
+            monthly_user_growth = [{
+                'name': now.strftime('%b %Y'),
+                'total_users': total_users,
+                'new_users': new_users_month
+            }]
+            monthly_activity_growth = [{
+                'name': now.strftime('%b %Y'),
+                'listings': total_listings,
+                'transactions': total_transactions
+            }]
+        
+        return {
+            'total_users': total_users,
+            'new_users_week': new_users_week,
+            'new_users_month': new_users_month,
+            'user_growth_percentage': round(user_growth, 1),
+            
+            'total_listings': total_listings,
+            'active_listings': active_listings,
+            'new_listings_week': new_listings_week,
+            'listing_growth_percentage': round(listing_growth, 1),
+            
+            'total_transactions': total_transactions,
+            'completed_transactions': completed_transactions,
+            'transaction_success_rate': round(success_rate, 1),
+            
+            'user_distribution': user_distribution,
+            'top_providers': top_providers_data,
+            
+            # NEW: Real monthly historical data for line charts
+            'monthly_user_growth': monthly_user_growth,
+            'monthly_activity_growth': monthly_activity_growth
+        }
+
+    @staticmethod
+    def get_real_user_growth_data():
+        """Get REAL user growth data based on actual user creation dates"""
+        from django.db.models import Count
+        from django.db.models.functions import TruncMonth, TruncWeek, TruncDate
+        from collections import defaultdict
+        import calendar
+        
+        try:
+            # Get user creation data grouped by month for the last 12 months
+            now = timezone.now()
+            one_year_ago = now - timedelta(days=365)
+            
+            # Query actual user creation dates grouped by month
+            monthly_users = User.objects.filter(
+                created_at__gte=one_year_ago
+            ).annotate(
+                month=TruncMonth('created_at')
+            ).values('month').annotate(
+                count=Count('id')
+            ).order_by('month')
+            
+            # Create month labels for the last 12 months
+            months_data = []
+            current_total = 0
+            
+            # Get users created before our 12-month window
+            users_before = User.objects.filter(created_at__lt=one_year_ago).count()
+            current_total = users_before
+            
+            # Create a dict for easy lookup
+            monthly_counts = {item['month'].strftime('%Y-%m'): item['count'] for item in monthly_users}
+            
+            # Generate data for each of the last 12 months
+            for i in range(12):
+                month_date = now - timedelta(days=30*i)
+                month_key = month_date.strftime('%Y-%m')
+                month_name = month_date.strftime('%b %Y')
+                
+                # Add new users for this month
+                new_users_this_month = monthly_counts.get(month_key, 0)
+                current_total += new_users_this_month
+                
+                months_data.insert(0, {  # Insert at beginning to maintain chronological order
+                    'name': month_name,
+                    'users': current_total,
+                    'new_users': new_users_this_month
+                })
+            
+            return months_data
+        
+        except Exception as e:
+            logger.error(f"Error getting real user growth data: {e}")
+            # Fallback to current total only
+            total_users = User.objects.count()
+            return [
+                {'name': 'Current', 'users': total_users, 'new_users': 0}
+            ]
+
+    @staticmethod  
+    def get_real_platform_activity_data():
+        """Get REAL platform activity data based on actual creation dates"""
+        from django.db.models import Count
+        from django.db.models.functions import TruncMonth
+        
+        try:
+            from food_listings.models import FoodListing
+            from interactions.models import Interaction
+        except ImportError:
+            return [{'name': 'No Data', 'listings': 0, 'transactions': 0}]
+        
+        try:
+            now = timezone.now()
+            six_months_ago = now - timedelta(days=180)
+            
+            # Get monthly listing creation data
+            monthly_listings = FoodListing.objects.filter(
+                created_at__gte=six_months_ago
+            ).annotate(
+                month=TruncMonth('created_at')
+            ).values('month').annotate(
+                count=Count('id')
+            ).order_by('month')
+            
+            # Get monthly transaction data  
+            monthly_transactions = Interaction.objects.filter(
+                created_at__gte=six_months_ago
+            ).annotate(
+                month=TruncMonth('created_at')
+            ).values('month').annotate(
+                count=Count('id')
+            ).order_by('month')
+            
+            # Create lookup dicts
+            listing_counts = {item['month'].strftime('%Y-%m'): item['count'] for item in monthly_listings}
+            transaction_counts = {item['month'].strftime('%Y-%m'): item['count'] for item in monthly_transactions}
+            
+            # Generate data for last 6 months
+            activity_data = []
+            for i in range(6):
+                month_date = now - timedelta(days=30*i)
+                month_key = month_date.strftime('%Y-%m')
+                month_name = month_date.strftime('%b')
+                
+                activity_data.insert(0, {
+                    'name': month_name,
+                    'listings': listing_counts.get(month_key, 0),
+                    'transactions': transaction_counts.get(month_key, 0)
+                })
+            
+            return activity_data
+            
+        except Exception as e:
+            logger.error(f"Error getting real platform activity data: {e}")
+            return [{'name': 'No Data', 'listings': 0, 'transactions': 0}]
+    
+# In admin_system/services.py - Update the get_analytics_data method to include real historical data
+
+    @staticmethod
+    def get_analytics_data():
+        """Get comprehensive analytics data with REAL historical data - ENHANCED"""
         try:
             from food_listings.models import FoodListing
         except ImportError:
@@ -899,14 +1324,15 @@ class SimpleAnalyticsService:
                 user_distribution[user_type] = f"{percentage:.1f}%"
             
             # Ensure all expected user types are represented
-            for user_type in ['customer', 'provider', 'ngo']:
+            for user_type in ['customer', 'provider', 'ngo', 'admin']:
                 if user_type not in user_distribution:
                     user_distribution[user_type] = "0.0%"
         else:
             user_distribution = {
                 'customer': "0.0%",
                 'provider': "0.0%", 
-                'ngo': "0.0%"
+                'ngo': "0.0%",
+                'admin': "0.0%"
             }
         
         # Listing analytics
@@ -939,10 +1365,9 @@ class SimpleAnalyticsService:
         else:
             total_transactions = completed_transactions = success_rate = 0
         
-        # SIMPLIFIED: Top providers without transactions (avoiding the complex query for now)
+        # Top providers data
         top_providers_data = []
         try:
-            # Get verified providers
             providers = FoodProviderProfile.objects.filter(
                 status='verified'
             ).select_related('user')[:5]
@@ -953,33 +1378,27 @@ class SimpleAnalyticsService:
                     transaction_count = 0
                     completed_transaction_count = 0
                     
-                    # Get listing count
                     if FoodListing:
                         listing_count = FoodListing.objects.filter(
                             provider=provider.user
                         ).count()
                     
-                    # CORRECTED: Query transactions using the FoodProviderProfile instance directly
                     if Interaction:
                         try:
-                            # The business field expects a FoodProviderProfile instance, not User
                             transaction_count = Interaction.objects.filter(
-                                business=provider  # Use the provider (FoodProviderProfile) directly
+                                business=provider
                             ).count()
                             
                             completed_transaction_count = Interaction.objects.filter(
-                                business=provider,  # Use the provider (FoodProviderProfile) directly
+                                business=provider,
                                 status='completed'
                             ).count()
-                            
-                            print(f"Provider {provider.business_name}: {transaction_count} transactions, {completed_transaction_count} completed")
                             
                         except Exception as transaction_error:
                             logger.warning(f"Transaction query failed for {provider.business_name}: {transaction_error}")
                             transaction_count = 0
                             completed_transaction_count = 0
                     
-                    # Add provider data
                     top_providers_data.append({
                         'name': provider.business_name,
                         'listings': listing_count,
@@ -991,7 +1410,7 @@ class SimpleAnalyticsService:
                     logger.warning(f"Error getting provider stats for {provider.business_name}: {e}")
                     continue
             
-            # Sort by total activity (listings + transactions) and limit to top 5
+            # Sort by total activity and limit to top 5
             top_providers_data.sort(key=lambda x: x['listings'] + x['transactions'], reverse=True)
             top_providers_data = top_providers_data[:5]
                     
@@ -999,7 +1418,6 @@ class SimpleAnalyticsService:
             logger.warning(f"Error getting top providers: {e}")
             top_providers_data = []
 
-        # If no providers have data, add a placeholder
         if not top_providers_data:
             top_providers_data = [{
                 'name': 'No Active Providers',
@@ -1007,6 +1425,15 @@ class SimpleAnalyticsService:
                 'transactions': 0,
                 'completed_transactions': 0
             }]
+        
+        # NEW: Get real historical data
+        try:
+            user_growth_data = SimpleAnalyticsService.get_real_user_growth_data()
+            platform_activity_data = SimpleAnalyticsService.get_real_platform_activity_data()
+        except Exception as e:
+            logger.warning(f"Error getting historical data: {e}")
+            user_growth_data = [{'name': 'Current', 'users': total_users, 'new_users': new_users_month}]
+            platform_activity_data = [{'name': 'Current', 'listings': total_listings, 'transactions': total_transactions}]
         
         return {
             'total_users': total_users,
@@ -1024,7 +1451,11 @@ class SimpleAnalyticsService:
             'transaction_success_rate': round(success_rate, 1),
             
             'user_distribution': user_distribution,
-            'top_providers': top_providers_data
+            'top_providers': top_providers_data,
+            
+            # NEW: Real historical data
+            'user_growth_data': user_growth_data,
+            'platform_activity_data': platform_activity_data
         }
     
 class AnomalyDetectionService:
