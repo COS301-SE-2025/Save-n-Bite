@@ -81,27 +81,36 @@ class BadgeService:
         """
         Calculate and award badges for a specific provider
         """
+        logger.info(f"🏆 Starting badge calculation for provider: {provider.email}")
         badges_awarded = []
         
         # Get provider statistics
         stats = self.get_provider_statistics(provider)
+        logger.info(f"📊 Provider statistics: {stats}")
         
         # Check milestone badges
+        logger.info("🔍 Checking milestone badges...")
         milestone_badges = self.check_milestone_badges(provider, stats)
         badges_awarded.extend(milestone_badges)
+        logger.info(f"✅ Milestone badges awarded: {len(milestone_badges)}")
         
         # Check monthly provider badge (for current month)
+        logger.info("🔍 Checking monthly provider badge...")
         monthly_badge = self.check_monthly_provider_badge(provider, stats)
         if monthly_badge:
             badges_awarded.append(monthly_badge)
+            logger.info(f"✅ Monthly badge awarded: {monthly_badge}")
         
         # Check special achievement badges
+        logger.info("🔍 Checking special achievement badges...")
         special_badges = self.check_special_achievement_badges(provider, stats)
         badges_awarded.extend(special_badges)
+        logger.info(f"✅ Special badges awarded: {len(special_badges)}")
         
         # Update provider badge statistics
         self.update_provider_badge_stats(provider)
         
+        logger.info(f"🎉 Badge calculation complete for {provider.email}: {len(badges_awarded)} total badges awarded")
         return badges_awarded
     
     def get_provider_statistics(self, provider: User) -> Dict:
@@ -172,10 +181,6 @@ class BadgeService:
             try:
                 # Check if badge type exists using exact name
                 badge_type = BadgeType.objects.get(name=badge_name, is_active=True)
-                
-                # Check if already earned
-                if ProviderBadge.objects.filter(provider=provider, badge_type=badge_type).exists():
-                    continue
                 
                 # Check threshold
                 current_value = stats.get(config['field'], 0)
@@ -380,24 +385,31 @@ class BadgeService:
     
     def award_badge(self, provider: User, badge_type: BadgeType, badge_data: Dict) -> ProviderBadge:
         """
-        Award a badge to a provider
+        Award a badge to a provider - using get_or_create like digital garden system
         """
         reason = f"Earned {badge_type.name}: {badge_type.criteria_description}"
         
-        badge = ProviderBadge.objects.create(
+        # Use get_or_create to handle duplicates gracefully (like digital garden system)
+        badge, created = ProviderBadge.objects.get_or_create(
             provider=provider,
             badge_type=badge_type,
-            earned_reason=reason,
-            badge_data=badge_data
+            defaults={
+                'earned_reason': reason,
+                'badge_data': badge_data
+            }
         )
         
-        # Send notification
-        try:
-            self.send_badge_notification(provider, badge)
-        except Exception as e:
-            logger.error(f"Failed to send badge notification: {str(e)}")
+        if created:
+            # Send notification only for newly created badges
+            try:
+                self.send_badge_notification(provider, badge)
+            except Exception as e:
+                logger.error(f"Failed to send badge notification: {str(e)}")
+            
+            logger.info(f"Badge awarded: {badge}")
+        else:
+            logger.info(f"Badge already exists: {badge}")
         
-        logger.info(f"Badge awarded: {badge}")
         return badge
     
     def send_badge_notification(self, provider: User, badge: ProviderBadge):
