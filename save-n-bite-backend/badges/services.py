@@ -161,53 +161,110 @@ class BadgeService:
     
     def check_milestone_badges(self, provider: User, stats: Dict) -> List[ProviderBadge]:
         """
-        Check and award milestone badges
+        Check and award milestone badges - following digital garden pattern
         """
         badges_awarded = []
         
-        # Define milestone thresholds with exact badge names
-        milestones = {
-            'First Order': {'threshold': 1, 'field': 'total_orders'},
-            'Veteran Provider': {'threshold': 365, 'field': 'days_active'},
-            'Review Magnet': {'threshold': 10, 'field': 'total_reviews'},
-            'Customer Favorite': {'threshold': 50, 'field': 'total_reviews'},
-            'Order Champion': {'threshold': 100, 'field': 'total_orders'},
-            'Revenue Milestone - R1000': {'threshold': 1000, 'field': 'total_revenue'},
-            'Revenue Milestone - R10000': {'threshold': 10000, 'field': 'total_revenue'},
-            'Excellence Badge': {'threshold': 4.5, 'field': 'average_rating', 'min_reviews': 10},
-        }
+        # Get or create provider badge stats for milestone tracking
+        badge_stats, created = ProviderBadgeStats.objects.get_or_create(
+            provider=provider,
+            defaults={'achieved_milestones': {}}
+        )
         
-        for badge_name, config in milestones.items():
-            try:
-                # Check if badge type exists using exact name
-                badge_type = BadgeType.objects.get(name=badge_name, is_active=True)
-                
-                # Check threshold
-                current_value = stats.get(config['field'], 0)
-                threshold = config['threshold']
-                
-                # Special handling for rating badges
-                if 'min_reviews' in config:
-                    if stats['total_reviews'] < config['min_reviews']:
-                        continue
-                
-                if current_value >= threshold:
-                    badge = self.award_badge(provider, badge_type, {
-                        'milestone_type': badge_name.lower().replace(' ', '_'),
-                        'threshold': threshold,
-                        'achieved_value': float(current_value) if isinstance(current_value, Decimal) else current_value,
-                        'earned_date': timezone.now().isoformat()
-                    })
-                    badges_awarded.append(badge)
-                    
-            except BadgeType.DoesNotExist:
-                logger.warning(f"Badge type not found: {badge_name}")
-                continue
-            except Exception as e:
-                logger.error(f"Error checking milestone {badge_name} for {provider.email}: {str(e)}")
-                continue
+        # Define milestone thresholds (like digital garden)
+        milestones = [
+            ('First Order', 1, 'total_orders'),
+            ('Review Magnet', 10, 'total_reviews'),
+            ('Customer Favorite', 50, 'total_reviews'),
+            ('Order Champion', 100, 'total_orders'),
+            ('Veteran Provider', 365, 'days_active'),
+        ]
+        
+        # Revenue milestones (special handling for decimal)
+        revenue_milestones = [
+            ('Revenue Milestone - R1000', 1000, 'total_revenue'),
+            ('Revenue Milestone - R10000', 10000, 'total_revenue'),
+        ]
+        
+        # Rating milestone (special handling)
+        rating_milestones = [
+            ('Excellence Badge', 4.5, 'average_rating', 10),  # threshold, field, min_reviews
+        ]
+        
+        achieved_milestones = badge_stats.achieved_milestones or {}
+        
+        # Check regular milestones
+        for badge_name, threshold, field in milestones:
+            if self._check_and_award_milestone(provider, badge_name, threshold, field, stats, achieved_milestones):
+                badges_awarded.append(self._get_badge_by_name(badge_name, provider))
+        
+        # Check revenue milestones
+        for badge_name, threshold, field in revenue_milestones:
+            current_value = float(stats.get(field, 0))
+            if current_value >= threshold and badge_name not in achieved_milestones.get('revenue', []):
+                if self._award_milestone_badge(provider, badge_name, achieved_milestones, 'revenue'):
+                    badges_awarded.append(self._get_badge_by_name(badge_name, provider))
+        
+        # Check rating milestones
+        for badge_name, threshold, field, min_reviews in rating_milestones:
+            current_value = stats.get(field, 0)
+            total_reviews = stats.get('total_reviews', 0)
+            if (current_value >= threshold and 
+                total_reviews >= min_reviews and 
+                badge_name not in achieved_milestones.get('rating', [])):
+                if self._award_milestone_badge(provider, badge_name, achieved_milestones, 'rating'):
+                    badges_awarded.append(self._get_badge_by_name(badge_name, provider))
+        
+        # Save updated milestones
+        if achieved_milestones:
+            badge_stats.achieved_milestones = achieved_milestones
+            badge_stats.save()
         
         return badges_awarded
+    
+    def _check_and_award_milestone(self, provider: User, badge_name: str, threshold: int, field: str, stats: Dict, achieved_milestones: Dict) -> bool:
+        """Check if milestone is reached and award badge (like digital garden)"""
+        current_value = stats.get(field, 0)
+        milestone_key = field
+        
+        if current_value >= threshold and threshold not in achieved_milestones.get(milestone_key, []):
+            if self._award_milestone_badge(provider, badge_name, achieved_milestones, milestone_key, threshold):
+                return True
+        return False
+    
+    def _award_milestone_badge(self, provider: User, badge_name: str, achieved_milestones: Dict, milestone_key: str, threshold: int = None) -> bool:
+        """Award a milestone badge and mark as achieved"""
+        try:
+            badge_type = BadgeType.objects.get(name=badge_name, is_active=True)
+            
+            # Award the badge
+            self.award_badge(provider, badge_type, {
+                'milestone_type': badge_name.lower().replace(' ', '_'),
+                'threshold': threshold or badge_name,
+                'achieved_value': threshold or badge_name,
+                'earned_date': timezone.now().isoformat()
+            })
+            
+            # Mark milestone as achieved
+            if milestone_key not in achieved_milestones:
+                achieved_milestones[milestone_key] = []
+            achieved_milestones[milestone_key].append(threshold or badge_name)
+            
+            return True
+        except BadgeType.DoesNotExist:
+            logger.warning(f"Badge type not found: {badge_name}")
+            return False
+        except Exception as e:
+            logger.error(f"Error awarding milestone {badge_name}: {str(e)}")
+            return False
+    
+    def _get_badge_by_name(self, badge_name: str, provider: User) -> ProviderBadge:
+        """Get the most recent badge by name for a provider"""
+        try:
+            badge_type = BadgeType.objects.get(name=badge_name, is_active=True)
+            return ProviderBadge.objects.filter(provider=provider, badge_type=badge_type).latest('earned_date')
+        except:
+            return None
     
     def check_monthly_provider_badge(self, provider: User, stats: Dict) -> Optional[ProviderBadge]:
         """
