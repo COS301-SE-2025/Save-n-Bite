@@ -200,13 +200,54 @@ def get_client_ip(request):
     Get the client's IP address from the request.
     Handles cases where the app is behind a proxy/load balancer.
     """
-    # Check for IP in various headers (common proxy headers)
+    import ipaddress
+
+    # Prefer X-Forwarded-For if present (may contain multiple IPs)
     x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
+    candidate = None
     if x_forwarded_for:
-        # X-Forwarded-For can contain multiple IPs, take the first one
-        ip = x_forwarded_for.split(',')[0].strip()
+        candidate = x_forwarded_for.split(',')[0].strip()
     else:
-        # Fall back to REMOTE_ADDR
-        ip = request.META.get('REMOTE_ADDR')
-    
-    return ip
+        candidate = (request.META.get('REMOTE_ADDR') or '').strip()
+
+    if not candidate:
+        return None
+
+    # Remove surrounding brackets from IPv6 like [2001:db8::1]
+    if candidate.startswith('[') and ']' in candidate:
+        # Handle formats like [IPv6]:port or [IPv6]
+        end = candidate.find(']')
+        inner = candidate[1:end]
+        candidate = inner
+
+    # If there's a port, strip it. We try smart parsing first.
+    def try_parse(ip_str):
+        try:
+            ipaddress.ip_address(ip_str)
+            return ip_str
+        except Exception:
+            return None
+
+    # Already a valid IP?
+    parsed = try_parse(candidate)
+    if parsed:
+        return parsed
+
+    # Common case: IPv4 with port, e.g., "1.2.3.4:5678"
+    if ':' in candidate and candidate.count(':') == 1 and '.' in candidate:
+        maybe_ip = candidate.split(':', 1)[0]
+        parsed = try_parse(maybe_ip)
+        if parsed:
+            return parsed
+
+    # IPv6 with port without brackets, last segment likely port
+    if ':' in candidate and candidate.count(':') > 1:
+        # Split from right and drop last part if it's a port
+        head, tail = candidate.rsplit(':', 1)
+        if tail.isdigit():
+            parsed = try_parse(head)
+            if parsed:
+                return parsed
+
+    # As a last resort, return the candidate as-is (better than crashing)
+    return candidate
