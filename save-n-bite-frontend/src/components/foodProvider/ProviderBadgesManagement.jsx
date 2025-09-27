@@ -1,8 +1,8 @@
 // src/components/foodProvider/ProviderBadgesManagement.jsx
 import React, { useState, useEffect } from 'react';
-import { Download, Pin, PinOff, Star, Award, Trophy, Crown } from 'lucide-react';
+import { Download, Pin, PinOff, Star, Award, Trophy, Crown, Target, CheckCircle } from 'lucide-react';
 import badgesAPI from '../../services/badgesAPI';
-import { showToast } from '../ui/Toast';
+import BadgeSVG from '../badges/BadgeSVG';
 
 const ProviderBadgesManagement = ({ onToast }) => {
   const [badges, setBadges] = useState({
@@ -18,6 +18,7 @@ const ProviderBadgesManagement = ({ onToast }) => {
 
   useEffect(() => {
     loadBadges();
+    // eslint-disable-next-line
   }, []);
 
   const loadBadges = async () => {
@@ -39,21 +40,17 @@ const ProviderBadgesManagement = ({ onToast }) => {
   const handleTogglePin = async (badgeId, currentlyPinned) => {
     try {
       setActionLoading(prev => ({ ...prev, [badgeId]: true }));
-      
       const action = currentlyPinned ? 'unpin' : 'pin';
       const response = await badgesAPI.toggleBadgePin(badgeId, action);
-      
-      // Update the badges state with new pinned badges
       setBadges(prev => ({
         ...prev,
         pinned_badges: response.pinned_badges,
-        all_badges: prev.all_badges.map(badge => 
-          badge.id === badgeId 
+        all_badges: prev.all_badges.map(badge =>
+          badge.id === badgeId
             ? { ...badge, is_pinned: !currentlyPinned }
             : badge
         )
       }));
-
       onToast?.(
         currentlyPinned ? 'Badge unpinned from profile' : 'Badge pinned to profile',
         'success'
@@ -69,18 +66,14 @@ const ProviderBadgesManagement = ({ onToast }) => {
   const handleDownload = async (badgeId) => {
     try {
       setActionLoading(prev => ({ ...prev, [`download_${badgeId}`]: true }));
-      
       const response = await badgesAPI.getBadgeDownload(badgeId);
       const { badge_info, download_url } = response;
-      
-      // Create a download link for the SVG
       const link = document.createElement('a');
       link.href = download_url;
       link.download = `${badge_info.name.replace(/\s+/g, '_')}_badge.svg`;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
-      
       onToast?.('Badge downloaded successfully', 'success');
     } catch (err) {
       console.error('Error downloading badge:', err);
@@ -90,41 +83,85 @@ const ProviderBadgesManagement = ({ onToast }) => {
     }
   };
 
-  const getBadgeRarityStyle = (rarity) => {
+  const getRarityStyles = (rarity) => {
     const styles = {
-      common: 'border-gray-300 bg-gray-50 text-gray-700',
-      uncommon: 'border-green-300 bg-green-50 text-green-700',
-      rare: 'border-blue-300 bg-blue-50 text-blue-700',
-      epic: 'border-purple-300 bg-purple-50 text-purple-700',
-      legendary: 'border-yellow-300 bg-yellow-50 text-yellow-700'
+      common: {
+        gradient: 'from-gray-50 to-gray-100',
+        border: 'border-gray-200',
+        text: 'text-gray-700',
+        badge: 'bg-gray-100 text-gray-700'
+      },
+      uncommon: {
+        gradient: 'from-green-50 to-green-100',
+        border: 'border-green-200',
+        text: 'text-green-700',
+        badge: 'bg-green-100 text-green-700'
+      },
+      rare: {
+        gradient: 'from-blue-50 to-blue-100',
+        border: 'border-blue-200',
+        text: 'text-blue-700',
+        badge: 'bg-blue-100 text-blue-700'
+      },
+      epic: {
+        gradient: 'from-purple-50 to-purple-100',
+        border: 'border-purple-200',
+        text: 'text-purple-700',
+        badge: 'bg-purple-100 text-purple-700'
+      },
+      legendary: {
+        gradient: 'from-yellow-50 to-yellow-100',
+        border: 'border-yellow-200',
+        text: 'text-yellow-700',
+        badge: 'bg-yellow-100 text-yellow-700'
+      }
     };
     return styles[rarity] || styles.common;
-  };
-
-  const getBadgeIcon = (category) => {
-    const icons = {
-      performance: Trophy,
-      milestone: Award,
-      recognition: Star,
-      monthly: Crown,
-      special: Award
-    };
-    return icons[category] || Award;
   };
 
   const getCategoryBadges = (category) => {
     return badges.all_badges.filter(badge => badge.badge_type.category === category);
   };
 
+  const getBadgeIcon = (category, rarity) => {
+    // fallback to lucide icons if BadgeSVG is not used
+    const getRarityColor = (rarity) => {
+      const colors = {
+        common: '#6B7280',
+        uncommon: '#10B981',
+        rare: '#3B82F6',
+        epic: '#8B5CF6',
+        legendary: '#F59E0B'
+      };
+      return colors[rarity] || colors.common;
+    };
+    const color = getRarityColor(rarity);
+    const icons = {
+      performance: <Trophy color={color} className="w-6 h-6" />,
+      milestone: <Target color={color} className="w-6 h-6" />,
+      recognition: <Star color={color} className="w-6 h-6" />,
+      monthly: <Crown color={color} className="w-6 h-6" />,
+      special: <Award color={color} className="w-6 h-6" />
+    };
+    return icons[category] || <Award color={color} className="w-6 h-6" />;
+  };
+
   if (loading) {
     return (
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 transition-colors duration-300">
-        <div className="animate-pulse">
-          <div className="h-6 bg-gray-200 dark:bg-gray-700 rounded w-1/3 mb-4"></div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {[...Array(6)].map((_, i) => (
-              <div key={i} className="h-32 bg-gray-200 dark:bg-gray-700 rounded"></div>
-            ))}
+      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden transition-colors duration-300">
+        <div className="p-6">
+          <div className="animate-pulse">
+            <div className="h-6 bg-gray-200 dark:bg-gray-700 rounded w-1/3 mb-6"></div>
+            <div className="grid grid-cols-2 sm:grid-cols-5 gap-4 mb-6">
+              {[...Array(5)].map((_, i) => (
+                <div key={i} className="h-16 bg-gray-200 dark:bg-gray-700 rounded-lg"></div>
+              ))}
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {[...Array(6)].map((_, i) => (
+                <div key={i} className="h-32 bg-gray-200 dark:bg-gray-700 rounded-lg"></div>
+              ))}
+            </div>
           </div>
         </div>
       </div>
@@ -133,12 +170,13 @@ const ProviderBadgesManagement = ({ onToast }) => {
 
   if (error) {
     return (
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 transition-colors duration-300">
+      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-6 transition-colors duration-300">
         <div className="text-center text-red-600 dark:text-red-400">
-          <p>Failed to load badges: {error}</p>
-          <button 
+          <Award className="w-12 h-12 mx-auto mb-4 opacity-50" />
+          <p className="mb-4">Failed to load badges: {error}</p>
+          <button
             onClick={loadBadges}
-            className="mt-2 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors"
+            className="px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors"
           >
             Retry
           </button>
@@ -148,60 +186,61 @@ const ProviderBadgesManagement = ({ onToast }) => {
   }
 
   const categories = [
-    { key: 'performance', name: 'Performance', description: 'Competition & ranking badges' },
-    { key: 'milestone', name: 'Milestone', description: 'Achievement milestones' },
-    { key: 'recognition', name: 'Recognition', description: 'Quality & excellence' },
-    { key: 'monthly', name: 'Monthly', description: 'Monthly achievements' },
-    { key: 'special', name: 'Special', description: 'Special events & recognition' }
+    { key: 'performance', name: 'Performance', description: 'Competition & ranking badges', icon: Trophy },
+    { key: 'milestone', name: 'Milestone', description: 'Achievement milestones', icon: Target },
+    { key: 'recognition', name: 'Recognition', description: 'Quality & excellence', icon: Star },
+    { key: 'monthly', name: 'Monthly', description: 'Monthly achievements', icon: Crown },
+    { key: 'special', name: 'Special', description: 'Special events & recognition', icon: Award }
   ];
 
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden transition-colors duration-300">
+    <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden transition-colors duration-300">
       <div className="p-6">
-        <h3 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-4">
-          Your Badges
+        <h3 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-6">
+          Your Achievement Badges
         </h3>
 
         {/* Stats Summary */}
         {stats && (
-          <div className="grid grid-cols-2 sm:grid-cols-5 gap-4 mb-6">
-            <div className="bg-blue-50 dark:bg-blue-900 p-3 rounded-lg text-center">
-              <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">
+          <div className="grid grid-cols-2 sm:grid-cols-5 gap-4 mb-8">
+            <div className="bg-gradient-to-br from-emerald-50 to-emerald-100 dark:from-emerald-900 dark:to-emerald-800 p-4 rounded-xl text-center border border-emerald-200 dark:border-emerald-700">
+              <div className="text-2xl font-bold text-emerald-600 dark:text-emerald-300">
                 {stats.total_badges}
               </div>
-              <div className="text-sm text-blue-700 dark:text-blue-300">Total</div>
+              <div className="text-sm font-medium text-emerald-700 dark:text-emerald-400">Total Badges</div>
             </div>
-            <div className="bg-green-50 dark:bg-green-900 p-3 rounded-lg text-center">
-              <div className="text-2xl font-bold text-green-600 dark:text-green-400">
+            <div className="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900 dark:to-blue-800 p-4 rounded-xl text-center border border-blue-200 dark:border-blue-700">
+              <div className="text-2xl font-bold text-blue-600 dark:text-blue-300">
                 {stats.pinned_badges_count}
               </div>
-              <div className="text-sm text-green-700 dark:text-green-300">Pinned</div>
+              <div className="text-sm font-medium text-blue-700 dark:text-blue-400">Pinned</div>
             </div>
-            <div className="bg-purple-50 dark:bg-purple-900 p-3 rounded-lg text-center">
-              <div className="text-2xl font-bold text-purple-600 dark:text-purple-400">
+            <div className="bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-900 dark:to-purple-800 p-4 rounded-xl text-center border border-purple-200 dark:border-purple-700">
+              <div className="text-2xl font-bold text-purple-600 dark:text-purple-300">
                 {stats.rare_badges + stats.epic_badges + stats.legendary_badges}
               </div>
-              <div className="text-sm text-purple-700 dark:text-purple-300">Rare+</div>
+              <div className="text-sm font-medium text-purple-700 dark:text-purple-400">Rare+</div>
             </div>
-            <div className="bg-yellow-50 dark:bg-yellow-900 p-3 rounded-lg text-center">
-              <div className="text-2xl font-bold text-yellow-600 dark:text-yellow-400">
+            <div className="bg-gradient-to-br from-yellow-50 to-yellow-100 dark:from-yellow-900 dark:to-yellow-800 p-4 rounded-xl text-center border border-yellow-200 dark:border-yellow-700">
+              <div className="text-2xl font-bold text-yellow-600 dark:text-yellow-300">
                 {stats.rarity_score}
               </div>
-              <div className="text-sm text-yellow-700 dark:text-yellow-300">Score</div>
+              <div className="text-sm font-medium text-yellow-700 dark:text-yellow-400">Score</div>
             </div>
-            <div className="bg-gray-50 dark:bg-gray-700 p-3 rounded-lg text-center">
-              <div className="text-xl font-bold text-gray-600 dark:text-gray-400">
+            <div className="bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-700 dark:to-gray-600 p-4 rounded-xl text-center border border-gray-200 dark:border-gray-600">
+              <div className="text-xl font-bold text-gray-600 dark:text-gray-300">
                 {badges.pinned_badges.length}/5
               </div>
-              <div className="text-sm text-gray-700 dark:text-gray-300">Pin Slots</div>
+              <div className="text-sm font-medium text-gray-700 dark:text-gray-400">Pin Slots</div>
             </div>
           </div>
         )}
 
         {/* Pinned Badges Section */}
         {badges.pinned_badges.length > 0 && (
-          <div className="mb-6">
-            <h4 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-3">
+          <div className="mb-8">
+            <h4 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4 flex items-center">
+              <Pin className="w-5 h-5 mr-2 text-emerald-600" />
               Pinned Badges (Shown on Your Profile)
             </h4>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -213,7 +252,7 @@ const ProviderBadgesManagement = ({ onToast }) => {
                   onTogglePin={handleTogglePin}
                   onDownload={handleDownload}
                   actionLoading={actionLoading}
-                  getBadgeRarityStyle={getBadgeRarityStyle}
+                  getRarityStyles={getRarityStyles}
                   getBadgeIcon={getBadgeIcon}
                 />
               ))}
@@ -222,23 +261,27 @@ const ProviderBadgesManagement = ({ onToast }) => {
         )}
 
         {/* All Badges by Category */}
-        <div className="space-y-6">
+        <div className="space-y-8">
           {categories.map((category) => {
             const categoryBadges = getCategoryBadges(category.key);
             if (categoryBadges.length === 0) return null;
 
-            const IconComponent = getBadgeIcon(category.key);
+            const IconComponent = category.icon;
 
             return (
               <div key={category.key}>
-                <div className="flex items-center mb-3">
-                  <IconComponent className="w-5 h-5 mr-2 text-gray-600 dark:text-gray-400" />
-                  <h4 className="text-lg font-medium text-gray-900 dark:text-gray-100">
-                    {category.name} ({categoryBadges.length})
-                  </h4>
-                  <span className="ml-2 text-sm text-gray-500 dark:text-gray-400">
-                    {category.description}
-                  </span>
+                <div className="flex items-center mb-4">
+                  <div className="p-2 bg-emerald-100 dark:bg-emerald-900 rounded-lg mr-3">
+                    <IconComponent className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
+                  </div>
+                  <div>
+                    <h4 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+                      {category.name} ({categoryBadges.length})
+                    </h4>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">
+                      {category.description}
+                    </p>
+                  </div>
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                   {categoryBadges
@@ -251,7 +294,7 @@ const ProviderBadgesManagement = ({ onToast }) => {
                         onTogglePin={handleTogglePin}
                         onDownload={handleDownload}
                         actionLoading={actionLoading}
-                        getBadgeRarityStyle={getBadgeRarityStyle}
+                        getRarityStyles={getRarityStyles}
                         getBadgeIcon={getBadgeIcon}
                       />
                     ))}
@@ -262,13 +305,15 @@ const ProviderBadgesManagement = ({ onToast }) => {
         </div>
 
         {badges.all_badges.length === 0 && (
-          <div className="text-center py-8">
-            <Award className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-            <h4 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">
-              No badges yet
+          <div className="text-center py-12">
+            <div className="w-20 h-20 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center mx-auto mb-6">
+              <Award className="w-10 h-10 text-gray-400" />
+            </div>
+            <h4 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">
+              No badges earned yet
             </h4>
-            <p className="text-gray-600 dark:text-gray-400">
-              Complete orders and receive reviews to start earning badges!
+            <p className="text-gray-600 dark:text-gray-400 max-w-md mx-auto">
+              Complete orders and receive reviews to start earning badges! Your first badge is just one order away.
             </p>
           </div>
         )}
@@ -277,77 +322,111 @@ const ProviderBadgesManagement = ({ onToast }) => {
   );
 };
 
-// Badge Card Component
-const BadgeCard = ({ 
-  badge, 
-  isPinned, 
-  onTogglePin, 
-  onDownload, 
-  actionLoading, 
-  getBadgeRarityStyle,
+// Badge Card Component (smaller badge image)
+const BadgeCard = ({
+  badge,
+  isPinned,
+  onTogglePin,
+  onDownload,
+  actionLoading,
+  getRarityStyles,
   getBadgeIcon
 }) => {
-  const IconComponent = getBadgeIcon(badge.badge_type.category);
-  const rarityStyle = getBadgeRarityStyle(badge.badge_type.rarity);
+  const rarityStyles = getRarityStyles(badge.badge_type.rarity);
+  const category = badge.badge_type.category;
+  const rarity = badge.badge_type.rarity;
 
   return (
-    <div className={`border-2 rounded-lg p-4 ${rarityStyle} transition-all duration-200 hover:shadow-md`}>
-      <div className="flex items-start justify-between mb-3">
-        <div className="flex items-center">
-          <IconComponent className="w-6 h-6 mr-2" />
-          <div>
-            <h5 className="font-medium text-sm line-clamp-1">{badge.badge_type.name}</h5>
-            <p className="text-xs opacity-75 capitalize">{badge.badge_type.rarity}</p>
+    <div className={`relative flex flex-col bg-white dark:bg-gray-900 rounded-2xl shadow-md border border-gray-100 dark:border-gray-700 overflow-hidden transition-all duration-200 hover:shadow-lg`} style={{ minHeight: 220 }}>
+      {/* Rarity Pill */}
+      <span
+        className={`absolute top-4 left-4 px-3 py-1 rounded-full text-xs font-semibold shadow bg-gray-100 dark:bg-gray-800 ${rarityStyles.text}`}
+        style={{ letterSpacing: 1 }}
+      >
+        {badge.badge_type.rarity_display || badge.badge_type.rarity}
+      </span>
+
+      {/* Pin indicator */}
+      {isPinned && (
+        <div className="absolute top-4 right-4">
+          <div className="w-6 h-6 bg-emerald-500 rounded-full flex items-center justify-center shadow">
+            <Pin className="w-4 h-4 text-white" />
           </div>
         </div>
-        {isPinned && (
-          <Pin className="w-4 h-4 text-blue-600" />
-        )}
+      )}
+
+      {/* Badge SVG or fallback icon */}
+      <div className="flex justify-center items-center mt-8 mb-2">
+        <div className="w-10 h-10 flex items-center justify-center rounded-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-inner">
+          {badge.svg_url ? (
+            <BadgeSVG badge={badge} className="w-8 h-8" />
+          ) : (
+            getBadgeIcon(category, rarity)
+          )}
+        </div>
       </div>
-      
-      <p className="text-xs mb-3 line-clamp-2">{badge.badge_type.description}</p>
-      
-      <div className="text-xs text-gray-600 dark:text-gray-400 mb-3">
+
+      {/* Badge Title */}
+      <div className="flex flex-col items-center px-4">
+        <h5 className="font-bold text-sm text-gray-900 dark:text-gray-100 mb-1 text-center truncate w-full">
+          {badge.badge_type.name}
+        </h5>
+        <p className="text-xs text-gray-600 dark:text-gray-300 text-center mb-2 min-h-[32px]">
+          {badge.badge_type.description}
+        </p>
+      </div>
+
+      {/* Earned Date */}
+      <div className="flex items-center justify-center text-xs text-gray-500 dark:text-gray-400 mb-2 mt-auto px-4">
+        <CheckCircle className="w-3 h-3 mr-1" />
         Earned: {badge.earned_date_formatted}
       </div>
 
-      <div className="flex space-x-2">
+      {/* Action Buttons */}
+      <div className="flex gap-2 px-4 pb-4">
         <button
           onClick={() => onTogglePin(badge.id, isPinned)}
-          disabled={actionLoading[badge.id] || (!isPinned && badge.is_pinned === false && onTogglePin === null)}
-          className={`flex-1 px-3 py-1 text-xs rounded transition-colors ${
+          disabled={actionLoading[badge.id]}
+          className={`flex-1 px-3 py-2 text-xs font-medium rounded-lg transition-colors ${
             isPinned
-              ? 'bg-red-100 text-red-700 hover:bg-red-200'
-              : 'bg-blue-100 text-blue-700 hover:bg-blue-200'
-          } disabled:opacity-50`}
+              ? 'bg-red-100 text-red-700 hover:bg-red-200 dark:bg-red-900 dark:text-red-200 dark:hover:bg-red-800'
+              : 'bg-emerald-100 text-emerald-700 hover:bg-emerald-200 dark:bg-emerald-900 dark:text-emerald-200 dark:hover:bg-emerald-800'
+          } disabled:opacity-50 disabled:cursor-not-allowed`}
         >
           {actionLoading[badge.id] ? (
-            'Loading...'
+            <div className="flex items-center justify-center">
+              <div className="w-3 h-3 border border-current border-t-transparent rounded-full animate-spin mr-1"></div>
+              Loading...
+            </div>
           ) : isPinned ? (
-            <>
-              <PinOff className="w-3 h-3 inline mr-1" />
+            <div className="flex items-center justify-center">
+              <PinOff className="w-3 h-3 mr-1" />
               Unpin
-            </>
+            </div>
           ) : (
-            <>
-              <Pin className="w-3 h-3 inline mr-1" />
+            <div className="flex items-center justify-center">
+              <Pin className="w-3 h-3 mr-1" />
               Pin
-            </>
+            </div>
           )}
         </button>
-        
         <button
           onClick={() => onDownload(badge.id)}
           disabled={actionLoading[`download_${badge.id}`]}
-          className="px-3 py-1 text-xs bg-gray-100 text-gray-700 hover:bg-gray-200 rounded transition-colors disabled:opacity-50"
+          className="flex-1 px-3 py-2 text-xs font-medium bg-gray-100 text-gray-700 hover:bg-gray-200 
+            dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600 rounded-lg transition-colors 
+            disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {actionLoading[`download_${badge.id}`] ? (
-            'Loading...'
+            <div className="flex items-center">
+              <div className="w-3 h-3 border border-current border-t-transparent rounded-full animate-spin mr-1"></div>
+              Loading...
+            </div>
           ) : (
-            <>
-              <Download className="w-3 h-3 inline mr-1" />
+            <div className="flex items-center">
+              <Download className="w-3 h-3 mr-1" />
               Download
-            </>
+            </div>
           )}
         </button>
       </div>
