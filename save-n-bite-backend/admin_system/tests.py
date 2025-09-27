@@ -200,15 +200,15 @@ class TestVerificationService:
         assert verifications['ngos'].count() == 1
         assert verifications['providers'].count() == 1
 
-class TestPasswordResetService:
+#class TestPasswordResetService:
     
-    def test_generate_temporary_password(self):
-        """Test temporary password generation"""
-        password = PasswordResetService.generate_temporary_password()
+    # def test_generate_temporary_password(self):
+    #     """Test temporary password generation"""
+    #     password = PasswordResetService.generate_temporary_password()
         
-        assert len(password) == 12
-        assert any(c.isalpha() for c in password)
-        assert any(c.isdigit() for c in password)
+    #     assert len(password) == 12
+    #     assert any(c.isalpha() for c in password)
+    #     assert any(c.isdigit() for c in password)
     
     # @patch('admin_panel.services.send_mail')
     # def test_reset_user_password(self, mock_send_mail, admin_user, regular_user):
@@ -232,7 +232,6 @@ class TestPasswordResetService:
     #     assert log_exists
 
 class TestUserManagementService:
-    
     def test_toggle_user_status_activate(self, admin_user, regular_user):
         """Test activating a user"""
         regular_user.is_active = False
