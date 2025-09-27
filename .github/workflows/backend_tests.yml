@@ -20,7 +20,7 @@ jobs:
     # Set up PostgreSQL service for testing
     services:
       postgres:
-        image: postgres:13
+        image: postgres:15
         env:
           POSTGRES_PASSWORD: postgres
           POSTGRES_DB: test_savenbite_db
@@ -73,6 +73,11 @@ jobs:
         poetry run pip install model_bakery coverage pytest-html
         # Debug: List installed packages
         poetry show | grep -E "(azure|blob)" || echo "Azure packages not found"
+
+    - name: Install PostgreSQL client (for pg_isready)
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y postgresql-client
 
     - name: Create test environment file
       run: |
