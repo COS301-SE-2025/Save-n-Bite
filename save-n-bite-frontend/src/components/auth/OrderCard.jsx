@@ -1,234 +1,255 @@
 import React, { useState } from 'react';
-import { Calendar, MapPin, Clock, Package, Users, Repeat, X, Eye } from 'lucide-react';
+import { Calendar, MapPin, Clock, Package, Users, Repeat, X, Eye, ChevronDown, ChevronUp, CheckCircle, Clock as ClockIcon } from 'lucide-react';
 
 const OrderCard = ({ order, userType, onOrderAction }) => {
   const [showDetails, setShowDetails] = useState(false);
 
-  const getStatusColor = (status) => {
-    const colors = {
-      pending: 'bg-yellow-100 dark:bg-yellow-900 text-yellow-800 dark:text-yellow-200 border-yellow-200 dark:border-yellow-800',
-      confirmed: 'bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 border-blue-200 dark:border-blue-800',
-      completed: 'bg-emerald-100 dark:bg-emerald-900 text-emerald-800 dark:text-emerald-200 border-emerald-200 dark:border-emerald-800',
-      cancelled: 'bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-200 border-red-200 dark:border-red-800'
-    };
-    return colors[status] || 'bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-100 border-gray-200 dark:border-gray-700';
+  const statusConfig = {
+    pending: {
+      bg: 'bg-amber-50 dark:bg-amber-900/30',
+      text: 'text-amber-700 dark:text-amber-300',
+      icon: <ClockIcon className="w-4 h-4" />,
+      label: 'Pending'
+    },
+    confirmed: {
+      bg: 'bg-blue-50 dark:bg-blue-900/30',
+      text: 'text-blue-700 dark:text-blue-300',
+      icon: <CheckCircle className="w-4 h-4" />,
+      label: 'Confirmed'
+    },
+    completed: {
+      bg: 'bg-emerald-50 dark:bg-emerald-900/30',
+      text: 'text-emerald-700 dark:text-emerald-300',
+      icon: <CheckCircle className="w-4 h-4" />,
+      label: 'Completed'
+    },
+    cancelled: {
+      bg: 'bg-red-50 dark:bg-red-900/30',
+      text: 'text-red-700 dark:text-red-300',
+      icon: <X className="w-4 h-4" />,
+      label: 'Cancelled'
+    }
   };
 
-  const getTypeColor = (type) => {
-    return type === 'donation' 
-      ? 'bg-blue-50 dark:bg-blue-900 text-blue-700 dark:text-blue-200 border-blue-200 dark:border-blue-800'
-      : 'bg-emerald-50 dark:bg-emerald-900 text-emerald-700 dark:text-emerald-200 border-emerald-200 dark:border-emerald-800';
+  const status = statusConfig[order.status] || {
+    bg: 'bg-gray-50 dark:bg-gray-800',
+    text: 'text-gray-700 dark:text-gray-300',
+    icon: <ClockIcon className="w-4 h-4" />,
+    label: order.status.charAt(0).toUpperCase() + order.status.slice(1)
   };
 
+  const isDonation = order.type === 'donation';
   const canCancel = order.status === 'pending' || order.status === 'confirmed';
   const canReorder = order.type === 'purchase' && order.status === 'completed';
   const canTrack = order.status === 'pending' || order.status === 'confirmed';
 
+  const formatDate = (dateString) => {
+    return new Date(dateString).toLocaleDateString('en-ZA', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric'
+    });
+  };
+
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden transition-colors">
+    <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700/50 overflow-hidden transition-all duration-300 hover:shadow-md hover:-translate-y-0.5">
       {/* Header */}
-      <div className="px-6 py-4 border-b border-gray-100 dark:border-gray-700">
-        <div className="flex justify-between items-start">
-          <div>
-            <h3 className="font-semibold text-lg text-gray-800 dark:text-gray-100">
-              {order.orderNumber}
-            </h3>
-            <div className="flex items-center mt-1 text-sm text-gray-600 dark:text-gray-300">
-              <Calendar size={14} className="mr-1" />
-              {new Date(order.date).toLocaleDateString('en-ZA', {
-                year: 'numeric',
-                month: 'long',
-                day: 'numeric'
-              })}
+      <div className="px-5 py-4 border-b border-gray-100 dark:border-gray-700/50">
+        <div className="flex justify-between items-start gap-3">
+          <div className="flex-1">
+            <div className="flex flex-wrap items-center gap-2">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white truncate">
+                {order.orderNumber}
+              </h3>
+              <span className={`${status.bg} ${status.text} text-xs px-2.5 py-1 rounded-full flex items-center space-x-1.5`}>
+                {status.icon}
+                <span>{status.label}</span>
+              </span>
+            </div>
+            <div className="flex items-center mt-1.5 text-sm text-gray-500 dark:text-gray-400">
+              <Calendar className="w-4 h-4 mr-1.5 text-gray-400 flex-shrink-0" />
+              <span>{formatDate(order.date)}</span>
             </div>
           </div>
-          <div className="flex flex-col items-end gap-2">
-            <span className={`px-3 py-1 text-xs font-medium rounded-full border ${getStatusColor(order.status)}`}>
-              {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
-            </span>
-            <span className={`px-3 py-1 text-xs font-medium rounded-full border ${getTypeColor(order.type)}`}>
-              {order.type === 'donation' ? 'Donation' : 'Purchase'}
-            </span>
-          </div>
+          <span className={`px-3 py-1 text-xs font-medium rounded-full flex-shrink-0 ${isDonation ? 'bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300' : 'bg-emerald-50 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300'}`}>
+            {isDonation ? 'Donation' : 'Purchase'}
+          </span>
         </div>
       </div>
 
       {/* Content */}
-      <div className="px-6 py-4">
+      <div className="p-5">
         {/* Items Preview */}
-        <div className="flex items-center mb-4">
-          <div className="flex -space-x-2 mr-3">
+        <div className="flex items-start gap-4 mb-5">
+          <div className="flex -space-x-2.5">
             {order.items.slice(0, 3).map((item, index) => (
-              <img
-                key={index}
-                src={item.image}
-                alt={item.title}
-                className="w-10 h-10 rounded-full border-2 border-white dark:border-gray-800 object-cover"
-              />
+              <div key={index} className="relative group">
+                <img
+                  src={item.image || '/placeholder-item.jpg'}
+                  alt={item.title}
+                  className="w-12 h-12 rounded-lg border-2 border-white dark:border-gray-800 object-cover shadow-sm group-hover:z-10 transition-transform duration-200 group-hover:scale-110"
+                  onError={(e) => {
+                    e.target.onerror = null;
+                    e.target.src = '/placeholder-item.jpg';
+                  }}
+                />
+              </div>
             ))}
             {order.items.length > 3 && (
-              <div className="w-10 h-10 rounded-full border-2 border-white dark:border-gray-800 bg-gray-100 dark:bg-gray-800 flex items-center justify-center text-xs font-medium text-gray-600 dark:text-gray-300">
+              <div className="w-12 h-12 rounded-lg bg-gray-50 dark:bg-gray-700/50 border-2 border-white dark:border-gray-800 flex items-center justify-center text-xs font-medium text-gray-500 dark:text-gray-400">
                 +{order.items.length - 3}
               </div>
             )}
           </div>
-          <div>
-            <p className="font-medium text-gray-800 dark:text-gray-100">
+          <div className="min-w-0">
+            <h4 className="text-base font-medium text-gray-900 dark:text-white mb-1 truncate">
               {order.items.length === 1 
-                ? order.items[0].title
-                : `${order.items.length} items from ${order.provider}`
+                ? order.items[0]?.title || 'Item'
+                : `${order.items.length} items${order.provider ? ` from ${order.provider}` : ''}`
               }
-            </p>
-            <p className="text-sm text-gray-600 dark:text-gray-300 flex items-center">
-              <MapPin size={12} className="mr-1" />
-              {order.provider}
-            </p>
+            </h4>
+            {order.provider && (
+              <p className="text-sm text-gray-500 dark:text-gray-400 flex items-center">
+                <MapPin className="w-3.5 h-3.5 mr-1.5 text-gray-400 flex-shrink-0" />
+                <span className="truncate">{order.provider}</span>
+              </p>
+            )}
           </div>
         </div>
 
-        {/* Order Details */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-          <div className="flex items-center text-sm text-gray-600 dark:text-gray-300">
-            <Clock size={14} className="mr-2" />
-            <div>
-              <span className="font-medium">Pickup:</span>
-              <br />
-              {order.pickupTime !== 'TBD' ? order.pickupTime : 'To be determined'}
+        {/* Order Info Cards */}
+        <div className="grid grid-cols-2 gap-3 mb-5">
+          <div className="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-3 transition-colors duration-200 hover:bg-gray-100 dark:hover:bg-gray-700/50">
+            <div className="flex items-start gap-2">
+              <div className="p-1.5 bg-blue-50 dark:bg-blue-900/30 rounded-md text-blue-500 dark:text-blue-400 flex-shrink-0">
+                <Clock className="w-4 h-4" />
+              </div>
+              <div className="min-w-0">
+                <p className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-0.5">Pickup Time</p>
+                <p className="text-sm font-medium text-gray-900 dark:text-white truncate">
+                  {order.pickupTime !== 'TBD' ? order.pickupTime : 'To be determined'}
+                </p>
+              </div>
             </div>
           </div>
           
-          <div className="flex items-center text-sm text-gray-600 dark:text-gray-300">
-            <MapPin size={14} className="mr-2" />
-            <div>
-              <span className="font-medium">Location:</span>
-              <br />
-              {order.pickupAddress}
+          <div className="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-3 transition-colors duration-200 hover:bg-gray-100 dark:hover:bg-gray-700/50">
+            <div className="flex items-start gap-2">
+              <div className="p-1.5 bg-purple-50 dark:bg-purple-900/30 rounded-md text-purple-500 dark:text-purple-400 flex-shrink-0">
+                <Package className="w-4 h-4" />
+              </div>
+              <div className="min-w-0">
+                <p className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-0.5">Items</p>
+                <p className="text-sm font-medium text-gray-900 dark:text-white">
+                  {order.items.length} {order.items.length === 1 ? 'item' : 'items'}
+                </p>
+              </div>
             </div>
           </div>
-
-          {userType === 'customer' ? (
-            <div className="flex items-center text-sm text-gray-600 dark:text-gray-300">
-              <Package size={14} className="mr-2" />
-              <div>
-                <span className="font-medium">Total:</span>
-                <br />
-                {order.type === 'purchase' ? `R${order.total.toFixed(2)}` : 'Free'}
-              </div>
-            </div>
-          ) : (
-            <div className="flex items-center text-sm text-gray-600 dark:text-gray-300">
-              <Users size={14} className="mr-2" />
-              <div>
-                <span className="font-medium">Beneficiaries:</span>
-                <br />
-                {order.beneficiaries || order.items.reduce((sum, item) => sum + item.quantity, 0)}
-              </div>
-            </div>
-          )}
         </div>
-
-        {/* Impact */}
-        {order.impact && (
-          <div className="bg-emerald-50 dark:bg-emerald-900 rounded-lg p-3 mb-4">
-            <div className="grid grid-cols-2 gap-4 text-sm">
-              <div>
-                <span className="font-medium text-emerald-800 dark:text-emerald-200">Meals Saved:</span>
-                <span className="ml-2 text-emerald-700 dark:text-emerald-200">{order.impact.mealsSaved}</span>
-              </div>
-              <div>
-                <span className="font-medium text-emerald-800 dark:text-emerald-200">CO₂ Reduced:</span>
-                <span className="ml-2 text-emerald-700 dark:text-emerald-200">{order.impact.co2Reduced.toFixed(1)} kg</span>
-              </div>
-            </div>
-          </div>
-        )}
 
         {/* Actions */}
-        <div className="flex flex-wrap gap-2">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-4 border-t border-gray-100 dark:border-gray-700/50">
           <button
             onClick={() => setShowDetails(!showDetails)}
-            className="inline-flex items-center px-3 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 bg-gray-100 dark:bg-gray-700 rounded-md hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+            className="inline-flex items-center justify-center px-3 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-700/50 rounded-lg transition-colors duration-200 flex-1 sm:flex-none"
           >
-            <Eye size={14} className="mr-1" />
-            {showDetails ? 'Hide Details' : 'View Details'}
+            {showDetails ? (
+              <>
+                <span>Less details</span>
+                <ChevronUp className="w-4 h-4 ml-1.5" />
+              </>
+            ) : (
+              <>
+                <span>More details</span>
+                <ChevronDown className="w-4 h-4 ml-1.5" />
+              </>
+            )}
           </button>
-
-          {canTrack && (
-            <button
-              onClick={() => onOrderAction(order.id, 'track')}
-              className="inline-flex items-center px-3 py-2 text-sm font-medium text-blue-700 dark:text-blue-200 bg-blue-100 dark:bg-blue-900 rounded-md hover:bg-blue-200 dark:hover:bg-blue-800 transition-colors"
-            >
-              <Package size={14} className="mr-1" />
-              Track Order
-            </button>
-          )}
-
-          {canReorder && (
-            <button
-              onClick={() => onOrderAction(order.id, 'reorder')}
-              className="inline-flex items-center px-3 py-2 text-sm font-medium text-emerald-700 dark:text-emerald-200 bg-emerald-100 dark:bg-emerald-900 rounded-md hover:bg-emerald-200 dark:hover:bg-emerald-800 transition-colors"
-            >
-              <Repeat size={14} className="mr-1" />
-              Reorder
-            </button>
-          )}
-
-          {canCancel && (
-            <button
-              onClick={() => onOrderAction(order.id, 'cancel')}
-              className="inline-flex items-center px-3 py-2 text-sm font-medium text-red-700 dark:text-red-200 bg-red-100 dark:bg-red-900 rounded-md hover:bg-red-200 dark:hover:bg-red-800 transition-colors"
-            >
-              <X size={14} className="mr-1" />
-              Cancel
-            </button>
-          )}
+          
+          <div className="flex flex-wrap gap-2 justify-end">
+            {canCancel && (
+              <button
+                onClick={() => onOrderAction('cancel', order.id)}
+                className="px-3 py-2 text-sm font-medium text-red-600 hover:text-white dark:text-red-400 dark:hover:text-white hover:bg-red-600 dark:hover:bg-red-600/90 rounded-lg border border-red-200 dark:border-red-900 transition-colors duration-200"
+              >
+                Cancel
+              </button>
+            )}
+            
+            {canTrack && (
+              <button
+                onClick={() => onOrderAction('track', order.id)}
+                className="px-3 py-2 text-sm font-medium text-blue-600 hover:text-white dark:text-blue-400 dark:hover:text-white hover:bg-blue-600 dark:hover:bg-blue-600/90 rounded-lg border border-blue-200 dark:border-blue-900 transition-colors duration-200"
+              >
+                Track
+              </button>
+            )}
+            
+            {canReorder && (
+              <button
+                onClick={() => onOrderAction('reorder', order.id)}
+                className="px-3 py-2 text-sm font-medium text-emerald-600 hover:text-white dark:text-emerald-400 dark:hover:text-white hover:bg-emerald-600 dark:hover:bg-emerald-600/90 rounded-lg border border-emerald-200 dark:border-emerald-900 transition-colors duration-200"
+              >
+                Reorder
+              </button>
+            )}
+          </div>
         </div>
-      </div>
 
-      {/* Detailed Items View */}
-      {showDetails && (
-        <div className="border-t border-gray-100 dark:border-gray-700 px-6 py-4 bg-gray-50 dark:bg-gray-900">
-          <h4 className="font-medium text-gray-800 dark:text-gray-100 mb-3">Order Items</h4>
-          <div className="space-y-3">
-            {order.items.map((item) => (
-              <div key={item.id} className="flex items-center justify-between">
-                <div className="flex items-center">
-                  <img
-                    src={item.image}
-                    alt={item.title}
-                    className="w-12 h-12 rounded-md object-cover mr-3"
-                  />
-                  <div>
-                    <p className="font-medium text-gray-800 dark:text-gray-100">{item.title}</p>
-                    <p className="text-sm text-gray-600 dark:text-gray-300">{item.provider}</p>
+        {/* Expanded Details */}
+        {showDetails && (
+          <div className="mt-4 pt-4 border-t border-gray-100 dark:border-gray-700/50 animate-fadeIn">
+            <h4 className="text-sm font-medium text-gray-900 dark:text-white mb-3">Order Details</h4>
+            <div className="space-y-3">
+              {order.items.map((item, index) => (
+                <div key={index} className="flex items-center justify-between py-2 group">
+                  <div className="flex items-center gap-3">
+                    <div className="relative">
+                      <img
+                        src={item.image || '/placeholder-item.jpg'}
+                        alt={item.title}
+                        className="w-10 h-10 rounded-md object-cover border border-gray-200 dark:border-gray-700 transition-transform duration-200 group-hover:scale-105"
+                        onError={(e) => {
+                          e.target.onerror = null;
+                          e.target.src = '/placeholder-item.jpg';
+                        }}
+                      />
+                      <span className="absolute -top-1.5 -right-1.5 bg-white dark:bg-gray-800 text-xs font-medium text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-700 rounded-full w-5 h-5 flex items-center justify-center">
+                        {item.quantity || 1}
+                      </span>
+                    </div>
+                    <div className="min-w-0">
+                      <p className="text-sm font-medium text-gray-900 dark:text-white truncate">{item.title}</p>
+                      {item.description && (
+                        <p className="text-xs text-gray-500 dark:text-gray-400 truncate">{item.description}</p>
+                      )}
+                    </div>
                   </div>
-                </div>
-                <div className="text-right">
-                  <p className="font-medium text-gray-800 dark:text-gray-100">
-                    Qty: {item.quantity}
-                  </p>
-                  {order.type === 'purchase' && (
-                    <p className="text-sm text-emerald-600 dark:text-emerald-400">
-                      R{(item.price * item.quantity).toFixed(2)}
-                    </p>
+                  {item.price !== undefined && (
+                    <span className="text-sm font-medium text-gray-900 dark:text-white whitespace-nowrap ml-2">
+                      R{Number(item.price).toFixed(2)}
+                    </span>
                   )}
                 </div>
-              </div>
-            ))}
-          </div>
-          
-          {order.type === 'purchase' && (
-            <div className="border-t border-gray-200 dark:border-gray-700 mt-4 pt-3">
-              <div className="flex justify-between items-center">
-                <span className="font-semibold text-gray-800 dark:text-gray-100">Total:</span>
-                <span className="font-semibold text-emerald-600 dark:text-emerald-400 text-lg">
-                  R{order.total.toFixed(2)}
-                </span>
-              </div>
+              ))}
             </div>
-          )}
-        </div>
-      )}
+            
+            {(order.total !== undefined || order.items.some(item => item.price !== undefined)) && (
+              <div className="mt-4 pt-4 border-t border-gray-100 dark:border-gray-700/50">
+                <div className="flex justify-between items-center">
+                  <span className="text-sm font-medium text-gray-500 dark:text-gray-400">Total</span>
+                  <span className="text-lg font-semibold text-gray-900 dark:text-white">
+                    {order.total !== undefined 
+                      ? `R${Number(order.total).toFixed(2)}` 
+                      : `R${order.items.reduce((sum, item) => sum + (Number(item.price) || 0) * (item.quantity || 1), 0).toFixed(2)}`}
+                  </span>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
     </div>
   );
 };

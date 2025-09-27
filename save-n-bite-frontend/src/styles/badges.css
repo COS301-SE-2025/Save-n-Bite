@@ -1,0 +1,146 @@
+/* src/styles/badges.css */
+
+/* Badge Rarity Glow Effects */
+.badge-common:hover {
+  box-shadow: 0 4px 12px rgba(107, 114, 128, 0.3);
+}
+
+.badge-uncommon:hover {
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+}
+
+.badge-rare:hover {
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+}
+
+.badge-epic:hover {
+  box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);
+}
+
+.badge-legendary:hover {
+  box-shadow: 0 4px 12px rgba(245, 158, 11, 0.4);
+  animation: legendaryGlow 2s ease-in-out infinite;
+}
+
+@keyframes legendaryGlow {
+  0%, 100% {
+    box-shadow: 0 4px 12px rgba(245, 158, 11, 0.4);
+  }
+  50% {
+    box-shadow: 0 6px 20px rgba(245, 158, 11, 0.6);
+  }
+}
+
+/* Badge Tooltip Animations */
+.badge-tooltip {
+  transform: translateY(10px);
+  opacity: 0;
+  transition: all 0.2s ease-in-out;
+  pointer-events: none;
+}
+
+.badge-container:hover .badge-tooltip {
+  transform: translateY(0);
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* Progress Bar Animations */
+.progress-bar {
+  transition: width 0.6s ease-in-out;
+}
+
+/* Badge Pin Animation */
+.badge-pin-enter {
+  animation: pinIn 0.3s ease-out;
+}
+
+.badge-pin-exit {
+  animation: pinOut 0.3s ease-in;
+}
+
+@keyframes pinIn {
+  from {
+    transform: scale(0.8) rotate(-15deg);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1) rotate(0deg);
+    opacity: 1;
+  }
+}
+
+@keyframes pinOut {
+  from {
+    transform: scale(1) rotate(0deg);
+    opacity: 1;
+  }
+  to {
+    transform: scale(0.8) rotate(15deg);
+    opacity: 0;
+  }
+}
+
+/* Badge Category Icons */
+.badge-performance {
+  color: #F59E0B;
+}
+
+.badge-milestone {
+  color: #3B82F6;
+}
+
+.badge-recognition {
+  color: #8B5CF6;
+}
+
+.badge-monthly {
+  color: #10B981;
+}
+
+.badge-special {
+  color: #EF4444;
+}
+
+/* Responsive Badge Grid */
+@media (max-width: 640px) {
+  .badge-grid {
+    grid-template-columns: repeat(1, 1fr);
+  }
+}
+
+@media (min-width: 641px) and (max-width: 1024px) {
+  .badge-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 1025px) {
+  .badge-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+/* Loading States */
+.badge-skeleton {
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: loading 1.5s infinite;
+}
+
+@keyframes loading {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+/* Dark mode badge adjustments */
+@media (prefers-color-scheme: dark) {
+  .badge-skeleton {
+    background: linear-gradient(90deg, #374151 25%, #4B5563 50%, #374151 75%);
+    background-size: 200% 100%;
+  }
+}

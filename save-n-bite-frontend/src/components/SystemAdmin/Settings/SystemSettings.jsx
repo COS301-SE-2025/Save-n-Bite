@@ -102,22 +102,6 @@ const SystemSettings = () => {
       setIsExporting(false)
     }
   }
-
-  const handleManualBackup = async () => {
-    try {
-      setLoading(true)
-      // This would need to be implemented in your backend
-      // For now, we'll simulate it
-      await new Promise(resolve => setTimeout(resolve, 1500))
-      setLastBackup('Just now')
-      toast.success('Manual backup completed successfully')
-    } catch (error) {
-      toast.error('Backup failed. Please try again.')
-    } finally {
-      setLoading(false)
-    }
-  }
-
   /**
    * All export types available in the backend serializer
    */
@@ -213,59 +197,6 @@ const SystemSettings = () => {
           <p className="mt-1 text-sm text-gray-500">
             Manage database operations, backups, and data exports.
           </p>
-        </div>
-      </div>
-
-      {/* Database Backup Section */}
-      <div className="bg-gray-50 p-6 rounded-lg">
-        <div className="flex items-center mb-4">
-          <ClockIcon className="h-5 w-5 text-gray-400 mr-2" />
-          <h4 className="text-base font-medium text-gray-900">Database Backup</h4>
-        </div>
-        
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-          <div className="bg-white p-4 rounded-md border">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-900">Last Backup</p>
-                <p className="text-xs text-gray-500">{lastBackup}</p>
-              </div>
-              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                Completed
-              </span>
-            </div>
-          </div>
-          
-          <div className="bg-white p-4 rounded-md border">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-900">Next Scheduled</p>
-                <p className="text-xs text-gray-500">Tomorrow at 3:00 AM</p>
-              </div>
-              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                Scheduled
-              </span>
-            </div>
-          </div>
-        </div>
-
-        <div className="flex flex-wrap gap-3">
-          <button
-            type="button"
-            onClick={handleManualBackup}
-            disabled={loading}
-            className="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50"
-          >
-            <DatabaseIcon className="mr-2 h-4 w-4" />
-            {loading ? 'Processing...' : 'Run Manual Backup'}
-          </button>
-          
-          <button
-            type="button"
-            className="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-          >
-            View Backup History
-          </button>
         </div>
       </div>
 
