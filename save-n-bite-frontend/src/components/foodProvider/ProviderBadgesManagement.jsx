@@ -357,12 +357,8 @@ const BadgeCard = ({
 
       {/* Badge SVG or fallback icon */}
       <div className="flex justify-center items-center mt-8 mb-2">
-        <div className="w-10 h-10 flex items-center justify-center rounded-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-inner">
-          {badge.svg_url ? (
-            <BadgeSVG badge={badge} className="w-8 h-8" />
-          ) : (
-            getBadgeIcon(category, rarity)
-          )}
+        <div className="w-16 h-16 flex items-center justify-center rounded-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-inner">
+          <BadgeSVG badge={badge} className="w-12 h-12" />
         </div>
       </div>
 
@@ -387,11 +383,10 @@ const BadgeCard = ({
         <button
           onClick={() => onTogglePin(badge.id, isPinned)}
           disabled={actionLoading[badge.id]}
-          className={`flex-1 px-3 py-2 text-xs font-medium rounded-lg transition-colors ${
-            isPinned
-              ? 'bg-red-100 text-red-700 hover:bg-red-200 dark:bg-red-900 dark:text-red-200 dark:hover:bg-red-800'
-              : 'bg-emerald-100 text-emerald-700 hover:bg-emerald-200 dark:bg-emerald-900 dark:text-emerald-200 dark:hover:bg-emerald-800'
-          } disabled:opacity-50 disabled:cursor-not-allowed`}
+          className={`flex-1 px-3 py-2 text-xs font-medium rounded-lg transition-colors ${isPinned
+            ? 'bg-red-100 text-red-700 hover:bg-red-200 dark:bg-red-900 dark:text-red-200 dark:hover:bg-red-800'
+            : 'bg-emerald-100 text-emerald-700 hover:bg-emerald-200 dark:bg-emerald-900 dark:text-emerald-200 dark:hover:bg-emerald-800'
+            } disabled:opacity-50 disabled:cursor-not-allowed`}
         >
           {actionLoading[badge.id] ? (
             <div className="flex items-center justify-center">

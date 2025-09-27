@@ -19,7 +19,7 @@ const ProviderBadgesDisplay = ({ providerId }) => {
       setLoading(true);
       setError(null);
       const response = await badgesAPI.getProviderBadges(providerId);
-      
+
       // Only show pinned badges for public display
       setBadges(response.badges || []);
     } catch (err) {
@@ -96,22 +96,21 @@ const ProviderBadgesDisplay = ({ providerId }) => {
             >
               {/* Badge Card - similar to food listing style */}
               <div
-                className={`w-10 h-10 sm:w-12 sm:h-12 rounded-lg border-2 bg-gradient-to-br ${rarityGradient}
+                className={`w-16 h-16 sm:w-20 sm:h-20 rounded-lg border-2 bg-gradient-to-br ${rarityGradient}
                   flex items-center justify-center transform transition-all duration-200
                   group-hover:scale-110 group-hover:z-10 cursor-pointer shadow-sm`}
               >
                 {/* Badge SVG */}
-                <div className="w-6 h-6 sm:w-7 sm:h-7">
+                <div className="w-full h-full">
                   <BadgeSVG badge={badge} className="w-full h-full" />
                 </div>
 
                 {/* Rarity indicator dot */}
-                <div className={`absolute -top-1 -right-1 w-3 h-3 rounded-full border-2 border-white ${
-                  rarity === 'legendary' ? 'bg-yellow-400' :
+                <div className={`absolute -top-1 -right-1 w-3 h-3 rounded-full border-2 border-white ${rarity === 'legendary' ? 'bg-yellow-400' :
                   rarity === 'epic' ? 'bg-purple-400' :
-                  rarity === 'rare' ? 'bg-blue-400' :
-                  rarity === 'uncommon' ? 'bg-green-400' : 'bg-gray-400'
-                }`}></div>
+                    rarity === 'rare' ? 'bg-blue-400' :
+                      rarity === 'uncommon' ? 'bg-green-400' : 'bg-gray-400'
+                  }`}></div>
               </div>
 
               {/* Enhanced Tooltip - similar to food card overlay */}
@@ -119,26 +118,25 @@ const ProviderBadgesDisplay = ({ providerId }) => {
                 invisible group-hover:visible bg-white dark:bg-gray-800 rounded-lg shadow-xl
                 border border-gray-200 dark:border-gray-600 p-3 whitespace-nowrap z-20 
                 min-w-48 transition-all duration-200 opacity-0 group-hover:opacity-100">
-                
+
                 <div className="text-sm font-semibold text-gray-900 dark:text-white mb-1">
                   {badge.badge_type?.name}
                 </div>
-                
+
                 <div className="text-xs text-gray-600 dark:text-gray-300 mb-2">
                   {badge.badge_type?.description}
                 </div>
-                
+
                 <div className="flex items-center justify-between">
-                  <span className={`text-xs font-medium px-2 py-1 rounded-full ${
-                    rarity === 'legendary' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200' :
+                  <span className={`text-xs font-medium px-2 py-1 rounded-full ${rarity === 'legendary' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200' :
                     rarity === 'epic' ? 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200' :
-                    rarity === 'rare' ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200' :
-                    rarity === 'uncommon' ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' :
-                    'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200'
-                  }`}>
+                      rarity === 'rare' ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200' :
+                        rarity === 'uncommon' ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' :
+                          'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200'
+                    }`}>
                     {badge.badge_type?.rarity_display || badge.badge_type?.rarity}
                   </span>
-                  
+
                   <span className="text-xs text-gray-500 dark:text-gray-400">
                     {badge.earned_date_formatted}
                   </span>

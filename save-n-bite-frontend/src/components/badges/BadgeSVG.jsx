@@ -10,7 +10,7 @@ const BadgeSVG = ({ badge, className = "w-full h-full", fallbackIcon = null }) =
     loadSvgImage();
     // eslint-disable-next-line
   }, [badge?.badge_type?.svg_filename, badge?.badge_type?.name]);
-console.log("BadgeSVG rendered", badge);
+  console.log("BadgeSVG rendered", badge);
 
   const loadSvgImage = async () => {
     if (!badge?.badge_type) {
@@ -58,7 +58,7 @@ console.log("BadgeSVG rendered", badge);
   const getRarityColor = (rarity) => {
     const colors = {
       common: '#6B7280',
-      uncommon: '#10B981', 
+      uncommon: '#10B981',
       rare: '#3B82F6',
       epic: '#8B5CF6',
       legendary: '#F59E0B'
@@ -74,29 +74,29 @@ console.log("BadgeSVG rendered", badge);
     const icons = {
       performance: (
         <svg viewBox="0 0 24 24" fill={color} className={className}>
-          <path d="M12 2L13.09 8.26L22 9L16 14L18 22L12 18.5L6 22L8 14L2 9L10.91 8.26L12 2Z"/>
+          <path d="M12 2L13.09 8.26L22 9L16 14L18 22L12 18.5L6 22L8 14L2 9L10.91 8.26L12 2Z" />
         </svg>
       ),
       milestone: (
         <svg viewBox="0 0 24 24" fill={color} className={className}>
-          <circle cx="12" cy="12" r="3" fill={color}/>
-          <path d="M12 1L15.09 8.26L22 9L16 14L18 22L12 18L6 22L8 14L2 9L8.91 8.26L12 1Z" stroke={color} strokeWidth="1" fill="none"/>
+          <circle cx="12" cy="12" r="3" fill={color} />
+          <path d="M12 1L15.09 8.26L22 9L16 14L18 22L12 18L6 22L8 14L2 9L8.91 8.26L12 1Z" stroke={color} strokeWidth="1" fill="none" />
         </svg>
       ),
       recognition: (
         <svg viewBox="0 0 24 24" fill={color} className={className}>
-          <path d="M5 16L3 5L8.5 10L12 4L15.5 10L21 5L19 16H5Z"/>
+          <path d="M5 16L3 5L8.5 10L12 4L15.5 10L21 5L19 16H5Z" />
         </svg>
       ),
       monthly: (
         <svg viewBox="0 0 24 24" fill={color} className={className}>
-          <path d="M5 16L3 5L8.5 10L12 4L15.5 10L21 5L19 16H5ZM12 8L7 13H17L12 8Z"/>
+          <path d="M5 16L3 5L8.5 10L12 4L15.5 10L21 5L19 16H5ZM12 8L7 13H17L12 8Z" />
         </svg>
       ),
       special: (
         <svg viewBox="0 0 24 24" fill={color} className={className}>
-          <path d="M12 2L13.09 8.26L22 9L16 14L18 22L12 18.5L6 22L8 14L2 9L10.91 8.26L12 2Z"/>
-          <circle cx="12" cy="12" r="3" fill="white"/>
+          <path d="M12 2L13.09 8.26L22 9L16 14L18 22L12 18.5L6 22L8 14L2 9L10.91 8.26L12 2Z" />
+          <circle cx="12" cy="12" r="3" fill="white" />
         </svg>
       )
     };
