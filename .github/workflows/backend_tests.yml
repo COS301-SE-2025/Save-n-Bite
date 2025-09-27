@@ -136,6 +136,12 @@ jobs:
     - name: Run analytics app tests only
       run: poetry run python manage.py test analytics
 
+    - name: Run admin app tests only
+      run: pytest admin_system/tests.py
+
+    - name: Run interactions app tests only
+      run: pytest interactions/tests
+
     - name: Run coverage report (if requested)
       if: ${{ github.event.inputs.run_coverage == 'true' || github.event_name == 'pull_request' }}
       run: poetry run pytest --cov=. --cov-report=html --cov-report=term-missing
