@@ -2,7 +2,7 @@
 name: Build and Push Images
 on:
   push:
-    branches: [ main ]
+    branches: [ feature/garden-backend ]
   workflow_dispatch:
 
 env:
