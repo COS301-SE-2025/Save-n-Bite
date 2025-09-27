@@ -160,7 +160,8 @@ getPendingVerifications: async () => {
         // Keep original documents for reference
         originalDocuments: profile.documents || {},
         // Add more fields that the frontend expects
-        profileId: profile.id,
+        // Use actual profile UUID from backend when provided; fallback to profile.id
+        profileId: profile.profile_id || profile.id,
         profileType: type === 'ngo' ? 'NGO' : 'Provider',
         // Add raw profile data for debugging
         rawProfile: profile
