@@ -1,25 +1,38 @@
-"""
-Test-specific Django settings for Save-n-Bite Backend
-
-This settings file is specifically designed for integration and unit tests
-to avoid conflicts with the main database and provide faster test execution.
-"""
 
 from .settings import *
 import os
 import sys
 
+# =============================
+# Dynamic test database naming
+# =============================
+# Allow selecting a dedicated test database per app/suite via env vars.
+# Priority:
+# 1) TEST_DB_NAME (full explicit name)
+# 2) TEST_APP -> builds name as f"test_{TEST_APP}_db"
+# 3) Fallback to previous default: 'test_save_n_bite_integration_db'
+
+EXPLICIT_TEST_DB_NAME = os.getenv('TEST_DB_NAME')
+TEST_APP = os.getenv('TEST_APP')  # e.g., 'authentication', 'admin_system'
+
+if EXPLICIT_TEST_DB_NAME:
+    SELECTED_TEST_DB_NAME = EXPLICIT_TEST_DB_NAME
+elif TEST_APP:
+    SELECTED_TEST_DB_NAME = f"test_{TEST_APP}_db"
+else:
+    SELECTED_TEST_DB_NAME = 'test_save_n_bite_integration_db'
+
 # Override database settings for testing
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'test_save_n_bite_integration_db',  # Different from unit test DB
+        'NAME': SELECTED_TEST_DB_NAME,  # Isolated per suite when TEST_APP/TEST_DB_NAME is set
         'USER': os.environ.get('DB_USER'),
         'PASSWORD': os.getenv('DB_PASSWORD', '').strip('"').strip("'"),
         'HOST': os.environ.get('DB_HOST'),
         'PORT': os.environ.get('DB_PORT'),
         'TEST': {
-            'NAME': 'test_save_n_bite_integration_db',
+            'NAME': SELECTED_TEST_DB_NAME,
         },
     }
 }
