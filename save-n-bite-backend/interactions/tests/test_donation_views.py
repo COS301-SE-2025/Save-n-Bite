@@ -22,7 +22,7 @@ class DonationViewTests(TestCase):
         # Users
         self.ngo = User.objects.create_user(username="ngo", email="ngo@example.com", password="pass", user_type="ngo")
         self.business_user = User.objects.create_user(username="business", email="business@example.com", password="pass", user_type="provider")
-        self.provider_profile = FoodProviderProfile.objects.create(user=self.business_user, business_name="Provider 1")
+        self.provider_profile, created = FoodProviderProfile.objects.get_or_create(user=self.business_user, defaults={"business_name": "Provider 1", "business_address": "123 Test St", "business_contact": "+1234567890", "business_email": "business@test.com", "cipc_document": "test_doc.pdf", "status": "verified"})
 
         # Listing
         self.food_listing = FoodListing.objects.create(
