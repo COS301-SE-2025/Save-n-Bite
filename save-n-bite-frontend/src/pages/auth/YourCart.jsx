@@ -7,19 +7,19 @@ import foodAPI from '../../services/FoodAPI';
 import schedulingAPI from '../../services/schedulingAPI';
 
 // Enhanced Detailed Basket Component with new UI
-const DetailedBasket = ({ 
-  provider, 
-  onBack, 
-  onUpdateQuantity, 
-  onRemoveItem, 
+const DetailedBasket = ({
+  provider,
+  onBack,
+  onUpdateQuantity,
+  onRemoveItem,
   onCheckout,
   isProcessingCheckout,
-  showPayment,  
-  onClosePayment,  
-  paymentData,  
-  paymentErrors,  
-  onPaymentInput,  
-  onSubmitPayment  
+  showPayment,
+  onClosePayment,
+  paymentData,
+  paymentErrors,
+  onPaymentInput,
+  onSubmitPayment
 }) => {
   // Calculate subtotal
   const subtotal = provider.items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
@@ -89,8 +89,8 @@ const DetailedBasket = ({
                       />
                     </div>
                     <div className="ml-4 flex-1 min-w-0">
-                      <div className="flex items-start justify-between">
-                        <div className="pr-4">
+                      <div className="flex items-start justify-between gap-2 flex-wrap">
+                        <div className="flex-1 min-w-0 pr-4">
                           <h3 className="font-medium text-gray-900 dark:text-white truncate">
                             {item.name}
                           </h3>
@@ -103,25 +103,25 @@ const DetailedBasket = ({
                             R {item.price.toFixed(2)}
                           </p>
                         </div>
-                        <div className="flex items-center space-x-3">
-                          <div className="flex items-center space-x-2 bg-gray-50 dark:bg-gray-700 rounded-lg px-2 py-1">
+                        <div className="flex items-center gap-2 sm:space-x-3 flex-wrap justify-end flex-shrink-0 w-full sm:w-auto order-2 sm:order-none">
+                          <div className="flex items-center gap-2 bg-gray-50 dark:bg-gray-700 rounded-lg px-3 py-2 sm:px-2 sm:py-1">
                             <button
                               onClick={() => handleUpdateQuantity(item.id, item.quantity - 1)}
-                              className="p-1 text-gray-500 hover:text-emerald-600 dark:text-gray-300 dark:hover:text-emerald-400 transition-colors"
+                              className="p-2 sm:p-1 text-gray-500 hover:text-emerald-600 dark:text-gray-300 dark:hover:text-emerald-400 transition-colors"
                             >
                               {item.quantity > 1 && (
-  <Minus className="h-4 w-4" />
-)}
+                                <Minus className="h-5 w-5 sm:h-4 sm:w-4" />
+                              )}
 
                             </button>
-                            <span className="text-sm font-medium text-gray-900 dark:text-white w-5 text-center">
+                            <span className="text-sm font-medium text-gray-900 dark:text-white w-8 sm:w-6 text-center">
                               {item.quantity}
                             </span>
                             <button
                               onClick={() => handleUpdateQuantity(item.id, item.quantity + 1)}
-                              className="p-1 text-gray-500 hover:text-emerald-600 dark:text-gray-300 dark:hover:text-emerald-400 transition-colors"
+                              className="p-2 sm:p-1 text-gray-500 hover:text-emerald-600 dark:text-gray-300 dark:hover:text-emerald-400 transition-colors"
                             >
-                              <Plus className="h-4 w-4" />
+                              <Plus className="h-5 w-5 sm:h-4 sm:w-4" />
                             </button>
                           </div>
                           <button
@@ -144,7 +144,7 @@ const DetailedBasket = ({
                 <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
                   Order Summary
                 </h2>
-                
+
                 <div className="space-y-3 mb-6">
                   {provider.items.map((item) => (
                     <div
@@ -225,7 +225,7 @@ const DetailedBasket = ({
 };
 
 // Payment Modal Component
-const PaymentModal = ({ 
+const PaymentModal = ({
   provider,
   paymentData,
   paymentErrors,
@@ -287,11 +287,10 @@ const PaymentModal = ({
                   type="text"
                   value={paymentData.card_number}
                   onChange={(e) => onPaymentInput('card_number', e.target.value)}
-                  className={`block w-full px-4 py-2 border ${
-                    paymentErrors.card_number
+                  className={`block w-full px-4 py-2 border ${paymentErrors.card_number
                       ? 'border-red-500 dark:border-red-400'
                       : 'border-gray-300 dark:border-gray-600 focus:ring-emerald-500 focus:border-emerald-500'
-                  } rounded-md shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white`}
+                    } rounded-md shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white`}
                   placeholder="1234 5678 9012 3456"
                   maxLength="19"
                   disabled={isProcessingCheckout}
@@ -313,11 +312,10 @@ const PaymentModal = ({
                   type="text"
                   value={paymentData.expiry_date}
                   onChange={(e) => onPaymentInput('expiry_date', e.target.value)}
-                  className={`block w-full px-4 py-2 border ${
-                    paymentErrors.expiry_date
+                  className={`block w-full px-4 py-2 border ${paymentErrors.expiry_date
                       ? 'border-red-500 dark:border-red-400'
                       : 'border-gray-300 dark:border-gray-600 focus:ring-emerald-500 focus:border-emerald-500'
-                  } rounded-md shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white`}
+                    } rounded-md shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white`}
                   placeholder="MM/YY"
                   maxLength="5"
                   disabled={isProcessingCheckout}
@@ -337,11 +335,10 @@ const PaymentModal = ({
                   type="text"
                   value={paymentData.cvv}
                   onChange={(e) => onPaymentInput('cvv', e.target.value)}
-                  className={`block w-full px-4 py-2 border ${
-                    paymentErrors.cvv
+                  className={`block w-full px-4 py-2 border ${paymentErrors.cvv
                       ? 'border-red-500 dark:border-red-400'
                       : 'border-gray-300 dark:border-gray-600 focus:ring-emerald-500 focus:border-emerald-500'
-                  } rounded-md shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white`}
+                    } rounded-md shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white`}
                   placeholder="123"
                   maxLength="3"
                   disabled={isProcessingCheckout}
@@ -358,9 +355,9 @@ const PaymentModal = ({
               <button
                 type="submit"
                 disabled={
-                  !paymentData.card_number || 
-                  !paymentData.expiry_date || 
-                  !paymentData.cvv || 
+                  !paymentData.card_number ||
+                  !paymentData.expiry_date ||
+                  !paymentData.cvv ||
                   isProcessingCheckout
                 }
                 className="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-emerald-600 hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 disabled:opacity-50 disabled:cursor-not-allowed"
@@ -390,7 +387,7 @@ const YourCart = () => {
   const [cartItems, setCartItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  
+
   const [isProcessingCheckout, setIsProcessingCheckout] = useState(false);
   const [currentView, setCurrentView] = useState('baskets');
   const [selectedProvider, setSelectedProvider] = useState(null);
@@ -450,121 +447,121 @@ const YourCart = () => {
   const providers = Object.values(itemsByProvider);
   const totalAmount = providers.reduce((sum, provider) => sum + provider.subtotal, 0);
 
-// Update your updateQuantity function in YourCart.jsx to show better error messages:
-const updateQuantity = async (itemId, newQuantity) => {
-  if (newQuantity < 1) {
-    await removeItem(itemId);
-    return;
-  }
-  
-  try {
-    const currentItem = cartItems.find(item => item.id === itemId);
-    if (!currentItem) {
-      setError('Item not found in cart');
+  // Update your updateQuantity function in YourCart.jsx to show better error messages:
+  const updateQuantity = async (itemId, newQuantity) => {
+    if (newQuantity < 1) {
+      await removeItem(itemId);
       return;
     }
-    
-    const listingId = currentItem.listingId || currentItem.food_listing_id || currentItem.listing_id;
-    
-    const response = await foodAPI.updateCartItemQuantity(
-      itemId, 
-      newQuantity, 
-      currentItem.quantity,
-      listingId
-    );
-    
-    if (response.success) {
-      // Success - update UI as before
-      const updatedCartResponse = await foodAPI.getCart();
-      if (updatedCartResponse.success) {
-        const newCartItems = updatedCartResponse.data.items || [];
-        setCartItems(newCartItems);
-        
-        if (selectedProvider && currentView === 'provider') {
-          const updatedItemsByProvider = newCartItems.reduce((acc, item) => {
-            const providerId = item.provider?.id || 'unknown';
-            if (!acc[providerId]) {
-              acc[providerId] = {
-                ...item.provider,
-                items: [],
-                subtotal: 0
-              };
+
+    try {
+      const currentItem = cartItems.find(item => item.id === itemId);
+      if (!currentItem) {
+        setError('Item not found in cart');
+        return;
+      }
+
+      const listingId = currentItem.listingId || currentItem.food_listing_id || currentItem.listing_id;
+
+      const response = await foodAPI.updateCartItemQuantity(
+        itemId,
+        newQuantity,
+        currentItem.quantity,
+        listingId
+      );
+
+      if (response.success) {
+        // Success - update UI as before
+        const updatedCartResponse = await foodAPI.getCart();
+        if (updatedCartResponse.success) {
+          const newCartItems = updatedCartResponse.data.items || [];
+          setCartItems(newCartItems);
+
+          if (selectedProvider && currentView === 'provider') {
+            const updatedItemsByProvider = newCartItems.reduce((acc, item) => {
+              const providerId = item.provider?.id || 'unknown';
+              if (!acc[providerId]) {
+                acc[providerId] = {
+                  ...item.provider,
+                  items: [],
+                  subtotal: 0
+                };
+              }
+              acc[providerId].items.push(item);
+              acc[providerId].subtotal += item.price * item.quantity;
+              return acc;
+            }, {});
+
+            const updatedProvider = updatedItemsByProvider[selectedProvider.id];
+            if (updatedProvider) {
+              setSelectedProvider(updatedProvider);
+            } else {
+              setCurrentView('baskets');
+              setSelectedProvider(null);
             }
-            acc[providerId].items.push(item);
-            acc[providerId].subtotal += item.price * item.quantity;
-            return acc;
-          }, {});
-          
-          const updatedProvider = updatedItemsByProvider[selectedProvider.id];
-          if (updatedProvider) {
-            setSelectedProvider(updatedProvider);
-          } else {
-            setCurrentView('baskets');
-            setSelectedProvider(null);
           }
         }
-      }
-      
-      setError(null);
-    } else {
-      // Show a more user-friendly error message for stock issues
-      let errorMessage = response.error || 'Failed to update quantity';
-      
-      // Check if it's a stock-related error and make it more user-friendly
-      if (errorMessage.toLowerCase().includes('stock') || 
+
+        setError(null);
+      } else {
+        // Show a more user-friendly error message for stock issues
+        let errorMessage = response.error || 'Failed to update quantity';
+
+        // Check if it's a stock-related error and make it more user-friendly
+        if (errorMessage.toLowerCase().includes('stock') ||
           errorMessage.toLowerCase().includes('available') ||
           errorMessage.toLowerCase().includes('quantity')) {
-        errorMessage = `Sorry, only ${currentItem.quantity} items can be added. Not enough stock available.`;
-      }
-      
-      setError(errorMessage);
-      
-      // Auto-clear the error after 5 seconds
-      setTimeout(() => setError(null), 2000);
-    }
-  } catch (err) {
-    setError('Failed to update quantity');
-    console.error('Error updating quantity:', err);
-  }
-};
-
-// Also update the removeItem function
-const removeItem = async (itemId) => {
-  try {
-    const response = await foodAPI.removeFromCart(itemId);
-    if (response.success) {
-      // Update cartItems state
-      const updatedCartItems = cartItems.filter(item => item.id !== itemId);
-      setCartItems(updatedCartItems);
-      
-      // IMPORTANT: Also update selectedProvider if we're in detailed view
-      if (selectedProvider && currentView === 'provider') {
-        const updatedProviderItems = selectedProvider.items.filter(item => item.id !== itemId);
-        
-        // If no items left in this provider's basket, go back to main view
-        if (updatedProviderItems.length === 0) {
-          setCurrentView('baskets');
-          setSelectedProvider(null);
-        } else {
-          setSelectedProvider({
-            ...selectedProvider,
-            items: updatedProviderItems
-          });
+          errorMessage = `Sorry, only ${currentItem.quantity} items can be added. Not enough stock available.`;
         }
-      }
-      
-      // Clear any existing errors
-      setError(null);
-    } else {
-      setError(response.error || 'Failed to remove item');
-    }
-  } catch (err) {
-    setError('Failed to remove item');
-    console.error('Error removing item:', err);
-  }
-};
 
-const viewProviderBasket = (provider) => {
+        setError(errorMessage);
+
+        // Auto-clear the error after 5 seconds
+        setTimeout(() => setError(null), 2000);
+      }
+    } catch (err) {
+      setError('Failed to update quantity');
+      console.error('Error updating quantity:', err);
+    }
+  };
+
+  // Also update the removeItem function
+  const removeItem = async (itemId) => {
+    try {
+      const response = await foodAPI.removeFromCart(itemId);
+      if (response.success) {
+        // Update cartItems state
+        const updatedCartItems = cartItems.filter(item => item.id !== itemId);
+        setCartItems(updatedCartItems);
+
+        // IMPORTANT: Also update selectedProvider if we're in detailed view
+        if (selectedProvider && currentView === 'provider') {
+          const updatedProviderItems = selectedProvider.items.filter(item => item.id !== itemId);
+
+          // If no items left in this provider's basket, go back to main view
+          if (updatedProviderItems.length === 0) {
+            setCurrentView('baskets');
+            setSelectedProvider(null);
+          } else {
+            setSelectedProvider({
+              ...selectedProvider,
+              items: updatedProviderItems
+            });
+          }
+        }
+
+        // Clear any existing errors
+        setError(null);
+      } else {
+        setError(response.error || 'Failed to remove item');
+      }
+    } catch (err) {
+      setError('Failed to remove item');
+      console.error('Error removing item:', err);
+    }
+  };
+
+  const viewProviderBasket = (provider) => {
     setSelectedProvider(provider);
     setCurrentView('provider');
     setError(null);
@@ -586,17 +583,17 @@ const viewProviderBasket = (provider) => {
     return providerNames.size > 1;
   };
 
-// Add a console log to see if the function is being called
-const handleProceedToPayment = () => {
-  console.log("Proceed to payment clicked");
-  // Only check for multiple providers if we're in the main baskets view
-  if (currentView === 'baskets' && hasMultipleProviders()) {
-    setError('Please order from one food provider at a time. Remove items from other providers to continue.');
-    return;
-  }
-  setShowPayment(true);
-  console.log("Show payment set to true");
-};
+  // Add a console log to see if the function is being called
+  const handleProceedToPayment = () => {
+    console.log("Proceed to payment clicked");
+    // Only check for multiple providers if we're in the main baskets view
+    if (currentView === 'baskets' && hasMultipleProviders()) {
+      setError('Please order from one food provider at a time. Remove items from other providers to continue.');
+      return;
+    }
+    setShowPayment(true);
+    console.log("Show payment set to true");
+  };
 
 
   // NEW: Payment input formatting functions from reference
@@ -620,7 +617,7 @@ const handleProceedToPayment = () => {
   // NEW: Payment input handler from reference
   const handlePaymentInput = (field, value) => {
     let formattedValue = value;
-    
+
     if (field === 'card_number') {
       formattedValue = formatCardNumber(value);
       if (formattedValue.replace(/\s/g, '').length > 19) return;
@@ -631,12 +628,12 @@ const handleProceedToPayment = () => {
       formattedValue = value.replace(/\D/g, '');
       if (formattedValue.length > 3) return;
     }
-    
+
     setPaymentData(prev => ({
       ...prev,
       [field]: formattedValue
     }));
-    
+
     // Clear error for this field when user starts typing
     if (paymentErrors[field]) {
       setPaymentErrors(prev => ({
@@ -649,35 +646,35 @@ const handleProceedToPayment = () => {
   // NEW: Validation functions from reference
   const validateCardNumber = (cardNumber) => {
     const cleanNumber = cardNumber.replace(/\s/g, '');
-    
+
     if (!cleanNumber) {
       return 'Card number is required';
     }
-    
+
     if (cleanNumber.length < 13 || cleanNumber.length > 19) {
       return 'Card number must be between 13-19 digits';
     }
-    
+
     // Basic Luhn algorithm check
     let sum = 0;
     let shouldDouble = false;
-    
+
     for (let i = cleanNumber.length - 1; i >= 0; i--) {
       let digit = parseInt(cleanNumber.charAt(i));
-      
+
       if (shouldDouble) {
         digit *= 2;
         if (digit > 9) digit -= 9;
       }
-      
+
       sum += digit;
       shouldDouble = !shouldDouble;
     }
-    
+
     if (sum % 10 !== 0) {
       return 'Invalid card number';
     }
-    
+
     return null;
   };
 
@@ -685,32 +682,32 @@ const handleProceedToPayment = () => {
     if (!expiryDate) {
       return 'Expiry date is required';
     }
-    
+
     const cleanDate = expiryDate.replace(/\D/g, '');
-    
+
     if (cleanDate.length !== 4) {
       return 'Please enter MM/YY format';
     }
-    
+
     const month = parseInt(cleanDate.substring(0, 2));
     const year = parseInt(`20${cleanDate.substring(2, 4)}`);
-    
+
     if (month < 1 || month > 12) {
       return 'Invalid month (01-12)';
     }
-    
+
     const currentDate = new Date();
     const currentYear = currentDate.getFullYear();
     const currentMonth = currentDate.getMonth() + 1;
-    
+
     if (year < currentYear || (year === currentYear && month < currentMonth)) {
       return 'Card has expired';
     }
-    
+
     if (year > currentYear + 20) {
       return 'Invalid expiry year';
     }
-    
+
     return null;
   };
 
@@ -718,11 +715,11 @@ const handleProceedToPayment = () => {
     if (!cvv) {
       return 'CVV is required';
     }
-    
+
     if (!/^\d{3}$/.test(cvv)) {
       return 'CVV must be exactly 3 digits';
     }
-    
+
     return null;
   };
 
@@ -733,9 +730,9 @@ const handleProceedToPayment = () => {
       expiry_date: validateExpiryDate(paymentData.expiry_date),
       cvv: validateCVV(paymentData.cvv)
     };
-    
+
     setPaymentErrors(errors);
-    
+
     return !Object.values(errors).some(error => error !== null);
   };
 
@@ -744,7 +741,7 @@ const handleProceedToPayment = () => {
     try {
       // Only try to get existing available slots
       const slotsResponse = await schedulingAPI.getAvailableTimeSlots(listingId, MOCK_TIME_SLOT.date);
-      
+
       if (slotsResponse.success && slotsResponse.data.available_slots && slotsResponse.data.available_slots.length > 0) {
         console.log(`Found ${slotsResponse.data.available_slots.length} available slots for listing ${listingId}`);
         return slotsResponse.data.available_slots[0];
@@ -779,15 +776,15 @@ const handleProceedToPayment = () => {
     setIsProcessingCheckout(true);
     try {
       console.log('Starting checkout for provider items...');
-      
+
       // Store current cart items before processing
       const originalCartItems = [...cartItems];
       const cartStorageKey = `cart_backup_${Date.now()}`;
       localStorage.setItem(cartStorageKey, JSON.stringify(originalCartItems));
-      
+
       const scheduledPickups = [];
       const failedItems = [];
-      
+
       // Checkout for the selected provider's items
       const providerItemIds = selectedProvider.items.map(item => item.id);
       const checkoutData = {
@@ -803,9 +800,9 @@ const handleProceedToPayment = () => {
       };
 
       console.log('Checkout data for provider items:', JSON.stringify(checkoutData, null, 2));
-      
+
       const checkoutResponse = await schedulingAPI.checkoutCart(checkoutData);
-      
+
       if (!checkoutResponse.success) {
         console.error('Checkout failed for provider items:', checkoutResponse.error);
         setError(`Checkout failed: ${checkoutResponse.error}`);
@@ -813,7 +810,7 @@ const handleProceedToPayment = () => {
       }
 
       console.log('Checkout successful for provider items:', checkoutResponse.data);
-      
+
       const orders = checkoutResponse.data.orders || [];
       if (orders.length === 0) {
         console.error('No orders created');
@@ -822,36 +819,36 @@ const handleProceedToPayment = () => {
       }
 
       console.log(`Created ${orders.length} orders for ${selectedProvider.items.length} items`);
-      
+
       // Schedule pickup for each order individually
       for (let i = 0; i < orders.length; i++) {
         const order = orders[i];
-        
+
         // Find the corresponding cart item for this order
-        const cartItem = selectedProvider.items[i] || selectedProvider.items.find(item => 
+        const cartItem = selectedProvider.items[i] || selectedProvider.items.find(item =>
           order.items?.some(orderItem => orderItem.food_listing_id === (item.food_listing_id || item.listingId || item.listing_id))
         );
-        
+
         if (!cartItem) {
           console.warn(`Could not find cart item for order ${order.id}`);
-          failedItems.push({ 
-            item: { name: `Order ${order.id}`, id: order.id }, 
-            error: 'Could not match order to cart item', 
-            stage: 'matching' 
+          failedItems.push({
+            item: { name: `Order ${order.id}`, id: order.id },
+            error: 'Could not match order to cart item',
+            stage: 'matching'
           });
           continue;
         }
-        
+
         console.log(`\n--- Scheduling pickup ${i + 1}/${orders.length}: ${cartItem.name} (Order: ${order.id}) ---`);
-        
+
         try {
           // Get listing ID for scheduling
           const listingId = cartItem.food_listing_id || cartItem.listingId || cartItem.listing_id || cartItem.id;
-          
+
           // Get time slot for this listing
           const timeSlot = await getMockTimeSlotForListing(listingId);
           console.log('Time slot for', cartItem.name, ':', JSON.stringify(timeSlot, null, 2));
-          
+
           // Schedule pickup with the order ID
           const scheduleData = {
             order_id: order.id,
@@ -860,11 +857,11 @@ const handleProceedToPayment = () => {
             date: timeSlot.date,
             customer_notes: `Individual pickup for ${cartItem.name}`
           };
-          
+
           console.log('Schedule data for', cartItem.name, ':', JSON.stringify(scheduleData, null, 2));
-          
+
           const scheduleResponse = await schedulingAPI.schedulePickup(scheduleData);
-          
+
           if (scheduleResponse.success) {
             scheduledPickups.push({
               order: order,
@@ -879,12 +876,12 @@ const handleProceedToPayment = () => {
             console.error(`Failed to schedule pickup for ${cartItem.name}:`, scheduleResponse.error);
             failedItems.push({ item: cartItem, error: scheduleResponse.error, stage: 'scheduling' });
           }
-          
+
         } catch (itemError) {
           console.error(`Error scheduling pickup for ${cartItem.name}:`, itemError);
           failedItems.push({ item: cartItem, error: itemError.message, stage: 'scheduling' });
         }
-        
+
         // Add delay between scheduling items
         if (i < orders.length - 1) {
           console.log('Waiting 300ms before next scheduling...');
@@ -896,17 +893,17 @@ const handleProceedToPayment = () => {
       console.log(`\n=== PROCESSING COMPLETE ===`);
       console.log(`Successfully processed: ${scheduledPickups.length} items`);
       console.log(`Failed items: ${failedItems.length} items`);
-      
+
       // Clean up localStorage after processing
       localStorage.removeItem(cartStorageKey);
       console.log(`Cleaned up localStorage key: ${cartStorageKey}`);
-      
+
       if (failedItems.length > 0) {
         console.error('Failed items:', failedItems);
-        
+
         // Show detailed error information
         const failedItemNames = failedItems.map(fi => `${fi.item.name} (${fi.stage})`).join(', ');
-        
+
         if (scheduledPickups.length === 0) {
           setError(`All items failed to process: ${failedItemNames}. Please try again.`);
           return;
@@ -922,12 +919,12 @@ const handleProceedToPayment = () => {
       }
 
       console.log(`🎉 Successfully scheduled ${scheduledPickups.length} individual pickups`);
-      
+
       // Clear the cart items for this provider
-      setCartItems(cartItems.filter(item => 
+      setCartItems(cartItems.filter(item =>
         !selectedProvider.items.some(providerItem => providerItem.id === item.id)
       ));
-      
+
       // Navigate to pickup confirmation page with all pickup data
       setTimeout(() => {
         navigate('/orders');
@@ -944,11 +941,11 @@ const handleProceedToPayment = () => {
   // NEW: Updated payment submit handler
   const handlePaymentSubmit = async (e) => {
     e.preventDefault();
-    
+
     if (!validatePaymentForm()) {
       return;
     }
-    
+
     handleCheckoutProviderItems(paymentData);
   };
 
@@ -1036,7 +1033,7 @@ const handleProceedToPayment = () => {
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       <CustomerNavBar />
-      
+
       <div className="max-w-4xl mx-auto px-4 py-4 pb-32">
         <div className="flex items-center justify-between mb-6">
           <h1 className="text-2xl font-bold text-gray-800 dark:text-white">Your Baskets</h1>
@@ -1104,7 +1101,7 @@ const handleProceedToPayment = () => {
         </AnimatePresence>
       </div>
 
-     
+
     </div>
   );
 };

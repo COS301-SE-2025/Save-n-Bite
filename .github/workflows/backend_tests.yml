@@ -3,9 +3,9 @@ name: Backend
 on:
   push:
 
-    branches: [ frontend ]
+    branches: [ dev ]
   pull_request:
-    branches: [  frontend ]
+    branches: [  dev ]
 
   workflow_dispatch:
     inputs:
@@ -166,11 +166,11 @@ jobs:
     - name: Run Badges app tests only
       run: poetry run pytest badges/tests.py
 
-    # - name: Run Admin System app tests only
-    #   run: poetry run python manage.py test admin_system
+    - name: Run Admin System app tests only
+      run: poetry run python manage.py test admin_system
 
-    # - name: Run Authentication app tests only
-    #   run: poetry run python manage.py test authentication
+    - name: Run Authentication app tests only
+      run: poetry run python manage.py test authentication
 
     # - name: Run Integration Tests app tests only
     #   run: poetry run python run_integration_tests.py --all --verbose

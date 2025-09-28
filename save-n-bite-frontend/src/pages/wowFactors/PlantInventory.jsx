@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import PlantCard from '../../components/garden/PlantCard';
+import useMobileDragDrop from '../../hooks/useMobileDragDrop';
 import './PlantInventory.css';
 
 const PlantInventory = ({ 
@@ -8,9 +9,51 @@ const PlantInventory = ({
   onPlantSelect, 
   onDragStart,
   onDragEnd,
+  onMobilePlantDrop, // New prop for mobile drop handling
   supportsDragDrop = false,
   mode 
 }) => {
+  const {
+    draggedItem,
+    isDragging,
+    handleDragStart: mobileHandleDragStart,
+    handleDragMove,
+    handleDragEnd: mobileHandleDragEnd,
+    handleDragCancel
+  } = useMobileDragDrop();
+
+  // Add global event listeners for mobile drag
+  useEffect(() => {
+    if (isDragging) {
+      const handleMove = (e) => handleDragMove(e);
+      const handleEnd = (e) => mobileHandleDragEnd(e, onMobilePlantDrop);
+      const handleCancel = () => handleDragCancel();
+
+      // Add touch and mouse event listeners
+      document.addEventListener('touchmove', handleMove, { passive: false });
+      document.addEventListener('mousemove', handleMove);
+      document.addEventListener('touchend', handleEnd);
+      document.addEventListener('mouseup', handleEnd);
+      document.addEventListener('scroll', handleCancel, true);
+      
+      // Prevent body scroll during drag
+      document.body.style.overflow = 'hidden';
+      document.body.style.touchAction = 'none';
+
+      return () => {
+        document.removeEventListener('touchmove', handleMove);
+        document.removeEventListener('mousemove', handleMove);
+        document.removeEventListener('touchend', handleEnd);
+        document.removeEventListener('mouseup', handleEnd);
+        document.removeEventListener('scroll', handleCancel, true);
+        
+        // Restore body scroll
+        document.body.style.overflow = '';
+        document.body.style.touchAction = '';
+      };
+    }
+  }, [isDragging, handleDragMove, mobileHandleDragEnd, handleDragCancel, onMobilePlantDrop]);
+
   if (!inventory || inventory.length === 0) {
     return (
       <div className="plant-inventory empty">
@@ -24,16 +67,24 @@ const PlantInventory = ({
     );
   }
 
-  const handleDragStart = (e, item) => {
-    if (supportsDragDrop && onDragStart) {
-      onDragStart(item);
-      e.dataTransfer.effectAllowed = 'move';
-      e.dataTransfer.setData('text/plain', item.id);
+  // Handle the start of dragging for both desktop and mobile
+  const handleDragStartUnified = (item, event) => {
+    // For touch devices, use our custom mobile drag
+    if (event.type === 'touchstart') {
+      mobileHandleDragStart(item, event);
+      if (onDragStart) onDragStart(item);
+    } 
+    // For desktop, use traditional HTML5 drag and drop
+    else if (event.type === 'dragstart') {
+      if (onDragStart) onDragStart(item);
+      event.dataTransfer.effectAllowed = 'move';
+      event.dataTransfer.setData('text/plain', item.id);
     }
   };
 
-  const handleDragEnd = (e) => {
-    if (supportsDragDrop && onDragEnd) {
+  const handleDragEndUnified = (event) => {
+    // Only handle desktop drag end here, mobile is handled by global listeners
+    if (event.type === 'dragend' && onDragEnd) {
       onDragEnd();
     }
   };
@@ -44,7 +95,11 @@ const PlantInventory = ({
       
       {supportsDragDrop && (
         <div className="inventory-instruction">
-          <p>Drag plants to place them in your garden:</p>
+          <p>
+            {window.innerWidth <= 768 
+              ? "Touch and hold plants to drag them to your garden" 
+              : "Drag plants to place them in your garden"}
+          </p>
         </div>
       )}
 
@@ -53,9 +108,13 @@ const PlantInventory = ({
           <div
             key={item.id}
             draggable={supportsDragDrop}
-            onDragStart={(e) => handleDragStart(e, item)}
-            onDragEnd={handleDragEnd}
-            className={`inventory-item ${supportsDragDrop ? 'draggable' : ''}`}
+            onDragStart={(e) => handleDragStartUnified(item, e)}
+            onDragEnd={handleDragEndUnified}
+            onTouchStart={(e) => supportsDragDrop && handleDragStartUnified(item, e)}
+            onMouseDown={(e) => supportsDragDrop && handleDragStartUnified(item, e)}
+            className={`inventory-item ${supportsDragDrop ? 'draggable' : ''} ${
+              draggedItem?.id === item.id ? 'currently-dragging' : ''
+            }`}
           >
             <PlantCard
               inventoryItem={item}

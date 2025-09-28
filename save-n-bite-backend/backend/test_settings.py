@@ -1,9 +1,3 @@
-"""
-Test-specific Django settings for Save-n-Bite Backend
-
-This settings file is specifically designed for integration and unit tests
-to avoid conflicts with the main database and provide faster test execution.
-"""
 
 from .settings import *
 import os
