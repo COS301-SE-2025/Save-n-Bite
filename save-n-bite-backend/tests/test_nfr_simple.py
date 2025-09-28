@@ -216,6 +216,7 @@ class SecurityNFRTest(BasicNFRTest):
                 'full_name': 'Test User',
                 'email': f'test_{weak_password}@test.com',
                 'password': weak_password,
+                'role': 'normal'
             }
             
             # Use ACTUAL registration endpoint from your service contracts
