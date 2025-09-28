@@ -1765,7 +1765,7 @@ class TestBusinessFollowingViews:
 
 # ============ INTEGRATION TESTS ============
 
-    @pytest.mark.django_db
+@pytest.mark.django_db
 class TestNotificationIntegration:
 
     def test_business_following_workflow(self, authenticated_customer_client, customer_user, provider_user):

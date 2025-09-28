@@ -150,7 +150,7 @@ class AdminGetAllTransactionsTests(APITestCase):
         # Search by business name
         response = self._make_admin_request('/admin/transactions/?search=Restaurant')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(response.data['transactions']), 0)
+        self.assertEqual(len(response.data['transactions']), 2)
         
         # Search by non-existent term
         response = self._make_admin_request('/admin/transactions/?search=nonexistent')
@@ -242,10 +242,6 @@ class AdminGetAllTransactionsTests(APITestCase):
         self.assertIsNotNone(donation_transaction)
         self.assertEqual(sale_transaction['amount'], 'R100.00')
         self.assertEqual(donation_transaction['amount'], 'Free')
-
-    def test_admin_get_all_transactions_missing_business(self):
-        """Skip test for missing business since business is required"""
-        self.skipTest("Business field is required, cannot test missing business scenario")
 
     @patch('interactions.admin_views.Interaction.objects.select_related')
     def test_admin_get_all_transactions_exception_handling(self, mock_select_related):

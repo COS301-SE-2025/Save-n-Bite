@@ -1,0 +1,53 @@
+============================================================
+SAVE-N-BITE BACKEND - INTEGRATION TEST REPORT
+============================================================
+Generated: 2025-09-27 22:40:30
+
+TEST RESULTS SUMMARY
+------------------------------
+Total Test Suites: 3
+Passed: 0
+Failed: 3
+
+DETAILED RESULTS
+--------------------
+Integration: ✗ FAILED (0.80s)
+End-to-End: ✗ FAILED (0.81s)
+Non-Functional Requirements: ✗ FAILED (0.80s)
+
+PERFORMANCE METRICS
+--------------------
+Performance Metrics Report
+==============================
+
+Integration_execution_time:
+  Average: 800.45 ms
+  Maximum: 800.45 ms
+  Minimum: 800.45 ms
+  Samples: 1
+
+End-to-End_execution_time:
+  Average: 807.13 ms
+  Maximum: 807.13 ms
+  Minimum: 807.13 ms
+  Samples: 1
+
+Non-Functional Requirements_execution_time:
+  Average: 804.79 ms
+  Maximum: 804.79 ms
+  Minimum: 804.79 ms
+  Samples: 1
+
+
+NON-FUNCTIONAL REQUIREMENTS STATUS
+----------------------------------------
+✗ Some Non-Functional Requirements tests failed
+  Please review the detailed test output above
+
+RECOMMENDATIONS
+---------------
+⚠ Some test suites failed - review and fix before deployment
+⚠ Check detailed error messages above
+⚠ Ensure all non-functional requirements are addressed
+
+============================================================
