@@ -28,6 +28,7 @@ urlpatterns = [
     
     # ==================== ENHANCED ANALYTICS ====================
     path('analytics/', views.get_simple_analytics, name='get_simple_analytics'),
+    path('debug-analytics/', views.debug_analytics, name='debug_analytics'),
     
     # ==================== SECURITY & ANOMALY DETECTION ====================
     path('security/anomalies/', views.get_security_anomalies, name='get_security_anomalies'),

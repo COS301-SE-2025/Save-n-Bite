@@ -19,24 +19,31 @@ const AnalyticsChart = ({
   nameKey = 'name',
   donut = false,
 }) => {
-  // Custom label for pie chart
+  
   const renderCustomizedLabel = ({
     cx, cy, midAngle, innerRadius, outerRadius, percent, value, index
   }) => {
     const RADIAN = Math.PI / 180;
-    const radius = innerRadius + (outerRadius - innerRadius) * 0.5;
+    // Position labels outside the pie chart
+    const radius = outerRadius + 12;
     const x = cx + radius * Math.cos(-midAngle * RADIAN);
     const y = cy + radius * Math.sin(-midAngle * RADIAN);
+
+    // Only show percentage if it's meaningful (> 1%)
+    if (percent < 0.01) return null;
 
     return (
       <text
         x={x}
         y={y}
-        fill="white"
+        fill="#000000"  // Black text
         textAnchor={x > cx ? 'start' : 'end'}
         dominantBaseline="central"
+        fontSize="12"
+        fontWeight="500"
+        className="select-none" // Prevent text selection
       >
-        {`${(percent * 100).toFixed(0)}%`}
+        {`${(percent * 100).toFixed(1)}%`}
       </text>
     );
   };
@@ -152,23 +159,23 @@ const AnalyticsChart = ({
   const renderPieChart = () => (
     <ResponsiveContainer width="100%" height={height}>
       <PieChart>
-        <Pie
-          data={data}
-          cx="35%" // Moved left to make room for legend
-          cy="50%"
-          labelLine={false}
-          label={renderCustomizedLabel}
-          innerRadius={donut ? '50%' : 0} // Smaller donut
-          outerRadius={donut ? '70%' : '70%'} // Smaller overall size
-          dataKey="value"
-        >
-          {data.map((entry, index) => (
-            <Cell 
-              key={`cell-${index}`} 
-              fill={entry.color || colors[index % colors.length]} 
-            />
-          ))}
-        </Pie>
+<Pie
+  data={data}
+  cx="40%" // Moved slightly more left to accommodate external labels
+  cy="50%"
+  labelLine={false}
+  label={renderCustomizedLabel}
+  innerRadius={donut ? '50%' : 0}
+  outerRadius={donut ? '65%' : '65%'} // Slightly smaller to make room for labels
+  dataKey="value"
+>
+  {data.map((entry, index) => (
+    <Cell 
+      key={`cell-${index}`} 
+      fill={entry.color || colors[index % colors.length]} 
+    />
+  ))}
+</Pie>
         <Tooltip content={<CustomTooltip />} />
         <Legend 
           verticalAlign="middle" 

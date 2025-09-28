@@ -159,48 +159,79 @@ const Analytics = () => {
 
  
 const getUserGrowthData = () => {
+  // Check if we have real monthly data from backend
   if (analyticsData?.monthly_user_growth && analyticsData.monthly_user_growth.length > 0) {
-    // Use real historical monthly data from backend
+    console.log('✅ Using REAL monthly user growth data:', analyticsData.monthly_user_growth);
+    
     return analyticsData.monthly_user_growth.map(month => ({
-      name: month.name,
-      users: month.total_users,
-      new_users: month.new_users
-    }))
+      name: month.name,        // e.g., "Jul 2024"
+      users: month.total_users, // Running total
+      new_users: month.new_users // New registrations that month
+    }));
   }
 
-  // Fallback to single current data point
-  if (!analyticsData?.total_users) {
-    return [{ name: 'No Data', users: 0, new_users: 0 }]
+  // Fallback: If no monthly data, show at least current total
+  if (analyticsData?.total_users) {
+    const currentMonth = new Date().toLocaleDateString('en-US', { 
+      month: 'short', 
+      year: 'numeric' 
+    });
+    
+    console.log('⚠️ Using fallback data - no monthly growth available');
+    return [{
+      name: currentMonth,
+      users: analyticsData.total_users,
+      new_users: analyticsData.new_users_month || 0
+    }];
   }
 
+  // Last resort: No data message
+  console.log('❌ No user data available');
   return [{
-    name: new Date().toLocaleDateString('en-US', { month: 'short', year: 'numeric' }),
-    users: analyticsData.total_users,
-    new_users: analyticsData.new_users_month || 0
-  }]
-}
+    name: 'No Data',
+    users: 0,
+    new_users: 0
+  }];
+};
 
+/**
+ * Get real platform activity data from backend - FIXED and SIMPLIFIED
+ */
 const getPlatformActivityData = () => {
+  // Check if we have real monthly activity data
   if (analyticsData?.monthly_activity_growth && analyticsData.monthly_activity_growth.length > 0) {
-    // Use real historical monthly data from backend
+    console.log('✅ Using REAL monthly activity data:', analyticsData.monthly_activity_growth);
+    
     return analyticsData.monthly_activity_growth.map(month => ({
       name: month.name,
       listings: month.listings,
       transactions: month.transactions
-    }))
+    }));
   }
 
-  // Fallback to single current data point
-  if (!analyticsData?.total_listings || !analyticsData?.total_transactions) {
-    return [{ name: 'No Data', listings: 0, transactions: 0 }]
+  // Fallback: Current totals only
+  if (analyticsData?.total_listings || analyticsData?.total_transactions) {
+    const currentMonth = new Date().toLocaleDateString('en-US', { 
+      month: 'short', 
+      year: 'numeric' 
+    });
+    
+    console.log('⚠️ Using fallback data - no monthly activity available');
+    return [{
+      name: currentMonth,
+      listings: analyticsData.total_listings || 0,
+      transactions: analyticsData.total_transactions || 0
+    }];
   }
 
+  // Last resort
+  console.log('❌ No activity data available');
   return [{
-    name: new Date().toLocaleDateString('en-US', { month: 'short', year: 'numeric' }),
-    listings: analyticsData.total_listings,
-    transactions: analyticsData.total_transactions
-  }]
-}
+    name: 'No Data',
+    listings: 0,
+    transactions: 0
+  }];
+};
 
   if (loading) {
     return (
@@ -310,16 +341,16 @@ const getPlatformActivityData = () => {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* User Growth Chart */}
         <div className="bg-white rounded-lg shadow-sm border p-6">
-          <AnalyticsChart
-            title="User Growth"
-            subtitle="Monthly user registration and totals"
-            type="line"
-            data={getUserGrowthData()}
-            dataKeys={['users', 'new_users']}
-            colors={['#3B82F6', '#10B981']}
-            height={300}
-          />
-        </div>
+  <AnalyticsChart
+    title="User Growth"
+    subtitle="Monthly user registration and totals"
+    type="line"
+    data={getUserGrowthData()}
+    dataKeys={['users', 'new_users']} // Show both total and new users
+    colors={['#3B82F6', '#10B981']}   // Blue for total, Green for new
+    height={300}
+  />
+</div>
 
         {/* User Distribution Pie Chart */}
         <div className="bg-white rounded-lg shadow-sm border p-6">
@@ -336,17 +367,17 @@ const getPlatformActivityData = () => {
         </div>
 
         {/* Platform Activity */}
-        <div className="bg-white rounded-lg shadow-sm border p-6">
-          <AnalyticsChart
-            title="Platform Activity"
-            subtitle="Monthly listings and transactions"
-            type="line"
-            data={getPlatformActivityData()}
-            dataKeys={['listings', 'transactions']}
-            colors={['#8B5CF6', '#F59E0B']}
-            height={300}
-          />
-        </div>
+<div className="bg-white rounded-lg shadow-sm border p-6">
+  <AnalyticsChart
+    title="Platform Activity"
+    subtitle="Monthly listings and transactions"
+    type="line"
+    data={getPlatformActivityData()}
+    dataKeys={['listings', 'transactions']}
+    colors={['#8B5CF6', '#F59E0B']}
+    height={300}
+  />
+</div>
 
         {/* Top Providers */}
         <div className="bg-white rounded-lg shadow-sm border p-6">
