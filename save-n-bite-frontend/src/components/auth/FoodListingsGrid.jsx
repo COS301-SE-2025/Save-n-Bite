@@ -22,9 +22,11 @@ const FoodListingsGrid = ({
         </div>
       ) : listings.length > 0 ? (
         <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2 sm:gap-3 md:gap-4">
-          {listings.map((item) => (
-            <FoodCard key={`${item.id}-${item.provider?.id || ''}`} item={item} />
-          ))}
+          {listings
+  .filter((item) => item.provider?.business_name !== 'Unknown Provider') 
+  .map((item) => (
+    <FoodCard key={`${item.id}-${item.provider?.id || ''}`} item={item} />
+))}
         </div>
       ) : (
         <div className="text-center py-12 bg-white dark:bg-gray-800 rounded-xl shadow-sm">

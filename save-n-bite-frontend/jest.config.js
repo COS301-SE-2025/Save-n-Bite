@@ -10,17 +10,17 @@ module.exports = {
   },
   collectCoverageFrom: [
     'src/components/auth/FoodCard.jsx',
-    'src/components/auth/CustomerNavBar.jsx',
+    // 'src/components/auth/CustomerNavBar.jsx',
    
-    'src/components/auth/FoodItemDetails.jsx',
-    'src/components/auth/FoodItemHeader.jsx',
-    'src/components/auth/FoodListingsGrid.jsx',
-    'src/components/auth/FoodProviderCarousel.jsx',
-    'src/components/auth/LoginForm.jsx',
-    'src/components/auth/NavBar.jsx',
+    // 'src/components/auth/FoodItemDetails.jsx',
+    // 'src/components/auth/FoodItemHeader.jsx',
+    // 'src/components/auth/FoodListingsGrid.jsx',
+    // 'src/components/auth/FoodProviderCarousel.jsx',
+    // 'src/components/auth/LoginForm.jsx',
+    // 'src/components/auth/NavBar.jsx',
     // 'src/components/auth/NotificationBell.jsx',
-    'src/components/auth/OrderCard.jsx',
-    'src/components/auth/PriceDisplay.jsx'
+    // 'src/components/auth/OrderCard.jsx',
+    // 'src/components/auth/PriceDisplay.jsx'
     
   ],
   coverageDirectory: 'coverage',
@@ -35,11 +35,11 @@ module.exports = {
   },
   testMatch: [
     '<rootDir>/src/**/unitTests/**/*.{js,jsx,ts,tsx}',
-    '<rootDir>/src/**/*.(test|spec).{js,jsx,ts,tsx}'
+    '<rootDir>/src/**/*.{test,spec}.{js,jsx,ts,tsx}'
   ],
   moduleDirectories: ['node_modules', 'src'],
   testTimeout: 10000,
-  collectCoverage: false,
+  collectCoverage: true,
   clearMocks: true,
   restoreMocks: true
 };

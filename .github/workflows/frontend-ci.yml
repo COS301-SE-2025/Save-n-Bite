@@ -1,9 +1,9 @@
 name: frontend
 on:
   push:
-    branches: [ backend ]
+    branches: [ dev ]
   pull_request:
-    branches: [  backend ]
+    branches: [  dev ]
 
 env:
   NODE_VERSION: 20
@@ -26,8 +26,8 @@ jobs:
       - name: Install dependencies
         run: npm i
         
-      - name: Run Vitest
-        run: npm test
+      - name: Run Jest with coverage
+        run: npx jest --coverage --runInBand
         
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v3

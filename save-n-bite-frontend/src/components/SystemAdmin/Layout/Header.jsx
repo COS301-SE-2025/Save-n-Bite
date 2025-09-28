@@ -19,8 +19,7 @@ const Header = ({ toggleSidebar }) => {
             className="p-2 rounded-md text-gray-500 hover:text-gray-900 hover:bg-gray-100 focus:outline-none relative"
             aria-label="Notifications"
           >
-            <BellIcon size={20} />
-            <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
+
           </button>
           <div className="flex items-center space-x-2">
             <div className="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center text-white">

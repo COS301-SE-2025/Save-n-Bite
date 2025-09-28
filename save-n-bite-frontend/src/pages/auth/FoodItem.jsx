@@ -1,5 +1,4 @@
 
-
 import React, { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { 
@@ -10,7 +9,9 @@ import {
   Clock, 
   Star,
   ChevronDown,
-  ChevronUp
+  ChevronUp,
+  User,
+  MessageCircle
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import FoodItemHeader from '../../components/auth/FoodItemHeader';
@@ -20,6 +21,8 @@ import StoreLocation from '../../components/auth/StoreLocation';
 import CustomerNavBar from '../../components/auth/CustomerNavBar';
 import foodAPI from '../../services/FoodAPI';
 import BusinessAPI from '../../services/BusinessAPI';
+import FoodProvidersAPI from '../../services/FoodProvidersAPI'; // Add this import
+import reviewsAPI from '../../services/reviewsAPI';
 
 const FoodItem = () => {
   const { id } = useParams();
@@ -34,22 +37,68 @@ const FoodItem = () => {
   const [businessProfile, setBusinessProfile] = useState(null);
   const [activeTab, setActiveTab] = useState('details');
   const [expandedSection, setExpandedSection] = useState(null);
+  
+  // Reviews state
+  const [reviews, setReviews] = useState([]);
+  const [reviewsLoading, setReviewsLoading] = useState(false);
+  const [reviewsData, setReviewsData] = useState(null);
+  const [reviewsError, setReviewsError] = useState(null);
 
   useEffect(() => {
     fetchItemDetails();
   }, [id]);
 
   useEffect(() => {
-    if (item?.provider?.id) {
+    console.log('=== USEEFFECT DEBUG ===');
+    console.log('item:', item);
+    console.log('item?.provider (full object):', JSON.stringify(item?.provider, null, 2));
+    console.log('item?.provider?.id:', item?.provider?.id);
+    console.log('item?.provider?.user_id:', item?.provider?.user_id);
+    console.log('item?.provider?.provider_id:', item?.provider?.provider_id);
+    console.log('item?.provider?.businessName:', item?.provider?.businessName);
+    
+    if (item?.provider) {
+      console.log('Provider exists, calling fetchBusinessProfile and fetchProviderReviews');
       fetchBusinessProfile();
+      fetchProviderReviews();
+    } else {
+      console.log('NOT calling review functions - provider missing');
     }
+    console.log('=== END USEEFFECT DEBUG ===');
   }, [item]);
 
   const fetchItemDetails = async () => {
     try {
       const response = await foodAPI.getFoodListingDetails(id);
       if (response.success) {
-        setItem(response.data);
+        const itemData = response.data;
+        
+        // TEMPORARY FIX: If provider doesn't have user_id, try to fetch it
+        if (itemData.provider && !itemData.provider.user_id && !itemData.provider.provider_id) {
+          console.log('Provider missing IDs, attempting to fetch from provider API');
+          
+          // Try to get the provider details using business name
+          try {
+            const allProvidersResponse = await FoodProvidersAPI.getAllProviders();
+            if (allProvidersResponse.success && allProvidersResponse.data?.providers) {
+              const matchingProvider = allProvidersResponse.data.providers.find(
+                p => p.business_name === itemData.provider.businessName
+              );
+              
+              if (matchingProvider) {
+                console.log('Found matching provider:', matchingProvider);
+                // Add the missing IDs to the provider object
+                itemData.provider.user_id = matchingProvider.user_id || matchingProvider.id;
+                itemData.provider.provider_id = matchingProvider.id;
+                console.log('Updated provider with IDs:', itemData.provider);
+              }
+            }
+          } catch (err) {
+            console.error('Failed to fetch provider details:', err);
+          }
+        }
+        
+        setItem(itemData);
       } else {
         setError(response.error);
       }
@@ -77,22 +126,145 @@ const FoodItem = () => {
     }
   };
 
+  // Transform API review data to match the expected format (same as SpecificFoodProvider)
+  const transformReviewData = (apiReview) => {
+    // Generate a placeholder image based on reviewer name
+    const getPlaceholderImage = (name) => {
+      const avatarUrls = [
+        'https://images.unsplash.com/photo-1494790108377-be9c29b29330?ixlib=rb-4.0.3&auto=format&fit=crop&w=150&q=80',
+        'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-4.0.3&auto=format&fit=crop&w=150&q=80',
+        'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixlib=rb-4.0.3&auto=format&fit=crop&w=150&q=80',
+        'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?ixlib=rb-4.0.3&auto=format&fit=crop&w=150&q=80',
+        'https://images.unsplash.com/photo-1614644147798-f8c0fc9da7f6?ixlib=rb-4.0.3&auto=format&fit=crop&w=150&q=80'
+      ];
+      // Use the first letter of name to determine which avatar to use
+      const index = name ? name.charCodeAt(0) % avatarUrls.length : 0;
+      return avatarUrls[index];
+    };
+
+    return {
+      id: apiReview.id,
+      userName: apiReview.reviewer_info,
+      userImage: getPlaceholderImage(apiReview.reviewer_info),
+      rating: apiReview.general_rating,
+      date: apiReview.time_ago,
+      comment: apiReview.general_comment || apiReview.food_review || 'No comment provided',
+      helpful: Math.floor(Math.random() * 30), // Random helpful count since API doesn't provide this
+      isHelpful: Math.random() > 0.5, // Random helpful status
+      // Keep original data for detailed display
+      original: apiReview
+    };
+  };
+
+  // Enhanced debugging function to fetch provider reviews
+  const fetchProviderReviews = async () => {
+    try {
+      setReviewsLoading(true);
+      setReviewsError(null);
+      
+      // Debug: Log all possible provider IDs
+      console.log('=== DEBUGGING PROVIDER REVIEWS ===');
+      console.log('Full item object:', item);
+      console.log('Provider object:', item.provider);
+      console.log('Provider user_id:', item.provider.user_id);
+      console.log('Provider provider_id:', item.provider.provider_id);
+      console.log('Provider id:', item.provider.id);
+      console.log('Provider UserID:', item.provider.UserID);
+      console.log('Provider businessName:', item.provider.businessName);
+      
+      // Try multiple possible provider ID fields
+      let providerId = item.provider.user_id || item.provider.provider_id || item.provider.id || item.provider.UserID;
+      
+      // If no direct ID found, try to get it from the business name
+      if (!providerId && item.provider.businessName) {
+        console.log('No direct provider ID found, trying to fetch by business name:', item.provider.businessName);
+        
+        // This is a workaround - we need the backend to return the proper provider ID
+        try {
+          // Try to get provider details using the FoodProvidersAPI
+          const providerResult = await FoodProvidersAPI.getProviderByName(item.provider.businessName);
+          if (providerResult.success && providerResult.data?.provider?.id) {
+            providerId = providerResult.data.provider.id;
+            console.log('Found provider ID via business name lookup:', providerId);
+          }
+        } catch (err) {
+          console.log('Failed to lookup provider by name:', err);
+        }
+      }
+      
+      console.log('Final provider ID to use:', providerId);
+      
+      if (!providerId) {
+        setReviewsError('No valid provider ID found - backend needs to return provider.user_id');
+        console.error('No valid provider ID found. The getFoodListingDetails API needs to return the provider UserID');
+        console.error('Current provider data:', item.provider);
+        console.error('Required: provider should include user_id, provider_id, or UserID field');
+        return;
+      }
+      
+      console.log('Making API call to getProviderReviews with ID:', providerId);
+      
+      const response = await reviewsAPI.getProviderReviews(providerId, {
+        page: 1,
+        page_size: 20,
+        sort: 'newest'
+      });
+      
+      console.log('API response:', response);
+      
+      if (response.success && response.data?.results) {
+        const { results } = response.data;
+        console.log('API results:', results);
+        setReviewsData(results);
+        
+        if (results.reviews && results.reviews.length > 0) {
+          // Transform API reviews to match expected format
+          const transformedReviews = results.reviews.map(transformReviewData);
+          setReviews(transformedReviews);
+          console.log('Successfully loaded and transformed reviews:', transformedReviews.length);
+          console.log('Transformed reviews:', transformedReviews);
+        } else {
+          console.log('No reviews found in API response');
+          console.log('Results.reviews:', results.reviews);
+          setReviews([]);
+        }
+      } else {
+        console.log('API call failed or returned no results');
+        console.log('Response success:', response.success);
+        console.log('Response error:', response.error);
+        console.log('Response data:', response.data);
+        setReviewsError(response.error || 'Failed to load reviews');
+        setReviews([]);
+      }
+    } catch (err) {
+      console.error('Exception during review fetch:', err);
+      setReviewsError('Failed to load reviews: ' + err.message);
+      setReviews([]);
+    } finally {
+      setReviewsLoading(false);
+      console.log('=== END DEBUGGING ===');
+    }
+  };
+
   const handleAddToCart = async (e) => {
     e.preventDefault();
     e.stopPropagation();
+
 
     if (buttonStatus === "View Cart") {
       navigate('/cart');
       return;
     }
 
+
     setButtonStatus("loading");
 
     try {
       const response = await foodAPI.addToCart(id, quantity);
       if (response.success) {
+
         setButtonStatus("View Cart");
-       
+
       } else {
         setError(response.error);
         setButtonStatus("idle");
@@ -158,17 +330,194 @@ const FoodItem = () => {
     setExpandedSection(expandedSection === section ? null : section);
   };
 
+  const renderStarRating = (rating) => {
+    return (
+      <div className="flex items-center">
+        {[1, 2, 3, 4, 5].map((star) => (
+          <Star
+            key={star}
+            className={`h-4 w-4 ${
+              star <= rating 
+                ? 'text-yellow-400 fill-current' 
+                : 'text-gray-300 dark:text-gray-600'
+            }`}
+          />
+        ))}
+      </div>
+    );
+  };
+
+  const formatReviewerName = (reviewerInfo) => {
+    // Extract initials or return first letter of name for privacy
+    if (!reviewerInfo) return 'Anonymous';
+    const parts = reviewerInfo.split(' ');
+    if (parts.length >= 2) {
+      return `${parts[0]} ${parts[1].charAt(0)}.`;
+    }
+    return reviewerInfo;
+  };
+
+  const renderReviewsTab = () => {
+    console.log('=== RENDER REVIEWS TAB DEBUG ===');
+    console.log('reviewsLoading:', reviewsLoading);
+    console.log('reviewsError:', reviewsError);
+    console.log('reviews:', reviews);
+    console.log('reviews.length:', reviews?.length);
+    console.log('=== END RENDER REVIEWS TAB DEBUG ===');
+    
+    if (reviewsLoading) {
+      return (
+        <div className="flex items-center justify-center py-8">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-emerald-600"></div>
+          <span className="ml-3 text-gray-600 dark:text-gray-300">Loading reviews...</span>
+        </div>
+      );
+    }
+
+    if (reviewsError) {
+      return (
+        <div className="text-center py-8">
+          <MessageCircle className="h-12 w-12 text-gray-400 mx-auto mb-3" />
+          <p className="text-gray-500 dark:text-gray-400 mb-2">Unable to load reviews</p>
+          <p className="text-sm text-gray-400">{reviewsError}</p>
+          <button
+            onClick={fetchProviderReviews}
+            className="mt-3 text-emerald-600 hover:text-emerald-700 text-sm font-medium"
+          >
+            Try again
+          </button>
+        </div>
+      );
+    }
+
+    if (!reviews || reviews.length === 0) {
+      return (
+        <div className="text-center py-8">
+          <MessageCircle className="h-12 w-12 text-gray-400 mx-auto mb-3" />
+          <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">No Reviews Yet</h3>
+          <p className="text-gray-500 dark:text-gray-400">
+            Be the first to review {item?.provider?.businessName || 'this provider'}!
+          </p>
+        </div>
+      );
+    }
+
+    return (
+      <div>
+        <div className="flex items-center justify-between mb-6">
+          <h3 className="text-lg font-medium text-gray-900 dark:text-white">Customer Reviews</h3>
+          {reviewsData?.reviews_summary && (
+            <div className="flex items-center space-x-4">
+              <div className="flex items-center space-x-2">
+                <div className="flex items-center">
+                  <Star className="h-5 w-5 text-yellow-400 fill-current" />
+                  <span className="ml-1 text-lg font-semibold text-gray-900 dark:text-white">
+                    {reviewsData.reviews_summary.average_rating?.toFixed(1) || '0.0'}
+                  </span>
+                </div>
+                <span className="text-sm text-gray-500 dark:text-gray-400">
+                  ({reviewsData.reviews_summary.total_reviews} {reviewsData.reviews_summary.total_reviews === 1 ? 'review' : 'reviews'})
+                </span>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Individual Reviews */}
+        <div className="space-y-6">
+          {reviews.map((review) => (
+            <div key={review.id} className="border-b border-gray-200 dark:border-gray-700 pb-6">
+              <div className="flex items-start space-x-4">
+                <div className="flex-shrink-0">
+                  <div className="h-10 w-10 rounded-full bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center">
+                    <span className="text-emerald-600 dark:text-emerald-400 font-medium text-sm">
+                      {review.userName ? review.userName.charAt(0).toUpperCase() : 'A'}
+                    </span>
+                  </div>
+                </div>
+                
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center justify-between mb-2">
+                    <h4 className="font-medium text-gray-900 dark:text-white text-sm">
+                      {formatReviewerName(review.userName)}
+                    </h4>
+                    <span className="text-xs text-gray-500 dark:text-gray-400">
+                      {review.date}
+                    </span>
+                  </div>
+                  
+                  <div className="flex items-center mb-3">
+                    {renderStarRating(review.rating)}
+                    <span className="ml-2 text-sm text-gray-600 dark:text-gray-300">
+                      {review.rating}/5
+                    </span>
+                    {review.original?.interaction_summary && (
+                      <span className="ml-3 text-xs text-gray-500 dark:text-gray-400">
+                        • {review.original.interaction_summary.type} • R{review.original.interaction_summary.total_amount}
+                      </span>
+                    )}
+                  </div>
+                  
+                  {/* Review Comments */}
+                  <div className="space-y-2">
+                    {review.original?.general_comment && (
+                      <p className="text-gray-700 dark:text-gray-300 text-sm">
+                        <span className="font-medium">Overall: </span>
+                        {review.original.general_comment}
+                      </p>
+                    )}
+                    {review.original?.food_review && (
+                      <p className="text-gray-700 dark:text-gray-300 text-sm">
+                        <span className="font-medium">Food: </span>
+                        {review.original.food_review}
+                      </p>
+                    )}
+                    {review.original?.business_review && (
+                      <p className="text-gray-700 dark:text-gray-300 text-sm">
+                        <span className="font-medium">Service: </span>
+                        {review.original.business_review}
+                      </p>
+                    )}
+                    {/* Fallback to transformed comment if no original data */}
+                    {!review.original?.general_comment && !review.original?.food_review && !review.original?.business_review && review.comment && (
+                      <p className="text-gray-700 dark:text-gray-300 text-sm">
+                        {review.comment}
+                      </p>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Load More Button (if there are more reviews) */}
+        {reviewsData?.pagination_info?.total_count > reviews.length && (
+          <div className="text-center mt-6">
+            <button
+              onClick={() => {
+                // Implement pagination if needed
+                console.log('Load more reviews');
+              }}
+              className="inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500"
+            >
+              Load More Reviews
+            </button>
+          </div>
+        )}
+      </div>
+    );
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
         <CustomerNavBar />
-
         <div className="max-w-4xl mx-auto px-4 pt-16 sm:pt-20">
-    <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-center sm:text-left">
-      <span className="bg-gradient-to-r from-emerald-600 to-blue-600 bg-clip-text text-transparent">Your Cart</span>
-    </h1>
-  </div>
-
+          <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-center sm:text-left">
+            <span className="bg-gradient-to-r from-emerald-600 to-blue-600 bg-clip-text text-transparent">Loading...</span>
+          </h1>
+        </div>
         <div className="max-w-5xl mx-auto px-4 py-4 sm:px-6 lg:px-8">
           <div className="animate-pulse space-y-6">
             <div className="h-6 w-1/3 bg-gray-200 dark:bg-gray-700 rounded"></div>
@@ -190,8 +539,6 @@ const FoodItem = () => {
     return (
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex flex-col">
         <CustomerNavBar />
-
-        
         <div className="flex-1 flex items-center justify-center p-4">
           <div className="text-center max-w-md">
             <div className="text-4xl mb-3">😕</div>
@@ -264,20 +611,6 @@ const FoodItem = () => {
                   Sold Out
                 </div>
               )}
-              
-              {/* Follow Button - Positioned over the image */}
-              {/* <button
-                onClick={handleFollowToggle}
-                disabled={followLoading}
-                className={`absolute top-3 left-3 p-2 rounded-full shadow-lg transition-all duration-200 ${
-                  isFollowing 
-                    ? 'bg-red-500 text-white hover:bg-red-600' 
-                    : 'bg-white dark:bg-gray-900 text-gray-600 dark:text-gray-100 hover:bg-gray-50 dark:hover:bg-gray-700 hover:text-red-500'
-                } ${followLoading ? 'opacity-50 cursor-not-allowed' : 'hover:scale-105'}`}
-                title={isFollowing ? `Unfollow ${item.provider.businessName}` : `Follow ${item.provider.businessName}`}
-              >
-               
-              </button> */}
             </div>
 
             {/* Item details */}
@@ -345,16 +678,16 @@ const FoodItem = () => {
                       {buttonStatus === "loading" && "Adding..."}
                       {buttonStatus === "View Cart" && "View Cart"}
                     </button>
-
-                    
-
                   )}
+                  
                   <button
+
       onClick={() => navigate('/food-listing')}
       className="w-full sm:w-auto flex-1 inline-flex items-center flex-center px-4 py-2.5 rounded-lg text-sm font-medium border border-gray-200 dark:border-gray-600 text-gray-800 dark:text-gray-200 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 transition-colors"
     >
       Continue Browsing
     </button>
+
                 </div>
               </div>
             </div>
@@ -366,7 +699,10 @@ const FoodItem = () => {
               {['Details', 'Reviews', 'Store Info'].map((tab) => (
                 <button
                   key={tab}
-                  onClick={() => setActiveTab(tab.toLowerCase().replace(' ', ''))}
+                  onClick={() => {
+                    console.log('Tab clicked:', tab.toLowerCase().replace(' ', ''));
+                    setActiveTab(tab.toLowerCase().replace(' ', ''));
+                  }}
                   className={`py-3 px-5 text-center border-b-2 font-medium text-sm ${
                     activeTab === tab.toLowerCase().replace(' ', '')
                       ? 'border-emerald-500 text-emerald-600 dark:text-emerald-400'
@@ -443,47 +779,7 @@ const FoodItem = () => {
                   </div>
                 )}
 
-                {activeTab === 'reviews' && (
-                  <div>
-                    <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-3">Customer Reviews</h3>
-                    <div className="space-y-4">
-                      {[1, 2, 3].map((review) => (
-                        <div key={review} className="border-b border-gray-200 dark:border-gray-700 pb-4">
-                          <div className="flex items-center mb-2">
-                            <div className="h-8 w-8 rounded-full bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center text-emerald-600 dark:text-emerald-400 font-medium text-sm">
-                              {review === 1 ? 'JD' : review === 2 ? 'AS' : 'MP'}
-                            </div>
-                            <div className="ml-3 flex-1">
-                              <div className="flex items-center justify-between">
-                                <h4 className="font-medium text-gray-900 dark:text-white text-sm">
-                                  {review === 1 ? 'John D.' : review === 2 ? 'Alice S.' : 'Mike P.'}
-                                </h4>
-                                <span className="text-xs text-gray-500 dark:text-gray-400">
-                                  {review === 1 ? '2 days ago' : review === 2 ? '1 week ago' : '2 weeks ago'}
-                                </span>
-                              </div>
-                              <div className="flex items-center mt-1">
-                                {[1, 2, 3, 4, 5].map((star) => (
-                                  <Star
-                                    key={star}
-                                    className={`h-3 w-3 ${star <= (review === 3 ? 4 : 5) ? 'text-yellow-400 fill-current' : 'text-gray-300 dark:text-gray-600'}`}
-                                  />
-                                ))}
-                              </div>
-                            </div>
-                          </div>
-                          <p className="text-gray-600 dark:text-gray-300 text-sm ml-11">
-                            {review === 1 
-                              ? 'Absolutely delicious! Will definitely order again.' 
-                              : review === 2
-                              ? 'Great value for money. The portion was generous and very tasty.'
-                              : 'Good food, but delivery took longer than expected.'}
-                          </p>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
+                {activeTab === 'reviews' && renderReviewsTab()}
 
                 {activeTab === 'storeinfo' && (
                   <div>
@@ -502,36 +798,6 @@ const FoodItem = () => {
           </div>
         </div>
       </main>
-
-      {/* Bottom navigation for mobile */}
-      {/* <div className="fixed bottom-0 left-0 right-0 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 p-3 md:hidden z-50">
-        <div className="flex items-center justify-between max-w-md mx-auto">
-          <div>
-            <p className="text-xs text-gray-500 dark:text-gray-400">Price</p>
-            <div className="flex items-baseline space-x-2">
-              <span className="text-lg font-bold text-emerald-600 dark:text-emerald-400">
-                R{item.discountedPrice?.toFixed(2) || item.originalPrice?.toFixed(2)}
-              </span>
-              {item.discountedPrice && item.originalPrice > item.discountedPrice && (
-                <span className="text-xs text-gray-400 line-through">
-                  R{item.originalPrice.toFixed(2)}
-                </span>
-              )}
-            </div>
-          </div>
-          {item.is_available && (
-            <button
-              onClick={handleAddToCart}
-              disabled={buttonStatus === "loading"}
-              className="flex-1 ml-4 bg-gradient-to-r from-emerald-500 to-emerald-600 text-white py-2 px-4 rounded-lg font-medium shadow-sm hover:from-emerald-600 hover:to-emerald-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 text-sm"
-            >
-              {buttonStatus === "idle" && "Add to Cart"}
-              {buttonStatus === "loading" && "Adding..."}
-              {buttonStatus === "added" && "View Cart"}
-            </button>
-          )}
-        </div>
-      </div> */}
     </div>
   );
 };
