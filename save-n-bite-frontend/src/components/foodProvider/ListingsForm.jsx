@@ -26,13 +26,7 @@ export function ListingForm({
   const [userData, setUserData] = useState(null);
   const [toast, setToast] = useState(null);
 
-  // Mock business hours - these will be used instead of user input
-  const MOCK_BUSINESS_HOURS = {
-    start: '08:00',
-    end: '17:00'
-  };
-
-  // Feature flag: hide scheduling UI while we use mocked values
+  // Feature flag: hide advanced scheduling UI (kept off)
   const SHOW_SCHEDULING_UI = false;
 
   // Fields that can be edited according to the API
@@ -115,6 +109,9 @@ export function ListingForm({
     pickup_contact_phone: '',
     pickup_latitude: '',
     pickup_longitude: '',
+    // Pickup time window (provider input)
+    pickup_start_time: '08:00',
+    pickup_end_time: '17:00',
     // Scheduling fields
     total_slots: '10',
     max_orders_per_slot: '5',
@@ -317,8 +314,8 @@ export function ListingForm({
 
         console.log('=== VALIDATION PASSED ===');
 
-        // Use mock business hours instead of user input
-        const pickup_window = `${MOCK_BUSINESS_HOURS.start}-${MOCK_BUSINESS_HOURS.end}`;
+        // Build pickup window using provider input times
+        const pickup_window = `${formData.pickup_start_time}-${formData.pickup_end_time}`;
 
         // Format the date to YYYY-MM-DD
         const expiryDate = new Date(formData.expiry_date);
@@ -415,7 +412,7 @@ export function ListingForm({
               const scheduleData = {
                 food_listing_id: createdListingId,
                 location_id: createdLocationId,
-                pickup_window: pickup_window, // Using mock business hours
+                pickup_window: pickup_window,
                 total_slots: parseInt(formData.total_slots),
                 max_orders_per_slot: parseInt(formData.max_orders_per_slot),
                 slot_buffer_minutes: parseInt(formData.slot_buffer_minutes),
@@ -656,7 +653,7 @@ export function ListingForm({
             </div>
           )}
 
-          {/* Expiration Date */}
+          {/* Expiration Date and Pickup Hours */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
@@ -686,149 +683,170 @@ export function ListingForm({
                 </p>
               )}
             </div>
-            {/* Pickup Hours Info Display */}
+            {/* Pickup Hours Inputs */}
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                 Pickup Hours
               </label>
-              <div className="w-full p-2 border rounded-lg border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-gray-700 dark:text-gray-300">
-                <div className="flex items-center">
-                  <ClockIcon className="w-4 h-4 mr-2 text-gray-500" />
-                  <span className="text-sm">
-                    Standard business hours: {MOCK_BUSINESS_HOURS.start} - {MOCK_BUSINESS_HOURS.end}
-                  </span>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs text-gray-600 dark:text-gray-300 mb-1">Start</label>
+                  <input
+                    type="time"
+                    name="pickup_start_time"
+                    value={formData.pickup_start_time}
+                    onChange={handleInputChange}
+                    className={`w-full p-2 border rounded-lg ${
+                      errors.pickup_start_time ? 'border-red-500' : 'border-gray-300 dark:border-gray-700'
+                    } bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100`}
+                  />
+                  {errors.pickup_start_time && (
+                    <p className="text-red-500 dark:text-red-400 text-xs mt-1">{errors.pickup_start_time}</p>
+                  )}
+                </div>
+                <div>
+                  <label className="block text-xs text-gray-600 dark:text-gray-300 mb-1">End</label>
+                  <input
+                    type="time"
+                    name="pickup_end_time"
+                    value={formData.pickup_end_time}
+                    onChange={handleInputChange}
+                    className={`w-full p-2 border rounded-lg ${
+                      errors.pickup_end_time ? 'border-red-500' : 'border-gray-300 dark:border-gray-700'
+                    } bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100`}
+                  />
+                  {errors.pickup_end_time && (
+                    <p className="text-red-500 dark:text-red-400 text-xs mt-1">{errors.pickup_end_time}</p>
+                  )}
                 </div>
               </div>
               <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                All pickups are available during standard business hours
+                Customers can collect between the selected times
               </p>
             </div>
           </div>
 
-          {/* Pickup Location Section */}
-          <div className="border-t pt-6">
-            <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4 flex items-center">
-              <MapPinIcon className="w-5 h-5 mr-2 text-blue-600 dark:text-blue-400" />
-              Pickup Location Details
-              {editMode && (
-                <span className="ml-2 text-sm text-gray-500 dark:text-gray-400">
-                  (Editing is not available for this section.)
-                </span>
-              )}
-            </h3>
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
-                  Pickup Address *
-                </label>
-                <input
-                  type="text"
-                  name="pickup_address"
-                  value={formData.pickup_address}
-                  onChange={handleInputChange}
-                  disabled={isFieldDisabled('pickup_address')}
-                  className={`w-full p-2 border rounded-lg ${
-                    errors.pickup_address
-                      ? 'border-red-500'
-                      : 'border-gray-300 dark:border-gray-700'
-                  } bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 ${
-                    isFieldDisabled('pickup_address')
-                      ? 'opacity-60 cursor-not-allowed'
-                      : ''
-                  }`}
-                  placeholder="Complete pickup address"
-                  required
-                />
-                {errors.pickup_address && (
-                  <p className="text-red-500 dark:text-red-400 text-sm mt-1">
-                    {errors.pickup_address}
-                  </p>
-                )}
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
-                  Pickup Instructions
-                </label>
-                <textarea
-                  name="pickup_instructions"
-                  value={formData.pickup_instructions}
-                  onChange={handleInputChange}
-                  disabled={isFieldDisabled('pickup_instructions')}
-                  className={`w-full p-2 border rounded-lg border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 ${
-                    isFieldDisabled('pickup_instructions')
-                      ? 'opacity-60 cursor-not-allowed'
-                      : ''
-                  }`}
-                  placeholder="Special instructions for pickup (e.g., 'Use back entrance', 'Ask at counter')"
-                  rows="2"
-                />
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {/* Pickup Location Section (hidden in edit mode) */}
+          {!editMode && (
+            <div className="border-t pt-6">
+              <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4 flex items-center">
+                <MapPinIcon className="w-5 h-5 mr-2 text-blue-600 dark:text-blue-400" />
+                Pickup Location Details
+              </h3>
+              <div className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
-                    Contact Person *
+                    Pickup Address *
                   </label>
-                  <div className="relative">
-                    <input
-                      type="text"
-                      name="pickup_contact_person"
-                      value={formData.pickup_contact_person}
-                      onChange={handleInputChange}
-                      disabled={isFieldDisabled('pickup_contact_person')}
-                      className={`w-full p-2 border rounded-lg ${
-                        errors.pickup_contact_person
-                          ? 'border-red-500'
-                          : 'border-gray-300 dark:border-gray-700'
-                      } bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 ${
-                        isFieldDisabled('pickup_contact_person')
-                          ? 'opacity-60 cursor-not-allowed'
-                          : ''
-                      }`}
-                      placeholder="Contact person name"
-                      required
-                    />
-                    <UserIcon className="absolute right-3 top-2.5 w-5 h-5 text-gray-400 dark:text-gray-500" />
-                  </div>
-                  {errors.pickup_contact_person && (
+                  <input
+                    type="text"
+                    name="pickup_address"
+                    value={formData.pickup_address}
+                    onChange={handleInputChange}
+                    disabled={isFieldDisabled('pickup_address')}
+                    className={`w-full p-2 border rounded-lg ${
+                      errors.pickup_address
+                        ? 'border-red-500'
+                        : 'border-gray-300 dark:border-gray-700'
+                    } bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 ${
+                      isFieldDisabled('pickup_address')
+                        ? 'opacity-60 cursor-not-allowed'
+                        : ''
+                    }`}
+                    placeholder="Complete pickup address"
+                    required
+                  />
+                  {errors.pickup_address && (
                     <p className="text-red-500 dark:text-red-400 text-sm mt-1">
-                      {errors.pickup_contact_person}
+                      {errors.pickup_address}
                     </p>
                   )}
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
-                    Contact Phone *
+                    Pickup Instructions
                   </label>
-                  <div className="relative">
-                    <input
-                      type="tel"
-                      name="pickup_contact_phone"
-                      value={formData.pickup_contact_phone}
-                      onChange={handleInputChange}
-                      disabled={isFieldDisabled('pickup_contact_phone')}
-                      className={`w-full p-2 border rounded-lg ${
-                        errors.pickup_contact_phone
-                          ? 'border-red-500'
-                          : 'border-gray-300 dark:border-gray-700'
-                      } bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 ${
-                        isFieldDisabled('pickup_contact_phone')
-                          ? 'opacity-60 cursor-not-allowed'
-                          : ''
-                      }`}
-                      placeholder="+27123456789"
-                      required
-                    />
-                    <PhoneIcon className="absolute right-3 top-2.5 w-5 h-5 text-gray-400 dark:text-gray-500" />
+                  <textarea
+                    name="pickup_instructions"
+                    value={formData.pickup_instructions}
+                    onChange={handleInputChange}
+                    disabled={isFieldDisabled('pickup_instructions')}
+                    className={`w-full p-2 border rounded-lg border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 ${
+                      isFieldDisabled('pickup_instructions')
+                        ? 'opacity-60 cursor-not-allowed'
+                        : ''
+                    }`}
+                    placeholder="Special instructions for pickup (e.g., 'Use back entrance', 'Ask at counter')"
+                    rows="2"
+                  />
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
+                      Contact Person *
+                    </label>
+                    <div className="relative">
+                      <input
+                        type="text"
+                        name="pickup_contact_person"
+                        value={formData.pickup_contact_person}
+                        onChange={handleInputChange}
+                        disabled={isFieldDisabled('pickup_contact_person')}
+                        className={`w-full p-2 border rounded-lg ${
+                          errors.pickup_contact_person
+                            ? 'border-red-500'
+                            : 'border-gray-300 dark:border-gray-700'
+                        } bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 ${
+                          isFieldDisabled('pickup_contact_person')
+                            ? 'opacity-60 cursor-not-allowed'
+                            : ''
+                        }`}
+                        placeholder="Contact person name"
+                        required
+                      />
+                      <UserIcon className="absolute right-3 top-2.5 w-5 h-5 text-gray-400 dark:text-gray-500" />
+                    </div>
+                    {errors.pickup_contact_person && (
+                      <p className="text-red-500 dark:text-red-400 text-sm mt-1">
+                        {errors.pickup_contact_person}
+                      </p>
+                    )}
                   </div>
-                  {errors.pickup_contact_phone && (
-                    <p className="text-red-500 dark:text-red-400 text-sm mt-1">
-                      {errors.pickup_contact_phone}
-                    </p>
-                  )}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
+                      Contact Phone *
+                    </label>
+                    <div className="relative">
+                      <input
+                        type="tel"
+                        name="pickup_contact_phone"
+                        value={formData.pickup_contact_phone}
+                        onChange={handleInputChange}
+                        disabled={isFieldDisabled('pickup_contact_phone')}
+                        className={`w-full p-2 border rounded-lg ${
+                          errors.pickup_contact_phone
+                            ? 'border-red-500'
+                            : 'border-gray-300 dark:border-gray-700'
+                        } bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 ${
+                          isFieldDisabled('pickup_contact_phone')
+                            ? 'opacity-60 cursor-not-allowed'
+                            : ''
+                        }`}
+                        placeholder="+27123456789"
+                        required
+                      />
+                      <PhoneIcon className="absolute right-3 top-2.5 w-5 h-5 text-gray-400 dark:text-gray-500" />
+                    </div>
+                    {errors.pickup_contact_phone && (
+                      <p className="text-red-500 dark:text-red-400 text-sm mt-1">
+                        {errors.pickup_contact_phone}
+                      </p>
+                    )}
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
+          )}
 
           {/* Scheduling Section (hidden while timeslots are mocked) */}
           {SHOW_SCHEDULING_UI && (
@@ -912,26 +930,21 @@ export function ListingForm({
             </div>
           )}
 
-          {/* Image Upload */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
-              Upload Image *
-              {editMode && (
-                <span className="ml-2 text-sm text-gray-500 dark:text-gray-400">
-                  (Editing is not available for this section.)
-                </span>
-              )}
-            </label>
-            <div
-              ref={imageSectionRef}
-              className={`border-2 border-dashed rounded-lg p-8 text-center transition-colors duration-300 ${
-                errors.image
-                  ? 'border-red-500 dark:border-red-500 bg-red-50 dark:bg-red-900/10'
-                  : 'border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900'
-              } ${editMode ? 'opacity-60' : ''}`}
-              aria-invalid={!!errors.image}
-            >
-              {!editMode && (
+          {/* Image Upload (hidden in edit mode) */}
+          {!editMode && (
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
+                Upload Image *
+              </label>
+              <div
+                ref={imageSectionRef}
+                className={`border-2 border-dashed rounded-lg p-8 text-center transition-colors duration-300 ${
+                  errors.image
+                    ? 'border-red-500 dark:border-red-500 bg-red-50 dark:bg-red-900/10'
+                    : 'border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900'
+                }`}
+                aria-invalid={!!errors.image}
+              >
                 <input
                   type="file"
                   accept="image/*"
@@ -939,21 +952,17 @@ export function ListingForm({
                   className="hidden"
                   id="image-upload"
                 />
-              )}
-              <label
-                htmlFor={editMode ? undefined : 'image-upload'}
-                className={`flex flex-col items-center ${
-                  editMode ? 'cursor-default' : 'cursor-pointer'
-                }`}
-              >
-                {imagePreview ? (
-                  <div className="relative w-full max-w-xs">
-                    <img
-                      src={imagePreview}
-                      alt="Preview"
-                      className="w-full h-48 object-cover rounded-lg"
-                    />
-                    {!editMode && (
+                <label
+                  htmlFor={'image-upload'}
+                  className={`flex flex-col items-center cursor-pointer`}
+                >
+                  {imagePreview ? (
+                    <div className="relative w-full max-w-xs">
+                      <img
+                        src={imagePreview}
+                        alt="Preview"
+                        className="w-full h-48 object-cover rounded-lg"
+                      />
                       <button
                         type="button"
                         onClick={(e) => {
@@ -965,38 +974,24 @@ export function ListingForm({
                       >
                         ×
                       </button>
-                    )}
-                  </div>
-                ) : (
-                  <>
-                    <ImageIcon className="w-8 h-8 text-gray-400 dark:text-gray-500 mb-2" />
-                    <p className="text-sm text-gray-600 dark:text-gray-300">
-                      {editMode ? (
-                        'Image cannot be changed in edit mode'
-                      ) : (
-                        <>
-                          Drag and drop an image, or{' '}
-                          <span className="text-blue-600 dark:text-blue-400">
-                            browse
-                          </span>
-                        </>
-                      )}
-                    </p>
-                    {!editMode && (
-                      <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                        PNG, JPG up to 5MB
+                    </div>
+                  ) : (
+                    <>
+                      <ImageIcon className="w-8 h-8 text-gray-400 dark:text-gray-500 mb-2" />
+                      <p className="text-sm text-gray-600 dark:text-gray-300">
+                        Drag and drop an image, or{' '}
+                        <span className="text-blue-600 dark:text-blue-400">browse</span>
                       </p>
-                    )}
-                  </>
+                      <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">PNG, JPG up to 5MB</p>
+                    </>
+                  )}
+                </label>
+                {errors.image && (
+                  <p className="text-red-500 dark:text-red-400 text-sm mt-1">{errors.image}</p>
                 )}
-              </label>
-              {errors.image && (
-                <p className="text-red-500 dark:text-red-400 text-sm mt-1">
-                  {errors.image}
-                </p>
-              )}
+              </div>
             </div>
-          </div>
+          )}
 
           {/* Action Buttons */}
           <div className="flex justify-end space-x-4 pt-4 border-t border-gray-200 dark:border-gray-700">

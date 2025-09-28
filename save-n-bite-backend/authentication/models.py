@@ -1,6 +1,8 @@
 # authentication/models.py - Updated with Azure Blob Storage
 
 from django.contrib.auth.models import AbstractUser
+from django.conf import settings
+
 from django.db import models
 from django.db.models.signals import post_save
 from django.dispatch import receiver
@@ -310,8 +312,12 @@ class FoodProviderProfile(models.Model):
             except FoodProviderProfile.DoesNotExist:
                 pass
         
-        # Auto-geocode address when saving if coordinates are missing
-        if self.business_address and (not self.latitude or not self.longitude):
+        # Auto-geocode address when saving if coordinates are missing (guarded by setting)
+        if (
+            getattr(settings, 'GEOCODING_ENABLED', True)
+            and self.business_address
+            and (not self.latitude or not self.longitude)
+        ):
             self.geocode_address()
         
         super().save(*args, **kwargs)
