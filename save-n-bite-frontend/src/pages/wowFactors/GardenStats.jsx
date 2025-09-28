@@ -1,11 +1,13 @@
 import React from 'react';
 import './GardenStats.css';
 
-const GardenStats = ({ stats, garden, compactMode = false }) => {
+const GardenStats = ({ stats, garden, compactMode = false, isMobile = false }) => {
   if (!stats) {
     return (
-      <div className="garden-stats">
-        <h3>Garden Statistics</h3>
+      <div className={`garden-stats ${compactMode ? 'compact' : ''} ${isMobile ? 'mobile' : ''}`}>
+        <div className="stats-header">
+          <h3>Garden Statistics</h3>
+        </div>
         <div className="stats-loading">
           <p>Loading statistics...</p>
         </div>
@@ -13,12 +15,8 @@ const GardenStats = ({ stats, garden, compactMode = false }) => {
     );
   }
 
-  const getProgressPercentage = (current, target) => {
-    return Math.min((current / target) * 100, 100);
-  };
-
   return (
-    <div className={`garden-stats ${compactMode ? 'compact' : ''}`}>
+    <div className={`garden-stats ${compactMode ? 'compact' : ''} ${isMobile ? 'mobile' : ''}`}>
       {/* Main heading like Plant Inventory */}
       <div className="stats-header">
         <h3>Garden Statistics</h3>
@@ -29,7 +27,7 @@ const GardenStats = ({ stats, garden, compactMode = false }) => {
         <div className="stats-section">
           <h4 className="section-heading">Next Milestones</h4>
           <div className="milestones-container">
-            {stats.next_milestones.slice(0, compactMode ? 2 : 3).map((milestone, index) => (
+            {stats.next_milestones.slice(0, compactMode || isMobile ? 2 : 3).map((milestone, index) => (
               <div key={index} className="milestone-item">
                 <div className="milestone-header">
                   <span className="milestone-type">
@@ -48,7 +46,7 @@ const GardenStats = ({ stats, garden, compactMode = false }) => {
         </div>
       )}
 
-      {/* Achievements Section - Below milestones, not beside */}
+      {/* Achievements Section */}
       <div className="stats-section">
         <h4 className="section-heading">Achievements</h4>
         <div className="achievements-container">
@@ -71,7 +69,6 @@ const GardenStats = ({ stats, garden, compactMode = false }) => {
           )}
         </div>
       </div>
-  
     </div>
   );
 };
