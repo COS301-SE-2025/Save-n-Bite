@@ -257,9 +257,9 @@ jobs:
           fi
         done
 
-    - name: Run coverage report (if requested)
-      if: ${{ github.event.inputs.run_coverage == 'true' || github.event_name == 'pull_request' }}
-      run: poetry run pytest --cov=. --cov-report=html --cov-report=term-missing
+    # - name: Run coverage report (if requested)
+    #   if: ${{ github.event.inputs.run_coverage == 'true' || github.event_name == 'pull_request' }}
+    #   run: poetry run pytest --cov=. --cov-report=html --cov-report=term-missing
 
     - name: Upload coverage reports
       if: ${{ github.event.inputs.run_coverage == 'true' || github.event_name == 'pull_request' }}

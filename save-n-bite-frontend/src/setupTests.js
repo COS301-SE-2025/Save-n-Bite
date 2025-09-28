@@ -35,9 +35,11 @@ Object.defineProperty(window, 'matchMedia', {
 const originalError = console.error;
 beforeAll(() => {
   console.error = (...args) => {
+    const msg = typeof args[0] === 'string' ? args[0] : '';
+    // Ignore noisy deprecation warnings that do not affect test correctness
     if (
-      typeof args[0] === 'string' &&
-      args[0].includes('Warning: ReactDOM.render is deprecated')
+      msg.includes('Warning: ReactDOM.render is deprecated') ||
+      msg.includes('ReactDOMTestUtils.act') // "ReactDOMTestUtils.act is deprecated in favor of React.act"
     ) {
       return;
     }
