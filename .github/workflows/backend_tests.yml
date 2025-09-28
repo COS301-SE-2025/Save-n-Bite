@@ -17,7 +17,7 @@ jobs:
   test:
     runs-on: ubuntu-latest
 
-    # Set up PostgreSQL service for testing
+    # Set up PostgreSQL service for testin
     services:
       postgres:
         image: postgres:15
