@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { authAPI } from '../../services/authAPI';
 import { validateEmail, validateRequired } from '../../utils/validators';
 import { useNavigate } from 'react-router-dom';
+import { Eye, EyeOff } from 'lucide-react';
 
 const LoginForm = ({ onSuccess, onError, onEmailChange }) => {
   const [formData, setFormData] = useState({
@@ -13,6 +14,7 @@ const LoginForm = ({ onSuccess, onError, onEmailChange }) => {
 
   const [errors, setErrors] = useState({});
   const [isLoading, setIsLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   const environmentFacts = [
     '🌱 Every ton of food saved prevents 3.3 tons of CO2 emissions!',
@@ -191,7 +193,7 @@ const LoginForm = ({ onSuccess, onError, onEmailChange }) => {
         )}
       </div>
 
-      <div>
+      {/* <div>
         <label
           htmlFor="password"
           className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1"
@@ -210,7 +212,48 @@ const LoginForm = ({ onSuccess, onError, onEmailChange }) => {
         {errors.password && (
           <p className="mt-1 text-sm text-red-600">{errors.password}</p>
         )}
-      </div>
+      </div> */}
+
+
+<div>
+  <label
+    htmlFor="password"
+    className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1"
+  >
+    Password
+  </label>
+
+  {/* Make this container relative to position button properly */}
+  <div className="relative">
+    <input
+      type={showPassword ? 'text' : 'password'}
+      id="password"
+      name="password"
+      value={formData.password}
+      onChange={handleInputChange}
+      className="w-full px-4 py-2 pr-10 border border-gray-300 rounded-md focus:ring-emerald-500 focus:border-emerald-500"
+      placeholder="Enter your password"
+      aria-describedby={errors.password ? 'login-password-error' : undefined}
+    />
+
+    {/* Button will now center correctly */}
+    <button
+      type="button"
+      aria-label={showPassword ? 'Hide password' : 'Show password'}
+      onClick={() => setShowPassword((s) => !s)}
+      className="absolute inset-y-0 right-2 flex items-center text-gray-500 hover:text-gray-700 dark:text-gray-300 dark:hover:text-gray-100"
+      tabIndex={0}
+    >
+      {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+    </button>
+  </div>
+
+  {errors.password && (
+    <p id="login-password-error" className="mt-1 text-sm text-red-600">
+      {errors.password}
+    </p>
+  )}
+</div>
 
       <button
         type="submit"
