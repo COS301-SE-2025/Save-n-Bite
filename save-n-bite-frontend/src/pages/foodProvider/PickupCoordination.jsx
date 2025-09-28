@@ -431,6 +431,14 @@ const sortedPickups = [...filteredPickups].sort((a, b) => {
     setSelectedDate(tomorrow.toISOString().split('T')[0]);
   };
 
+  // Active date flags for quick buttons
+const todayStr = new Date().toISOString().split('T')[0];
+const yesterdayStr = (() => { const d = new Date(); d.setDate(d.getDate() - 1); return d.toISOString().split('T')[0]; })();
+const tomorrowStr = (() => { const d = new Date(); d.setDate(d.getDate() + 1); return d.toISOString().split('T')[0]; })();
+
+const isToday = selectedDate === todayStr;
+const isYesterday = selectedDate === yesterdayStr;
+const isTomorrow = selectedDate === tomorrowStr;
   if (loading) {
     return (
       <div className="w-full flex min-h-screen bg-gray-50 dark:bg-gray-900">
@@ -562,24 +570,36 @@ const sortedPickups = [...filteredPickups].sort((a, b) => {
 
                   {/* Quick date buttons */}
                   <div className="flex gap-1 flex-wrap">
-                    <button
-                      onClick={setYesterday}
-                      className="px-2 py-1 text-xs bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
-                    >
-                      Yesterday
-                    </button>
-                    <button
-                      onClick={setToday}
-                      className="px-2 py-1 text-xs bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded hover:bg-blue-200 dark:hover:bg-blue-900/50 transition-colors"
-                    >
-                      Today
-                    </button>
-                    <button
-                      onClick={setTomorrow}
-                      className="px-2 py-1 text-xs bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
-                    >
-                      Tomorrow
-                    </button>
+                  <button
+  onClick={setYesterday}
+  className={`px-2 py-1 text-xs rounded transition-colors ${
+    isYesterday
+      ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 hover:bg-blue-200 dark:hover:bg-blue-900/50'
+      : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
+  }`}
+>
+  Yesterday
+</button>
+<button
+  onClick={setToday}
+  className={`px-2 py-1 text-xs rounded transition-colors ${
+    isToday
+      ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 hover:bg-blue-200 dark:hover:bg-blue-900/50'
+      : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
+  }`}
+>
+  Today
+</button>
+<button
+  onClick={setTomorrow}
+  className={`px-2 py-1 text-xs rounded transition-colors ${
+    isTomorrow
+      ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 hover:bg-blue-200 dark:hover:bg-blue-900/50'
+      : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
+  }`}
+>
+  Tomorrow
+</button>
                   </div>
                 </div>
 
