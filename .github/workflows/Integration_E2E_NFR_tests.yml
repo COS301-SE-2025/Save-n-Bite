@@ -1,4 +1,4 @@
-name: Backend
+name: Integration, E2E and NFR Tests
 
 on:
   push:
