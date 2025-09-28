@@ -1,5 +1,5 @@
- import React, { useState, useEffect } from 'react'
-import { Search as SearchIcon, Calendar as CalendarIcon, CheckCircle, XCircle, Clock, Package, Menu } from 'lucide-react'
+import React, { useState, useEffect } from 'react'
+import { Search as SearchIcon, Calendar as CalendarIcon, CheckCircle, XCircle, Clock, Package, Menu, ArrowRight, Check } from 'lucide-react'
 import { Button } from '../../components/foodProvider/Button'
 import SideBar from '../../components/foodProvider/SideBar'
 import { Toast } from '../../components/ui/Toast'
@@ -23,7 +23,6 @@ function ManageDonations() {
     completed: 0,
     total_donations: 0
   })
-
 
   // Toast helper function
   const showToast = (message, type = 'info') => {
@@ -84,7 +83,38 @@ function ManageDonations() {
       const response = await donationsAPI.acceptDonation(donationId)
       
       if (response.success) {
-        // Update the donation status locally
+        // Update the donation status locally to confirmed
+        setDonations(prev => 
+          prev.map(donation => 
+            donation.id === donationId 
+              ? { ...donation, status: 'confirmed' }
+              : donation
+          )
+        )
+        showToast('Donation request accepted and confirmed!', 'success')
+      } else {
+        showToast(`Failed to accept donation: ${response.error}`, 'error')
+      }
+    } catch (error) {
+      console.error('Error accepting donation:', error)
+      showToast('Failed to accept donation request', 'error')
+    } finally {
+      setProcessedDonations(prev => {
+        const newSet = new Set(prev)
+        newSet.delete(donationId)
+        return newSet
+      })
+    }
+  }
+
+  const handlePrepareDonation = async (donationId) => {
+    try {
+      setProcessedDonations(prev => new Set(prev).add(donationId))
+      
+      const response = await donationsAPI.prepareDonation(donationId, 'Donation prepared for pickup')
+      
+      if (response.success) {
+        // Update the donation status locally to ready_for_pickup
         setDonations(prev => 
           prev.map(donation => 
             donation.id === donationId 
@@ -92,13 +122,46 @@ function ManageDonations() {
               : donation
           )
         )
-        showToast('Donation request accepted successfully!', 'success')
+        showToast('Donation marked as ready for pickup!', 'success')
       } else {
-        showToast(`Failed to accept donation: ${response.error}`, 'error')
+        showToast(`Failed to prepare donation: ${response.error}`, 'error')
       }
     } catch (error) {
-      console.error('Error accepting donation:', error)
-      showToast('Failed to accept donation request', 'error')
+      console.error('Error preparing donation:', error)
+      showToast('Failed to prepare donation', 'error')
+    } finally {
+      setProcessedDonations(prev => {
+        const newSet = new Set(prev)
+        newSet.delete(donationId)
+        return newSet
+      })
+    }
+  }
+
+  const handleCompleteDonation = async (donationId) => {
+    try {
+      setProcessedDonations(prev => new Set(prev).add(donationId))
+      
+      const response = await donationsAPI.completeDonation(donationId, {
+        completion_notes: 'Donation pickup completed successfully'
+      })
+      
+      if (response.success) {
+        // Update the donation status locally to completed
+        setDonations(prev => 
+          prev.map(donation => 
+            donation.id === donationId 
+              ? { ...donation, status: 'completed', completed_at: response.data.completed_at }
+              : donation
+          )
+        )
+        showToast('Donation pickup completed successfully!', 'success')
+      } else {
+        showToast(`Failed to complete donation: ${response.error}`, 'error')
+      }
+    } catch (error) {
+      console.error('Error completing donation:', error)
+      showToast('Failed to complete donation', 'error')
     } finally {
       setProcessedDonations(prev => {
         const newSet = new Set(prev)
@@ -143,13 +206,17 @@ function ManageDonations() {
   }
 
   const getStatusColor = (status) => {
-    switch (status.toLowerCase()) {
+    const normalizedStatus = status.toLowerCase().replace(/[_\s]/g, '');
+    switch (normalizedStatus) {
       case 'pending':
         return 'bg-yellow-100 text-yellow-800 border-yellow-200 dark:bg-yellow-900/20 dark:text-yellow-300 dark:border-yellow-700'
-      case 'ready_for_pickup':
+      case 'confirmed':
+        return 'bg-blue-100 text-blue-800 border-blue-200 dark:bg-blue-900/20 dark:text-blue-300 dark:border-blue-700'
+      case 'ready':
+      case 'readyforpickup':
         return 'bg-green-100 text-green-800 border-green-200 dark:bg-green-900/20 dark:text-green-300 dark:border-green-700'
       case 'completed':
-        return 'bg-blue-100 text-blue-800 border-blue-200 dark:bg-blue-900/20 dark:text-blue-300 dark:border-blue-700'
+        return 'bg-emerald-100 text-emerald-800 border-emerald-200 dark:bg-emerald-900/20 dark:text-emerald-300 dark:border-emerald-700'
       case 'rejected':
         return 'bg-red-100 text-red-800 border-red-200 dark:bg-red-900/20 dark:text-red-300 dark:border-red-700'
       default:
@@ -158,10 +225,14 @@ function ManageDonations() {
   }
 
   const getStatusIcon = (status) => {
-    switch (status.toLowerCase()) {
+    const normalizedStatus = status.toLowerCase().replace(/[_\s]/g, '');
+    switch (normalizedStatus) {
       case 'pending':
         return <Clock size={16} />
-      case 'ready_for_pickup':
+      case 'confirmed':
+        return <Check size={16} />
+      case 'ready':
+      case 'readyforpickup':
         return <Package size={16} />
       case 'completed':
         return <CheckCircle size={16} />
@@ -172,8 +243,38 @@ function ManageDonations() {
     }
   }
 
+  const getStatusText = (status) => {
+    const normalizedStatus = status.toLowerCase().replace(/[_\s]/g, '');
+    switch (normalizedStatus) {
+      case 'pending':
+        return 'Pending'
+      case 'confirmed':
+        return 'Confirmed'
+      case 'ready':
+      case 'readyforpickup':
+        return 'Ready for Pickup'
+      case 'completed':
+        return 'Completed'
+      case 'rejected':
+        return 'Rejected'
+      default:
+        return status.charAt(0).toUpperCase() + status.slice(1).replace(/_/g, ' ')
+    }
+  }
+
+  const isReadyForPickup = (status) => {
+    const normalizedStatus = status.toLowerCase().replace(/[_\s]/g, '');
+    return normalizedStatus === 'ready' || normalizedStatus === 'readyforpickup';
+  }
+
   const filteredDonations = donations.filter((donation) => {
-    const matchesStatus = filterStatus === 'all' || donation.status.toLowerCase() === filterStatus.toLowerCase()
+    const normalizedStatus = donation.status.toLowerCase().replace(/[_\s]/g, '');
+    const normalizedFilter = filterStatus.toLowerCase().replace(/[_\s]/g, '');
+    
+    const matchesStatus = filterStatus === 'all' || 
+                         normalizedStatus === normalizedFilter ||
+                         (normalizedFilter === 'readyforpickup' && (normalizedStatus === 'ready' || normalizedStatus === 'readyforpickup'));
+    
     const matchesSearch = 
       donation.items.some(item => item.name.toLowerCase().includes(searchQuery.toLowerCase())) ||
       donation.user.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -298,7 +399,7 @@ function ManageDonations() {
 
             {/* Stats Bar */}
             <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-3 sm:p-4 mb-4 sm:mb-6 border border-gray-200 dark:border-gray-700 transition-colors duration-300">
-              <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 sm:gap-6">
+              <div className="grid grid-cols-2 sm:grid-cols-6 gap-3 sm:gap-6">
                 <div className="text-center">
                   <div className="text-lg sm:text-2xl font-bold text-yellow-600 dark:text-yellow-400">
                     {donations.filter(d => d.status.toLowerCase() === 'pending').length}
@@ -306,13 +407,19 @@ function ManageDonations() {
                   <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-300">Pending</p>
                 </div>
                 <div className="text-center">
+                  <div className="text-lg sm:text-2xl font-bold text-blue-600 dark:text-blue-400">
+                    {donations.filter(d => d.status.toLowerCase() === 'confirmed').length}
+                  </div>
+                  <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-300">Confirmed</p>
+                </div>
+                <div className="text-center">
                   <div className="text-lg sm:text-2xl font-bold text-green-600 dark:text-green-400">
-                    {donations.filter(d => d.status.toLowerCase() === 'ready').length}
+                    {donations.filter(d => isReadyForPickup(d.status)).length}
                   </div>
                   <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-300">Ready</p>
                 </div>
                 <div className="text-center">
-                  <div className="text-lg sm:text-2xl font-bold text-blue-600 dark:text-blue-400">
+                  <div className="text-lg sm:text-2xl font-bold text-emerald-600 dark:text-emerald-400">
                     {donations.filter(d => d.status.toLowerCase() === 'completed').length}
                   </div>
                   <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-300">Completed</p>
@@ -324,7 +431,7 @@ function ManageDonations() {
                   <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-300">Rejected</p>
                 </div>
                 <div className="text-center">
-                  <div className="text-lg sm:text-2xl font-bold text-emerald-600 dark:text-emerald-400">
+                  <div className="text-lg sm:text-2xl font-bold text-purple-600 dark:text-purple-400">
                     {donations.reduce((total, donation) => 
                       total + donation.items.reduce((itemTotal, item) => itemTotal + item.quantity, 0), 0
                     )}
@@ -354,7 +461,8 @@ function ManageDonations() {
                 >
                   <option value="all">All Status</option>
                   <option value="pending">Pending ({donations.filter(d => d.status.toLowerCase() === 'pending').length})</option>
-                  <option value="ready_for_pickup">Ready ({donations.filter(d => d.status.toLowerCase() === 'ready_for_pickup').length})</option>
+                  <option value="confirmed">Confirmed ({donations.filter(d => d.status.toLowerCase() === 'confirmed').length})</option>
+                  <option value="ready_for_pickup">Ready ({donations.filter(d => isReadyForPickup(d.status)).length})</option>
                   <option value="completed">Completed ({donations.filter(d => d.status.toLowerCase() === 'completed').length})</option>
                   <option value="rejected">Rejected ({donations.filter(d => d.status.toLowerCase() === 'rejected').length})</option>
                 </select>
@@ -379,8 +487,8 @@ function ManageDonations() {
                           <div className="flex flex-wrap items-center gap-2 sm:gap-3 mb-3">
                             <span className={`inline-flex items-center gap-1 px-2 sm:px-2.5 py-1 rounded-full text-xs font-medium border ${getStatusColor(donation.status)}`}>
                               {getStatusIcon(donation.status)}
-                              <span className="hidden sm:inline">{donation.status.replace('_', ' ').toUpperCase()}</span>
-                              <span className="sm:hidden">{donation.status.split('_')[0].toUpperCase()}</span>
+                              <span className="hidden sm:inline">{getStatusText(donation.status)}</span>
+                              <span className="sm:hidden">{getStatusText(donation.status).split(' ')[0]}</span>
                             </span>
                             <span className="text-xs sm:text-sm text-gray-500 dark:text-gray-400">
                               {new Date(donation.created_at).toLocaleDateString()}
@@ -423,51 +531,81 @@ function ManageDonations() {
                             </div>
                           </div>
 
-                          {/* Action Buttons */}
-                          {donation.status.toLowerCase() === 'pending' && (
-                            <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
-                              <button
-                                onClick={() => handleAcceptDonation(donation.id)}
-                                disabled={processedDonations.has(donation.id)}
-                                className="flex items-center justify-center gap-2 px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base transition-colors"
-                              >
-                                <CheckCircle size={16} />
-                                {processedDonations.has(donation.id) ? 'Processing...' : 'Accept'}
-                              </button>
-                              <button
-                                onClick={() => openRejectModal(donation.id)}
-                                disabled={processedDonations.has(donation.id)}
-                                className="flex items-center justify-center gap-2 px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base transition-colors"
-                              >
-                                <XCircle size={16} />
-                                {processedDonations.has(donation.id) ? 'Processing...' : 'Reject'}
-                              </button>
-                            </div>
-                          )}
+                          {/* Action Buttons - styled like PickupCoordination */}
+                          <div className="border-t border-gray-200 dark:border-gray-700 pt-4">
+                            <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+                              {donation.status.toLowerCase() === 'pending' && (
+                                <div className="flex flex-col sm:flex-row items-stretch sm:items-center space-y-2 sm:space-y-0 sm:space-x-2">
+                                  <Button
+                                    variant="success"
+                                    size="sm"
+                                    onClick={() => handleAcceptDonation(donation.id)}
+                                    disabled={processedDonations.has(donation.id)}
+                                    className="text-sm"
+                                  >
+                                    {processedDonations.has(donation.id) ? 'Processing...' : 'Accept Request'}
+                                  </Button>
+                                  <Button
+                                    variant="danger"
+                                    size="sm"
+                                    onClick={() => openRejectModal(donation.id)}
+                                    disabled={processedDonations.has(donation.id)}
+                                    className="text-sm"
+                                  >
+                                    {processedDonations.has(donation.id) ? 'Processing...' : 'Reject Request'}
+                                  </Button>
+                                </div>
+                              )}
 
-                          {donation.status.toLowerCase() === 'ready_for_pickup' && (
-                            <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-700 rounded-md p-3">
-                              <p className="text-green-800 dark:text-green-300 text-xs sm:text-sm font-medium">
-                                Approved - Ready for NGO pickup
-                              </p>
-                            </div>
-                          )}
+                              {donation.status.toLowerCase() === 'confirmed' && (
+                                <div className="flex flex-col sm:flex-row items-stretch sm:items-center space-y-2 sm:space-y-0 sm:space-x-2">
+                                  <div className={`px-3 py-2 rounded-md flex items-center bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300`}>
+                                    <span className="text-sm font-medium">Donation confirmed - prepare for pickup</span>
+                                  </div>
+                                  <Button
+                                    variant="primary"
+                                    size="sm"
+                                    onClick={() => handlePrepareDonation(donation.id)}
+                                    disabled={processedDonations.has(donation.id)}
+                                    className="text-sm"
+                                  >
+                                    {processedDonations.has(donation.id) ? 'Processing...' : 'Mark as Ready'}
+                                  </Button>
+                                </div>
+                              )}
 
-                          {donation.status.toLowerCase() === 'completed' && (
-                            <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700 rounded-md p-3">
-                              <p className="text-blue-800 dark:text-blue-300 text-xs sm:text-sm font-medium">
-                                Completed - Donation picked up{donation.completed_at ? ` on ${new Date(donation.completed_at).toLocaleDateString()}` : ''}
-                              </p>
-                            </div>
-                          )}
+                              {isReadyForPickup(donation.status) && (
+                                <div className="flex flex-col sm:flex-row items-stretch sm:items-center space-y-2 sm:space-y-0 sm:space-x-2">
+                                  <div className={`px-3 py-2 rounded-md flex items-center bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-300`}>
+                                    <span className="text-sm font-medium">Ready for NGO pickup</span>
+                                  </div>
+                                  <Button
+                                    variant="success"
+                                    size="sm"
+                                    onClick={() => handleCompleteDonation(donation.id)}
+                                    disabled={processedDonations.has(donation.id)}
+                                    className="text-sm"
+                                  >
+                                    {processedDonations.has(donation.id) ? 'Processing...' : 'Mark as Completed'}
+                                  </Button>
+                                </div>
+                              )}
 
-                          {donation.status.toLowerCase() === 'rejected' && (
-                            <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-700 rounded-md p-3">
-                              <p className="text-red-800 dark:text-red-300 text-xs sm:text-sm font-medium">
-                                Request rejected
-                              </p>
+                              {donation.status.toLowerCase() === 'completed' && (
+                                <div className={`px-3 py-2 rounded-md flex items-center bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-300`}>
+                                  <span className="text-sm font-medium">
+                                    Pickup completed{donation.completed_at ? ` on ${new Date(donation.completed_at).toLocaleDateString()}` : ''}
+                                  </span>
+                                </div>
+                              )}
+
+                              {donation.status.toLowerCase() === 'rejected' && (
+                                <div className={`px-3 py-2 rounded-md flex items-center bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300`}>
+                                  <span className="text-sm font-medium">Request rejected</span>
+                                </div>
+                              )}
                             </div>
-                          )}
+                          </div>
                         </div>
                       </div>
                     </div>

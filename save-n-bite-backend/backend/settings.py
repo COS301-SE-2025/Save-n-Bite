@@ -1,3 +1,4 @@
+
 """
 Django settings for backend project.
 
@@ -391,4 +392,5 @@ LOGGING = {
 }
 
 # Ensure logs directory exists
+
 os.makedirs(os.path.join(BASE_DIR, 'logs'), exist_ok=True)

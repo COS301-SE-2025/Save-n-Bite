@@ -6,6 +6,8 @@ from .views import (
     CartView,
     AddToCartView,
     DonationRequestView,
+    PrepareDonationView,
+    CompleteDonationView,
     RejectDonationView,
     RemoveCartItemView,
     CheckoutView,
@@ -42,4 +44,6 @@ urlpatterns = [
     path('checkout/complete/', CompleteCheckoutView.as_view(), name='complete-checkout'),
     path('donations/<uuid:interaction_id>/cancel/', CancelDonationView.as_view(), name='cancel-donation'),
     path('ngo/history/', NGODonationRequestsView.as_view(), name='ngo-history'),
+    path('donation/<uuid:interaction_id>/prepare/', PrepareDonationView.as_view(), name='donation-prepare'),  # New endpoint
+    path('donation/<uuid:interaction_id>/complete/', CompleteDonationView.as_view(), name='donation-complete'),  # New endpoint
 ]

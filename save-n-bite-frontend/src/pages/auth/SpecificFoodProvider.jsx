@@ -26,6 +26,7 @@ import FoodProvidersAPI, { getApiBaseUrl } from '../../services/FoodProvidersAPI
 import BusinessAPI from '../../services/BusinessAPI'
 import reviewsAPI from '../../services/reviewsAPI'
 import { ThemeContext } from '../../context/ThemeContext' 
+import ProviderBadgesDisplay from '../../components/auth/ProviderBadgesDisplay'
 
 
 
@@ -528,79 +529,87 @@ const SpecificFoodProvider = () => {
                 </div>
               </div>
               
-              {/* Provider Info */}
-              <div className="flex-grow">
-                <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between">
-                  <div>
-                    <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
-                      {provider.business_name}
-                    </h1>
-                    
-                    <div className="flex items-center mb-4">
-                      <div className="flex items-center bg-amber-50 dark:bg-amber-900/20 text-amber-700 dark:text-amber-400 px-3 py-1 rounded-full text-sm font-medium">
-                        <StarIcon size={16} className="fill-current mr-1" />
-                        <span>{getProviderRating().toFixed(1)}</span>
-                        <span className="mx-1">•</span>
-                        <button 
-                          onClick={openReviewsModal}
-                          className="text-emerald-600 hover:text-emerald-700 dark:text-emerald-400 dark:hover:text-emerald-300 font-medium transition-colors"
-                        >
-                          {getTotalReviews()} reviews
-                        </button>
-                      </div>
-                      
-                      <button
-                        onClick={handleFollow}
-                        disabled={followLoading}
-                        className={`ml-3 px-4 py-2 rounded-full flex items-center text-sm font-medium transition-all ${
-                          followLoading
-                            ? 'bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400 cursor-not-allowed'
-                            : isFollowing 
-                              ? 'bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-200'
-                              : 'bg-emerald-600 hover:bg-emerald-700 dark:bg-emerald-700 dark:hover:bg-emerald-800 text-white'
-                        }`}
-                      >
-                        {followLoading ? (
-                          <>
-                            <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-current mr-2"></div>
-                            {isFollowing ? 'Unfollowing...' : 'Following...'}
-                          </>
-                        ) : (
-                          <>
-                            <HeartIcon
-                              size={16}
-                              className={`mr-2 ${isFollowing ? 'fill-red-500 text-red-500' : 'text-white'}`}
-                            />
-                            {isFollowing ? 'Following' : 'Follow'}
-                          </>
-                        )}
-                      </button>
-                    </div>
-                    
-                    {provider.business_description && (
-                      <p className="text-gray-600 dark:text-gray-300 mb-4">
-                        {provider.business_description}
-                      </p>
-                    )}
-                    
-                    <div className="flex flex-wrap gap-2 mb-4">
-                      {provider.business_tags?.length > 0 ? (
-                        provider.business_tags.map((tag) => (
-                          <span
-                            key={tag}
-                            className="px-3 py-1 bg-gray-50 dark:bg-gray-700 text-gray-600 dark:text-gray-300 text-xs font-medium rounded-full border border-gray-100 dark:border-gray-600"
-                          >
-                            {tag}
-                          </span>
-                        ))
-                      ) : (
-                        <span className="px-3 py-1 bg-gray-50 dark:bg-gray-700 text-gray-600 dark:text-gray-300 text-xs font-medium rounded-full border border-gray-100 dark:border-gray-600">
-                          Food Provider
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                </div>
+<div className="flex-grow">
+  <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between">
+    <div>
+      <div className="flex flex-col space-y-3 mb-4">
+        <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+          {provider.business_name}
+        </h1>
+        
+        {/* Badges Display - horizontally next to provider name */}
+        {provider.id && (
+          <div className="flex items-center space-x-4">
+            <ProviderBadgesDisplay providerId={provider.id} />
+          </div>
+        )}
+      </div>
+      
+      <div className="flex items-center mb-4">
+        <div className="flex items-center bg-amber-50 dark:bg-amber-900/20 text-amber-700 dark:text-amber-400 px-3 py-1 rounded-full text-sm font-medium">
+          <StarIcon size={16} className="fill-current mr-1" />
+          <span>{getProviderRating().toFixed(1)}</span>
+          <span className="mx-1">•</span>
+          <button 
+            onClick={openReviewsModal}
+            className="text-emerald-600 hover:text-emerald-700 dark:text-emerald-400 dark:hover:text-emerald-300 font-medium transition-colors"
+          >
+            {getTotalReviews()} reviews
+          </button>
+        </div>
+        
+        <button
+          onClick={handleFollow}
+          disabled={followLoading}
+          className={`ml-3 px-4 py-2 rounded-full flex items-center text-sm font-medium transition-all ${
+            followLoading
+              ? 'bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400 cursor-not-allowed'
+              : isFollowing 
+                ? 'bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-200'
+                : 'bg-emerald-600 hover:bg-emerald-700 dark:bg-emerald-700 dark:hover:bg-emerald-800 text-white'
+          }`}
+        >
+          {followLoading ? (
+            <>
+              <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-current mr-2"></div>
+              {isFollowing ? 'Unfollowing...' : 'Following...'}
+            </>
+          ) : (
+            <>
+              <HeartIcon
+                size={16}
+                className={`mr-2 ${isFollowing ? 'fill-red-500 text-red-500' : 'text-white'}`}
+              />
+              {isFollowing ? 'Following' : 'Follow'}
+            </>
+          )}
+        </button>
+      </div>
+      
+      {provider.business_description && (
+        <p className="text-gray-600 dark:text-gray-300 mb-4">
+          {provider.business_description}
+        </p>
+      )}
+      
+      <div className="flex flex-wrap gap-2 mb-4">
+        {provider.business_tags?.length > 0 ? (
+          provider.business_tags.map((tag) => (
+            <span
+              key={tag}
+              className="px-3 py-1 bg-gray-50 dark:bg-gray-700 text-gray-600 dark:text-gray-300 text-xs font-medium rounded-full border border-gray-100 dark:border-gray-600"
+            >
+              {tag}
+            </span>
+          ))
+        ) : (
+          <span className="px-3 py-1 bg-gray-50 dark:bg-gray-700 text-gray-600 dark:text-gray-300 text-xs font-medium rounded-full border border-gray-100 dark:border-gray-600">
+            Food Provider
+          </span>
+        )}
+      </div>
+    </div>
+  </div>
                 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6 pt-6 border-t border-gray-100 dark:border-gray-700">
                   {provider.business_address && (

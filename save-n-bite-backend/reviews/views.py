@@ -337,45 +337,69 @@ def get_interaction_review(request, interaction_id):
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def get_all_reviews_admin(request):
-    """Get all reviews for admin moderation (admin only)"""
-    if not (request.user.is_superuser or request.user.is_staff):
+    """Get all reviews with filtering for admin (admin only)"""
+    if not is_admin_user(request.user):
         return Response({
             'error': {
                 'code': 'PERMISSION_DENIED',
-                'message': 'Only administrators can access this endpoint'
+                'message': 'Only administrators can view all reviews'
             }
         }, status=status.HTTP_403_FORBIDDEN)
     
-    reviews = Review.objects.all().order_by('-created_at')
+    # Get filter parameters
+    search = request.GET.get('search', '')
+    status_filter = request.GET.get('status', '')
+    rating_filter = request.GET.get('rating', '')
+    page = int(request.GET.get('page', 1))
+    page_size = int(request.GET.get('page_size', 10))
+    
+    # Build query
+    queryset = Review.objects.select_related(
+        'reviewer', 'business', 'interaction'
+    ).all()
     
     # Apply filters
-    status_filter = request.GET.get('status')
-    if status_filter:
-        reviews = reviews.filter(status=status_filter)
-    
-    rating_filter = request.GET.get('rating')
-    if rating_filter:
-        try:
-            rating = int(rating_filter)
-            reviews = reviews.filter(general_rating=rating)
-        except ValueError:
-            pass
-    
-    business_filter = request.GET.get('business')
-    if business_filter:
-        reviews = reviews.filter(
-            business__business_name__icontains=business_filter
+    if search:
+        queryset = queryset.filter(
+            Q(reviewer__first_name__icontains=search) |
+            Q(reviewer__last_name__icontains=search) |
+            Q(reviewer__email__icontains=search) |
+            Q(business__business_name__icontains=search) |
+            Q(general_comment__icontains=search) |
+            Q(food_review__icontains=search) |
+            Q(business_review__icontains=search)
         )
     
-    paginator = ReviewPagination()
-    paginated_reviews = paginator.paginate_queryset(reviews, request)
-    serializer = ReviewModerationSerializer(paginated_reviews, many=True)
+    if status_filter:
+        queryset = queryset.filter(status=status_filter)
     
-    return paginator.get_paginated_response({
-        'reviews': serializer.data,
-        'total_count': reviews.count()
-    })
-
+    if rating_filter:
+        queryset = queryset.filter(general_rating=rating_filter)
+    
+    # Order by most recent
+    queryset = queryset.order_by('-created_at')
+    
+    # Manual pagination (to avoid DRF complexity)
+    total_count = queryset.count()
+    start_index = (page - 1) * page_size
+    end_index = start_index + page_size
+    reviews_page = queryset[start_index:end_index]
+    
+    # Serialize the reviews
+    serializer = ReviewDisplaySerializer(reviews_page, many=True, context={'request': request})
+    
+    # CUSTOM RESPONSE FORMAT - Match your frontend expectations
+    return Response({
+        'reviews': serializer.data,  # Frontend expects 'reviews' field
+        'pagination': {
+            'count': total_count,
+            'page': page,
+            'page_size': page_size,
+            'total_pages': (total_count + page_size - 1) // page_size,
+            'has_next': end_index < total_count,
+            'has_previous': page > 1,
+        }
+    }, status=status.HTTP_200_OK)
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])

@@ -5,7 +5,8 @@ class StatusTransition:
     VALID_TRANSITIONS = {
         'Interaction': {
             'pending': ['confirmed', 'cancelled', 'failed', 'ready', 'rejected', 'completed'],
-            'confirmed': ['completed', 'cancelled'],
+            'confirmed': ['ready', 'cancelled', 'completed'],
+            'ready': ['completed', 'cancelled'],
             'completed': [],
             'cancelled': [],
             'failed': []
@@ -27,8 +28,19 @@ class StatusTransition:
 
     @classmethod
     def validate_transition(cls, model_name, old_status, new_status):
-        valid_next_statuses = cls.VALID_TRANSITIONS[model_name].get(old_status, [])
-        if new_status not in valid_next_statuses:
+        # Handle the full status name mapping
+        status_mapping = {
+            'ready_for_pickup': 'ready',
+            'ready': 'ready'
+        }
+        
+        # Map both old and new status
+        mapped_old = status_mapping.get(old_status, old_status)
+        mapped_new = status_mapping.get(new_status, new_status)
+        
+        valid_next_statuses = cls.VALID_TRANSITIONS[model_name].get(mapped_old, [])
+        
+        if mapped_new not in valid_next_statuses:
             raise ValidationError(
                 f"Invalid status transition for {model_name}: "
                 f"Cannot change from {old_status} to {new_status}. "

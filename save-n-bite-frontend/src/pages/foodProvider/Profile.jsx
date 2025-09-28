@@ -5,6 +5,8 @@ import { sustainabilityData } from '../../utils/MockData'
 import SideBar from '../../components/foodProvider/SideBar';
 import ProfileAPI from '../../services/ProfileAPI';
 import { showToast, Toast } from '../../components/ui/Toast';
+import ProviderBadgesManagement from '../../components/foodProvider/ProviderBadgesManagement'
+
 
 function ProfilePage() {
   const [isEditing, setIsEditing] = useState(false)
@@ -447,38 +449,14 @@ function ProfilePage() {
             </div>
           </div>
 
-          {/* Impact Snapshot Section */}
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden mb-6 sm:mb-8 transition-colors duration-300">
-            <div className="p-4 sm:p-6">
-              <h3 className="text-lg sm:text-xl font-semibold mb-4 text-gray-900 dark:text-gray-100">Your Impact</h3>
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <div className="bg-green-50 dark:bg-green-900 p-3 sm:p-4 rounded-lg transition-colors duration-300">
-                  <h4 className="text-xs sm:text-sm font-medium text-gray-500 dark:text-gray-300">
-                    Meals Donated
-                  </h4>
-                  <p className="text-2xl sm:text-3xl font-bold text-green-600 dark:text-green-400">
-                    {sustainabilityData.mealsSaved}
-                  </p>
-                </div>
-                <div className="bg-blue-50 dark:bg-blue-900 p-3 sm:p-4 rounded-lg transition-colors duration-300">
-                  <h4 className="text-xs sm:text-sm font-medium text-gray-500 dark:text-gray-300">
-                    Food Weight Saved (kg)
-                  </h4>
-                  <p className="text-2xl sm:text-3xl font-bold text-blue-600 dark:text-blue-400">
-                    {sustainabilityData.mealsSaved * 0.5}
-                  </p>
-                </div>
-                <div className="bg-yellow-50 dark:bg-yellow-900 p-3 sm:p-4 rounded-lg transition-colors duration-300">
-                  <h4 className="text-xs sm:text-sm font-medium text-gray-500 dark:text-gray-300">
-                    CO₂ Reduced (kg)
-                  </h4>
-                  <p className="text-2xl sm:text-3xl font-bold text-yellow-600 dark:text-yellow-400">
-                    {sustainabilityData.co2Reduced}
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
+{/* Provider Badges Management Section */}
+<ProviderBadgesManagement onToast={(message, type) => {
+  if (type === 'success') {
+    showToast(setToast, message, 'success')
+  } else {
+    showToast(setToast, message, 'error')
+  }
+}} />
 
           {/* Quick Access Buttons */}
           <div className="flex flex-col sm:flex-row gap-4 mb-6 sm:mb-8">

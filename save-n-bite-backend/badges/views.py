@@ -241,29 +241,47 @@ def get_monthly_leaderboards(request):
 
 @api_view(['POST'])
 @permission_classes([permissions.IsAuthenticated])
-def recalculate_badges(request):
+def refresh_my_badges(request):
     """
-    Manually trigger badge recalculation for the authenticated provider
+    Manually refresh badges for the authenticated provider
+    This can be used for testing or if a provider suspects they should have more badges
     """
     if request.user.user_type != 'provider':
         return Response({
-            'error': 'Only food providers can recalculate badges'
+            'error': 'Only food providers can refresh badges'
         }, status=status.HTTP_403_FORBIDDEN)
     
     try:
         badge_service = BadgeService()
-        badges_awarded = badge_service.calculate_provider_badges(request.user)
+        
+        # Update stats and check for any missed badges
+        stats = badge_service.update_provider_stats(request.user)
+        
+        # Check milestone badges
+        milestone_badges = badge_service.check_milestone_badges_on_order(request.user, stats, None)
+        review_badges = badge_service.check_review_milestone_badges(request.user, stats, None)
+        rating_badges = badge_service.check_rating_based_badges(request.user, stats)
+        special_badges = badge_service.check_special_achievement_badges(request.user, stats)
+        
+        all_new_badges = milestone_badges + review_badges + rating_badges + special_badges
+        
+        # Update badge stats
+        badge_service.update_provider_badge_stats(request.user)
+        
+        # Send notifications for any new badges
+        for badge in all_new_badges:
+            badge_service.send_badge_notification(request.user, badge)
         
         return Response({
-            'message': 'Badge recalculation completed',
-            'badges_awarded': len(badges_awarded),
-            'new_badges': ProviderBadgeSerializer(badges_awarded, many=True).data
+            'message': 'Badge refresh completed',
+            'badges_awarded': len(all_new_badges),
+            'new_badges': ProviderBadgeSerializer(all_new_badges, many=True).data if all_new_badges else []
         }, status=status.HTTP_200_OK)
         
     except Exception as e:
-        logger.error(f"Error recalculating badges for {request.user.email}: {str(e)}")
+        logger.error(f"Error refreshing badges for {request.user.email}: {str(e)}")
         return Response({
-            'error': 'Failed to recalculate badges'
+            'error': 'Failed to refresh badges'
         }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
@@ -371,29 +389,6 @@ def download_badge(request, badge_id):
         }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
-# Admin-only views for badge management
-@api_view(['POST'])
-@permission_classes([permissions.IsAdminUser])
-def admin_calculate_all_badges(request):
-    """
-    Admin endpoint to calculate badges for all providers
-    """
-    try:
-        badge_service = BadgeService()
-        results = badge_service.calculate_all_badges()
-        
-        return Response({
-            'message': 'Badge calculation completed for all providers',
-            'results': results
-        }, status=status.HTTP_200_OK)
-        
-    except Exception as e:
-        logger.error(f"Error in admin badge calculation: {str(e)}")
-        return Response({
-            'error': 'Failed to calculate badges for all providers'
-        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
-
 @api_view(['GET'])
 @permission_classes([permissions.IsAuthenticated])
 def get_badge_progress(request):
@@ -407,7 +402,7 @@ def get_badge_progress(request):
     
     try:
         badge_service = BadgeService()
-        stats = badge_service.get_provider_statistics(request.user)
+        stats = badge_service.update_provider_stats(request.user)
         
         # Get earned badge types
         earned_badges = ProviderBadge.objects.filter(
@@ -415,44 +410,50 @@ def get_badge_progress(request):
         ).values_list('badge_type__name', flat=True)
         
         # Define progress for milestone badges
-        progress_data = []
-        
         milestone_progress = [
             {
                 'badge_name': 'First Order',
                 'current_value': stats['total_orders'],
                 'target_value': 1,
                 'progress_percentage': min(100, (stats['total_orders'] / 1) * 100),
-                'is_earned': 'First Order' in earned_badges or 'first_order' in [name.lower().replace(' ', '_') for name in earned_badges]
+                'is_earned': 'First Order' in earned_badges
             },
             {
                 'badge_name': 'Review Magnet',
                 'current_value': stats['total_reviews'],
                 'target_value': 10,
                 'progress_percentage': min(100, (stats['total_reviews'] / 10) * 100),
-                'is_earned': 'Review Magnet' in earned_badges or 'review_magnet' in [name.lower().replace(' ', '_') for name in earned_badges]
+                'is_earned': 'Review Magnet' in earned_badges
             },
             {
                 'badge_name': 'Customer Favorite',
                 'current_value': stats['total_reviews'],
                 'target_value': 50,
                 'progress_percentage': min(100, (stats['total_reviews'] / 50) * 100),
-                'is_earned': 'Customer Favorite' in earned_badges or 'customer_favorite' in [name.lower().replace(' ', '_') for name in earned_badges]
+                'is_earned': 'Customer Favorite' in earned_badges
             },
             {
                 'badge_name': 'Order Champion',
                 'current_value': stats['total_orders'],
                 'target_value': 100,
                 'progress_percentage': min(100, (stats['total_orders'] / 100) * 100),
-                'is_earned': 'Order Champion' in earned_badges or 'order_champion' in [name.lower().replace(' ', '_') for name in earned_badges]
+                'is_earned': 'Order Champion' in earned_badges
             },
             {
                 'badge_name': 'Excellence Badge',
                 'current_value': round(stats['average_rating'], 2),
                 'target_value': 4.5,
                 'progress_percentage': min(100, (stats['average_rating'] / 4.5) * 100) if stats['total_reviews'] >= 10 else 0,
-                'is_earned': 'Excellence Badge' in earned_badges or 'excellence_badge' in [name.lower().replace(' ', '_') for name in earned_badges],
+                'is_earned': 'Excellence Badge' in earned_badges,
                 'additional_requirement': f"Need {max(0, 10 - stats['total_reviews'])} more reviews" if stats['total_reviews'] < 10 else None
+            },
+            {
+                'badge_name': 'Perfect Rating',
+                'current_value': round(stats['average_rating'], 2),
+                'target_value': 5.0,
+                'progress_percentage': min(100, (stats['average_rating'] / 5.0) * 100) if stats['total_reviews'] >= 5 else 0,
+                'is_earned': 'Perfect Rating' in earned_badges,
+                'additional_requirement': f"Need {max(0, 5 - stats['total_reviews'])} more reviews" if stats['total_reviews'] < 5 else None
             }
         ]
         
@@ -472,4 +473,27 @@ def get_badge_progress(request):
         logger.error(f"Error fetching badge progress for {request.user.email}: {str(e)}")
         return Response({
             'error': 'Failed to fetch badge progress'
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+# Admin endpoints for initialization (optional)
+@api_view(['POST'])
+@permission_classes([permissions.IsAdminUser])
+def admin_initialize_badge_types(request):
+    """
+    Admin endpoint to initialize default badge types
+    """
+    try:
+        from .services import BadgeInitializationService
+        created_count = BadgeInitializationService.create_default_badge_types()
+        
+        return Response({
+            'message': 'Badge types initialization completed',
+            'created_count': created_count
+        }, status=status.HTTP_200_OK)
+        
+    except Exception as e:
+        logger.error(f"Error initializing badge types: {str(e)}")
+        return Response({
+            'error': 'Failed to initialize badge types'
         }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

@@ -30,6 +30,8 @@ import {
 import { Button } from '../../components/foodProvider/Button'
 import { analyticsAPI, transformAnalyticsData, getAISuggestion } from '../../services/analyticsAPI'
 import SideBar from '../../components/foodProvider/SideBar'
+import BadgeProgressDashboard from '../../components/foodProvider/BadgeProgressDashboard'
+
 
 function Dashboard() {
   const [analyticsData, setAnalyticsData] = useState(null)
@@ -463,23 +465,10 @@ function Dashboard() {
             </div>
           </div>
 
-          {/* Benchmark & AI Suggestion Cards */}
-          <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-            <div className="bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg shadow-md p-4 sm:p-5 text-white">
-              <h3 className="text-base sm:text-lg font-medium mb-2">Your Impact Ranking</h3>
-              <p className="text-lg sm:text-xl font-bold mb-3">{topSaverMessage}</p>
-              <p className="text-sm sm:text-base">
-                Your commitment to reducing food waste is making a real difference
-                in our community.
-              </p>
-            </div>
-            <div className="bg-gradient-to-r from-purple-500 to-purple-600 rounded-lg shadow-md p-4 sm:p-5 text-white">
-              <h3 className="text-base sm:text-lg font-medium mb-2">Suggestion</h3>
-              <p className="text-lg sm:text-xl font-bold mb-3">{aiSuggestion}</p>
-              <p className="text-purple-100 text-xs sm:text-sm">
-                Based on your current performance and platform trends
-              </p>
-            </div>
+          {/* Badge Progress Cards */}
+          <div className="grid grid-cols-1 gap-6">
+            {/* Make this card span full width */}
+            <BadgeProgressDashboard />
           </div>
         </div>
       </div>

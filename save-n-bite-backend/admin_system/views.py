@@ -1448,3 +1448,31 @@ def test_system_log_email(request):
                 'message': f'Failed to create test system log: {str(e)}'
             }
         }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    
+
+    #DEBUG FUNCTION FOR ANALYTICS:@api_view(['GET'])
+@permission_classes([IsSystemAdmin])
+def debug_analytics(request):
+    """DEBUG: Test analytics data generation"""
+    try:
+        # Test the service directly
+        analytics_data = SimpleAnalyticsService.get_analytics_data()
+        
+        # Log what we're getting
+        logger.info(f"Analytics data generated: {analytics_data.keys()}")
+        logger.info(f"Monthly user growth: {analytics_data.get('monthly_user_growth', 'NOT FOUND')}")
+        logger.info(f"Monthly activity growth: {analytics_data.get('monthly_activity_growth', 'NOT FOUND')}")
+        
+        return Response({
+            'debug': True,
+            'analytics': analytics_data,
+            'monthly_user_growth_count': len(analytics_data.get('monthly_user_growth', [])),
+            'monthly_activity_growth_count': len(analytics_data.get('monthly_activity_growth', [])),
+        }, status=status.HTTP_200_OK)
+        
+    except Exception as e:
+        logger.error(f"Debug analytics error: {str(e)}")
+        return Response({
+            'error': str(e),
+            'traceback': str(e.__traceback__)
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

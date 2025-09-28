@@ -30,7 +30,7 @@ const donationsAPI = {
     }
   },
 
-  // Accept a donation request (for providers)
+  // Accept a donation request (for providers) - Sets status to CONFIRMED
   acceptDonation: async (interactionId) => {
     try {
       const response = await apiClient.post(`/cart/donation/${interactionId}/accept/`);
@@ -38,7 +38,9 @@ const donationsAPI = {
       return {
         success: true,
         data: {
-          message: response.data.message
+          message: response.data.message,
+          status: response.data.status,
+          interaction_id: response.data.interaction_id
         },
         error: null
       };
@@ -50,6 +52,65 @@ const donationsAPI = {
                error.response?.data?.message || 
                error.message || 
                "Failed to accept donation request"
+      };
+    }
+  },
+
+  // Prepare donation for pickup (for providers) - Sets status to READY_FOR_PICKUP
+  prepareDonation: async (interactionId, preparationNotes = '') => {
+    try {
+      const response = await apiClient.post(`/cart/donation/${interactionId}/prepare/`, {
+        preparation_notes: preparationNotes
+      });
+
+      return {
+        success: true,
+        data: {
+          message: response.data.message,
+          status: response.data.status,
+          interaction_id: response.data.interaction_id,
+          pickup_code: response.data.pickup_code
+        },
+        error: null
+      };
+    } catch (error) {
+      return {
+        success: false,
+        data: null,
+        error: error.response?.data?.error?.message || 
+               error.response?.data?.message || 
+               error.message || 
+               "Failed to prepare donation for pickup"
+      };
+    }
+  },
+
+  // Complete donation pickup (for providers) - Sets status to COMPLETED
+  completeDonation: async (interactionId, completionData = {}) => {
+    try {
+      const response = await apiClient.post(`/cart/donation/${interactionId}/complete/`, {
+        pickup_verification: completionData.pickup_verification || {},
+        completion_notes: completionData.completion_notes || ''
+      });
+
+      return {
+        success: true,
+        data: {
+          message: response.data.message,
+          status: response.data.status,
+          interaction_id: response.data.interaction_id,
+          completed_at: response.data.completed_at
+        },
+        error: null
+      };
+    } catch (error) {
+      return {
+        success: false,
+        data: null,
+        error: error.response?.data?.error?.message || 
+               error.response?.data?.message || 
+               error.message || 
+               "Failed to complete donation pickup"
       };
     }
   },
@@ -83,10 +144,7 @@ const donationsAPI = {
   // Get all donation requests for current user (NGO)
   getMyDonationRequests: async (queryParams = {}) => {
     try {
-   
-   
       const url = `/cart/ngo/history/`;
-
       const response = await apiClient.get(url);
       
       return {
@@ -105,8 +163,6 @@ const donationsAPI = {
       };
     }
   },
-
-  
 
   // Get incoming donation requests for current provider
   getIncomingDonationRequests: async (queryParams = {}) => {
