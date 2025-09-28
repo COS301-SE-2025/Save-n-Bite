@@ -134,6 +134,8 @@ const Register = () => {
                 transition={{ delay: 0.4, duration: 0.5 }}
                 className="text-emerald-100 text-lg md:text-xl max-w-md"
               >
+
+                
                 Create an account to start your journey with us and help reduce food waste.
               </motion.p>
             </div>
@@ -156,6 +158,14 @@ const Register = () => {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2, duration: 0.5 }}
             >
+
+<Link
+                to="/"
+                className="inline-flex items-center text-sm text-emerald-600 hover:text-emerald-500 dark:text-emerald-400 dark:hover:text-emerald-300 mb-4"
+              >
+                <span aria-hidden="true" className="mr-1">←</span>
+                Back to home
+              </Link>
               <h2 className="text-2xl md:text-3xl font-bold text-gray-800 dark:text-white mb-2">
                 Create an Account
               </h2>
