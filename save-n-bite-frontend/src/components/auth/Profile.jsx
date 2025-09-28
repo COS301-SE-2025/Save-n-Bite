@@ -127,10 +127,10 @@ const ProfilePage = () => {
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 w-full transition-colors duration-200">
       <CustomerNavBar />
       <div className="max-w-4xl mx-auto px-4 py-8">
-
-        <h1 className="text-2xl font-bold text-gray-800 dark:text-white mb-6">
-          My Profile
-        </h1>
+  <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-center sm:text-left">
+    <span className="bg-gradient-to-r from-emerald-600 to-blue-600 bg-clip-text text-transparent">My Profile</span>
+  </h1>
+  
 
         {/* Error message */}
         {error && (
