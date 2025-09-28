@@ -46,11 +46,11 @@ const ReviewsModal = ({
                 <div key={review.id} className="p-6">
                   <div className="flex justify-between">
                     <div className="flex items-center">
-                      <img
+                      {/* <img
                         src={review.userImage}
                         alt={review.userName}
                         className="w-10 h-10 rounded-full object-cover mr-3"
-                      />
+                      /> */}
                       <div>
                         <p className="font-medium text-gray-800">
                           {review.userName}
