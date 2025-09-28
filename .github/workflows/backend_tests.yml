@@ -173,7 +173,7 @@ jobs:
     #   run: poetry run python manage.py test authentication
 
     - name: Run Integration Tests app tests only
-      run: poetry run python run_intergration_tests.py --all --verbose
+      run: poetry run python run_integration_tests.py --all --verbose
 
     - name: Run coverage report (if requested)
       if: ${{ github.event.inputs.run_coverage == 'true' || github.event_name == 'pull_request' }}
