@@ -145,6 +145,33 @@ jobs:
     - name: Run Django system check
       run: poetry run python manage.py check
 
+    # - name: Run analytics app tests only
+    #   run: poetry run python manage.py test analytics
+
+    # - name: Run reviews app tests only
+    #   run: poetry run pytest reviews/tests.py
+
+    # - name: Run Garden app tests only
+    #   run: poetry run pytest digital_garden/tests.py
+
+    # - name: Run Interactions app tests only
+    #   run: poetry run pytest interactions/tests
+
+    # - name: Run Notifications app tests only
+    #   run: poetry run pytest notifications/tests.py
+
+    # - name: Run FoodListing app tests only
+    #   run: poetry run pytest food_listings/tests.py
+
+    # - name: Run Badges app tests only
+    #   run: poetry run pytest badges/tests.py
+
+    # - name: Run Admin System app tests only
+    #   run: poetry run python manage.py test admin_system
+
+    # - name: Run Authentication app tests only
+    #   run: poetry run python manage.py test authentication
+
     - name: Run Integration End to End and Non Functional Tests 
       run: poetry run python run_integration_tests.py --all --verbose
 
