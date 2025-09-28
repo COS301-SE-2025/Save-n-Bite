@@ -86,7 +86,7 @@ const InfoTooltip = ({ content }) => {
 }
 const SettingsPage = () => {
   const { theme, toggleTheme } = useTheme()
-  const [activeSection, setActiveSection] = useState('general')
+  const [activeSection, setActiveSection] = useState('notifications')
   const navigate = useNavigate()
   // Form states
   const [currentPassword, setCurrentPassword] = useState('')
@@ -173,6 +173,7 @@ const SettingsPage = () => {
   <span className="bg-gradient-to-r from-emerald-600 to-blue-600 bg-clip-text text-transparent">Settings</span>
 </h1>
 <br></br>
+
   
         {/* Success message toast */}
         {actionSuccess && (

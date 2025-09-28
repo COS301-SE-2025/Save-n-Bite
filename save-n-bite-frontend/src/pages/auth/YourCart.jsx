@@ -51,9 +51,7 @@ const DetailedBasket = ({
       <CustomerNavBar />
       <br></br>
      
-      <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-center">
-  <span className="bg-gradient-to-r from-emerald-600 to-blue-600 bg-clip-text text-transparent">Your Cart</span>
-</h1>
+  
 
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
@@ -1059,7 +1057,7 @@ const handleProceedToPayment = () => {
   </div>
       <div className="max-w-4xl mx-auto px-4 py-4 pb-32">
         <div className="flex items-center justify-between mb-6">
-          <h1 className="text-2xl font-bold text-gray-800 dark:text-white">Your Baskets</h1>
+    
           <div className="flex items-center">
             <span className="bg-emerald-100 dark:bg-emerald-900/30 text-emerald-800 dark:text-emerald-200 text-sm font-medium px-3 py-1 rounded-full">
               {providers.length} {providers.length === 1 ? 'basket' : 'baskets'}
