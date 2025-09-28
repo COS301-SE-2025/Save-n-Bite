@@ -3,6 +3,7 @@ import { authAPI } from '../../services/authAPI';
 import { validateEmail, validatePassword, validateRequired, validatePhone } from '../../utils/validators';
 import { USER_TYPES } from '../../utils/constants';
 import { useNavigate, Link } from 'react-router-dom';
+import { Eye, EyeOff } from 'lucide-react';
 
 const RegisterForm = ({ userType = USER_TYPES.CUSTOMER, onSuccess, onError }) => {
     const [formData, setFormData] = useState({
@@ -44,7 +45,8 @@ const RegisterForm = ({ userType = USER_TYPES.CUSTOMER, onSuccess, onError }) =>
     });
 
     const navigate = useNavigate();
-
+    const [showPassword, setShowPassword] = useState(false);
+    const [showConfirmPassword, setShowConfirmPassword] = useState(false);
     const provinces = [
         "Eastern Cape",
         "Free State",
@@ -413,7 +415,7 @@ const handleTagsChange = (e) => {
                 )}
             </div>
 
-            <div className="relative">
+            {/* <div className="relative">
                 <label htmlFor="password" className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                     Password
                     {renderTooltip('Password must be at least 6 characters long')}
@@ -432,9 +434,50 @@ const handleTagsChange = (e) => {
                 {errors.password && touchedFields.password && (
                     <p className="mt-1 text-sm text-red-600">{errors.password}</p>
                 )}
-            </div>
+            </div> */}
 
-            <div className="relative">
+<div>
+  <label
+    htmlFor="password"
+    className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1"
+  >
+    Password
+  </label>
+
+  {/* Make this container relative to position button properly */}
+  <div className="relative">
+    <input
+      type={showPassword ? 'text' : 'password'}
+      id="password"
+      name="password"
+      value={formData.password}
+      onChange={handleInputChange}
+      className="w-full px-4 py-2 pr-10 border border-gray-300 rounded-md focus:ring-emerald-500 focus:border-emerald-500"
+      placeholder="Enter your password"
+      aria-describedby={errors.password ? 'login-password-error' : undefined}
+    />
+
+    {/* Button will now center correctly */}
+    <button
+      type="button"
+      aria-label={showPassword ? 'Hide password' : 'Show password'}
+      onClick={() => setShowPassword((s) => !s)}
+      className="absolute inset-y-0 right-2 flex items-center text-gray-500 hover:text-gray-700 dark:text-gray-300 dark:hover:text-gray-100"
+      tabIndex={0}
+    >
+      {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+    </button>
+  </div>
+
+  {errors.password && (
+    <p id="login-password-error" className="mt-1 text-sm text-red-600">
+      {errors.password}
+    </p>
+  )}
+</div>
+
+
+            {/* <div className="relative">
                 <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                     Confirm Password
                 </label>
@@ -452,7 +495,68 @@ const handleTagsChange = (e) => {
                 {errors.confirmPassword && touchedFields.confirmPassword && (
                     <p className="mt-1 text-sm text-red-600">{errors.confirmPassword}</p>
                 )}
-            </div>
+            </div> */}
+<div>
+  <label
+    htmlFor="confirmPassword"
+    className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1"
+  >
+    Confirm Password
+  </label>
+
+  <div className="relative">
+    <input
+      type={showConfirmPassword ? 'text' : 'password'}
+      id="confirmPassword"
+      name="confirmPassword"
+      value={formData.confirmPassword}
+      onChange={handleInputChange}
+      onBlur={handleBlur}
+      className={`${getFieldClassName('confirmPassword')} w-full px-4 py-2 pr-10 border border-gray-300 rounded-md focus:ring-emerald-500 focus:border-emerald-500`}
+      placeholder="Confirm your password"
+      aria-describedby={
+        errors.confirmPassword && touchedFields.confirmPassword
+          ? 'confirm-password-error'
+          : undefined
+      }
+    />
+
+    {/* Validation checkmark */}
+    {touchedFields.confirmPassword && !errors.confirmPassword && validFields.confirmPassword && (
+      <div className="absolute inset-y-0 right-9 flex items-center pointer-events-none">
+        <svg
+          className="h-5 w-5 text-green-500"
+          fill="currentColor"
+          viewBox="0 0 20 20"
+        >
+          <path
+            fillRule="evenodd"
+            d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+            clipRule="evenodd"
+          />
+        </svg>
+      </div>
+    )}
+
+    {/* Eye toggle */}
+    <button
+      type="button"
+      aria-label={showConfirmPassword ? 'Hide password' : 'Show password'}
+      onClick={() => setShowConfirmPassword((s) => !s)}
+      className="absolute inset-y-0 right-2 flex items-center text-gray-500 hover:text-gray-700 dark:text-gray-300 dark:hover:text-gray-100 p-2"
+      tabIndex={0}
+    >
+      {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+    </button>
+  </div>
+
+  {errors.confirmPassword && touchedFields.confirmPassword && (
+    <p id="confirm-password-error" className="mt-1 text-sm text-red-600">
+      {errors.confirmPassword}
+    </p>
+  )}
+</div>
+
 
             {userType === USER_TYPES.CUSTOMER && (
                 <>
