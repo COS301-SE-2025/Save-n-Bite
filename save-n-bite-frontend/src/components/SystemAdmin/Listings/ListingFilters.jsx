@@ -1,11 +1,9 @@
-import React from 'react'
-import { SearchIcon, FilterIcon } from 'lucide-react'
+import React from 'react';
+import { SearchIcon, FilterIcon } from 'lucide-react';
 
 const ListingFilters = ({
   search,
   setSearch,
-  typeFilter,
-  setTypeFilter,
   statusFilter,
   setStatusFilter,
 }) => {
@@ -26,48 +24,27 @@ const ListingFilters = ({
             />
           </div>
         </div>
-        <p>this doesn't work = </p>
         <div className="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4">
-          <div className="relative inline-flex">
-            
-            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-              <FilterIcon size={18} className="text-gray-400" />
-            </div>
-            <select
-              value={typeFilter}
-              onChange={(e) => setTypeFilter(e.target.value)}
-              className="block w-full pl-10 pr-10 py-2 text-base border border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md"
-            >
-              
-              <option value="All">All Types</option>
-              <option value="Sale">For Sale</option>
-              <option value="Donation">Donations</option>
-            </select>
-          </div>
-          <p>this doesn't work = </p>
           <div className="relative inline-flex">
             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
               <FilterIcon size={18} className="text-gray-400" />
             </div>
             <select
               value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value)}  
+              onChange={(e) => setStatusFilter(e.target.value)}
               className="block w-full pl-10 pr-10 py-2 text-base border border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md"
-            > 
-            
+            >
               <option value="All">All Status</option>
               <option value="active">Active</option>
               <option value="flagged">Flagged</option>
               <option value="removed">Removed</option>
               <option value="sold_out">Sold Out</option>
-              <option value="expired">Expired</option>
-              <option value="inactive">Inactive</option>
             </select>
           </div>
         </div>
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default ListingFilters
+export default ListingFilters;

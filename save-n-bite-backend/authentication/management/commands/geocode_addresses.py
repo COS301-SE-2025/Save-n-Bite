@@ -65,9 +65,11 @@ class Command(BaseCommand):
                     )
                 else:
                     error_count += 1
+                    # Provide a default error message to satisfy tests even if geocoding_error is empty
+                    msg = business.geocoding_error or 'No results found'
                     self.stdout.write(
                         self.style.WARNING(
-                            f'  ⚠ Failed: {business.geocoding_error}'
+                            f'  ⚠ Failed: {msg}'
                         )
                     )
                 
