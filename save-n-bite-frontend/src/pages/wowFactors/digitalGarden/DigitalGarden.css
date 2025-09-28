@@ -1,10 +1,10 @@
-/*  DigitalGarden.css*/
+/* Mobile-Enhanced DigitalGarden.css */
 
 .digital-garden {
   min-height: 100vh;
   background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
   padding: 20px;
-  padding-top: 80px; /* Reduced padding for navigation bar */
+  padding-top: 80px;
   font-family: system-ui, -apple-system, sans-serif;
 }
 
@@ -51,6 +51,9 @@
   font-size: 14px;
   position: relative;
   overflow: hidden;
+  /* Enhanced touch targets for mobile */
+  min-height: 44px;
+  touch-action: manipulation;
 }
 
 .mode-toggle:hover {
@@ -125,6 +128,8 @@
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
   backdrop-filter: blur(10px);
   animation: promptSlideIn 0.3s ease-out;
+  max-width: 90vw;
+  text-align: center;
 }
 
 .move-prompt {
@@ -219,7 +224,6 @@
   letter-spacing: 0.5px;
   margin-bottom: 5px;
 }
-
 
 .dark .stat-label {
   color: #d1d5db !important; 
@@ -356,6 +360,8 @@
   font-weight: 600;
   cursor: pointer;
   transition: all 0.3s ease;
+  min-height: 44px;
+  touch-action: manipulation;
 }
 
 .btn-primary:hover {
@@ -368,6 +374,7 @@
   font-size: 18px;
 }
 
+/* Enhanced mobile responsiveness */
 @media (max-width: 1200px) {
   .garden-main {
     max-width: 1200px;
@@ -436,6 +443,7 @@
     max-width: 320px;
     font-size: 14px;
     padding: 10px 20px;
+    top: 80px;
   }
   
   .garden-sidebar-container {
@@ -451,6 +459,14 @@
   .mode-toggle {
     flex: 1;
     min-width: 140px;
+    padding: 12px 16px;
+  }
+  
+  .notification {
+    right: 10px;
+    left: 10px;
+    min-width: auto;
+    max-width: calc(100vw - 20px);
   }
 }
 
@@ -466,7 +482,7 @@
   }
   
   .mode-toggle {
-    padding: 8px 12px;
+    padding: 10px 12px;
     font-size: 12px;
     min-width: 120px;
   }
@@ -474,43 +490,30 @@
   .garden-content {
     padding: 12px;
   }
-}
-
-/* Remove the old rarity rules and replace with these */
-html.dark .garden-overview .rarity-label,
-.dark .garden-overview .rarity-label {
-  color: #e5e7eb !important; 
-}
-
-html.dark .garden-overview .rarity-count,
-.dark .garden-overview .rarity-count {
-  color: #f9fafb !important;
-}
-
-/* System dark mode detection for rarity text */
-@media (prefers-color-scheme: dark) {
-  .garden-overview .rarity-label {
-    color: #e5e7eb !important; 
+  
+  .move-prompt,
+  .harvest-prompt {
+    font-size: 12px;
+    padding: 8px 16px;
+    top: 70px;
+    max-width: 280px;
   }
-
-  .garden-overview .rarity-count {
-    color: #f9fafb !important;
+  
+  .garden-overview {
+    padding: 15px;
+    margin-top: 15px;
   }
-
-  .garden-overview .rarity-stat {
-    border: 1px solid #4b5563 !important;
+  
+  .stat-item {
+    padding: 10px;
+  }
+  
+  .stat-value {
+    font-size: 20px;
   }
 }
 
-
-.garden-overview .rarity-label,
-.garden-overview .rarity-count {
-  font-weight: 600;
-  font-size: 1.1em;
-  color: inherit;
-}
-
-/* Light mode: readable dark text */
+/* Rarity text color fixes */
 .garden-overview .rarity-label,
 .garden-overview .rarity-count {
   color: #22292f !important; 
@@ -518,7 +521,6 @@ html.dark .garden-overview .rarity-count,
   font-size: 1.1em;
 }
 
-/* Dark mode: readable white text */
 html.dark .garden-overview .rarity-label,
 .dark .garden-overview .rarity-label,
 html.dark .garden-overview .rarity-count,
@@ -526,3 +528,17 @@ html.dark .garden-overview .rarity-count,
   color: #22292f !important; 
 }
 
+/* System dark mode detection for rarity text */
+@media (prefers-color-scheme: dark) {
+  .garden-overview .rarity-label {
+    color: #012916 !important; 
+  }
+
+  .garden-overview .rarity-count {
+    color: #012111 !important;
+  }
+
+  .garden-overview .rarity-stat {
+    border: 1px solid #0e250d !important;
+  }
+}

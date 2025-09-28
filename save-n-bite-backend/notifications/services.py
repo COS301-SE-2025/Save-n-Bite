@@ -1033,16 +1033,9 @@ class NotificationService:
                     notification=notification
                 )
                 
-                if email_sent:
-                    logger.info(f"Donation {response_type} email sent to {ngo_user.email}")
-                else:
-                    logger.warning(f"Failed to send donation {response_type} email to {ngo_user.email}")
-
-            logger.info(f"Donation {response_type} notification sent for interaction {interaction.id}")
             return notification
 
         except Exception as e:
-            logger.error(f"Failed to send donation {response_type} notification for interaction {interaction.id}: {str(e)}")
             return None
 
     @staticmethod
@@ -1074,11 +1067,9 @@ class NotificationService:
                 }
             )
 
-            logger.info(f"Donation pickup reminder sent for interaction {interaction.id}")
             return notification
 
         except Exception as e:
-            logger.error(f"Failed to send donation pickup reminder for interaction {interaction.id}: {str(e)}")
             return None
         
 
@@ -1100,9 +1091,6 @@ class NotificationService:
                 status='pending'
             )
 
-            # Debug: Log the context being used
-            logger.info(f"Rendering email template {template_name} with context keys: {list(context.keys())}")
-
             # Render email content
             html_message = render_to_string(f'notifications/emails/{template_name}.html', context)
             plain_message = strip_tags(html_message)
@@ -1117,24 +1105,11 @@ class NotificationService:
                 fail_silently=False
             )
 
-            if success:
-                email_log.status = 'sent'
-                email_log.sent_at = timezone.now()
-                logger.info(f"Critical email sent successfully to {user.email} (bypassed preferences)")
-            else:
-                email_log.status = 'failed'
-                email_log.error_message = "Unknown error occurred"
-                logger.error(f"Failed to send critical email to {user.email}")
 
             email_log.save()
             return success
 
         except Exception as e:
-            logger.error(f"Error sending critical email to {user.email}: {str(e)}")
-            if 'email_log' in locals():
-                email_log.status = 'failed'
-                email_log.error_message = str(e)
-                email_log.save()
             return False
         
     @staticmethod
@@ -1200,12 +1175,9 @@ class NotificationService:
                     notification=notification
                 )
 
-            logger.info(f"Sent order ready notification to {customer.email} for pickup {scheduled_pickup.confirmation_code}")
             return notification
 
         except Exception as e:
-            logger.error(f"Failed to send order ready notification for pickup {scheduled_pickup.id}: {str(e)}")
-            # Don't re-raise the exception to avoid breaking the verification process
             return None
         
     @staticmethod
