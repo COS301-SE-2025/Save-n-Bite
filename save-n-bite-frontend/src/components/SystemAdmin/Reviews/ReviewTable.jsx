@@ -33,13 +33,16 @@ const ReviewTable = ({ reviews, onViewReview, onActionClick }) => {
   }
 
   const renderStars = (rating) => {
+    // Handle null/undefined rating
+    const validRating = rating || 0;
+    
     return (
       <div className="flex items-center">
         {[1, 2, 3, 4, 5].map((star) => (
           <svg
             key={star}
             className={`w-4 h-4 ${
-              star <= rating ? 'text-yellow-400' : 'text-gray-300'
+              star <= validRating ? 'text-yellow-400' : 'text-gray-300'
             }`}
             fill="currentColor"
             viewBox="0 0 20 20"
@@ -47,9 +50,24 @@ const ReviewTable = ({ reviews, onViewReview, onActionClick }) => {
             <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
           </svg>
         ))}
-        <span className="ml-1 text-sm text-gray-500">({rating})</span>
+        <span className="ml-1 text-sm text-gray-500">({validRating})</span>
       </div>
     )
+  }
+
+  // Safe accessor function to handle missing nested properties
+  const safeGet = (obj, path, defaultValue = 'N/A') => {
+    return path.split('.').reduce((current, key) => {
+      return current && current[key] !== undefined ? current[key] : defaultValue;
+    }, obj);
+  }
+
+  // Get review content with fallback
+  const getReviewContent = (review) => {
+    return review.general_comment || 
+           review.food_review || 
+           review.business_review || 
+           'No written review';
   }
 
   return (
@@ -62,7 +80,7 @@ const ReviewTable = ({ reviews, onViewReview, onActionClick }) => {
                 Reviewer
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Subject
+                Business
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Rating
@@ -84,24 +102,34 @@ const ReviewTable = ({ reviews, onViewReview, onActionClick }) => {
                 <tr key={review.id} className="hover:bg-gray-50">
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="text-sm font-medium text-gray-900">
-                      {review.reviewer.name}
+                      {/* FIXED: Safe access to reviewer name */}
+                      {safeGet(review, 'reviewer.name', 'Anonymous')}
                     </div>
-                    <div className="text-sm text-gray-500">{review.date}</div>
+                    <div className="text-sm text-gray-500">
+                      {/* FIXED: Format date properly */}
+                      {review.time_ago || 
+                       (review.created_at ? new Date(review.created_at).toLocaleDateString() : 'Unknown date')}
+                    </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="text-sm font-medium text-gray-900">
-                      {review.subject.name}
+                      {/* FIXED: Changed from review.subject.name to review.business.business_name */}
+                      {safeGet(review, 'business.business_name', 'Unknown Business')}
                     </div>
                     <div className="text-sm text-gray-500">
-                      {review.subject.type}
+                      {/* FIXED: Get user type from reviewer, not subject */}
+                      {safeGet(review, 'reviewer.user_type', 'customer').charAt(0).toUpperCase() + 
+                       safeGet(review, 'reviewer.user_type', 'customer').slice(1)} Review
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    {renderStars(review.rating)}
+                    {/* FIXED: Handle null rating */}
+                    {renderStars(review.general_rating)}
                   </td>
                   <td className="px-6 py-4">
                     <div className="text-sm text-gray-900 max-w-xs truncate">
-                      {review.content}
+                      {/* FIXED: Get content from correct fields */}
+                      {getReviewContent(review)}
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
