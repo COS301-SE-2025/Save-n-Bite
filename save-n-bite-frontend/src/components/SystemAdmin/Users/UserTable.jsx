@@ -20,8 +20,8 @@ const ActionMenu = ({ user, onActionClick, onViewUser, onClose }) => {
   const menuRef = useRef();
 
 
-const ActionMenu = ({ user, onActionClick, onClose }) => {
-  const menuRef = useRef()
+// const ActionMenu = ({ user, onActionClick, onClose }) => {
+//   const menuRef = useRef()
   
   // Close menu when clicking outside 
   useOnClickOutside(menuRef, onClose)
@@ -311,6 +311,7 @@ const UserTable = ({
       </div>
     </>
   );
-};
+}
+
 
 export default UserTable;
