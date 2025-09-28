@@ -181,7 +181,7 @@ export default function ListingsOverview() {
                               )}
                               <div>
                                 <div className="text-sm font-medium text-gray-900 dark:text-gray-100">{listing.name}</div>
-                                <div className="text-sm text-gray-500 dark:text-gray-300">{listing.description}</div>
+                                {/* <div className="text-sm text-gray-500 dark:text-gray-300">{listing.description}</div> */}
                               </div>
                             </div>
                           </td>
