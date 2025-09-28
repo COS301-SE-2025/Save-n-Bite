@@ -332,7 +332,7 @@ class FoodProviderProfile(models.Model):
         import logging
         import time
         
-        logger = logging.getLogger(__name__)
+        #logger = logging.getLogger(__name__)
         
         try:
             # Use Nominatim - completely free geocoding service
@@ -361,7 +361,7 @@ class FoodProviderProfile(models.Model):
                 self.geocoding_failed = False
                 self.geocoding_error = ''
                 
-                logger.info(f"Successfully geocoded {self.business_name}: {self.latitude}, {self.longitude}")
+                #logger.info(f"Successfully geocoded {self.business_name}: {self.latitude}, {self.longitude}")
                 
                 # Respect Nominatim rate limit (1 request per second)
                 time.sleep(1)
@@ -369,12 +369,12 @@ class FoodProviderProfile(models.Model):
             else:
                 self.geocoding_failed = True
                 self.geocoding_error = "No results found for address"
-                logger.warning(f"No geocoding results for {self.business_name}")
+                #logger.warning(f"No geocoding results for {self.business_name}")
                 
         except Exception as e:
             self.geocoding_failed = True
             self.geocoding_error = f"Geocoding error: {str(e)}"
-            logger.error(f"Geocoding exception for {self.business_name}: {str(e)}")
+            #logger.error(f"Geocoding exception for {self.business_name}: {str(e)}")
     
     @property
     def coordinates(self):
