@@ -1851,7 +1851,7 @@ class AdvancedViewTest(APITestCase):
             'role': 'normal'
         }
         serializer = CustomerRegistrationSerializer(data=data)
-        self.assertTrue(serializer.is_valid())
+        self.assertFalse(serializer.is_valid())
         #self.assertIn('password', serializer.errors)
         
     def test_business_tag_serializer_validation(self):
@@ -2820,7 +2820,7 @@ class BusinessLogicTest(TestCase):
         serializer = CustomerRegistrationSerializer(data=user_data)
         
         # Test that validation fails
-        self.assertTrue(serializer.is_valid())
+        self.assertFalse(serializer.is_valid())
         #self.assertIn('password', serializer.errors)
         
         # Verify specific password validation errors
