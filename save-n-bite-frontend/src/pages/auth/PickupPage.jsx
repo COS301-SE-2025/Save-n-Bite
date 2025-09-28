@@ -39,6 +39,28 @@ const SimplePickupFeedback = ({ orderNumbers, isMultiple, onClose }) => {
     }, 2000)
   }
 
+  useEffect(() => {
+    const onVisible = () => {
+      if (document.visibilityState === 'visible') {
+        loadOrdersData();
+        loadReviewsData();
+      }
+    };
+    const onFocus = () => {
+      loadOrdersData();
+      loadReviewsData();
+    };
+  
+    document.addEventListener('visibilitychange', onVisible);
+    window.addEventListener('focus', onFocus);
+  
+    return () => {
+      document.removeEventListener('visibilitychange', onVisible);
+      window.removeEventListener('focus', onFocus);
+    };
+  }, []);
+
+  
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
       <div className="bg-white dark:bg-gray-900 w-full max-w-md rounded-xl shadow-xl">

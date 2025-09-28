@@ -19,8 +19,13 @@ import { useOnClickOutside } from '../../../hooks/useOnClickOutside';
 const ActionMenu = ({ user, onActionClick, onViewUser, onClose }) => {
   const menuRef = useRef();
 
-  // Close menu when clicking outside
-  useOnClickOutside(menuRef, onClose);
+
+// const ActionMenu = ({ user, onActionClick, onClose }) => {
+//   const menuRef = useRef()
+  
+  // Close menu when clicking outside 
+  useOnClickOutside(menuRef, onClose)
+
 
   const actions = [
     {
@@ -306,6 +311,7 @@ const UserTable = ({
       </div>
     </>
   );
-};
+}
+
 
 export default UserTable;

@@ -28,6 +28,26 @@ function ManageDonations() {
   const showToast = (message, type = 'info') => {
     setToast({ message, type })
   }
+  useEffect(() => {
+    const onVisible = () => {
+      if (document.visibilityState === 'visible') {
+        loadOrdersData();
+        loadReviewsData();
+      }
+    };
+    const onFocus = () => {
+      loadOrdersData();
+      loadReviewsData();
+    };
+  
+    document.addEventListener('visibilitychange', onVisible);
+    window.addEventListener('focus', onFocus);
+  
+    return () => {
+      document.removeEventListener('visibilitychange', onVisible);
+      window.removeEventListener('focus', onFocus);
+    };
+  }, []);
 
   // Fetch donations data
   useEffect(() => {
@@ -372,12 +392,7 @@ function ManageDonations() {
             <h1 className="text-lg font-semibold text-gray-900 dark:text-white">
               Donations {pendingCount > 0 && <span className="text-sm bg-red-500 text-white px-2 py-1 rounded-full ml-2">{pendingCount}</span>}
             </h1>
-            <button
-              onClick={fetchDonations}
-              className="text-sm text-emerald-600 hover:text-emerald-700 px-2 py-1 transition-colors"
-            >
-              Refresh
-            </button>
+            
           </div>
 
           <div className="p-4 sm:p-6">
@@ -389,12 +404,7 @@ function ManageDonations() {
                   Review, approve and track donations to nonprofit organizations
                 </p>
               </div>
-              <button
-                onClick={fetchDonations}
-                className="hidden md:block px-4 py-2 bg-emerald-600 text-white rounded-md hover:bg-emerald-700 transition-colors text-sm sm:text-base"
-              >
-                Refresh
-              </button>
+             
             </div>
 
             {/* Stats Bar */}

@@ -181,7 +181,7 @@ const ProfilePage = () => {
         </div>
 
         {/* Impact Snapshot */}
-        <div className="bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-100 dark:border-emerald-800 rounded-lg p-4 mb-6">
+        {/* <div className="bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-100 dark:border-emerald-800 rounded-lg p-4 mb-6">
           <div className="flex items-center justify-center">
             <div className="text-center">
               <p className="text-emerald-700 dark:text-emerald-300 font-medium">
@@ -192,7 +192,7 @@ const ProfilePage = () => {
               </p>
             </div>
           </div>
-        </div>
+        </div> */}
 
         {/* Navigation Tabs */}
         <div className="flex border-b border-gray-200 dark:border-gray-700 mb-6 overflow-x-auto">
