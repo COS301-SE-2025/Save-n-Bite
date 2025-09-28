@@ -343,7 +343,7 @@ const FoodItem = () => {
                       <ShoppingCartIcon className="h-4 w-4 mr-2" />
                       {buttonStatus === "idle" && "Add to Cart"}
                       {buttonStatus === "loading" && "Adding..."}
-                      {buttonStatus === "added" && "View Cart"}
+                      {buttonStatus === "View Cart" && "View Cart"}
                     </button>
 
                     

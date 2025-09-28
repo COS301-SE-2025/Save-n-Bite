@@ -114,7 +114,7 @@ const LoginForm = ({ onSuccess, onError, onEmailChange }) => {
         response.user.is_superuser === true
       ) {
         localStorage.setItem('adminToken', response.token);
-        console.log('Admin token stored for admin user');
+       
       }
 
       // Store user's email for pickup coordination
