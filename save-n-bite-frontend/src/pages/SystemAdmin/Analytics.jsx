@@ -76,12 +76,12 @@ const Analytics = () => {
     // Initial fetch
     fetchAnalyticsData()
     
-    // Set up interval for auto-refresh every 3 seconds
-    const intervalId = setInterval(fetchAnalyticsData, 3000)
+    // Set up interval for auto-refresh every 30 seconds (reduced from 3 seconds)
+    const intervalId = setInterval(fetchAnalyticsData, 30000)
     
     // Clean up interval on component unmount
     return () => clearInterval(intervalId)
-  }, []) // Empty dependency array means this runs once on mount
+  }, [])
 
   /**
    * Handle retry when there's an error
@@ -93,138 +93,145 @@ const Analytics = () => {
   }
 
   /**
-   * Transform user distribution data for pie chart
+   * Transform user distribution data for pie chart - FIXED
    */
   const getUserTypeData = () => {
-  if (!analyticsData?.user_distribution) {
-    console.log('No user distribution data available')
-    return []
-  }
-  
-  const distribution = analyticsData.user_distribution
-  console.log('User distribution raw data:', distribution)
-  
-  // Convert percentage strings to numbers
-  const data = []
-  
-  if (distribution.customer) {
-    const value = parseFloat(distribution.customer.replace('%', ''))
-    if (value > 0) {
-      data.push({ name: 'Customers', value: value, color: '#3B82F6' })
+    if (!analyticsData?.user_distribution) {
+      console.log('No user distribution data available')
+      return []
     }
+    
+    const distribution = analyticsData.user_distribution
+    console.log('User distribution raw data:', distribution)
+    
+    const data = []
+    
+    // FIXED: Consistent color scheme and better labels
+    const userTypeMapping = [
+      { key: 'customer', name: 'Customers', color: '#3B82F6' },
+      { key: 'provider', name: 'Food Providers', color: '#8B5CF6' },
+      { key: 'ngo', name: 'NGOs', color: '#10B981' },
+      { key: 'admin', name: 'Admins', color: '#F59E0B' }
+    ]
+    
+    userTypeMapping.forEach(({ key, name, color }) => {
+      if (distribution[key]) {
+        const value = parseFloat(distribution[key].replace('%', ''))
+        if (value > 0) {
+          data.push({ 
+            name: name, 
+            value: value, 
+            color: color,
+            percentage: distribution[key] // Keep original percentage string
+          })
+        }
+      }
+    })
+    
+    console.log('Transformed user type data:', data)
+    return data
   }
-  
-  if (distribution.provider) {
-    const value = parseFloat(distribution.provider.replace('%', ''))
-    if (value > 0) {
-      data.push({ name: 'Food Providers', value: value, color: '#8B5CF6' })
-    }
-  }
-  
-  if (distribution.ngo) {
-    const value = parseFloat(distribution.ngo.replace('%', ''))
-    if (value > 0) {
-      data.push({ name: 'NGOs', value: value, color: '#10B981' })
-    }
-  }
-  
-  if (distribution.admin) {
-    const value = parseFloat(distribution.admin.replace('%', ''))
-    if (value > 0) {
-      data.push({ name: 'Admins', value: value, color: '#F59E0B' })
-    }
-  }
-  
-  console.log('Transformed user type data:', data)
-  return data
-}
-
 
   /**
-   * Transform top providers data for bar chart
+   * Transform top providers data for bar chart - FIXED
    */
   const getTopProvidersChartData = () => {
-  if (!analyticsData?.top_providers || analyticsData.top_providers.length === 0) {
-    console.log('No top providers data available')
-    // Return sample data if no providers exist
-    return [
-      { name: 'No Data Available', listings: 0, transactions: 0 }
-    ]
-  }
-  
-  console.log('Top providers raw data:', analyticsData.top_providers)
-  
-  const transformedData = analyticsData.top_providers.map(provider => ({
-    name: provider.name && provider.name.length > 20 ? 
-          provider.name.substring(0, 20) + '...' : 
-          provider.name || 'Unknown Provider',
-    listings: provider.listings || 0,
-    transactions: provider.completed_transactions || provider.transactions || 0
-  }))
-  
-  console.log('Transformed top providers data:', transformedData)
-  return transformedData
-}
-
-  /**
-   * Generate time-series data for user growth
-   * This creates realistic data based on current totals
-   */
-  const getUserGrowthData = () => {
-    if (!analyticsData?.total_users) {
-      return []
-    }
-
-    const currentTotal = analyticsData.total_users
-    const monthlyGrowth = analyticsData.user_growth_percentage || 10
-    
-    // Generate 6 months of data leading to current total
-    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul']
-    const data = []
-    
-    for (let i = 0; i < months.length; i++) {
-      const monthsBack = months.length - 1 - i
-      const growthFactor = Math.pow(1 + (monthlyGrowth / 100), monthsBack)
-      const users = Math.round(currentTotal / growthFactor)
-      
-      data.push({
-        name: months[i],
-        users: users
-      })
+    if (!analyticsData?.top_providers || analyticsData.top_providers.length === 0) {
+      console.log('No top providers data available')
+      return [
+        { name: 'No Data Available', listings: 0, transactions: 0 }
+      ]
     }
     
-    return data
+    console.log('Top providers raw data:', analyticsData.top_providers)
+    
+    const transformedData = analyticsData.top_providers.map(provider => ({
+      name: provider.name && provider.name.length > 20 ? 
+            provider.name.substring(0, 20) + '...' : 
+            provider.name || 'Unknown Provider',
+      listings: provider.listings || 0,
+      transactions: provider.completed_transactions || provider.transactions || 0
+    }))
+    
+    console.log('Transformed top providers data:', transformedData)
+    return transformedData
   }
 
-  /**
-   * Generate platform activity data
-   */
-  const getPlatformActivityData = () => {
-    if (!analyticsData?.total_listings || !analyticsData?.total_transactions) {
-      return []
-    }
-
-    const currentListings = analyticsData.total_listings
-    const currentTransactions = analyticsData.total_transactions
+ 
+const getUserGrowthData = () => {
+  // Check if we have real monthly data from backend
+  if (analyticsData?.monthly_user_growth && analyticsData.monthly_user_growth.length > 0) {
+    console.log('✅ Using REAL monthly user growth data:', analyticsData.monthly_user_growth);
     
-    // Generate historical data
-    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul']
-    const data = []
-    
-    for (let i = 0; i < months.length; i++) {
-      const monthsBack = months.length - 1 - i
-      const listingGrowthFactor = Math.pow(1.15, monthsBack) // 15% monthly growth
-      const transactionGrowthFactor = Math.pow(1.12, monthsBack) // 12% monthly growth
-      
-      data.push({
-        name: months[i],
-        listings: Math.round(currentListings / listingGrowthFactor),
-        transactions: Math.round(currentTransactions / transactionGrowthFactor)
-      })
-    }
-    
-    return data
+    return analyticsData.monthly_user_growth.map(month => ({
+      name: month.name,        // e.g., "Jul 2024"
+      users: month.total_users, // Running total
+      new_users: month.new_users // New registrations that month
+    }));
   }
+
+  // Fallback: If no monthly data, show at least current total
+  if (analyticsData?.total_users) {
+    const currentMonth = new Date().toLocaleDateString('en-US', { 
+      month: 'short', 
+      year: 'numeric' 
+    });
+    
+    console.log('⚠️ Using fallback data - no monthly growth available');
+    return [{
+      name: currentMonth,
+      users: analyticsData.total_users,
+      new_users: analyticsData.new_users_month || 0
+    }];
+  }
+
+  // Last resort: No data message
+  console.log('❌ No user data available');
+  return [{
+    name: 'No Data',
+    users: 0,
+    new_users: 0
+  }];
+};
+
+/**
+ * Get real platform activity data from backend - FIXED and SIMPLIFIED
+ */
+const getPlatformActivityData = () => {
+  // Check if we have real monthly activity data
+  if (analyticsData?.monthly_activity_growth && analyticsData.monthly_activity_growth.length > 0) {
+    console.log('✅ Using REAL monthly activity data:', analyticsData.monthly_activity_growth);
+    
+    return analyticsData.monthly_activity_growth.map(month => ({
+      name: month.name,
+      listings: month.listings,
+      transactions: month.transactions
+    }));
+  }
+
+  // Fallback: Current totals only
+  if (analyticsData?.total_listings || analyticsData?.total_transactions) {
+    const currentMonth = new Date().toLocaleDateString('en-US', { 
+      month: 'short', 
+      year: 'numeric' 
+    });
+    
+    console.log('⚠️ Using fallback data - no monthly activity available');
+    return [{
+      name: currentMonth,
+      listings: analyticsData.total_listings || 0,
+      transactions: analyticsData.total_transactions || 0
+    }];
+  }
+
+  // Last resort
+  console.log('❌ No activity data available');
+  return [{
+    name: 'No Data',
+    listings: 0,
+    transactions: 0
+  }];
+};
 
   if (loading) {
     return (
@@ -334,16 +341,16 @@ const Analytics = () => {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* User Growth Chart */}
         <div className="bg-white rounded-lg shadow-sm border p-6">
-          <AnalyticsChart
-            title="User Growth"
-            subtitle="Total users over time"
-            type="line"
-            data={getUserGrowthData()}
-            dataKeys={['users']}
-            colors={['#3B82F6']}
-            height={300}
-          />
-        </div>
+  <AnalyticsChart
+    title="User Growth"
+    subtitle="Monthly user registration and totals"
+    type="line"
+    data={getUserGrowthData()}
+    dataKeys={['users', 'new_users']} // Show both total and new users
+    colors={['#3B82F6', '#10B981']}   // Blue for total, Green for new
+    height={300}
+  />
+</div>
 
         {/* User Distribution Pie Chart */}
         <div className="bg-white rounded-lg shadow-sm border p-6">
@@ -353,24 +360,24 @@ const Analytics = () => {
             type="pie"
             data={getUserTypeData()}
             dataKeys={['value']}
-            colors={['#3B82F6', '#8B5CF6', '#10B981']}
+            colors={['#3B82F6', '#8B5CF6', '#10B981', '#F59E0B']}
             height={300}
             donut={true}
           />
         </div>
 
         {/* Platform Activity */}
-        <div className="bg-white rounded-lg shadow-sm border p-6">
-          <AnalyticsChart
-            title="Platform Activity"
-            subtitle="Listings and transactions over time"
-            type="bar"
-            data={getPlatformActivityData()}
-            dataKeys={['listings', 'transactions']}
-            colors={['#8B5CF6', '#10B981']}
-            height={300}
-          />
-        </div>
+<div className="bg-white rounded-lg shadow-sm border p-6">
+  <AnalyticsChart
+    title="Platform Activity"
+    subtitle="Monthly listings and transactions"
+    type="line"
+    data={getPlatformActivityData()}
+    dataKeys={['listings', 'transactions']}
+    colors={['#8B5CF6', '#F59E0B']}
+    height={300}
+  />
+</div>
 
         {/* Top Providers */}
         <div className="bg-white rounded-lg shadow-sm border p-6">

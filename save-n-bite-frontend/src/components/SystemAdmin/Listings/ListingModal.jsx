@@ -133,7 +133,7 @@ const ListingModal = ({ listing, onClose, onRemove, onFlag }) => {
                       Provider
                     </h4>
                     <p className="mt-1 text-sm text-gray-900">
-                      {listing.provider}
+                      {listing.provider || listing.provider_business_name || 'Unknown Provider'}
                     </p>
                   </div>
                   <div>
@@ -157,7 +157,7 @@ const ListingModal = ({ listing, onClose, onRemove, onFlag }) => {
                       Created
                     </h4>
                     <p className="mt-1 text-sm text-gray-900">
-                      {new Date(listing.created).toLocaleDateString()}
+                      {new Date(listing.created_at || listing.created).toLocaleDateString()}
                     </p>
                   </div>
                 </div>
