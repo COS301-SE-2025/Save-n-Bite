@@ -21,7 +21,7 @@ User = get_user_model()
 
 class BadgeService:
     """
-    Core service for managing badges, calculations, and awards
+    Core service for managing badges with automatic awarding logic
     """
     
     def __init__(self):
@@ -29,86 +29,86 @@ class BadgeService:
         self.current_month = self.current_time.month
         self.current_year = self.current_time.year
     
-    def calculate_all_badges(self):
+    def process_order_completion(self, order: Order) -> List[ProviderBadge]:
         """
-        Calculate and award all badges for all providers
-        Called by management command or scheduled task
+        Process badge awards when an order is completed
+        Similar to digital garden's process_order_completion
         """
-        logger.info("Starting badge calculation for all providers")
+        # Get provider from order
+        provider = order.interaction.business.user
         
-        # Get all active food providers - using 'Verified' status
-        providers = User.objects.filter(
-            user_type='provider',
-            provider_profile__isnull=False,
-            provider_profile__status='verified'
-        ).select_related('provider_profile')
+        if provider.user_type != 'provider':
+            return []
         
-        logger.info(f"Found {providers.count()} providers to process")
-        
-        results = {
-            'providers_processed': 0,
-            'badges_awarded': 0,
-            'errors': []
-        }
-        
-        for provider in providers:
-            try:
-                logger.info(f"Processing badges for provider: {provider.email}")
-                with transaction.atomic():
-                    badges_awarded = self.calculate_provider_badges(provider)
-                    results['badges_awarded'] += len(badges_awarded)
-                    results['providers_processed'] += 1
-                    logger.info(f"Awarded {len(badges_awarded)} badges to {provider.email}")
-                    
-            except Exception as e:
-                error_msg = f"Error processing badges for {provider.email}: {str(e)}"
-                logger.error(error_msg)
-                results['errors'].append(error_msg)
-        
-        # Calculate leaderboard badges
-        try:
-            leaderboard_badges = self.calculate_leaderboard_badges()
-            results['badges_awarded'] += leaderboard_badges
-        except Exception as e:
-            error_msg = f"Error calculating leaderboard badges: {str(e)}"
-            logger.error(error_msg)
-            results['errors'].append(error_msg)
-        
-        logger.info(f"Badge calculation complete: {results}")
-        return results
-    
-    def calculate_provider_badges(self, provider: User) -> List[ProviderBadge]:
-        """
-        Calculate and award badges for a specific provider
-        """
         badges_awarded = []
         
-        # Get provider statistics
-        stats = self.get_provider_statistics(provider)
+        with transaction.atomic():
+            # Update provider statistics first
+            stats = self.update_provider_stats(provider)
+            
+            # Check for milestone badges that could be triggered by order completion
+            milestone_badges = self.check_milestone_badges_on_order(provider, stats, order)
+            badges_awarded.extend(milestone_badges)
+            
+            # Check for monthly badges (only at end of month or when criteria met)
+            monthly_badge = self.check_monthly_provider_badge(provider, stats)
+            if monthly_badge:
+                badges_awarded.append(monthly_badge)
+            
+            # Update cached badge statistics
+            self.update_provider_badge_stats(provider)
         
-        # Check milestone badges
-        milestone_badges = self.check_milestone_badges(provider, stats)
-        badges_awarded.extend(milestone_badges)
+        # Send notifications for new badges
+        for badge in badges_awarded:
+            self.send_badge_notification(provider, badge)
         
-        # Check monthly provider badge (for current month)
-        monthly_badge = self.check_monthly_provider_badge(provider, stats)
-        if monthly_badge:
-            badges_awarded.append(monthly_badge)
-        
-        # Check special achievement badges
-        special_badges = self.check_special_achievement_badges(provider, stats)
-        badges_awarded.extend(special_badges)
-        
-        # Update provider badge statistics
-        self.update_provider_badge_stats(provider)
+        logger.info(
+            f"Order {order.id} completion awarded {len(badges_awarded)} badges to {provider.email}"
+        )
         
         return badges_awarded
     
-    def get_provider_statistics(self, provider: User) -> Dict:
+    def process_review_creation(self, review: Review) -> List[ProviderBadge]:
         """
-        Get comprehensive statistics for a provider
+        Process badge awards when a review is created/updated
         """
-        # Review statistics - using correct relationship from reviews app
+        provider = review.business.user
+        
+        if provider.user_type != 'provider':
+            return []
+        
+        badges_awarded = []
+        
+        with transaction.atomic():
+            # Update provider statistics
+            stats = self.update_provider_stats(provider)
+            
+            # Check for review-related milestone badges
+            review_badges = self.check_review_milestone_badges(provider, stats, review)
+            badges_awarded.extend(review_badges)
+            
+            # Check for rating-based badges
+            rating_badges = self.check_rating_based_badges(provider, stats)
+            badges_awarded.extend(rating_badges)
+            
+            # Update cached badge statistics
+            self.update_provider_badge_stats(provider)
+        
+        # Send notifications for new badges
+        for badge in badges_awarded:
+            self.send_badge_notification(provider, badge)
+        
+        logger.info(
+            f"Review {review.id} awarded {len(badges_awarded)} badges to {provider.email}"
+        )
+        
+        return badges_awarded
+    
+    def update_provider_stats(self, provider: User) -> Dict:
+        """
+        Calculate current statistics for a provider
+        """
+        # Review statistics
         reviews = Review.objects.filter(business=provider.provider_profile, status='active')
         review_stats = reviews.aggregate(
             total_reviews=Count('id'),
@@ -116,8 +116,7 @@ class BadgeService:
             rating_sum=Sum('general_rating')
         )
         
-        # Order statistics - using correct relationship from interactions app
-        # Order -> Interaction -> business (FoodProviderProfile) -> user (provider)
+        # Order statistics
         orders = Order.objects.filter(
             interaction__business=provider.provider_profile,
             status='completed'
@@ -150,64 +149,99 @@ class BadgeService:
             'provider_since': provider_since,
         }
     
-    def check_milestone_badges(self, provider: User, stats: Dict) -> List[ProviderBadge]:
+    def check_milestone_badges_on_order(self, provider: User, stats: Dict, order: Order) -> List[ProviderBadge]:
         """
-        Check and award milestone badges
+        Check for milestone badges triggered by order completion
         """
         badges_awarded = []
         
-        # Define milestone thresholds with exact badge names
-        milestones = {
-            'First Order': {'threshold': 1, 'field': 'total_orders'},
-            'Veteran Provider': {'threshold': 365, 'field': 'days_active'},
-            'Review Magnet': {'threshold': 10, 'field': 'total_reviews'},
-            'Customer Favorite': {'threshold': 50, 'field': 'total_reviews'},
-            'Order Champion': {'threshold': 100, 'field': 'total_orders'},
-            'Revenue Milestone - R1000': {'threshold': 1000, 'field': 'total_revenue'},
-            'Revenue Milestone - R10000': {'threshold': 10000, 'field': 'total_revenue'},
-            'Excellence Badge': {'threshold': 4.5, 'field': 'average_rating', 'min_reviews': 10},
-        }
+        # Order-based milestones
+        order_milestones = [
+            ('First Order', 1),
+            ('Order Champion', 100),
+        ]
         
-        for badge_name, config in milestones.items():
-            try:
-                # Check if badge type exists using exact name
-                badge_type = BadgeType.objects.get(name=badge_name, is_active=True)
-                
-                # Check if already earned
-                if ProviderBadge.objects.filter(provider=provider, badge_type=badge_type).exists():
-                    continue
-                
-                # Check threshold
-                current_value = stats.get(config['field'], 0)
-                threshold = config['threshold']
-                
-                # Special handling for rating badges
-                if 'min_reviews' in config:
-                    if stats['total_reviews'] < config['min_reviews']:
-                        continue
-                
-                if current_value >= threshold:
-                    badge = self.award_badge(provider, badge_type, {
-                        'milestone_type': badge_name.lower().replace(' ', '_'),
-                        'threshold': threshold,
-                        'achieved_value': float(current_value) if isinstance(current_value, Decimal) else current_value,
-                        'earned_date': timezone.now().isoformat()
-                    })
+        for badge_name, threshold in order_milestones:
+            if stats['total_orders'] == threshold:  # Exact match for immediate awarding
+                badge = self.award_milestone_badge(
+                    provider, badge_name, 'orders', threshold, stats['total_orders'], order
+                )
+                if badge:
                     badges_awarded.append(badge)
-                    
-            except BadgeType.DoesNotExist:
-                logger.warning(f"Badge type not found: {badge_name}")
-                continue
-            except Exception as e:
-                logger.error(f"Error checking milestone {badge_name} for {provider.email}: {str(e)}")
-                continue
+        
+        # Revenue-based milestones
+        revenue_milestones = [
+            ('Revenue Milestone - R1000', Decimal('1000')),
+            ('Revenue Milestone - R10000', Decimal('10000')),
+        ]
+        
+        for badge_name, threshold in revenue_milestones:
+            # Check if just crossed the threshold with this order
+            order_amount = order.interaction.total_amount
+            previous_revenue = stats['total_revenue'] - order_amount
+            
+            if previous_revenue < threshold <= stats['total_revenue']:
+                badge = self.award_milestone_badge(
+                    provider, badge_name, 'revenue', float(threshold), float(stats['total_revenue']), order
+                )
+                if badge:
+                    badges_awarded.append(badge)
+        
+        # Special badges
+        special_badges = self.check_special_achievement_badges(provider, stats)
+        badges_awarded.extend(special_badges)
+        
+        return badges_awarded
+    
+    def check_review_milestone_badges(self, provider: User, stats: Dict, review: Review) -> List[ProviderBadge]:
+        """
+        Check for milestone badges triggered by review creation
+        """
+        badges_awarded = []
+        
+        # Review count milestones
+        review_milestones = [
+            ('Review Magnet', 10),
+            ('Customer Favorite', 50),
+        ]
+        
+        for badge_name, threshold in review_milestones:
+            if stats['total_reviews'] == threshold:  # Exact match for immediate awarding
+                badge = self.award_milestone_badge(
+                    provider, badge_name, 'reviews', threshold, stats['total_reviews'], review=review
+                )
+                if badge:
+                    badges_awarded.append(badge)
+        
+        return badges_awarded
+    
+    def check_rating_based_badges(self, provider: User, stats: Dict) -> List[ProviderBadge]:
+        """
+        Check for rating-based badges (can be earned/lost as ratings change)
+        """
+        badges_awarded = []
+        
+        # Perfect rating badge
+        if stats['average_rating'] == 5.0 and stats['total_reviews'] >= 5:
+            badge = self.award_rating_badge(
+                provider, 'Perfect Rating', 5.0, stats['total_reviews']
+            )
+            if badge:
+                badges_awarded.append(badge)
+        
+        # Excellence badge  
+        if stats['average_rating'] >= 4.5 and stats['total_reviews'] >= 10:
+            badge = self.award_rating_badge(
+                provider, 'Excellence Badge', stats['average_rating'], stats['total_reviews']
+            )
+            if badge:
+                badges_awarded.append(badge)
         
         return badges_awarded
     
     def check_monthly_provider_badge(self, provider: User, stats: Dict) -> Optional[ProviderBadge]:
         """
         Check if provider should get monthly provider badge
-        Only awarded once per month based on performance
         """
         try:
             badge_type = BadgeType.objects.get(name='Provider of the Month', is_active=True)
@@ -221,7 +255,7 @@ class BadgeService:
             ).exists():
                 return None
             
-            # Only award if provider has significant activity this month
+            # Award if provider has significant activity this month
             if (stats['monthly_orders'] >= 10 and 
                 stats['monthly_reviews'] >= 3 and 
                 stats['average_rating'] >= 4.0):
@@ -247,136 +281,91 @@ class BadgeService:
         """
         badges_awarded = []
         
-        # Perfect rating badge (5.0 rating with at least 5 reviews)
-        if stats['average_rating'] == 5.0 and stats['total_reviews'] >= 5:
-            try:
-                badge_type = BadgeType.objects.get(name='Perfect Rating', is_active=True)
-                if not ProviderBadge.objects.filter(provider=provider, badge_type=badge_type).exists():
-                    badge = self.award_badge(provider, badge_type, {
-                        'rating': 5.0,
-                        'review_count': stats['total_reviews']
-                    })
-                    badges_awarded.append(badge)
-            except BadgeType.DoesNotExist:
-                pass
-        
         # Early adopter badge (registered in first month of platform)
-        # Use timezone.now() to get a timezone-aware datetime, then set to UTC
         platform_launch = timezone.now().replace(year=2024, month=1, day=1, hour=0, minute=0, second=0, microsecond=0)
         if stats['provider_since'] <= (platform_launch + timedelta(days=30)):
-            try:
-                badge_type = BadgeType.objects.get(name='Early Adopter', is_active=True)
-                if not ProviderBadge.objects.filter(provider=provider, badge_type=badge_type).exists():
-                    badge = self.award_badge(provider, badge_type, {
-                        'registration_date': stats['provider_since'].isoformat()
-                    })
-                    badges_awarded.append(badge)
-            except BadgeType.DoesNotExist:
-                pass
-        
-        return badges_awarded
-    
-    def calculate_leaderboard_badges(self) -> int:
-        """
-        Calculate and award leaderboard-based badges (top 3 providers)
-        """
-        badges_awarded = 0
-        
-        # Calculate for current month
-        month_start = timezone.now().replace(day=1, hour=0, minute=0, second=0, microsecond=0)
-        
-        # Rating leaderboard
-        rating_leaderboard = self.calculate_rating_leaderboard(month_start)
-        badges_awarded += self.award_leaderboard_badges('rating', rating_leaderboard)
-        
-        # Review count leaderboard
-        review_leaderboard = self.calculate_review_count_leaderboard(month_start)
-        badges_awarded += self.award_leaderboard_badges('reviews', review_leaderboard)
-        
-        return badges_awarded
-    
-    def calculate_rating_leaderboard(self, month_start: datetime) -> List[Tuple[User, float]]:
-        """
-        Calculate rating-based leaderboard for the month
-        """
-        # Get providers with reviews in the current month
-        providers = User.objects.filter(
-            user_type='provider',
-            provider_profile__isnull=False,
-            provider_profile__status='verified',
-            provider_profile__reviews_received__status='active',
-            provider_profile__reviews_received__created_at__gte=month_start
-        ).annotate(
-            month_avg_rating=Avg('provider_profile__reviews_received__general_rating'),
-            month_review_count=Count('provider_profile__reviews_received')
-        ).filter(
-            month_review_count__gte=3  # Minimum 3 reviews to qualify
-        ).order_by('-month_avg_rating', '-month_review_count')[:3]
-        
-        return [(provider, provider.month_avg_rating) for provider in providers]
-    
-    def calculate_review_count_leaderboard(self, month_start: datetime) -> List[Tuple[User, int]]:
-        """
-        Calculate review count leaderboard for the month
-        """
-        providers = User.objects.filter(
-            user_type='provider',
-            provider_profile__isnull=False,
-            provider_profile__status='verified'
-        ).annotate(
-            month_review_count=Count(
-                'provider_profile__reviews_received',
-                filter=Q(
-                    provider_profile__reviews_received__status='active',
-                    provider_profile__reviews_received__created_at__gte=month_start
-                )
+            badge = self.award_special_badge(
+                provider, 'Early Adopter', {
+                    'registration_date': stats['provider_since'].isoformat()
+                }
             )
-        ).filter(
-            month_review_count__gt=0
-        ).order_by('-month_review_count')[:3]
-        
-        return [(provider, provider.month_review_count) for provider in providers]
-    
-    def award_leaderboard_badges(self, leaderboard_type: str, rankings: List[Tuple[User, float]]) -> int:
-        """
-        Award badges based on leaderboard rankings
-        """
-        badges_awarded = 0
-        positions = ['First', 'Second', 'Third']
-        
-        for i, (provider, value) in enumerate(rankings):
-            if i >= 3:  # Only top 3
-                break
-                
-            position = positions[i]
-            badge_name = f"Top Provider - {position} Place"
-            
-            try:
-                badge_type = BadgeType.objects.get(name=badge_name, is_active=True)
-                
-                # Check if already earned this month
-                if ProviderBadge.objects.filter(
-                    provider=provider,
-                    badge_type=badge_type,
-                    month=self.current_month,
-                    year=self.current_year
-                ).exists():
-                    continue
-                
-                self.award_badge(provider, badge_type, {
-                    'position': i + 1,
-                    'leaderboard_type': leaderboard_type,
-                    'value': float(value),
-                    'month': self.current_month,
-                    'year': self.current_year
-                })
-                badges_awarded += 1
-                
-            except BadgeType.DoesNotExist:
-                logger.warning(f"Badge type not found: {badge_name}")
-                continue
+            if badge:
+                badges_awarded.append(badge)
         
         return badges_awarded
+    
+    def award_milestone_badge(self, provider: User, badge_name: str, milestone_type: str, 
+                             threshold: int, achieved_value: int, order: Order = None, 
+                             review: Review = None) -> Optional[ProviderBadge]:
+        """
+        Award a milestone badge if not already earned
+        """
+        try:
+            badge_type = BadgeType.objects.get(name=badge_name, is_active=True)
+            
+            # Check if already earned (milestone badges are one-time only)
+            if ProviderBadge.objects.filter(provider=provider, badge_type=badge_type).exists():
+                return None
+            
+            badge_data = {
+                'milestone_type': milestone_type,
+                'threshold': threshold,
+                'achieved_value': achieved_value,
+                'earned_date': timezone.now().isoformat()
+            }
+            
+            if order:
+                badge_data['triggering_order_id'] = str(order.id)
+            if review:
+                badge_data['triggering_review_id'] = str(review.id)
+            
+            return self.award_badge(provider, badge_type, badge_data)
+            
+        except BadgeType.DoesNotExist:
+            logger.warning(f"Badge type not found: {badge_name}")
+            return None
+    
+    def award_rating_badge(self, provider: User, badge_name: str, rating: float, 
+                          review_count: int) -> Optional[ProviderBadge]:
+        """
+        Award a rating-based badge if not already earned
+        """
+        try:
+            badge_type = BadgeType.objects.get(name=badge_name, is_active=True)
+            
+            # Check if already earned (rating badges are one-time achievements)
+            if ProviderBadge.objects.filter(provider=provider, badge_type=badge_type).exists():
+                return None
+            
+            badge_data = {
+                'rating': rating,
+                'review_count': review_count,
+                'earned_date': timezone.now().isoformat()
+            }
+            
+            return self.award_badge(provider, badge_type, badge_data)
+            
+        except BadgeType.DoesNotExist:
+            logger.warning(f"Badge type not found: {badge_name}")
+            return None
+    
+    def award_special_badge(self, provider: User, badge_name: str, 
+                           badge_data: Dict) -> Optional[ProviderBadge]:
+        """
+        Award a special badge if not already earned
+        """
+        try:
+            badge_type = BadgeType.objects.get(name=badge_name, is_active=True)
+            
+            # Check if already earned
+            if ProviderBadge.objects.filter(provider=provider, badge_type=badge_type).exists():
+                return None
+            
+            return self.award_badge(provider, badge_type, badge_data)
+            
+        except BadgeType.DoesNotExist:
+            logger.warning(f"Badge type not found: {badge_name}")
+            return None
     
     def award_badge(self, provider: User, badge_type: BadgeType, badge_data: Dict) -> ProviderBadge:
         """
@@ -391,12 +380,6 @@ class BadgeService:
             badge_data=badge_data
         )
         
-        # Send notification
-        try:
-            self.send_badge_notification(provider, badge)
-        except Exception as e:
-            logger.error(f"Failed to send badge notification: {str(e)}")
-        
         logger.info(f"Badge awarded: {badge}")
         return badge
     
@@ -404,20 +387,23 @@ class BadgeService:
         """
         Send notification when a badge is earned
         """
-        NotificationService.create_notification(
-            recipient=provider,
-            notification_type='badge_earned',
-            title=f"🏆 Badge Earned: {badge.badge_type.name}!",
-            message=f"Congratulations! You've earned the {badge.badge_type.name} badge. {badge.badge_type.description}",
-            data={
-                'badge_id': str(badge.id),
-                'badge_type': badge.badge_type.name,
-                'badge_category': badge.badge_type.category,
-                'badge_rarity': badge.badge_type.rarity,
-                'earned_date': badge.earned_date.isoformat(),
-                'celebration_worthy': True
-            }
-        )
+        try:
+            NotificationService.create_notification(
+                recipient=provider,
+                notification_type='badge_earned',
+                title=f"🏆 Badge Earned: {badge.badge_type.name}!",
+                message=f"Congratulations! You've earned the {badge.badge_type.name} badge. {badge.badge_type.description}",
+                data={
+                    'badge_id': str(badge.id),
+                    'badge_type': badge.badge_type.name,
+                    'badge_category': badge.badge_type.category,
+                    'badge_rarity': badge.badge_type.rarity,
+                    'earned_date': badge.earned_date.isoformat(),
+                    'celebration_worthy': True
+                }
+            )
+        except Exception as e:
+            logger.error(f"Failed to send badge notification: {str(e)}")
     
     def update_provider_badge_stats(self, provider: User):
         """
@@ -580,9 +566,10 @@ class BadgeInitializationService:
     def create_default_badge_types():
         """
         Create all the default badge types for the system
+        This should be called during deployment or app initialization
         """
         badge_types = [
-            # Performance Badges
+            # Performance Badges (will be implemented later via leaderboard calculations)
             {
                 'name': 'Top Provider - First Place',
                 'description': 'Achieved the highest rating among all providers this month',
@@ -622,7 +609,7 @@ class BadgeInitializationService:
                 'display_order': 10
             },
             
-            # Milestone Badges
+            # Milestone Badges (automatically awarded)
             {
                 'name': 'First Order',
                 'description': 'Completed your very first order on Save n Bite',
@@ -687,7 +674,7 @@ class BadgeInitializationService:
                 'display_order': 26
             },
             
-            # Recognition Badges
+            # Recognition Badges (automatically awarded)
             {
                 'name': 'Excellence Badge',
                 'description': 'Maintaining exceptional quality with 4.5+ star rating',
@@ -707,7 +694,7 @@ class BadgeInitializationService:
                 'display_order': 31
             },
             
-            # Special Badges
+            # Special Badges (automatically awarded)
             {
                 'name': 'Early Adopter',
                 'description': 'One of the first providers to join Save n Bite',
