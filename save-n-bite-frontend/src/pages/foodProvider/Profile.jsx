@@ -203,12 +203,12 @@ function ProfilePage() {
                 <h2 className="text-xl sm:text-3xl font-bold">{formData.businessName}</h2>
               </div>
             </div>
-            <button
+            {/* <button
               onClick={() => bannerInputRef.current.click()}
               className="absolute top-2 right-2 sm:top-4 sm:right-4 bg-white/80 hover:bg-white p-2 rounded-full shadow-md transition-colors"
             >
               <Edit2Icon className="h-4 w-4 sm:h-5 sm:w-5 text-blue-900" />
-            </button>
+            </button> */}
             <input
               type="file"
               accept="image/*"
@@ -264,12 +264,12 @@ function ProfilePage() {
                     className="h-full w-full object-cover"
                   />
                 </div>
-                <button
+                {/* <button
                   onClick={() => logoInputRef.current.click()}
                   className="absolute left-1/2 transform -translate-x-1/2 top-14 sm:left-16 sm:top-16 sm:transform-none bg-white/80 hover:bg-white p-2 rounded-full shadow-md transition-colors"
                 >
                   <Edit2Icon className="h-3 w-3 sm:h-4 sm:w-4 text-blue-900" />
-                </button>
+                </button> */}
                 <input
                   type="file"
                   accept="image/*"
@@ -458,12 +458,8 @@ function ProfilePage() {
   }
 }} />
 
-          {/* Quick Access Buttons */}
-          <div className="flex flex-col sm:flex-row gap-4 mb-6 sm:mb-8">
-            <button className="w-full sm:w-auto px-4 sm:px-6 py-3 bg-white dark:bg-gray-800 border border-blue-600 dark:border-blue-500 text-blue-600 dark:text-blue-400 rounded-md hover:bg-blue-50 dark:hover:bg-blue-900 transition-colors duration-300 text-sm sm:text-base">
-              Download Impact Report
-            </button>
-          </div>
+      
+          
         </div>
       </div>
     </div>
