@@ -775,7 +775,7 @@ class TestAdminReviewAPI:
         response = authenticated_admin_client.get('/api/admin/reviews/')
         assert response.status_code == status.HTTP_200_OK
         data = response.json()
-        assert len(data['results']['reviews']) == 1
+        assert len(data['reviews']) == 1
 
     def test_admin_reviews_unauthorized(self, authenticated_customer_client):
         """Test admin endpoints access by non-admin"""
@@ -804,7 +804,7 @@ class TestAdminReviewAPI:
         # Test status filter
         response = authenticated_admin_client.get('/api/admin/reviews/?status=flagged')
         assert response.status_code == status.HTTP_200_OK
-        reviews = response.json()['results']['reviews']
+        reviews = response.json()['reviews']
         assert len(reviews) == 1
         assert reviews[0]['status'] == 'flagged'
 

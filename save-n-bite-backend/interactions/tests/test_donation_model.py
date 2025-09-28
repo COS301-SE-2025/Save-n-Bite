@@ -16,9 +16,16 @@ class TestDonationModel:
     def setup_method(self):
         self.ngo_user = User.objects.create_user(username="ngo_user", password="password")
         self.provider_user = User.objects.create_user(username="provider_user", password="password")
-        self.provider_profile = FoodProviderProfile.objects.create(
-            user=self.provider_user, 
-            business_name="Fresh Foods"
+        self.provider_profile, created = FoodProviderProfile.objects.get_or_create(
+            user=self.provider_user,
+            defaults={
+                'business_name': 'Fresh Foods',
+                'business_address': '123 Test St',
+                'business_contact': '+1234567890',
+                'business_email': 'business@test.com',
+                'cipc_document': 'test_doc.pdf',
+                'status': 'verified'
+            }
         )
 
         self.food_listing = FoodListing.objects.create(

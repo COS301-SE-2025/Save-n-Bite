@@ -14,11 +14,16 @@ class CartViewsTests(APITestCase):
         self.ngo_user = baker.make(User, user_type='ngo')
         
         # Create business profile with required fields
-        self.business_profile = baker.make(
-            FoodProviderProfile, 
+        self.business_profile, created = FoodProviderProfile.objects.get_or_create(
             user=self.business_user,
-            business_name="Test Business",
-            business_address="123 Test St"
+            defaults={
+                'business_name': "Test Business",
+                'business_address': "123 Test St",
+                'business_contact': '+1234567890',
+                'business_email': 'business@test.com',
+                'cipc_document': 'test_doc.pdf',
+                'status': 'verified'
+            }
         )
         
         # Create food listing with all required fields
@@ -307,16 +312,20 @@ class CartViewsTests(APITestCase):
         self.assertIsInstance(response.data['interactions'], list)
 
 
-
 class InteractionModelTests(APITestCase):
     def setUp(self):
         self.user = baker.make(User)
         self.business_user = baker.make(User, user_type='business')
-        self.business_profile = baker.make(
-            FoodProviderProfile, 
+        self.business_profile, created = FoodProviderProfile.objects.get_or_create(
             user=self.business_user,
-            business_name="Test Business",
-            business_address="123 Test St"
+            defaults={
+                'business_name': "Test Business",
+                'business_address': "123 Test St",
+                'business_contact': '+1234567890',
+                'business_email': 'business@test.com',
+                'cipc_document': 'test_doc.pdf',
+                'status': 'verified'
+            }
         )
         self.food_listing = baker.make(
             FoodListing,

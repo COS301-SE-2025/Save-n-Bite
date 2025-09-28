@@ -34,7 +34,9 @@ SECRET_KEY = os.getenv("SECRET_KEY", get_random_secret_key())
 # SECURITY WARNING: don't run with debug turned on in production!
 #DEBUG = os.getenv("DEBUG") == "false"
 DEBUG = os.getenv("DEBUG", "True").lower() == "true"
+
 GEOCODING_ENABLED = os.getenv("GEOCODING_ENABLED", "True").lower() == "true"
+
 
 
 ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", "localhost,127.0.0.1,169.254.134.3,savenbiteservice-hzghg8gcgddtcfg7.southafricanorth-01.azurewebsites.net").split(",")
@@ -57,6 +59,9 @@ INSTALLED_APPS = [
     'rest_framework.authtoken',
     'rest_framework_simplejwt',
     'corsheaders',
+
+    'backend.apps.BackendConfig',  # Use the app config to register signals
+
     'authentication',
     'interactions',
     'food_listings',
@@ -301,6 +306,7 @@ else:
     
     print(f"🟡 Using Azurite emulator for development")
 
+
 """
 File storage configuration
 - Honor USE_AZURE_STORAGE env flag (set to False in CI) to avoid any Azure/Azurite calls.
@@ -324,6 +330,7 @@ else:
     # Local filesystem storage (used in CI/tests)
     DEFAULT_FILE_STORAGE = 'django.core.files.storage.FileSystemStorage'
     MEDIA_URL = '/media/'
+
 
 # File upload settings
 FILE_UPLOAD_MAX_MEMORY_SIZE = 5 * 1024 * 1024  # 5MB

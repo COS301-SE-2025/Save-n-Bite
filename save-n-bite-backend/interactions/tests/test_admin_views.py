@@ -46,19 +46,24 @@ class AdminGetAllTransactionsTests(APITestCase):
         )
         
         # Create customer profile for regular user
-        self.customer_profile = CustomerProfile.objects.create(
+        self.customer_profile, created = CustomerProfile.objects.get_or_create(
             user=self.regular_user,
-            full_name='Test Consumer'
+            defaults={
+                'full_name': 'Test Consumer'
+            }
         )
         
         # Create food provider profile for business owner
-        self.food_provider = FoodProviderProfile.objects.create(
+        self.food_provider, created = FoodProviderProfile.objects.get_or_create(
             user=self.business_owner,
-            business_name='Test Restaurant',
-            business_address='123 Test St',
-            business_contact='+1234567890',
-            business_email='restaurant@example.com',
-            status='verified'
+            defaults={
+                'business_name': 'Test Restaurant',
+                'business_address': '123 Test St',
+                'business_contact': '+1234567890',
+                'business_email': 'restaurant@example.com',
+                'cipc_document': 'test_doc.pdf',
+                'status': 'verified'
+            }
         )
         
         # Create test interactions
@@ -237,10 +242,6 @@ class AdminGetAllTransactionsTests(APITestCase):
         self.assertIsNotNone(donation_transaction)
         self.assertEqual(sale_transaction['amount'], 'R100.00')
         self.assertEqual(donation_transaction['amount'], 'Free')
-
-    def test_admin_get_all_transactions_missing_business(self):
-        """Skip test for missing business since business is required"""
-        self.skipTest("Business field is required, cannot test missing business scenario")
 
     @patch('interactions.admin_views.Interaction.objects.select_related')
     def test_admin_get_all_transactions_exception_handling(self, mock_select_related):

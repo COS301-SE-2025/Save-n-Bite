@@ -386,7 +386,7 @@ def get_all_reviews_admin(request):
     reviews_page = queryset[start_index:end_index]
     
     # Serialize the reviews
-    serializer = ReviewDisplaySerializer(reviews_page, many=True, context={'request': request})
+    serializer = ReviewModerationSerializer(reviews_page, many=True, context={'request': request})
     
     # CUSTOM RESPONSE FORMAT - Match your frontend expectations
     return Response({
