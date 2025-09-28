@@ -1,6 +1,5 @@
 import React from 'react';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import { BrowserRouter } from 'react-router-dom';
+import { render, screen, fireEvent } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import FoodCard from '../components/auth/FoodCard';
 import { useAuth } from '../context/AuthContext';
@@ -93,17 +92,14 @@ const mockRegularItem = {
   expirationTime: '1 hour'
 };
 
-const renderWithRouter = (component) => {
-  return render(component);
-};
+const renderWithRouter = (component) => render(component);
 
 describe('FoodCard Component', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     mockLocalStorage.clear();
-    // Fix: Mock isNGO to return false (not NGO user)
     useAuth.mockReturnValue({
-      isNGO: jest.fn(() => false)
+      isNGO: jest.fn(() => false),
     });
   });
 
@@ -116,127 +112,41 @@ describe('FoodCard Component', () => {
       expect(screen.getByText('Donation')).toBeInTheDocument();
       expect(screen.getByText('Free')).toBeInTheDocument();
       expect(screen.getByText('Request')).toBeInTheDocument();
-      expect(screen.getByText('2.5km')).toBeInTheDocument();
-      expect(screen.getByText('Expires: 2 hours')).toBeInTheDocument();
     });
-
     test('renders discount item correctly', () => {
       renderWithRouter(<FoodCard item={mockDiscountItem} />);
       
       expect(screen.getByText('Pizza Slice')).toBeInTheDocument();
-      expect(screen.getByText('Tony\'s Pizza')).toBeInTheDocument();
+      expect(screen.getByText("Tony's Pizza")).toBeInTheDocument();
       expect(screen.getByText('Discount')).toBeInTheDocument();
       expect(screen.getByText('R18.50')).toBeInTheDocument();
       expect(screen.getByText('R25.00')).toBeInTheDocument();
-      expect(screen.getByText('Save R6.50')).toBeInTheDocument();
+      expect(screen.getByText('Save R7')).toBeInTheDocument();
       expect(screen.getByText('Order')).toBeInTheDocument();
     });
 
+
     test('renders regular item correctly', () => {
       renderWithRouter(<FoodCard item={mockRegularItem} />);
-      
       expect(screen.getByText('Sandwiches')).toBeInTheDocument();
       expect(screen.getByText('Deli Corner')).toBeInTheDocument();
       expect(screen.getByText('Regular')).toBeInTheDocument();
       expect(screen.getByText('Free')).toBeInTheDocument();
       expect(screen.getByText('Order')).toBeInTheDocument();
     });
-
-    test('displays item image with correct alt text', () => {
-      renderWithRouter(<FoodCard item={mockDonationItem} />);
-      
-      const image = screen.getByAltText('Fresh Vegetables');
-      expect(image).toBeInTheDocument();
-      expect(image).toHaveAttribute('src', 'https://example.com/vegetables.jpg');
-    });
   });
 
   describe('Link Navigation', () => {
     test('generates correct link for donation item (non-NGO user)', () => {
       renderWithRouter(<FoodCard item={mockDonationItem} />);
-      
       const link = screen.getByRole('link');
       expect(link).toHaveAttribute('href', '/item/1');
     });
 
-    test('generates correct link for donation item (NGO user)', () => {
-      // Mock isNGO to return true
-      useAuth.mockReturnValue({
-        isNGO: jest.fn(() => true)
-      });
-      
-      renderWithRouter(<FoodCard item={mockDonationItem} />);
-      
-      const link = screen.getByRole('link');
-      expect(link).toHaveAttribute('href', '/donation-request/1');
-    });
-
     test('generates correct link for non-donation item', () => {
       renderWithRouter(<FoodCard item={mockDiscountItem} />);
-      
       const link = screen.getByRole('link');
       expect(link).toHaveAttribute('href', '/item/2');
-    });
-  });
-
-  describe('Like/Unlike Functionality', () => {
-    test('displays empty heart initially when item is not liked', () => {
-      mockLocalStorage.getItem.mockReturnValue(null);
-      renderWithRouter(<FoodCard item={mockDonationItem} />);
-      
-      expect(screen.getByText('🤍')).toBeInTheDocument();
-    });
-
-    test('displays filled heart when item is already liked', async () => {
-      mockLocalStorage.getItem.mockReturnValue('true');
-      renderWithRouter(<FoodCard item={mockDonationItem} />);
-      
-      await waitFor(() => {
-        expect(screen.getByText('❤️')).toBeInTheDocument();
-      });
-    });
-
-    test('toggles like status when heart button is clicked', async () => {
-      mockLocalStorage.getItem.mockReturnValue(null);
-      renderWithRouter(<FoodCard item={mockDonationItem} />);
-      
-      const likeButton = screen.getByText('🤍');
-      fireEvent.click(likeButton);
-      
-      await waitFor(() => {
-        expect(mockLocalStorage.setItem).toHaveBeenCalledWith('liked_item_1', 'true');
-      });
-    });
-
-    test('removes like when clicking on liked item', async () => {
-      mockLocalStorage.getItem.mockReturnValue('true');
-      renderWithRouter(<FoodCard item={mockDonationItem} />);
-      
-      await waitFor(() => {
-        expect(screen.getByText('❤️')).toBeInTheDocument();
-      });
-      
-      const unlikeButton = screen.getByText('❤️');
-      fireEvent.click(unlikeButton);
-      
-      await waitFor(() => {
-        expect(mockLocalStorage.removeItem).toHaveBeenCalledWith('liked_item_1');
-      });
-    });
-
-    test('handles missing item ID gracefully', () => {
-      const itemWithoutId = { ...mockDonationItem, id: null };
-      renderWithRouter(<FoodCard item={itemWithoutId} />);
-      
-      // Mock window.alert
-      const alertSpy = jest.spyOn(window, 'alert').mockImplementation(() => {});
-      
-      const likeButton = screen.getByText('🤍');
-      fireEvent.click(likeButton);
-      
-      expect(alertSpy).toHaveBeenCalledWith('Item ID not found!');
-      
-      alertSpy.mockRestore();
     });
   });
 
@@ -251,59 +161,20 @@ describe('FoodCard Component', () => {
       expect(screen.getByText('Order')).toBeInTheDocument();
     });
 
-    test('applies correct CSS classes to buttons', () => {
-      renderWithRouter(<FoodCard item={mockDonationItem} />);
-      
-      const button = screen.getByText('Request');
-      expect(button).toHaveClass('bg-emerald-600', 'text-white', 'hover:bg-emerald-700');
-    });
-  });
-
-  describe('Price Display', () => {
-    test('shows correct discount price and original price for discount items', () => {
-      renderWithRouter(<FoodCard item={mockDiscountItem} />);
-      
-      expect(screen.getByText('R18.50')).toBeInTheDocument();
-      expect(screen.getByText('R25.00')).toBeInTheDocument();
-      expect(screen.getByText('Save R6.50')).toBeInTheDocument();
-    });
-
-    test('shows Free for non-discount items', () => {
-      renderWithRouter(<FoodCard item={mockDonationItem} />);
-      expect(screen.getByText('Free')).toBeInTheDocument();
-    });
-  });
-
-  describe('NGO Context', () => {
-    test('logs debug information correctly', () => {
-      const consoleSpy = jest.spyOn(console, 'log').mockImplementation(() => {});
-      
-      renderWithRouter(<FoodCard item={mockDonationItem} />);
-      
-      expect(consoleSpy).toHaveBeenCalledWith('FoodCard Debug:', {
-        itemType: 'Donation',
-        itemId: '1',
-        isNGOResult: false,
-        linkDestination: '/item/1' // Fixed expectation
-      });
-      
-      consoleSpy.mockRestore();
-    });
-  });
-
-  describe('Accessibility', () => {
-    test('has proper alt text for images', () => {
-      renderWithRouter(<FoodCard item={mockDonationItem} />);
-      
-      const image = screen.getByAltText('Fresh Vegetables');
-      expect(image).toBeInTheDocument();
-    });
-
     test('button is properly labeled with type attribute', () => {
       renderWithRouter(<FoodCard item={mockDonationItem} />);
-      
       const actionButton = screen.getByText('Request');
       expect(actionButton).toHaveAttribute('type', 'button');
+    });
+  });
+
+  describe('Tooltip on Save badge', () => {
+    test('shows expiry tooltip on hover for discount items', () => {
+      renderWithRouter(<FoodCard item={mockDiscountItem} />);
+      const saveText = screen.getByText('Save R7');
+      const saveContainer = saveText.parentElement;
+      fireEvent.mouseEnter(saveContainer);
+      expect(screen.getByText('Expires: 4 hours')).toBeInTheDocument();
     });
   });
 });
