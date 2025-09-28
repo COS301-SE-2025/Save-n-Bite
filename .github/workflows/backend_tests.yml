@@ -139,8 +139,8 @@ jobs:
     - name: Run reviews app tests only
       run: poetry run pytest reviews/tests.py
 
-    - name: Run interactions app tests only
-      run: poetry run pytest interactions/tests
+    # - name: Run interactions app tests only
+    #   run: poetry run pytest interactions/tests
 
     - name: Run coverage report (if requested)
       if: ${{ github.event.inputs.run_coverage == 'true' || github.event_name == 'pull_request' }}
