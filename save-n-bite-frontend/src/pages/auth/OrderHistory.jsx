@@ -1629,6 +1629,27 @@ const OrderHistory = () => {
     }
   }, []);
 
+  useEffect(() => {
+    const onVisible = () => {
+      if (document.visibilityState === 'visible') {
+        loadOrdersData();
+        loadReviewsData();
+      }
+    };
+    const onFocus = () => {
+      loadOrdersData();
+      loadReviewsData();
+    };
+  
+    document.addEventListener('visibilitychange', onVisible);
+    window.addEventListener('focus', onFocus);
+  
+    return () => {
+      document.removeEventListener('visibilitychange', onVisible);
+      window.removeEventListener('focus', onFocus);
+    };
+  }, []);
+
   const loadOrders = async () => {
     setLoading(true);
     setError(null);

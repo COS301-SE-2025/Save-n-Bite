@@ -143,6 +143,27 @@ function ProfilePage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
+  useEffect(() => {
+    const onVisible = () => {
+      if (document.visibilityState === 'visible') {
+        loadOrdersData();
+        loadReviewsData();
+      }
+    };
+    const onFocus = () => {
+      loadOrdersData();
+      loadReviewsData();
+    };
+  
+    document.addEventListener('visibilitychange', onVisible);
+    window.addEventListener('focus', onFocus);
+  
+    return () => {
+      document.removeEventListener('visibilitychange', onVisible);
+      window.removeEventListener('focus', onFocus);
+    };
+  }, []);
+
   return (
     <div className="flex h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
       {toast && (

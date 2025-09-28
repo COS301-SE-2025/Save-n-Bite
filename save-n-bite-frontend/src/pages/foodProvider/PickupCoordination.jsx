@@ -59,20 +59,62 @@ function PickupCoordination() {
   const toggleMobileSidebar = () => {
     setIsMobileSidebarOpen(!isMobileSidebarOpen);
   };
+useEffect(() => {
+  const onVisible = () => {
+    if (document.visibilityState === 'visible') {
+      loadOrdersData();
+      loadReviewsData();
+    }
+  };
+  const onFocus = () => {
+    loadOrdersData();
+    loadReviewsData();
+  };
 
+  document.addEventListener('visibilitychange', onVisible);
+  window.addEventListener('focus', onFocus);
+
+  return () => {
+    document.removeEventListener('visibilitychange', onVisible);
+    window.removeEventListener('focus', onFocus);
+  };
+}, []);
   // Load pickup data on component mount and when date changes
   useEffect(() => {
     loadScheduleData();
   }, [selectedDate]);
 
-  // Auto-refresh every 30 seconds
-useEffect(() => {
-  const interval = setInterval(() => {
-    loadScheduleData();
-  }, 30000); // 30 seconds
 
-  return () => clearInterval(interval); // Cleanup on unmount
-}, [selectedDate]);
+  useEffect(() => {
+    const onVisible = () => {
+      if (document.visibilityState === 'visible') {
+        loadOrdersData();
+        loadReviewsData();
+      }
+    };
+    const onFocus = () => {
+      loadOrdersData();
+      loadReviewsData();
+    };
+  
+    document.addEventListener('visibilitychange', onVisible);
+    window.addEventListener('focus', onFocus);
+  
+    return () => {
+      document.removeEventListener('visibilitychange', onVisible);
+      window.removeEventListener('focus', onFocus);
+    };
+  }, []);
+
+  
+//   // Auto-refresh every 30 seconds
+// useEffect(() => {
+//   const interval = setInterval(() => {
+//     loadScheduleData();
+//   }, 30000); // 30 seconds
+
+//   return () => clearInterval(interval); // Cleanup on unmount
+// }, [selectedDate]);
 
   // Auto-hide success message after 3 seconds
   useEffect(() => {
@@ -526,13 +568,7 @@ const isTomorrow = selectedDate === tomorrowStr;
             <Menu size={24} />
           </button>
           <h1 className="text-lg font-semibold text-gray-900 dark:text-white">Manage Orders & Pickups</h1>
-          <button
-            onClick={refreshPickupData}
-            className="p-2 text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
-            aria-label="Refresh data"
-          >
-            <RefreshCw size={20} />
-          </button>
+         
         </div>
 
         {/* Content */}
