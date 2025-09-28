@@ -1192,6 +1192,7 @@ class DonationRequestView(APIView):
         )
     
 class AcceptDonationView(APIView):
+    """Accept a donation request - changes status from PENDING to CONFIRMED"""
     permission_classes = [IsAuthenticated]
 
     def post(self, request, interaction_id):
@@ -1220,13 +1221,18 @@ class AcceptDonationView(APIView):
                     status=status.HTTP_400_BAD_REQUEST
                 )
 
-            # Reduce the quantity
+            # Reserve the quantity (reduce from available)
             food_listing.quantity_available -= requested_quantity
             food_listing.save()
 
-            # Update interaction and order status
-            interaction.status = Interaction.Status.COMPLETED
+            # Update interaction status to CONFIRMED (not COMPLETED)
+            interaction.status = Interaction.Status.CONFIRMED
             interaction.save()
+
+            # Update related order status if exists
+            if hasattr(interaction, 'order'):
+                interaction.order.status = Order.Status.CONFIRMED
+                interaction.order.save()
 
             # Send acceptance notifications
             try:
@@ -1250,7 +1256,7 @@ class AcceptDonationView(APIView):
 
         return Response(
             {
-                'message': 'Donation accepted and marked as ready for pickup',
+                'message': 'Donation accepted and confirmed',
                 'interaction_id': str(interaction.id),
                 'status': interaction.status,
                 'pickup_code': interaction.order.pickup_code if hasattr(interaction, 'order') else None,
@@ -1260,6 +1266,7 @@ class AcceptDonationView(APIView):
         )
     
 class RejectDonationView(APIView):
+    """Reject a donation request"""
     permission_classes = [IsAuthenticated]
 
     def post(self, request, interaction_id):
@@ -1278,7 +1285,13 @@ class RejectDonationView(APIView):
         rejection_reason = request.data.get('rejectionReason', '')
         
         with db_transaction.atomic():
-            # Update interaction status
+            # Update related order status FIRST (before changing interaction status)
+            if hasattr(interaction, 'order'):
+                # Temporarily disable the Order.save() method's interaction status update
+                # by directly updating the order status without triggering save logic
+                Order.objects.filter(id=interaction.order.id).update(status=Order.Status.CANCELLED)
+            
+            # Now update interaction status to REJECTED
             interaction.status = Interaction.Status.REJECTED
             if hasattr(interaction, 'rejection_reason'):
                 interaction.rejection_reason = rejection_reason
@@ -1312,3 +1325,129 @@ class RejectDonationView(APIView):
             'rejection_reason': rejection_reason,
             'notifications': notification_status
         }, status=status.HTTP_200_OK)
+    
+class PrepareDonationView(APIView):
+    """Mark donation as ready for pickup - changes status from CONFIRMED to READY_FOR_PICKUP"""
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, interaction_id):
+        interaction = get_object_or_404(
+            Interaction, 
+            id=interaction_id, 
+            business=request.user.provider_profile,
+            interaction_type=Interaction.InteractionType.DONATION
+        )
+
+        if interaction.status != Interaction.Status.CONFIRMED:
+            return Response({
+                'error': 'Only confirmed donations can be marked as ready for pickup.'
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        with db_transaction.atomic():
+            # Update interaction status to READY_FOR_PICKUP
+            interaction.status = Interaction.Status.READY_FOR_PICKUP
+            interaction.save()
+
+            # Update related order status if exists
+            if hasattr(interaction, 'order'):
+                interaction.order.status = Order.Status.READY_FOR_PICKUP
+                interaction.order.save()
+
+            # Send ready for pickup notifications
+            try:
+                notification = NotificationService.send_donation_ready_notification(
+                    interaction=interaction
+                )
+                
+                notification_status = {
+                    'notification_sent': notification is not None,
+                    'notification_id': str(notification.id) if notification else None
+                }
+                
+            except Exception as e:
+                # Log the error but don't fail the status update
+                logger.error(f"Failed to send donation ready notifications: {str(e)}")
+                notification_status = {
+                    'notification_sent': False,
+                    'notification_error': str(e)
+                }
+
+        return Response(
+            {
+                'message': 'Donation marked as ready for pickup',
+                'interaction_id': str(interaction.id),
+                'status': interaction.status,
+                'pickup_code': interaction.order.pickup_code if hasattr(interaction, 'order') else None,
+                'notifications': notification_status
+            }, 
+            status=status.HTTP_200_OK
+        )
+
+class CompleteDonationView(APIView):
+    """Complete donation pickup - changes status from READY_FOR_PICKUP to COMPLETED"""
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, interaction_id):
+        interaction = get_object_or_404(
+            Interaction, 
+            id=interaction_id, 
+            business=request.user.provider_profile,
+            interaction_type=Interaction.InteractionType.DONATION
+        )
+
+        if interaction.status != Interaction.Status.READY_FOR_PICKUP:
+            return Response({
+                'error': 'Only donations ready for pickup can be completed.'
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        pickup_verification = request.data.get('pickup_verification', {})
+        
+        with db_transaction.atomic():
+            # Update interaction status to COMPLETED
+            interaction.status = Interaction.Status.COMPLETED
+            interaction.completed_at = timezone.now()
+            interaction.save()
+
+            # Update related order status if exists
+            if hasattr(interaction, 'order'):
+                interaction.order.status = Order.Status.COMPLETED
+                interaction.order.save()
+
+            # Create status history record
+            InteractionStatusHistory.objects.create(
+                interaction=interaction,
+                old_status=Interaction.Status.READY_FOR_PICKUP,
+                new_status=Interaction.Status.COMPLETED,
+                changed_by=request.user,
+                notes=pickup_verification.get('notes', 'Donation pickup completed')
+            )
+
+            # Send completion notifications
+            try:
+                notification = NotificationService.send_donation_completed_notification(
+                    interaction=interaction
+                )
+                
+                notification_status = {
+                    'notification_sent': notification is not None,
+                    'notification_id': str(notification.id) if notification else None
+                }
+                
+            except Exception as e:
+                # Log the error but don't fail the completion
+                logger.error(f"Failed to send donation completion notifications: {str(e)}")
+                notification_status = {
+                    'notification_sent': False,
+                    'notification_error': str(e)
+                }
+
+        return Response(
+            {
+                'message': 'Donation pickup completed successfully',
+                'interaction_id': str(interaction.id),
+                'status': interaction.status,
+                'completed_at': interaction.completed_at.isoformat(),
+                'notifications': notification_status
+            }, 
+            status=status.HTTP_200_OK
+        )
