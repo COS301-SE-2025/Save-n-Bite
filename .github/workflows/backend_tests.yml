@@ -151,8 +151,29 @@ jobs:
     - name: Run reviews app tests only
       run: poetry run pytest reviews/tests.py
 
-    # - name: Run interactions app tests only
-    #   run: poetry run pytest interactions/tests
+    - name: Run Garden app tests only
+      run: poetry run pytest digital_garden/tests.py
+
+    - name: Run Interactions app tests only
+      run: poetry run pytest interactions/tests
+
+    - name: Run Notifications app tests only
+      run: poetry run pytest notifications/tests.py
+
+    - name: Run FoodListing app tests only
+      run: poetry run pytest food_listings/tests.py
+
+    - name: Run Badges app tests only
+      run: poetry run pytest badges/tests.py
+
+    - name: Run Badges app tests only
+      run: poetry run python manage.py test admin_system
+
+    - name: Run Badges app tests only
+      run: poetry run python manage.py test authentication
+
+    - name: Run Badges app tests only
+      run: poetry run python run_intergration_tests.py --all --verbose
 
     - name: Run coverage report (if requested)
       if: ${{ github.event.inputs.run_coverage == 'true' || github.event_name == 'pull_request' }}
