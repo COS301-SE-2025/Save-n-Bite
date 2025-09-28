@@ -276,14 +276,14 @@ const HelpMenu = ({ isOpen, onClose }) => {
             </div>
             
             <div className="space-y-3 pl-11">
-              <a href="mailto:support@savenbite.com" className="flex items-center text-emerald-600 dark:text-emerald-400 hover:text-emerald-700 dark:hover:text-emerald-300 text-sm">
+              <p href="mailto:support@savenbite.com" className="flex items-center text-emerald-600 dark:text-emerald-400 hover:text-emerald-700 dark:hover:text-emerald-300 text-sm">
                 <MailIcon size={16} className="mr-2" />
                 support@savenbite.com
-              </a>
-              <a href="tel:+27998776443" className="flex items-center text-emerald-600 dark:text-emerald-400 hover:text-emerald-700 dark:hover:text-emerald-300 text-sm">
+              </p>
+              <p href="tel:+27998776443" className="flex items-center text-emerald-600 dark:text-emerald-400 hover:text-emerald-700 dark:hover:text-emerald-300 text-sm">
                 <PhoneIcon size={16} className="mr-2" />
                 +27 99 877 6443
-              </a>
+              </p>
               <div className="flex items-start text-sm text-gray-600 dark:text-gray-400">
                 <ClockIcon size={16} className="mr-2 mt-0.5 flex-shrink-0" />
                 <div>

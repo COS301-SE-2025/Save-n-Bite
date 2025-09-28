@@ -33,9 +33,9 @@ const DonationConfirmationPage = () => {
     <CheckCircle size={32} className="text-emerald-600 dark:text-emerald-400 mr-4" />
 
             <div>
-              <h1 className="text-xl font-bold text-gray-800 dark:text-gray-100">
-                Donation Request Submitted
-              </h1>
+            <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-center">
+  <span className="bg-gradient-to-r from-emerald-600 to-blue-600 bg-clip-text text-transparent">Donation Request Submitted</span>
+</h1>
 <p className="text-gray-600 dark:text-gray-300">
   Your donation request has been sent to {listing.provider?.business_name || 'the provider'}
 </p>
