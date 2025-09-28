@@ -103,25 +103,25 @@ const DetailedBasket = ({
                             R {item.price.toFixed(2)}
                           </p>
                         </div>
-                        <div className="flex items-center space-x-3">
-                          <div className="flex items-center space-x-2 bg-gray-50 dark:bg-gray-700 rounded-lg px-2 py-1">
+                        <div className="flex items-center gap-2 sm:space-x-3 flex-wrap justify-end">
+                          <div className="flex items-center gap-2 bg-gray-50 dark:bg-gray-700 rounded-lg px-3 py-2 sm:px-2 sm:py-1">
                             <button
                               onClick={() => handleUpdateQuantity(item.id, item.quantity - 1)}
-                              className="p-1 text-gray-500 hover:text-emerald-600 dark:text-gray-300 dark:hover:text-emerald-400 transition-colors"
+                              className="p-2 sm:p-1 text-gray-500 hover:text-emerald-600 dark:text-gray-300 dark:hover:text-emerald-400 transition-colors"
                             >
                               {item.quantity > 1 && (
-  <Minus className="h-4 w-4" />
-)}
+                                <Minus className="h-5 w-5 sm:h-4 sm:w-4" />
+                              )}
 
                             </button>
-                            <span className="text-sm font-medium text-gray-900 dark:text-white w-5 text-center">
+                            <span className="text-sm font-medium text-gray-900 dark:text-white w-8 sm:w-6 text-center">
                               {item.quantity}
                             </span>
                             <button
                               onClick={() => handleUpdateQuantity(item.id, item.quantity + 1)}
-                              className="p-1 text-gray-500 hover:text-emerald-600 dark:text-gray-300 dark:hover:text-emerald-400 transition-colors"
+                              className="p-2 sm:p-1 text-gray-500 hover:text-emerald-600 dark:text-gray-300 dark:hover:text-emerald-400 transition-colors"
                             >
-                              <Plus className="h-4 w-4" />
+                              <Plus className="h-5 w-5 sm:h-4 sm:w-4" />
                             </button>
                           </div>
                           <button
