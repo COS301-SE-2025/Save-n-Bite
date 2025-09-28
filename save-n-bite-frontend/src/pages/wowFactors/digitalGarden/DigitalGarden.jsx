@@ -6,6 +6,7 @@ import PlantDetails from '../PlantDetails';
 import GardenStats from '../GardenStats';
 import useDigitalGarden from '../hooks/useDigitalGarden';
 import useGardenActions from '../hooks/useGardenAction';
+import useMobilePlantSelection from '../../../hooks/useMobilePlantSelection';
 import panelBackgroundSvg from '../../../assets/images/backgrounds/panel-background.svg';
 import headerBackgroundSvg from '../../../assets/images/backgrounds/garden-background.svg';
 import './DigitalGarden.css';
@@ -22,8 +23,30 @@ const DigitalGarden = () => {
   // State for mode prompts
   const [movePrompt, setMovePrompt] = useState('');
   const [harvestPrompt, setHarvestPrompt] = useState('');
+  const [plantingPrompt, setPlantingPrompt] = useState('');
   const [selectedPlantForMove, setSelectedPlantForMove] = useState(null);
   const [selectedPlantForHarvest, setSelectedPlantForHarvest] = useState(null);
+
+  // Mobile plant selection hook
+  const {
+    selectedPlantItem,
+    isPlantingMode,
+    startPlantingMode,
+    exitPlantingMode,
+    selectPlantForPlanting,
+    handleTilePlacement
+  } = useMobilePlantSelection();
+
+  // Check if mobile device
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth <= 768);
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   // Main garden hook
   const {
@@ -37,40 +60,70 @@ const DigitalGarden = () => {
   } = useDigitalGarden();
 
   // Garden actions hook
-  const { actionLoading, placePlant, harvestPlant, movePlant } = useGardenActions(
-    // onSuccess callback
-    useCallback((action, result) => {
-      let message = `${action.charAt(0).toUpperCase() + action.slice(1)} successful!`;
+const { actionLoading, placePlant, harvestPlant, movePlant } = useGardenActions(
+  // onSuccess callback - FIXED
+  useCallback((action, result) => {
+    let message = `${action.charAt(0).toUpperCase() + action.slice(1)} successful!`;
+    
+    if (action === 'harvest' && result?.plant) {
+      message = `${result.plant.name} harvested and returned to inventory!`;
+    } else if (action === 'remove' && result?.plant) {
+      message = `${result.plant.name} removed from garden and returned to inventory!`;
+    } else if (action === 'place') {
+      // FIXED: Handle plant placement notification properly
+      // Check multiple possible response structures
+      let plantName = null;
       
-      if (action === 'harvest' && result?.plant) {
-        message = `${result.plant.name} harvested and returned to inventory!`;
-      } else if (action === 'remove' && result?.plant) {
-        message = `${result.plant.name} removed from garden and returned to inventory!`;
+      if (result?.plant?.name) {
+        plantName = result.plant.name;
+      } else if (result?.plant_details?.name) {
+        plantName = result.plant_details.name;
+      } else if (result?.tile?.plant_details?.name) {
+        plantName = result.tile.plant_details.name;
+      } else if (selectedPlantItem?.plant_details?.name) {
+        // Fallback to the selected plant from mobile mode
+        plantName = selectedPlantItem.plant_details.name;
+      } else if (draggedPlant?.plant_details?.name) {
+        // Fallback to the dragged plant from desktop mode
+        plantName = draggedPlant.plant_details.name;
       }
       
-      setNotification({
-        type: 'success',
-        message: message
-      });
-      refreshGarden();
-      refreshInventory();
-      setGardenMode('view');
-      setSelectedPlant(null);
-      setDraggedPlant(null);
-      setSelectedPlantForMove(null);
-      setSelectedPlantForHarvest(null);
-      setMovePrompt('');
-      setHarvestPrompt('');
-    }, [refreshGarden, refreshInventory]),
+      if (plantName) {
+        message = `${plantName} planted successfully!`;
+      } else {
+        message = `Plant placed successfully!`;
+      }
+    }
+    
+    setNotification({
+      type: 'success',
+      message: message
+    });
+    refreshGarden();
+    refreshInventory();
+    setGardenMode('view');
+    setSelectedPlant(null);
+    setDraggedPlant(null);
+    setSelectedPlantForMove(null);
+    setSelectedPlantForHarvest(null);
+    setMovePrompt('');
+    setHarvestPrompt('');
+    setPlantingPrompt('');
+    
+    // Exit mobile planting mode after successful placement
+    if (isPlantingMode) {
+      exitPlantingMode();
+    }
+  }, [refreshGarden, refreshInventory, isPlantingMode, exitPlantingMode, selectedPlantItem, draggedPlant]),
 
-    // onError callback
-    useCallback((action, error) => {
-      setNotification({
-        type: 'error',
-        message: `Failed to ${action}: ${error.message}`
-      });
-    }, [])
-  );
+  // onError callback (unchanged)
+  useCallback((action, error) => {
+    setNotification({
+      type: 'error',
+      message: `Failed to ${action}: ${error.message}`
+    });
+  }, [])
+);
 
   // Calculate total plants earned
   const calculateTotalPlantsEarned = useCallback(() => {
@@ -132,6 +185,15 @@ const DigitalGarden = () => {
 
   // Handle tile selection in garden
   const handleTileSelect = useCallback(async (tile, actionType, sourceTile = null) => {
+    // Handle mobile planting mode
+    if (isMobile && isPlantingMode) {
+      const success = await handleTilePlacement(tile, placePlant);
+      if (success) {
+        setPlantingPrompt('');
+      }
+      return;
+    }
+
     try {
       if (actionType === 'select') {
         if (gardenMode === 'move') {
@@ -152,16 +214,16 @@ const DigitalGarden = () => {
       } else if (actionType === 'move' && sourceTile) {
         await movePlant(sourceTile.row, sourceTile.col, tile.row, tile.col);
       } else if (actionType === 'harvest' && tile.plant_details) {
-        const result = await harvestPlant(tile.row, tile.col);
+        await harvestPlant(tile.row, tile.col);
       }
     } catch (error) {
       console.error('Tile action failed:', error);
     }
-  }, [movePlant, harvestPlant, gardenMode]);
+  }, [movePlant, harvestPlant, gardenMode, isMobile, isPlantingMode, handleTilePlacement, placePlant]);
 
   // Handle plant interaction (click for details)
   const handlePlantInteract = useCallback((plantData, tile) => {
-    if (gardenMode === 'view') {
+    if (gardenMode === 'view' && !isPlantingMode) {
       setSelectedPlantForDetails(plantData);
       setShowPlantDetails(true);
     } else if (gardenMode === 'harvest') {
@@ -171,19 +233,31 @@ const DigitalGarden = () => {
         handleTileSelect(tile, 'select');
       }
     }
-  }, [gardenMode, selectedPlantForHarvest, handleTileSelect]);
+  }, [gardenMode, selectedPlantForHarvest, handleTileSelect, isPlantingMode]);
 
-  // Handle drag and drop functionality (desktop)
+  // Handle plant inventory selection
+  const handlePlantSelect = useCallback((inventoryItem) => {
+    if (isMobile && isPlantingMode) {
+      selectPlantForPlanting(inventoryItem);
+      setPlantingPrompt(`Selected ${inventoryItem.plant_details.name}. Click on an empty garden tile to plant it.`);
+    }
+  }, [isMobile, isPlantingMode, selectPlantForPlanting]);
+
+  // Handle desktop drag and drop
   const handleDragStart = useCallback((inventoryItem) => {
-    setDraggedPlant(inventoryItem);
-  }, []);
+    if (!isMobile) {
+      setDraggedPlant(inventoryItem);
+    }
+  }, [isMobile]);
 
   const handleDragEnd = useCallback(() => {
-    setDraggedPlant(null);
-  }, []);
+    if (!isMobile) {
+      setDraggedPlant(null);
+    }
+  }, [isMobile]);
 
   const handleDrop = useCallback(async (tile) => {
-    if (draggedPlant && !tile.plant_details) {
+    if (!isMobile && draggedPlant && !tile.plant_details) {
       try {
         const plantId = draggedPlant.plant_details?.id || draggedPlant.plant;
         
@@ -197,31 +271,7 @@ const DigitalGarden = () => {
         console.error('Plant placement failed:', error);
       }
     }
-  }, [draggedPlant, placePlant]);
-
-  // NEW: Handle mobile plant drop
-  const handleMobilePlantDrop = useCallback(async (inventoryItem, tileData) => {
-    if (!tileData.isEmpty) {
-      setNotification({
-        type: 'error',
-        message: 'Cannot place plant on occupied tile'
-      });
-      return;
-    }
-
-    try {
-      const plantId = inventoryItem.plant_details?.id || inventoryItem.plant;
-      
-      if (!plantId) {
-        console.error('No plant ID found in inventory item:', inventoryItem);
-        return;
-      }
-      
-      await placePlant(plantId, tileData.row, tileData.col);
-    } catch (error) {
-      console.error('Mobile plant placement failed:', error);
-    }
-  }, [placePlant]);
+  }, [isMobile, draggedPlant, placePlant]);
 
   // Handle mode changes
   const handleModeToggle = useCallback(() => {
@@ -232,6 +282,12 @@ const DigitalGarden = () => {
     setSelectedPlantForHarvest(null);
     setMovePrompt('');
     setHarvestPrompt('');
+    setPlantingPrompt('');
+    
+    // Exit mobile planting mode when switching modes
+    if (isPlantingMode) {
+      exitPlantingMode();
+    }
     
     if (newMode === 'move') {
       setMovePrompt('Select the plant you would like to move');
@@ -241,7 +297,7 @@ const DigitalGarden = () => {
         }
       }, 3000);
     }
-  }, [gardenMode, selectedPlantForMove]);
+  }, [gardenMode, selectedPlantForMove, isPlantingMode, exitPlantingMode]);
 
   // Handle harvest mode toggle
   const handleHarvestToggle = useCallback(() => {
@@ -252,6 +308,12 @@ const DigitalGarden = () => {
     setSelectedPlantForHarvest(null);
     setMovePrompt('');
     setHarvestPrompt('');
+    setPlantingPrompt('');
+    
+    // Exit mobile planting mode when switching modes
+    if (isPlantingMode) {
+      exitPlantingMode();
+    }
     
     if (newMode === 'harvest') {
       setHarvestPrompt('Select the plant you wish to harvest! (This will return the seeds to your inventory)');
@@ -261,7 +323,31 @@ const DigitalGarden = () => {
         }
       }, 4000);
     }
-  }, [gardenMode, selectedPlantForHarvest]);
+  }, [gardenMode, selectedPlantForHarvest, isPlantingMode, exitPlantingMode]);
+
+  // Handle mobile planting mode toggle
+  const handlePlantingToggle = useCallback(() => {
+    if (isPlantingMode) {
+      exitPlantingMode();
+      setPlantingPrompt('');
+    } else {
+      // Exit other modes first
+      setGardenMode('view');
+      setSelectedPlantForMove(null);
+      setSelectedPlantForHarvest(null);
+      setMovePrompt('');
+      setHarvestPrompt('');
+      
+      startPlantingMode();
+      setPlantingPrompt('Select a plant from your inventory, then click on an empty garden tile to plant it.');
+      
+      setTimeout(() => {
+        if (isPlantingMode && !selectedPlantItem) {
+          setPlantingPrompt('');
+        }
+      }, 5000);
+    }
+  }, [isPlantingMode, exitPlantingMode, startPlantingMode, selectedPlantItem]);
 
   // Clear notification helper
   const clearNotification = useCallback(() => {
@@ -344,50 +430,69 @@ const DigitalGarden = () => {
         }}
       >
         <div className="header-left">
-          <h1 className="text-2xl md:text-3xl font-bold" style={{ color: 'whitesmoke' }}>My Digital Garden</h1>
+          <h1 className={`font-bold ${isMobile ? 'text-lg' : 'text-2xl md:text-3xl'}`} style={{ color: 'whitesmoke' }}>
+            My Digital Garden
+          </h1>
         </div>
-        <div className="garden-controls flex gap-2">
+        <div className="garden-controls flex gap-1 md:gap-2">
+          {/* Mobile: Show Get Planting button instead of drag instructions */}
+          {isMobile && (
+            <button
+              className={`mode-toggle ${isPlantingMode ? 'active' : ''} bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors`}
+              onClick={handlePlantingToggle}
+              disabled={actionLoading}
+            >
+              {isPlantingMode ? 'Exit Plant Mode' : 'Get Planting'}
+            </button>
+          )}
+          
           <button
-            className={`mode-toggle ${gardenMode === 'move' ? 'active' : ''} bg-emerald-600 hover:bg-emerald-700 text-white dark:bg-emerald-700 dark:hover:bg-emerald-800 rounded-lg px-4 py-2 transition-colors`}
+            className={`mode-toggle ${gardenMode === 'move' ? 'active' : ''} bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg transition-colors`}
             onClick={handleModeToggle}
             disabled={actionLoading}
           >
-            {gardenMode === 'view' ? 'Switch to Move Mode' : 'Switch to View Mode'}
+            {gardenMode === 'view' ? (isMobile ? 'Move' : 'Switch to Move Mode') : (isMobile ? 'View' : 'Switch to View Mode')}
           </button>
           
           <button
-            className={`mode-toggle harvest-toggle ${gardenMode === 'harvest' ? 'active' : ''} bg-amber-500 hover:bg-amber-600 text-white dark:bg-amber-600 dark:hover:bg-amber-700 rounded-lg px-4 py-2 transition-colors`}
+            className={`mode-toggle harvest-toggle ${gardenMode === 'harvest' ? 'active' : ''} bg-amber-500 hover:bg-amber-600 text-white rounded-lg transition-colors`}
             onClick={handleHarvestToggle}
             disabled={actionLoading}
           >
-            {gardenMode === 'harvest' ? 'Exit Harvest Mode' : 'Harvest Plants'}
+            {gardenMode === 'harvest' ? (isMobile ? 'Exit Harvest' : 'Exit Harvest Mode') : (isMobile ? 'Harvest' : 'Harvest Plants')}
           </button>
         </div>
       </div>
 
       {/* Notification */}
       {notification && (
-        <div className={`notification ${notification.type} fixed top-20 left-1/2 transform -translate-x-1/2 z-50 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-lg rounded-lg px-6 py-3 flex items-center gap-4`}>
-          <span className={`font-medium ${notification.type === 'success' ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400'}`}>{notification.message}</span>
-          <button onClick={clearNotification} className="ml-auto text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 text-xl">&times;</button>
+        <div className={`notification ${notification.type} fixed ${isMobile ? 'top-16 left-2 right-2' : 'top-20 left-1/2 transform -translate-x-1/2'} z-50 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-lg rounded-lg px-4 py-2 md:px-6 md:py-3 flex items-center gap-2 md:gap-4`}>
+          <span className={`font-medium text-sm md:text-base ${notification.type === 'success' ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400'}`}>{notification.message}</span>
+          <button onClick={clearNotification} className="ml-auto text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 text-lg md:text-xl">&times;</button>
         </div>
       )}
 
       {/* Mode Prompts */}
       {movePrompt && (
-        <div className="move-prompt fixed top-28 left-1/2 transform -translate-x-1/2 z-40 bg-emerald-100 dark:bg-emerald-900 text-emerald-800 dark:text-emerald-200 px-6 py-2 rounded-lg shadow">
+        <div className={`move-prompt fixed ${isMobile ? 'top-24 left-2 right-2' : 'top-28 left-1/2 transform -translate-x-1/2'} z-40 bg-emerald-100 dark:bg-emerald-900 text-emerald-800 dark:text-emerald-200 px-4 py-2 rounded-lg shadow text-sm`}>
           <span>{movePrompt}</span>
         </div>
       )}
 
       {harvestPrompt && (
-        <div className="harvest-prompt fixed top-36 left-1/2 transform -translate-x-1/2 z-40 bg-amber-100 dark:bg-amber-900 text-amber-800 dark:text-amber-200 px-6 py-2 rounded-lg shadow">
+        <div className={`harvest-prompt fixed ${isMobile ? 'top-32 left-2 right-2' : 'top-36 left-1/2 transform -translate-x-1/2'} z-40 bg-amber-100 dark:bg-amber-900 text-amber-800 dark:text-amber-200 px-4 py-2 rounded-lg shadow text-sm`}>
           <span>{harvestPrompt}</span>
         </div>
       )}
 
+      {plantingPrompt && (
+        <div className={`planting-prompt fixed ${isMobile ? 'top-24 left-2 right-2' : 'top-28 left-1/2 transform -translate-x-1/2'} z-40 bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 px-4 py-2 rounded-lg shadow text-sm`}>
+          <span>{plantingPrompt}</span>
+        </div>
+      )}
+
       {/* Main content */}
-      <div className="garden-main flex flex-col md:flex-row gap-6 max-w-7xl mx-auto px-4 py-8">
+      <div className={`garden-main ${isMobile ? 'flex flex-col gap-4 px-2 py-4' : 'flex flex-col md:flex-row gap-6 max-w-7xl mx-auto px-4 py-8'}`}>
         {/* Center - Garden Grid */}
         <main className="garden-content flex-1">
           <GardenGrid
@@ -400,13 +505,16 @@ const DigitalGarden = () => {
             mode={gardenMode}
             selectedTileForMove={selectedPlantForMove}
             selectedTileForHarvest={selectedPlantForHarvest}
+            isPlantingMode={isPlantingMode}
+            selectedPlantItem={selectedPlantItem}
+            isMobile={isMobile}
           />
 
           {/* Garden Overview */}
           {garden && (
-            <div className="garden-overview mt-8 bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-xl p-6 shadow">
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Garden Overview</h3>
-              <div className="overview-stats flex flex-wrap gap-6 mb-4">
+            <div className={`garden-overview ${isMobile ? 'mt-4 p-4' : 'mt-8 p-6'} bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-xl shadow`}>
+              <h3 className={`${isMobile ? 'text-base' : 'text-lg'} font-semibold text-gray-900 dark:text-white mb-3`}>Garden Overview</h3>
+              <div className={`overview-stats ${isMobile ? 'grid grid-cols-2 gap-3 text-sm' : 'flex flex-wrap gap-6'} mb-4`}>
                 <div className="stat-item">
                   <span className="stat-label text-gray-600 dark:text-gray-300">Unique Plants:</span>
                   <span className="stat-value text-gray-900 dark:text-gray-100 font-semibold ml-2">{uniquePlantsEarned}</span>
@@ -423,10 +531,10 @@ const DigitalGarden = () => {
                 </div>
               </div>
               <div className="rarity-tallies">
-                <h4 className="text-md font-semibold text-gray-900 dark:text-white mb-2">Plants by Rarity</h4>
-                <div className="rarity-breakdown flex flex-wrap gap-4">
+                <h4 className={`${isMobile ? 'text-sm' : 'text-md'} font-semibold text-gray-900 dark:text-white mb-2`}>Plants by Rarity</h4>
+                <div className={`rarity-breakdown ${isMobile ? 'grid grid-cols-3 gap-2 text-xs' : 'flex flex-wrap gap-4'}`}>
                   {Object.entries(rarityTallies).map(([rarity, count]) => (
-                  <div key={rarity} className={`rarity-stat ${rarity} flex items-center gap-2`}>
+                  <div key={rarity} className={`rarity-stat ${rarity} ${isMobile ? 'p-2' : 'flex items-center gap-2'}`}>
                     <span className="rarity-label">{rarity.charAt(0).toUpperCase() + rarity.slice(1)}:</span>
                     <span className="rarity-count font-semibold">{count}</span>
                   </div>
@@ -438,9 +546,9 @@ const DigitalGarden = () => {
         </main>
 
         {/* Right Sidebar */}
-        <aside className="garden-sidebar-container flex flex-col gap-6 w-full md:w-80">
+        <aside className={`garden-sidebar-container ${isMobile ? 'flex flex-col gap-4' : 'flex flex-col gap-6 w-full md:w-80'}`}>
           <div 
-            className="garden-inventory-sidebar bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-xl shadow"
+            className={`garden-inventory-sidebar bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-xl shadow ${isMobile ? 'p-3' : 'p-6'}`}
             style={{
               backgroundImage: `url(${panelBackgroundSvg})`,
               backgroundSize: 'cover',
@@ -452,15 +560,18 @@ const DigitalGarden = () => {
               inventory={inventory}
               onDragStart={handleDragStart}
               onDragEnd={handleDragEnd}
-              onMobilePlantDrop={handleMobilePlantDrop}
+              onPlantSelect={handlePlantSelect}
               loading={loading}
-              supportsDragDrop={true}
+              supportsDragDrop={!isMobile}
               mode={gardenMode}
+              isPlantingMode={isPlantingMode}
+              selectedPlantItem={selectedPlantItem}
+              isMobile={isMobile}
             />
           </div>
 
           <div 
-            className="garden-stats-sidebar bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-xl shadow"
+            className={`garden-stats-sidebar bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-xl shadow ${isMobile ? 'p-3' : 'p-6'}`}
             style={{
               backgroundImage: `url(${panelBackgroundSvg})`,
               backgroundSize: 'cover',
@@ -468,21 +579,22 @@ const DigitalGarden = () => {
               backgroundRepeat: 'no-repeat'
             }}
           >
-            <GardenStats stats={stats} loading={loading} />
+            <GardenStats stats={stats} loading={loading} isMobile={isMobile} />
           </div>
         </aside>
       </div>
 
       {/* Plant Details Modal */}
       {showPlantDetails && selectedPlantForDetails && (
-        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-          <div className="bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-700 rounded-xl shadow-xl p-6 max-w-lg w-full">
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
+          <div className={`bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-700 rounded-xl shadow-xl ${isMobile ? 'w-full max-w-sm' : 'max-w-lg w-full'} p-6`}>
             <PlantDetails
               plant={selectedPlantForDetails}
               onClose={() => {
                 setShowPlantDetails(false);
                 setSelectedPlantForDetails(null);
               }}
+              isMobile={isMobile}
             />
           </div>
         </div>
