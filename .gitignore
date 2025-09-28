@@ -30,3 +30,5 @@ save-n-bite-backend/logs/django.log
 __azurite_db_blob__.json
 __azurite_db_blob__.json
 __azurite_db_blob__.json
+*.json
+__azurite_db_blob__.json
