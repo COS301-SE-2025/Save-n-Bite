@@ -6,14 +6,12 @@ from django.contrib.auth.password_validation import validate_password
 from .models import User, CustomerProfile, NGOProfile, FoodProviderProfile
 from django.contrib.auth import get_user_model
 import base64
-from django.core.files.base import ContentFile
 import logging
 
 logger = logging.getLogger(__name__)
 User = get_user_model()
 
 class BaseRegistrationSerializer(serializers.ModelSerializer):
-    # Relax password validation to match test expectations
     password = serializers.CharField(write_only=True)
     email = serializers.EmailField()
     role = serializers.ChoiceField(choices=User.ROLE_CHOICES, default='normal')
@@ -21,6 +19,11 @@ class BaseRegistrationSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ['email', 'password', 'role']
+
+    def validate_password(self, value):
+        """Validate password using Django's password validators for security compliance"""
+        validate_password(value)
+        return value
 
     def create(self, validated_data):
         password = validated_data.pop('password')

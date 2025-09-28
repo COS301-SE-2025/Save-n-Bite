@@ -16,8 +16,8 @@ class BasicAuthenticationE2ETest(APITestCase):
         registration_data = {
             'email': 'customer@test.com',
             'username': 'customer',
-            'password': 'testpass123',
-            'password_confirm': 'testpass123',
+            'password': 'SecureTestPass2024!',
+            'password_confirm': 'SecureTestPass2024!',
             'user_type': 'customer',
             'full_name': 'Test Customer'
         }
@@ -28,7 +28,7 @@ class BasicAuthenticationE2ETest(APITestCase):
         # 2. Customer Login
         login_data = {
             'email': 'customer@test.com',
-            'password': 'testpass123'
+            'password': 'SecureTestPass2024!'
         }
         
         response = self.client.post('/auth/login/', login_data)
@@ -48,8 +48,8 @@ class BasicAuthenticationE2ETest(APITestCase):
         registration_data = {
             'email': 'provider@test.com',
             'username': 'provider',
-            'password': 'testpass123',
-            'password_confirm': 'testpass123',
+            'password': 'SecureTestPass2024!',
+            'password_confirm': 'SecureTestPass2024!',
             'user_type': 'provider',
             'business_name': 'Test Restaurant',
             'business_email': 'provider@test.com',
@@ -58,17 +58,20 @@ class BasicAuthenticationE2ETest(APITestCase):
             'business_province': 'Western Cape',
             'business_postal_code': '8001',
             'business_contact': '+27123456789',
-            'cipc_document': 'data:application/pdf;base64,JVBERi0xLjQKJcOkw7zDtsO4w6A=',
+            'cipc_document': 'test_doc.pdf',
             'role': 'normal'
         }
         
         response = self.client.post('/auth/register/provider/', registration_data)
+        if response.status_code != status.HTTP_201_CREATED:
+            print(f"Provider registration failed with status {response.status_code}")
+            print(f"Response data: {response.data}")
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         
         # 2. Provider Login
         login_data = {
             'email': 'provider@test.com',
-            'password': 'testpass123'
+            'password': 'SecureTestPass2024!'
         }
         
         response = self.client.post('/auth/login/', login_data)
@@ -91,7 +94,7 @@ class BasicProviderWorkflowE2ETest(APITestCase):
         self.provider_user = User.objects.create_user(
             email='provider@test.com',
             username='provider',
-            password='testpass123',
+            password='SecureTestPass2024!',
             user_type='provider'
         )
         
@@ -113,7 +116,7 @@ class BasicProviderWorkflowE2ETest(APITestCase):
         # Login and get token
         login_data = {
             'email': 'provider@test.com',
-            'password': 'testpass123'
+            'password': 'SecureTestPass2024!'
         }
         response = self.client.post('/auth/login/', login_data)
         self.token = response.data['token']
@@ -159,7 +162,7 @@ class BasicCustomerWorkflowE2ETest(APITestCase):
         self.customer_user = User.objects.create_user(
             email='customer@test.com',
             username='customer',
-            password='testpass123',
+            password='SecureTestPass2024!',
             user_type='customer'
         )
         
@@ -171,7 +174,7 @@ class BasicCustomerWorkflowE2ETest(APITestCase):
         # Login and get token
         login_data = {
             'email': 'customer@test.com',
-            'password': 'testpass123'
+            'password': 'SecureTestPass2024!'
         }
         response = self.client.post('/auth/login/', login_data)
         self.token = response.data['token']
@@ -223,8 +226,8 @@ class BasicIntegrationE2ETest(APITestCase):
         customer_data = {
             'email': 'customer@test.com',
             'username': 'customer',
-            'password': 'testpass123',
-            'password_confirm': 'testpass123',
+            'password': 'SecureTestPass2024!',
+            'password_confirm': 'SecureTestPass2024!',
             'user_type': 'customer',
             'full_name': 'Test Customer'
         }
@@ -244,8 +247,8 @@ class BasicIntegrationE2ETest(APITestCase):
         registration_data = {
             'email': 'testuser@test.com',
             'username': 'testuser',
-            'password': 'testpass123',
-            'password_confirm': 'testpass123',
+            'password': 'SecureTestPass2024!',
+            'password_confirm': 'SecureTestPass2024!',
             'user_type': 'customer',
             'full_name': 'Test User'
         }
@@ -255,7 +258,7 @@ class BasicIntegrationE2ETest(APITestCase):
         # 2. Login
         login_data = {
             'email': 'testuser@test.com',
-            'password': 'testpass123'
+            'password': 'SecureTestPass2024!'
         }
         
         login_response = self.client.post('/auth/login/', login_data)
