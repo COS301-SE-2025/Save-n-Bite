@@ -1,6 +1,5 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import PlantCard from '../../components/garden/PlantCard';
-import useMobileDragDrop from '../../hooks/useMobileDragDrop';
 import './PlantInventory.css';
 
 const PlantInventory = ({ 
@@ -9,132 +8,107 @@ const PlantInventory = ({
   onPlantSelect, 
   onDragStart,
   onDragEnd,
-  onMobilePlantDrop, // New prop for mobile drop handling
   supportsDragDrop = false,
-  mode 
+  mode,
+  isPlantingMode = false,
+  selectedPlantItem = null,
+  isMobile = false
 }) => {
-  const {
-    draggedItem,
-    isDragging,
-    handleDragStart: mobileHandleDragStart,
-    handleDragMove,
-    handleDragEnd: mobileHandleDragEnd,
-    handleDragCancel
-  } = useMobileDragDrop();
-
-  // Add global event listeners for mobile drag
-  useEffect(() => {
-    if (isDragging) {
-      const handleMove = (e) => handleDragMove(e);
-      const handleEnd = (e) => mobileHandleDragEnd(e, onMobilePlantDrop);
-      const handleCancel = () => handleDragCancel();
-
-      // Add touch and mouse event listeners
-      document.addEventListener('touchmove', handleMove, { passive: false });
-      document.addEventListener('mousemove', handleMove);
-      document.addEventListener('touchend', handleEnd);
-      document.addEventListener('mouseup', handleEnd);
-      document.addEventListener('scroll', handleCancel, true);
-      
-      // Prevent body scroll during drag
-      document.body.style.overflow = 'hidden';
-      document.body.style.touchAction = 'none';
-
-      return () => {
-        document.removeEventListener('touchmove', handleMove);
-        document.removeEventListener('mousemove', handleMove);
-        document.removeEventListener('touchend', handleEnd);
-        document.removeEventListener('mouseup', handleEnd);
-        document.removeEventListener('scroll', handleCancel, true);
-        
-        // Restore body scroll
-        document.body.style.overflow = '';
-        document.body.style.touchAction = '';
-      };
-    }
-  }, [isDragging, handleDragMove, mobileHandleDragEnd, handleDragCancel, onMobilePlantDrop]);
-
   if (!inventory || inventory.length === 0) {
     return (
       <div className="plant-inventory empty">
-        <h3>Plant Inventory</h3>
+        <h3 className={`${isMobile ? 'text-sm' : 'text-lg'}`}>Plant Inventory</h3>
         <div className="empty-inventory">
-          <div className="empty-icon">🌱</div>
-          <p>No plants in inventory</p>
-          <small>Complete orders to earn plants!</small>
+          <div className={`empty-icon ${isMobile ? 'text-3xl' : 'text-5xl'}`}>🌱</div>
+          <p className={`${isMobile ? 'text-sm' : 'text-base'}`}>No plants in inventory</p>
+          <small className={`${isMobile ? 'text-xs' : 'text-sm'}`}>Complete orders to earn plants!</small>
         </div>
       </div>
     );
   }
 
-  // Handle the start of dragging for both desktop and mobile
-  const handleDragStartUnified = (item, event) => {
-    // For touch devices, use our custom mobile drag
-    if (event.type === 'touchstart') {
-      mobileHandleDragStart(item, event);
-      if (onDragStart) onDragStart(item);
-    } 
-    // For desktop, use traditional HTML5 drag and drop
-    else if (event.type === 'dragstart') {
-      if (onDragStart) onDragStart(item);
-      event.dataTransfer.effectAllowed = 'move';
-      event.dataTransfer.setData('text/plain', item.id);
+  const handleDragStart = (e, item) => {
+    if (supportsDragDrop && onDragStart && !isMobile) {
+      onDragStart(item);
+      e.dataTransfer.effectAllowed = 'move';
+      e.dataTransfer.setData('text/plain', item.id);
     }
   };
 
-  const handleDragEndUnified = (event) => {
-    // Only handle desktop drag end here, mobile is handled by global listeners
-    if (event.type === 'dragend' && onDragEnd) {
+  const handleDragEnd = (e) => {
+    if (supportsDragDrop && onDragEnd && !isMobile) {
       onDragEnd();
     }
   };
 
+  const handlePlantClick = (item) => {
+    if (onPlantSelect) {
+      onPlantSelect(item);
+    }
+  };
+
+  const getInstructionText = () => {
+    if (isMobile && isPlantingMode) {
+      return "Click on a plant to select it, then click on an empty garden tile to plant it";
+    } else if (!isMobile && supportsDragDrop) {
+      return "Drag plants to place them in your garden";
+    }
+    return null;
+  };
+
+  const instructionText = getInstructionText();
+
   return (
     <div className="plant-inventory">
-      <h3>Plant Inventory ({inventory.length})</h3>
+      <h3 className={`plant-inventory-title ${isMobile ? 'text-sm py-2 px-3' : 'text-lg py-3 px-4'}`}>
+        Plant Inventory ({inventory.length})
+      </h3>
       
-      {supportsDragDrop && (
-        <div className="inventory-instruction">
-          <p>
-            {window.innerWidth <= 768 
-              ? "Touch and hold plants to drag them to your garden" 
-              : "Drag plants to place them in your garden"}
+      {instructionText && (
+        <div className={`inventory-instruction ${isMobile ? 'p-2 mb-2' : 'p-3 mb-3'}`}>
+          <p className={`${isMobile ? 'text-xs' : 'text-sm'}`}>
+            {instructionText}
           </p>
         </div>
       )}
 
-      <div className="inventory-grid">
+      <div className={`inventory-grid ${isMobile ? 'gap-2' : 'gap-3'}`}>
         {inventory.map((item) => (
           <div
             key={item.id}
-            draggable={supportsDragDrop}
-            onDragStart={(e) => handleDragStartUnified(item, e)}
-            onDragEnd={handleDragEndUnified}
-            onTouchStart={(e) => supportsDragDrop && handleDragStartUnified(item, e)}
-            onMouseDown={(e) => supportsDragDrop && handleDragStartUnified(item, e)}
-            className={`inventory-item ${supportsDragDrop ? 'draggable' : ''} ${
-              draggedItem?.id === item.id ? 'currently-dragging' : ''
+            draggable={supportsDragDrop && !isMobile}
+            onDragStart={(e) => handleDragStart(e, item)}
+            onDragEnd={handleDragEnd}
+            onClick={() => handlePlantClick(item)}
+            className={`inventory-item ${
+              supportsDragDrop && !isMobile ? 'draggable' : ''
+            } ${
+              selectedPlantItem?.id === item.id ? 'selected-for-planting' : ''
+            } ${
+              isMobile ? 'mobile-inventory-item' : ''
             }`}
           >
             <PlantCard
               inventoryItem={item}
               isSelected={selectedPlant && selectedPlant.id === item.id}
-              onClick={() => onPlantSelect && onPlantSelect(item)}
               showQuantity={true}
-              showDragIndicator={supportsDragDrop}
-              className={supportsDragDrop ? 'draggable-card' : ''}
+              showDragIndicator={supportsDragDrop && !isMobile}
+              className={`${supportsDragDrop && !isMobile ? 'draggable-card' : ''} ${
+                isMobile ? 'mobile-plant-card' : ''
+              }`}
+              isMobile={isMobile}
             />
           </div>
         ))}
       </div>
 
       {/* Inventory summary */}
-      <div className="inventory-summary">
-        <div className="rarity-counts">
+      <div className={`inventory-summary ${isMobile ? 'p-2 mt-2' : 'p-4 mt-4'}`}>
+        <div className={`rarity-counts ${isMobile ? 'mobile-rarity-counts' : ''}`}>
           {getRarityCounts(inventory).map(({ rarity, count }) => (
-            <div key={rarity} className={`rarity-count ${rarity}`}>
-              <span className="rarity-name">{rarity}</span>
-              <span className="count">{count}</span>
+            <div key={rarity} className={`rarity-count ${rarity} ${isMobile ? 'mobile-rarity-count' : ''}`}>
+              <span className={`rarity-name ${isMobile ? 'text-xs' : 'text-sm'}`}>{rarity}</span>
+              <span className={`count ${isMobile ? 'text-xs px-1' : 'text-sm px-2'}`}>{count}</span>
             </div>
           ))}
         </div>

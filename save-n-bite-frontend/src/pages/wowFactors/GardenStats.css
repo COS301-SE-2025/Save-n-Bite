@@ -1,4 +1,4 @@
-/* GardenStats.css - Properly structured vertical layout */
+/* Fixed GardenStats.css - Restored proper layout */
 
 .garden-stats {
   background: white;
@@ -8,6 +8,13 @@
   display: flex;
   flex-direction: column;
   gap: 20px;
+}
+
+/* Mobile adjustments */
+.garden-stats.mobile {
+  padding: 12px;
+  gap: 12px;
+  border-radius: 12px;
 }
 
 /* Main header styling like Plant Inventory */
@@ -25,11 +32,19 @@
   text-align: center;
 }
 
+.garden-stats.mobile .stats-header h3 {
+  font-size: 14px;
+}
+
 /* Section styling */
 .stats-section {
   display: flex;
   flex-direction: column;
   gap: 12px;
+}
+
+.garden-stats.mobile .stats-section {
+  gap: 8px;
 }
 
 .section-heading {
@@ -42,11 +57,20 @@
   border-bottom: 1px solid #d1d5db;
 }
 
+.garden-stats.mobile .section-heading {
+  font-size: 12px;
+  padding-bottom: 4px;
+}
+
 /* Milestones container */
 .milestones-container {
   display: flex;
   flex-direction: column;
   gap: 15px;
+}
+
+.garden-stats.mobile .milestones-container {
+  gap: 8px;
 }
 
 .milestone-item {
@@ -56,11 +80,24 @@
   border-left: 4px solid #10b981;
 }
 
+.garden-stats.mobile .milestone-item {
+  padding: 8px;
+  border-radius: 6px;
+  border-left: 3px solid #10b981;
+}
+
 .milestone-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
   margin-bottom: 8px;
+}
+
+.garden-stats.mobile .milestone-header {
+  margin-bottom: 4px;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
 }
 
 .milestone-type {
@@ -71,26 +108,19 @@
   letter-spacing: 0.5px;
 }
 
+.garden-stats.mobile .milestone-type {
+  font-size: 10px;
+}
+
 .milestone-progress {
   font-size: 14px;
   font-weight: 700;
   color: #10b981;
 }
 
-.progress-bar {
-  width: 100%;
-  height: 6px;
-  background: #e5e7eb;
-  border-radius: 3px;
-  overflow: hidden;
-  margin-bottom: 8px;
-}
-
-.progress-fill {
-  height: 100%;
-  background: linear-gradient(90deg, #10b981, #059669);
-  border-radius: 3px;
-  transition: width 0.3s ease;
+.garden-stats.mobile .milestone-progress {
+  font-size: 12px;
+  align-self: flex-end;
 }
 
 .milestone-description {
@@ -100,11 +130,19 @@
   line-height: 1.4;
 }
 
+.garden-stats.mobile .milestone-description {
+  font-size: 10px;
+}
+
 /* Achievements container */
 .achievements-container {
   display: flex;
   flex-direction: column;
   gap: 8px;
+}
+
+.garden-stats.mobile .achievements-container {
+  gap: 6px;
 }
 
 .achievement-item {
@@ -117,6 +155,12 @@
   border-left: 3px solid #22c55e;
 }
 
+.garden-stats.mobile .achievement-item {
+  padding: 6px 8px;
+  border-radius: 4px;
+  border-left: 2px solid #22c55e;
+}
+
 .achievement-label {
   font-size: 12px;
   font-weight: 600;
@@ -125,10 +169,18 @@
   letter-spacing: 0.3px;
 }
 
+.garden-stats.mobile .achievement-label {
+  font-size: 10px;
+}
+
 .achievement-count {
   font-size: 14px;
   font-weight: 700;
   color: #15803d;
+}
+
+.garden-stats.mobile .achievement-count {
+  font-size: 12px;
 }
 
 .no-achievements {
@@ -139,6 +191,12 @@
   border: 2px dashed #d1d5db;
 }
 
+.garden-stats.mobile .no-achievements {
+  padding: 12px;
+  border-radius: 6px;
+  border: 1px dashed #d1d5db;
+}
+
 .no-achievements p {
   margin: 0 0 5px 0;
   font-size: 14px;
@@ -146,16 +204,17 @@
   font-weight: 500;
 }
 
+.garden-stats.mobile .no-achievements p {
+  font-size: 12px;
+}
+
 .no-achievements small {
   font-size: 12px;
   color: #9ca3af;
 }
 
-
-@keyframes progress {
-  0% {
-    stroke-dasharray: 0 100;
-  }
+.garden-stats.mobile .no-achievements small {
+  font-size: 10px;
 }
 
 /* Loading state */
@@ -165,9 +224,17 @@
   color: #6b7280;
 }
 
+.garden-stats.mobile .stats-loading {
+  padding: 20px 10px;
+}
+
 .stats-loading p {
   margin: 0;
   font-size: 14px;
+}
+
+.garden-stats.mobile .stats-loading p {
+  font-size: 12px;
 }
 
 /* Compact mode adjustments */
@@ -192,40 +259,53 @@
   padding: 8px 10px;
 }
 
-/* Responsive design */
-@media (max-width: 768px) {
-  .garden-stats {
-    padding: 15px;
-    gap: 15px;
-  }
-  
-  .stats-header h3 {
-    font-size: 16px;
-  }
-  
-  .section-heading {
-    font-size: 14px;
-  }
-  
-  .milestone-header {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 4px;
-  }
-  
-  .milestone-progress {
-    align-self: flex-end;
-  }
+/* Dark mode support */
+.dark .garden-stats {
+  background: #1f2937;
+  color: #f9fafb;
 }
 
-@media (max-width: 480px) {
-  .garden-stats {
-    padding: 12px;
-    gap: 12px;
-  }
-  
-  .circular-chart {
-    max-width: 100px;
-    max-height: 100px;
-  }
+.dark .stats-header {
+  border-bottom-color: #374151;
+}
+
+.dark .stats-header h3 {
+  color: #f9fafb;
+}
+
+.dark .section-heading {
+  color: #10b981;
+  border-bottom-color: #374151;
+}
+
+.dark .milestone-item {
+  background: #374151;
+  border-left-color: #10b981;
+}
+
+.dark .milestone-type {
+  color: #d1d5db;
+}
+
+.dark .milestone-description {
+  color: #9ca3af;
+}
+
+.dark .achievement-item {
+  background: #065f46;
+  border-left-color: #22c55e;
+}
+
+.dark .achievement-label {
+  color: #6ee7b7;
+}
+
+.dark .achievement-count {
+  color: #34d399;
+}
+
+.dark .no-achievements {
+  background: #374151;
+  border-color: #4b5563;
+  color: #9ca3af;
 }

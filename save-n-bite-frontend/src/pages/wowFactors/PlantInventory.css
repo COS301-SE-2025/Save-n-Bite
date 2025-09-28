@@ -1,20 +1,23 @@
-/* Updated PlantInventory.css - Mobile-friendly with touch support */
+/* Mobile-Responsive PlantInventory.css */
 
-.plant-inventory h3 {
-  margin: 0 0 20px 0;
+.plant-inventory {
+  width: 100%;
+  margin: 0 auto;
+}
+
+.plant-inventory-title {
+  margin: 0 0 12px 0;
   color: #1f2937;
-  font-size: 18px;
   font-weight: 600;
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 8px;
   background: white;
-  padding: 12px 15px;
   border-radius: 8px;
   border: 1px solid rgba(16, 185, 129, 0.2);
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
   text-align: center;
-  justify-content: center;
 }
 
 .plant-inventory.empty {
@@ -25,17 +28,13 @@
 }
 
 .empty-inventory {
-  padding: 40px 20px;
+  padding: 20px;
   color: #6b7280;
-}
-
-.empty-icon {
-  font-size: 48px;
-  margin-bottom: 15px;
+  text-align: center;
 }
 
 .empty-inventory p {
-  margin: 10px 0 5px;
+  margin: 8px 0 4px;
   font-weight: 600;
   color: #1f2937;
 }
@@ -46,33 +45,46 @@
 }
 
 .inventory-instruction {
-  margin-bottom: 15px;
-  padding: 12px;
   background: #d1fae5;
-  border-radius: 8px;
-  border-left: 4px solid #10b981;
+  border-radius: 6px;
+  border-left: 3px solid #10b981;
+  text-align: center;
 }
 
 .inventory-instruction p {
   margin: 0;
-  font-size: 14px;
   color: #065f46;
   font-weight: 500;
-  text-align: center;
 }
 
 .inventory-grid {
   display: grid;
   grid-template-columns: 1fr;
-  gap: 12px;
-  margin-bottom: 20px;
+  margin-bottom: 12px;
 }
 
-/* Enhanced drag and drop styling with mobile support */
+/* Mobile-specific inventory item styling */
+.mobile-inventory-item {
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border-radius: 8px;
+}
+
+.mobile-inventory-item:active {
+  transform: scale(0.98);
+  background: rgba(16, 185, 129, 0.05);
+}
+
+.mobile-inventory-item.selected-for-planting {
+  background: rgba(16, 185, 129, 0.15);
+  border: 2px solid #10b981;
+  transform: scale(1.02);
+}
+
+/* Desktop drag and drop styling */
 .inventory-item {
   transition: all 0.3s ease;
   position: relative;
-  touch-action: manipulation; /* Better touch handling */
 }
 
 .inventory-item.draggable {
@@ -87,19 +99,6 @@
   cursor: grabbing;
 }
 
-/* Mobile-specific touch feedback */
-@media (hover: none) and (pointer: coarse) {
-  .inventory-item.draggable {
-    cursor: default;
-  }
-  
-  .inventory-item.draggable:active {
-    transform: scale(0.95);
-    transition: transform 0.1s ease;
-  }
-}
-
-/* Desktop hover effects */
 @media (hover: hover) and (pointer: fine) {
   .inventory-item.draggable:hover {
     transform: translateY(-2px);
@@ -107,69 +106,61 @@
   }
 }
 
-/* Current dragging state */
-.inventory-item.currently-dragging {
-  opacity: 0.5;
-  transform: scale(0.95);
-}
-
 .draggable-card {
   position: relative;
 }
 
-/* Enhanced drag indicators */
 .draggable-card::before {
   content: '⋮⋮';
   position: absolute;
-  top: 8px;
-  right: 8px;
+  top: 6px;
+  right: 6px;
   color: #10b981;
   font-weight: bold;
   opacity: 0;
   transition: opacity 0.3s ease;
   z-index: 2;
-  font-size: 14px;
+  font-size: 12px;
 }
 
-/* Show drag indicator on hover (desktop) or always on mobile */
 @media (hover: hover) and (pointer: fine) {
   .inventory-item.draggable:hover .draggable-card::before {
     opacity: 0.7;
   }
 }
 
-@media (hover: none) and (pointer: coarse) {
-  .inventory-item.draggable .draggable-card::before {
-    opacity: 0.5;
-  }
-}
-
-/* Mobile drag feedback */
-.inventory-item.draggable:active .draggable-card::before {
-  opacity: 1;
-}
-
 .inventory-summary {
-  padding: 15px;
   background: #f9fafb;
-  border-radius: 10px;
-  border-top: 3px solid #10b981;
+  border-radius: 8px;
+  border-top: 2px solid #10b981;
 }
 
 .rarity-counts {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 4px;
+}
+
+/* Mobile rarity counts - much more compact */
+.mobile-rarity-counts {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 3px;
 }
 
 .rarity-count {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 5px 10px;
-  border-radius: 6px;
-  font-size: 12px;
+  padding: 4px 8px;
+  border-radius: 4px;
   font-weight: 600;
+}
+
+.mobile-rarity-count {
+  padding: 2px 4px;
+  font-size: 10px;
+  border-radius: 3px;
 }
 
 .rarity-count.common {
@@ -203,74 +194,84 @@
 
 .count {
   background: white;
-  padding: 2px 6px;
-  border-radius: 10px;
-  min-width: 20px;
+  border-radius: 8px;
+  min-width: 16px;
   text-align: center;
+  font-size: inherit;
 }
 
-/* Dragging ghost styles (created dynamically) */
-.dragging-ghost {
-  pointer-events: none;
-  z-index: 9999;
-  opacity: 0.8;
-  transform: scale(0.9) rotate(2deg);
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
-  border-radius: 12px;
-}
-
-/* Mobile responsiveness improvements */
-@media (max-width: 968px) {
-  .inventory-grid {
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 10px;
-  }
-  
-  .inventory-instruction p {
-    font-size: 13px;
-  }
-}
-
+/* Mobile specific adjustments */
 @media (max-width: 768px) {
-  .plant-inventory h3 {
-    font-size: 16px;
-    padding: 10px 12px;
+  .plant-inventory {
+    margin: 0;
+    padding: 0;
   }
   
-  .inventory-grid {
-    grid-template-columns: 1fr;
-    gap: 8px;
+  .plant-inventory-title {
+    font-size: 14px;
+    padding: 8px 12px;
+    margin-bottom: 8px;
   }
   
   .inventory-instruction {
-    padding: 10px;
-    margin-bottom: 12px;
+    padding: 8px;
+    margin-bottom: 8px;
   }
   
   .inventory-instruction p {
-    font-size: 12px;
+    font-size: 11px;
+  }
+  
+  .inventory-grid {
+    gap: 6px;
+    margin-bottom: 8px;
   }
   
   .inventory-summary {
-    padding: 12px;
+    padding: 8px;
+  }
+  
+  .rarity-counts {
+    gap: 2px;
+  }
+  
+  .mobile-rarity-count {
+    padding: 3px 2px;
+  }
+  
+  .mobile-rarity-count .count {
+    padding: 1px 3px;
+    min-width: 12px;
+    font-size: 9px;
   }
 }
 
 @media (max-width: 480px) {
-  .rarity-counts {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 6px;
-  }
-  
-  .rarity-count {
-    padding: 4px 8px;
-    font-size: 11px;
-  }
-  
-  .draggable-card::before {
-    top: 6px;
-    right: 6px;
+  .plant-inventory-title {
     font-size: 12px;
+    padding: 6px 10px;
+  }
+  
+  .inventory-instruction p {
+    font-size: 10px;
+  }
+  
+  .mobile-rarity-counts {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  .mobile-rarity-count {
+    font-size: 9px;
+    padding: 2px;
+  }
+  
+  .mobile-rarity-count .rarity-name {
+    font-size: 8px;
+  }
+  
+  .mobile-rarity-count .count {
+    font-size: 8px;
+    min-width: 10px;
+    padding: 1px 2px;
   }
 }
