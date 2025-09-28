@@ -246,73 +246,69 @@ EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD', default='oozb ystb pzir gflo
 DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL', default='noreply@savenbite.com')
 
 # ===========================================
-# AZURE BLOB STORAGE CONFIGURATION
+# FILE STORAGE CONFIGURATION (Azure vs Local)
 # ===========================================
+
+# Read flags to control storage behavior in CI/tests
+TESTING = os.getenv("TESTING", "False").lower() == "true"
+USE_AZURE_STORAGE = os.getenv("USE_AZURE_STORAGE", "True").lower() == "true"
 
 # Check if we're in production (Azure) or development
 ENVIRONMENT = config('ENVIRONMENT', default='development')
 IS_AZURE_DEPLOYMENT = config('WEBSITE_SITE_NAME', default='') != ''  # Azure sets this
 
-if IS_AZURE_DEPLOYMENT or ENVIRONMENT == 'production':
-    # ============ PRODUCTION - Azure Blob Storage ============
-    
-    AZURE_ACCOUNT_NAME = config('AZURE_ACCOUNT_NAME')
-    AZURE_ACCOUNT_KEY = config('AZURE_ACCOUNT_KEY')
-    AZURE_CONTAINER_NAME = config('AZURE_CONTAINER_NAME', default='savenbite-media')
-    
-    # Connection string for Azure Blob Storage
-    AZURE_STORAGE_CONNECTION_STRING = (
-        f"DefaultEndpointsProtocol=https;"
-        f"AccountName={AZURE_ACCOUNT_NAME};"
-        f"AccountKey={AZURE_ACCOUNT_KEY};"
-        f"EndpointSuffix=core.windows.net"
-    )
-    
-    # Optional: Custom domain if you have one
-    AZURE_CUSTOM_DOMAIN = config('AZURE_CUSTOM_DOMAIN', default=None)
-    
-    # URL for account
-    AZURE_ACCOUNT_URL = f"https://{AZURE_ACCOUNT_NAME}.blob.core.windows.net"
-    
-    print(f"🔵 Using Azure Blob Storage in production")
+if USE_AZURE_STORAGE and not TESTING:
+    # Use Azure (production) or Azurite (development)
+    if IS_AZURE_DEPLOYMENT or ENVIRONMENT == 'production':
+        # ============ PRODUCTION - Azure Blob Storage ============
+        AZURE_ACCOUNT_NAME = config('AZURE_ACCOUNT_NAME')
+        AZURE_ACCOUNT_KEY = config('AZURE_ACCOUNT_KEY')
+        AZURE_CONTAINER_NAME = config('AZURE_CONTAINER_NAME', default='savenbite-media')
 
+        AZURE_STORAGE_CONNECTION_STRING = (
+            f"DefaultEndpointsProtocol=https;"
+            f"AccountName={AZURE_ACCOUNT_NAME};"
+            f"AccountKey={AZURE_ACCOUNT_KEY};"
+            f"EndpointSuffix=core.windows.net"
+        )
+
+        AZURE_CUSTOM_DOMAIN = config('AZURE_CUSTOM_DOMAIN', default=None)
+        AZURE_ACCOUNT_URL = f"https://{AZURE_ACCOUNT_NAME}.blob.core.windows.net"
+        print("Using Azure Blob Storage (production)")
+    else:
+        # ============ DEVELOPMENT - Azurite Emulator ============
+        AZURE_ACCOUNT_NAME = config('AZURE_ACCOUNT_NAME', default='devstoreaccount1')
+        AZURE_ACCOUNT_KEY = config('AZURE_ACCOUNT_KEY', default='Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==')
+        AZURE_CONTAINER_NAME = config('AZURE_CONTAINER_NAME', default='savenbite-media')
+
+        AZURE_STORAGE_CONNECTION_STRING = (
+            "DefaultEndpointsProtocol=http;"
+            "AccountName=devstoreaccount1;"
+            "AccountKey=Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==;"
+            "BlobEndpoint=http://127.0.0.1:10000/devstoreaccount1;"
+        )
+
+        AZURE_ACCOUNT_URL = "http://127.0.0.1:10000/devstoreaccount1"
+        AZURE_CUSTOM_DOMAIN = None
+        print("Using Azurite emulator (development)")
+
+    # Use Azure Blob Storage as default storage
+    DEFAULT_FILE_STORAGE = 'blob_storage.AzureBlobStorage'
+
+    # Media files URL (for blob storage)
+    if IS_AZURE_DEPLOYMENT or ENVIRONMENT == 'production':
+        MEDIA_URL = f"https://{AZURE_ACCOUNT_NAME}.blob.core.windows.net/{AZURE_CONTAINER_NAME}/"
+    else:
+        MEDIA_URL = f"http://127.0.0.1:10000/devstoreaccount1/{AZURE_CONTAINER_NAME}/"
 else:
-    # ============ DEVELOPMENT - Azurite Emulator ============
-    
-    # Azurite (Azure Storage Emulator) connection string
-    AZURE_ACCOUNT_NAME = config('AZURE_ACCOUNT_NAME', default='devstoreaccount1')
-    AZURE_ACCOUNT_KEY = config('AZURE_ACCOUNT_KEY', default='Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==')
-    AZURE_CONTAINER_NAME = config('AZURE_CONTAINER_NAME', default='savenbite-media')
-    
-    # Azurite connection string (default Azurite ports)
-    AZURE_STORAGE_CONNECTION_STRING = (
-        "DefaultEndpointsProtocol=http;"
-        "AccountName=devstoreaccount1;"
-        "AccountKey=Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==;"
-        "BlobEndpoint=http://127.0.0.1:10000/devstoreaccount1;"
-    )
-    
-    AZURE_ACCOUNT_URL = "http://127.0.0.1:10000/devstoreaccount1"
-    AZURE_CUSTOM_DOMAIN = None
-    
-    print(f"🟡 Using Azurite emulator for development")
+    # Disable Azure during tests or when explicitly turned off
+    DEFAULT_FILE_STORAGE = 'django.core.files.storage.FileSystemStorage'
+    MEDIA_URL = '/media/'
+    MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
-# ===========================================
-# FILE STORAGE CONFIGURATION
-# ===========================================
-
-# Use Azure Blob Storage as default storage
-DEFAULT_FILE_STORAGE = 'blob_storage.AzureBlobStorage'
-
-# Static files (CSS, JavaScript, Images) - Keep these local for development
+# Static files (CSS, JavaScript, Images)
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
-
-# Media files URL (for blob storage)
-if IS_AZURE_DEPLOYMENT or ENVIRONMENT == 'production':
-    MEDIA_URL = f"https://{AZURE_ACCOUNT_NAME}.blob.core.windows.net/{AZURE_CONTAINER_NAME}/"
-else:
-    MEDIA_URL = f"http://127.0.0.1:10000/devstoreaccount1/{AZURE_CONTAINER_NAME}/"
 
 # File upload settings
 FILE_UPLOAD_MAX_MEMORY_SIZE = 5 * 1024 * 1024  # 5MB
