@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { 
@@ -249,12 +250,21 @@ const FoodItem = () => {
     e.preventDefault();
     e.stopPropagation();
 
+
+    if (buttonStatus === "View Cart") {
+      navigate('/cart');
+      return;
+    }
+
+
     setButtonStatus("loading");
 
     try {
       const response = await foodAPI.addToCart(id, quantity);
       if (response.success) {
-        setButtonStatus("added");
+
+        setButtonStatus("View Cart");
+
       } else {
         setError(response.error);
         setButtonStatus("idle");
@@ -666,16 +676,18 @@ const FoodItem = () => {
                       <ShoppingCartIcon className="h-4 w-4 mr-2" />
                       {buttonStatus === "idle" && "Add to Cart"}
                       {buttonStatus === "loading" && "Adding..."}
-                      {buttonStatus === "added" && "View Cart"}
+                      {buttonStatus === "View Cart" && "View Cart"}
                     </button>
                   )}
                   
                   <button
-                    onClick={() => navigate('/food-listing')}
-                    className="w-full sm:w-auto flex-1 inline-flex items-center justify-center px-4 py-2.5 rounded-lg text-sm font-medium border border-gray-200 dark:border-gray-600 text-gray-800 dark:text-gray-200 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 transition-colors"
-                  >
-                    Continue Browsing
-                  </button>
+
+      onClick={() => navigate('/food-listing')}
+      className="w-full sm:w-auto flex-1 inline-flex items-center flex-center px-4 py-2.5 rounded-lg text-sm font-medium border border-gray-200 dark:border-gray-600 text-gray-800 dark:text-gray-200 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 transition-colors"
+    >
+      Continue Browsing
+    </button>
+
                 </div>
               </div>
             </div>

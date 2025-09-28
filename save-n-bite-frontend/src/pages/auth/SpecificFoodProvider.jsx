@@ -486,6 +486,39 @@ const SpecificFoodProvider = () => {
     )
   }
 
+  // Build directions URL similarly to StoreLocation
+const getDirectionsUrl = () => {
+  const addr = provider?.business_address?.trim();
+  const osm = provider?.openstreetmap_url;
+  const coords = provider?.coordinates;
+
+  if (osm) return osm;
+
+  // Try to extract lat/lon from coordinates in common formats
+  if (coords) {
+    let lat, lon;
+    if (Array.isArray(coords) && coords.length === 2) {
+      [lat, lon] = coords;
+    } else if (typeof coords === 'object' && coords !== null) {
+      lat = coords.lat ?? coords.latitude;
+      lon = coords.lng ?? coords.lon ?? coords.longitude;
+    } else if (typeof coords === 'string' && coords.includes(',')) {
+      [lat, lon] = coords.split(',').map(s => s.trim());
+    }
+    if (lat && lon) {
+      // OSM directions to point
+      return `https://www.openstreetmap.org/directions?engine=fossgis_osrm_car&route=${encodeURIComponent(`${lat},${lon}`)}`;
+    }
+  }
+
+  // Fallback: OSM search by address
+  if (addr) {
+    return `https://www.openstreetmap.org/search?query=${encodeURIComponent(addr)}`;
+  }
+
+  return null;
+};
+
   return (
     <div className="bg-gradient-to-b from-gray-50 to-white dark:from-gray-900 dark:to-gray-800 min-h-screen w-full transition-colors duration-300">
       <CustomerNavBar />
@@ -617,17 +650,26 @@ const SpecificFoodProvider = () => {
                 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6 pt-6 border-t border-gray-100 dark:border-gray-700">
                   {provider.business_address && (
-                    <div className="flex items-start">
-                      <div className="bg-emerald-50 dark:bg-emerald-900/20 p-2 rounded-lg mr-3">
-                        <MapPinIcon size={18} className="text-emerald-600 dark:text-emerald-400" />
-                      </div>
-                      <div>
-                        <h4 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">Address</h4>
-                        <p className="text-gray-700 dark:text-gray-200 text-sm">
-                          {provider.business_address}
-                        </p>
-                      </div>
-                    </div>
+                    <div>
+                    <h4 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">Address</h4>
+                    <p className="text-gray-700 dark:text-gray-200 text-sm">
+                      {provider.business_address}
+                    </p>
+                  
+                    {(() => {
+                      const url = getDirectionsUrl();
+                      return url ? (
+                        <a
+                          href={url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="mt-2 inline-flex items-center text-emerald-600 hover:text-emerald-700 dark:text-emerald-400 dark:hover:text-emerald-300 text-sm font-medium"
+                        >
+                          Get Directions →
+                        </a>
+                      ) : null;
+                    })()}
+                  </div>
                   )}
                   
                   {provider.business_contact && (
