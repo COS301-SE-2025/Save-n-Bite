@@ -1,9 +1,3 @@
-"""
-Simple Non-Functional Requirements Tests for Save-n-Bite Backend
-
-These tests verify basic non-functional requirements using the actual
-system components without complex setup.
-"""
 
 import time
 from decimal import Decimal

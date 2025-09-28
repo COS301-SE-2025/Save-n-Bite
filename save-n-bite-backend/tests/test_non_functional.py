@@ -1,9 +1,3 @@
-"""
-Non-Functional Requirements Tests for Save-n-Bite Backend
-
-These tests verify non-functional requirements such as performance, security,
-scalability, reliability, and usability aspects of the system.
-"""
 
 import time
 import threading

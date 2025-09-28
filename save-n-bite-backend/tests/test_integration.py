@@ -1,9 +1,3 @@
-"""
-Integration Tests for Save-n-Bite Backend
-
-These tests verify that different components of the system work together correctly,
-including cross-app functionality and API integrations.
-"""
 
 import json
 import time

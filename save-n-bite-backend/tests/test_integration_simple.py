@@ -1,9 +1,3 @@
-"""
-Simplified Integration Tests for Save-n-Bite Backend
-
-These tests verify basic integration between components using the actual
-model structure and available endpoints.
-"""
 
 import json
 from decimal import Decimal

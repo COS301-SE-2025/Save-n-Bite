@@ -1,9 +1,3 @@
-"""
-Simple End-to-End Tests for Save-n-Bite Backend
-
-These tests focus on basic user workflows and core functionality.
-"""
-
 from django.test import TestCase
 from django.contrib.auth import get_user_model
 from rest_framework.test import APITestCase, APIClient

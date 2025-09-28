@@ -1,8 +1,4 @@
-"""
-Test Configuration for Save-n-Bite Backend
 
-This module contains configuration and utilities for running integration and E2E tests.
-"""
 
 import os
 import django
