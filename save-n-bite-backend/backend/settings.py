@@ -33,7 +33,6 @@ SECRET_KEY = os.getenv("SECRET_KEY", get_random_secret_key())
 # SECURITY WARNING: don't run with debug turned on in production!
 #DEBUG = os.getenv("DEBUG") == "false"
 DEBUG = os.getenv("DEBUG", "True").lower() == "true"
-GEOCODING_ENABLED = os.getenv("GEOCODING_ENABLED", "True").lower() == "true"
 
 
 ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", "localhost,127.0.0.1,169.254.134.3,savenbiteservice-hzghg8gcgddtcfg7.southafricanorth-01.azurewebsites.net").split(",")
@@ -64,8 +63,6 @@ INSTALLED_APPS = [
     'scheduling',
     'reviews',
     'admin_system',
-    'digital_garden',
-    'badges',
 ]
 
 MIDDLEWARE = [
@@ -300,29 +297,22 @@ else:
     
     print(f"🟡 Using Azurite emulator for development")
 
-"""
-File storage configuration
-- Honor USE_AZURE_STORAGE env flag (set to False in CI) to avoid any Azure/Azurite calls.
-"""
+# ===========================================
+# FILE STORAGE CONFIGURATION
+# ===========================================
 
-USE_AZURE_STORAGE = os.getenv('USE_AZURE_STORAGE', 'True').lower() == 'true'
+# Use Azure Blob Storage as default storage
+DEFAULT_FILE_STORAGE = 'blob_storage.AzureBlobStorage'
 
-# Static files (CSS, JavaScript, Images)
+# Static files (CSS, JavaScript, Images) - Keep these local for development
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
-if USE_AZURE_STORAGE:
-    # Use Azure-backed default storage
-    DEFAULT_FILE_STORAGE = 'blob_storage.AzureBlobStorage'
-    # Media files URL (for Azure/Azurite)
-    if IS_AZURE_DEPLOYMENT or ENVIRONMENT == 'production':
-        MEDIA_URL = f"https://{AZURE_ACCOUNT_NAME}.blob.core.windows.net/{AZURE_CONTAINER_NAME}/"
-    else:
-        MEDIA_URL = f"http://127.0.0.1:10000/devstoreaccount1/{AZURE_CONTAINER_NAME}/"
+# Media files URL (for blob storage)
+if IS_AZURE_DEPLOYMENT or ENVIRONMENT == 'production':
+    MEDIA_URL = f"https://{AZURE_ACCOUNT_NAME}.blob.core.windows.net/{AZURE_CONTAINER_NAME}/"
 else:
-    # Local filesystem storage (used in CI/tests)
-    DEFAULT_FILE_STORAGE = 'django.core.files.storage.FileSystemStorage'
-    MEDIA_URL = '/media/'
+    MEDIA_URL = f"http://127.0.0.1:10000/devstoreaccount1/{AZURE_CONTAINER_NAME}/"
 
 # File upload settings
 FILE_UPLOAD_MAX_MEMORY_SIZE = 5 * 1024 * 1024  # 5MB
