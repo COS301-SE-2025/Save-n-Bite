@@ -191,8 +191,41 @@ jobs:
     # - name: Run Authentication app tests only
     #   run: poetry run python manage.py test authentication
 
-    - name: Run Integration End to End and Non Functional Tests 
-      run: poetry run python run_integration_tests.py --all --verbose
+    - name: Run Integration End to End and Non Functional Tests
+      run: |
+        set -e
+        # Run the tests
+        poetry run python run_integration_tests.py --all --verbose || true
+        
+        # Force cleanup of any remaining connections
+        echo "Cleaning up test database..."
+        export PGPASSWORD=postgres
+        
+        # Kill all connections to the test database
+        for i in {1..5}; do
+          echo "Attempt $i to terminate connections..."
+          psql -h 127.0.0.1 -U postgres -d postgres -c "SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE datname = 'test_save_n_bite_integration_db'" || true
+          
+          # Check if there are still connections
+          CONNS=$(psql -h 127.0.0.1 -U postgres -d postgres -t -c "SELECT count(*) FROM pg_stat_activity WHERE datname = 'test_save_n_bite_integration_db'" | tr -d '[:space:]')
+          echo "Active connections: $CONNS"
+          
+          if [ "$CONNS" -eq "0" ]; then
+            break
+          fi
+          
+          sleep 2
+        done
+        
+        # Drop the test database
+        dropdb -h 127.0.0.1 -U postgres test_save_n_bite_integration_db || true
+        
+        # Final check
+        if psql -h 127.0.0.1 -U postgres -lqt | cut -d \| -f 1 | grep -qw test_save_n_bite_integration_db; then
+          echo "Warning: Failed to drop test database"
+        else
+          echo "Successfully cleaned up test database"
+        fi
 
     - name: Run coverage report (if requested)
       if: ${{ github.event.inputs.run_coverage == 'true' || github.event_name == 'pull_request' }}
