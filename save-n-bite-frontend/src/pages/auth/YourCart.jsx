@@ -1048,15 +1048,26 @@ const YourCart = () => {
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       <CustomerNavBar />
 
-      <div className="max-w-4xl mx-auto px-4 pt-16 sm:pt-20">
+      <div className="max-w-4xl mx-auto px-4 pt-16 sm:pt-20 flex items-center justify-between mb-6">
+      
+                  
+                
     <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-center sm:text-left">
       <span className="bg-gradient-to-r from-emerald-600 to-blue-600 bg-clip-text text-transparent">Your Cart</span>
+      
     </h1>
+    <Link
+                    to="/food-listing"
+                    className="text-emerald-600 hover:text-emerald-700 dark:text-emerald-400 dark:hover:text-emerald-300"
+                  >
+                    &larr; Back to Food Listings
+                  </Link>
+
   </div>
 
       <div className="max-w-4xl mx-auto px-4 py-4 pb-32">
         <div className="flex items-center justify-between mb-6">
-    
+     
           <div className="flex items-center">
             <span className="bg-emerald-100 dark:bg-emerald-900/30 text-emerald-800 dark:text-emerald-200 text-sm font-medium px-3 py-1 rounded-full">
               {providers.length} {providers.length === 1 ? 'basket' : 'baskets'}

@@ -29,7 +29,7 @@ const CustomerNavBar = () => {
   const location = useLocation();
   const userData = JSON.parse(localStorage.getItem('userData'));
   const user = userData?.user_type;
-  console.log('CustomerNavBar Debug - userType from localStorage:', user);
+ 
   // Auto-hide navbar functionality (refined to avoid glitches)
   useEffect(() => {
     const onScroll = () => {

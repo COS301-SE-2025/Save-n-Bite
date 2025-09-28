@@ -13,9 +13,7 @@ const FilterSidebar = ({
 }) => {
   if (!showFilters) return null;
 
-  console.log('FilterSidebar - userType:', userType);
-  console.log('FilterSidebar - USER_TYPES.NGO:', USER_TYPES.NGO);
-  console.log('FilterSidebar - typeOptions:', typeOptions);
+
 
   const handlePriceRangeChange = (e) => {
     const value = parseInt(e.target.value);
