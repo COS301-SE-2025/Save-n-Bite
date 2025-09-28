@@ -35,11 +35,11 @@ module.exports = {
   },
   testMatch: [
     '<rootDir>/src/**/unitTests/**/*.{js,jsx,ts,tsx}',
-    '<rootDir>/src/**/*.(test|spec).{js,jsx,ts,tsx}'
+    '<rootDir>/src/**/*.{test,spec}.{js,jsx,ts,tsx}'
   ],
   moduleDirectories: ['node_modules', 'src'],
   testTimeout: 10000,
-  collectCoverage: false,
+  collectCoverage: true,
   clearMocks: true,
   restoreMocks: true
 };
