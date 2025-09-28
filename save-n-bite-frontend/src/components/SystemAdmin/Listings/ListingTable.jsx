@@ -103,7 +103,7 @@ const ListingTable = ({
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {listing.provider}
+                    {listing.provider || listing.provider_business_name || 'Unknown Provider'}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <span
@@ -121,19 +121,13 @@ const ListingTable = ({
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <span
-                      className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                        listing.status === 'Active'
-                          ? 'bg-green-100 text-green-800'
-                          : listing.status === 'Flagged'
-                          ? 'bg-amber-100 text-amber-800'
-                          : 'bg-red-100 text-red-800'
-                      }`}
+                      className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(listing.status)}`}
                     >
-                      {listing.status}
+                      {getStatusDisplay(listing.status)}
                     </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {new Date(listing.created).toLocaleDateString()}
+                    {new Date(listing.created_at || listing.created).toLocaleDateString()}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                     <button
