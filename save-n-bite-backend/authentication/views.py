@@ -36,7 +36,7 @@ from .models import User, FoodProviderProfile, CustomerProfile, NGOProfile
 from interactions.models import Interaction, Order
 from reviews.models import Review
 from notifications.models import BusinessFollower
-logger = logging.getLogger(__name__)
+#logger = logging.getLogger(__name__)
 
 def get_tokens_for_user(user):
     """Generate JWT tokens for user with proper UserID handling"""
@@ -229,7 +229,7 @@ def login_user(request):
             }, status=status.HTTP_401_UNAUTHORIZED)
             
     except Exception as e:
-        logger.error(f"Login error: {str(e)}")
+        # logger.error(f"Login error: {str(e)}")
         return Response({
             'error': {
                 'code': 'LOGIN_ERROR',
@@ -347,7 +347,7 @@ def update_user_profile(request):
                             save=False
                         )
                 except Exception as e:
-                    logger.error(f"Failed to process NGO logo for user {user.email}: {str(e)}")
+                    #logger.error(f"Failed to process NGO logo for user {user.email}: {str(e)}")
                     return Response({
                         'error': {
                             'code': 'IMAGE_UPLOAD_ERROR',
@@ -387,7 +387,7 @@ def update_user_profile(request):
                             save=False
                         )
                 except Exception as e:
-                    logger.error(f"Failed to process provider logo for user {user.email}: {str(e)}")
+                    #logger.error(f"Failed to process provider logo for user {user.email}: {str(e)}")
                     return Response({
                         'error': {
                             'code': 'IMAGE_UPLOAD_ERROR',
@@ -556,7 +556,7 @@ def get_platform_stats(request):
             'total_orders': int(total_orders),
         }, status=status.HTTP_200_OK)
     except Exception as e:
-        logger.error(f"Failed to compute platform stats: {e}")
+        #logger.error(f"Failed to compute platform stats: {e}")
         return Response({
             'error': {
                 'code': 'STATS_ERROR',
@@ -845,7 +845,7 @@ def change_temporary_password(request):
             }
         )
         
-        logger.info(f"User {request.user.email} successfully changed their temporary password")
+        #logger.info(f"User {request.user.email} successfully changed their temporary password")
         
         return Response({
             'message': 'Password changed successfully',
@@ -853,7 +853,7 @@ def change_temporary_password(request):
         }, status=status.HTTP_200_OK)
         
     except Exception as e:
-        logger.error(f"Password change error for user {request.user.email}: {str(e)}")
+        #logger.error(f"Password change error for user {request.user.email}: {str(e)}")
         return Response({
             'error': {
                 'code': 'PASSWORD_CHANGE_ERROR',
@@ -948,7 +948,7 @@ def login_with_password_check(request):
             }, status=status.HTTP_401_UNAUTHORIZED)
     
     except Exception as e:
-        logger.error(f"Login error: {str(e)}")
+        #logger.error(f"Login error: {str(e)}")
         return Response({
             'error': {
                 'code': 'LOGIN_ERROR',
@@ -962,10 +962,10 @@ def request_password_reset(request):
     """Allow users to request a password reset for themselves"""
     
     email = request.data.get('email')
-    print(f"DEBUG: Password reset requested for email: {email}")  # Debug line
+    #print(f"DEBUG: Password reset requested for email: {email}")  # Debug line
     
     if not email:
-        print(f"DEBUG: No email provided")  # Debug line
+        #print(f"DEBUG: No email provided")  # Debug line
         return Response({
             'error': {
                 'code': 'MISSING_EMAIL',
@@ -976,16 +976,16 @@ def request_password_reset(request):
     try:
         # Find user by email
         target_user = User.objects.get(email=email, is_active=True)
-        print(f"DEBUG: Found user: {target_user.email}")  # Debug line
+        #print(f"DEBUG: Found user: {target_user.email}")  # Debug line
         
         # Generate temporary password (reuse your existing logic)
         alphabet = string.ascii_letters + string.digits + "!@#$%"
         temp_password = ''.join(secrets.choice(alphabet) for _ in range(12))
-        print(f"DEBUG: Generated temp password: {temp_password}")  # Debug line
+        #print(f"DEBUG: Generated temp password: {temp_password}")  # Debug line
         
         # Set expiry time (24 hours)
         expires_at = timezone.now() + timedelta(hours=24)
-        print(f"DEBUG: Set expiry time: {expires_at}")  # Debug line
+        #print(f"DEBUG: Set expiry time: {expires_at}")  # Debug line
         
         # Update user password and set temporary flags (same as admin reset)
         target_user.set_password(temp_password)
@@ -993,14 +993,14 @@ def request_password_reset(request):
         target_user.has_temporary_password = True
         target_user.temp_password_created_at = timezone.now()
         target_user.save()
-        print(f"DEBUG: Updated user password and flags")  # Debug line
+        #print(f"DEBUG: Updated user password and flags")  # Debug line
         
         # Import your existing NotificationService
         try:
             from notifications.services import NotificationService
-            print(f"DEBUG: Successfully imported NotificationService")  # Debug line
+            #print(f"DEBUG: Successfully imported NotificationService")  # Debug line
         except ImportError as import_error:
-            print(f"DEBUG: Failed to import NotificationService: {import_error}")  # Debug line
+            #print(f"DEBUG: Failed to import NotificationService: {import_error}")  # Debug line
             raise import_error
         
         # Create in-app notification (same as admin reset)
@@ -1016,9 +1016,9 @@ def request_password_reset(request):
                     'self_requested': True
                 }
             )
-            print(f"DEBUG: Created in-app notification: {notification.id}")  # Debug line
+            #print(f"DEBUG: Created in-app notification: {notification.id}")  # Debug line
         except Exception as notif_error:
-            print(f"DEBUG: Failed to create notification: {notif_error}")  # Debug line
+            #print(f"DEBUG: Failed to create notification: {notif_error}")  # Debug line
             raise notif_error
         
         # Prepare email context (same as admin reset)
@@ -1033,7 +1033,7 @@ def request_password_reset(request):
             'support_email': getattr(settings, 'SUPPORT_EMAIL', 'support@savenbite.com'),
             'company_name': 'Save n Bite'
         }
-        print(f"DEBUG: Prepared email context")  # Debug line
+        #print(f"DEBUG: Prepared email context")  # Debug line
         
         # Send email using NEW critical email method (bypasses preferences)
         try:
@@ -1044,16 +1044,15 @@ def request_password_reset(request):
                 context=context,
                 notification=notification
             )
-            print(f"DEBUG: Critical email sending result: {email_sent}")  # Debug line
+            #print(f"DEBUG: Critical email sending result: {email_sent}")  # Debug line
         except Exception as email_error:
-            print(f"DEBUG: Failed to send critical email: {email_error}")  # Debug line
+            #print(f"DEBUG: Failed to send critical email: {email_error}")  # Debug line
             raise email_error
         
         if email_sent:
-            logger.info(f"Self-service password reset email sent successfully to {target_user.email} (bypassed email preferences)")
-            print(f"DEBUG: Email sent successfully")  # Debug line
+            # logger.info(f"Self-service password reset email sent successfully to {target_user.email} (bypassed email preferences)")
+            # print(f"DEBUG: Email sent successfully")  # Debug line
             
-            # Always return success message for security (don't reveal if email exists)
             return Response({
                 'message': 'If an account with that email exists, you will receive password reset instructions shortly.',
                 'reset_info': {
@@ -1062,14 +1061,14 @@ def request_password_reset(request):
                 }
             }, status=status.HTTP_200_OK)
         else:
-            print(f"DEBUG: Email sending returned False")  # Debug line
+            #print(f"DEBUG: Email sending returned False")  
             raise Exception("Email sending returned False")
             
     except User.DoesNotExist:
         # For security, don't reveal that email doesn't exist
         # Return same success message as if user existed
-        print(f"DEBUG: User not found for email: {email}")  # Debug line
-        logger.info(f"Password reset requested for non-existent email: {email}")
+        # print(f"DEBUG: User not found for email: {email}")  # Debug line
+        # logger.info(f"Password reset requested for non-existent email: {email}")
         return Response({
             'message': 'If an account with that email exists, you will receive password reset instructions shortly.',
             'reset_info': {
@@ -1079,11 +1078,11 @@ def request_password_reset(request):
         }, status=status.HTTP_200_OK)
         
     except Exception as e:
-        print(f"DEBUG: Exception occurred: {str(e)}")  # Debug line
-        print(f"DEBUG: Exception type: {type(e)}")  # Debug line
-        import traceback
-        print(f"DEBUG: Full traceback: {traceback.format_exc()}")  # Debug line
-        logger.error(f"Self-service password reset error for {email}: {str(e)}")
+        # print(f"DEBUG: Exception occurred: {str(e)}")  # Debug line
+        # print(f"DEBUG: Exception type: {type(e)}")  # Debug line
+        # import traceback
+        # print(f"DEBUG: Full traceback: {traceback.format_exc()}")  # Debug line
+        # logger.error(f"Self-service password reset error for {email}: {str(e)}")
         return Response({
             'error': {
                 'code': 'PASSWORD_RESET_ERROR',
@@ -1119,7 +1118,7 @@ def check_email_exists(request):
         }, status=status.HTTP_200_OK)
         
     except Exception as e:
-        logger.error(f"Email check error: {str(e)}")
+        #logger.error(f"Email check error: {str(e)}")
         return Response({
             'error': {
                 'code': 'EMAIL_CHECK_ERROR',
@@ -1302,7 +1301,7 @@ def get_food_providers(request):
         }, status=status.HTTP_400_BAD_REQUEST)
         
     except Exception as e:
-        logger.error(f"Get food providers error: {str(e)}")
+        #logger.error(f"Get food providers error: {str(e)}")
         return Response({
             'error': {
                 'code': 'PROVIDERS_FETCH_ERROR',
@@ -1447,7 +1446,7 @@ def get_food_provider_by_id(request, provider_id):
         }, status=status.HTTP_404_NOT_FOUND)
         
     except Exception as e:
-        logger.error(f"Get food provider by ID error: {str(e)}")
+        #logger.error(f"Get food provider by ID error: {str(e)}")
         return Response({
             'error': {
                 'code': 'PROVIDER_FETCH_ERROR',
@@ -1533,7 +1532,7 @@ def get_food_providers_locations(request):
         }, status=status.HTTP_200_OK)
         
     except Exception as e:
-        logger.error(f"Get food providers locations error: {str(e)}")
+        #logger.error(f"Get food providers locations error: {str(e)}")
         return Response({
             'error': {
                 'code': 'LOCATIONS_FETCH_ERROR',
@@ -1670,7 +1669,7 @@ def get_my_profile(request):
                         'business_address': business.business_address
                     })
             except Exception as e:
-                logger.error(f"Error fetching followed businesses: {str(e)}")
+                #logger.error(f"Error fetching followed businesses: {str(e)}")
                 followed_businesses = []
         
         # Get user's reviews - FIXED: Don't slice before using in other queries
@@ -1726,7 +1725,7 @@ def get_my_profile(request):
             }
             
         except Exception as e:
-            logger.error(f"Error calculating impact: {str(e)}")
+            #logger.error(f"Error calculating impact: {str(e)}")
             impact_statistics = {
                 'meals_rescued_this_month': 0,
                 'co2_emissions_prevented_kg': 0.0,
@@ -1765,7 +1764,7 @@ def get_my_profile(request):
         return Response(response_data, status=status.HTTP_200_OK)
         
     except Exception as e:
-        logger.error(f"Error fetching profile data for user {user.email}: {str(e)}")
+        #logger.error(f"Error fetching profile data for user {user.email}: {str(e)}")
         return Response({
             'error': {
                 'code': 'PROFILE_FETCH_ERROR',
@@ -1900,7 +1899,7 @@ def get_order_history(request):
         }, status=status.HTTP_200_OK)
         
     except Exception as e:
-        logger.error(f"Error fetching order history for user {user.email}: {str(e)}")
+        #logger.error(f"Error fetching order history for user {user.email}: {str(e)}")
         return Response({
             'error': {
                 'code': 'ORDER_HISTORY_ERROR',
@@ -1981,7 +1980,7 @@ def update_my_profile(request):
                         )
                         
                 except Exception as e:
-                    logger.error(f"Failed to process profile image for user {user.email}: {str(e)}")
+                    #logger.error(f"Failed to process profile image for user {user.email}: {str(e)}")
                     return Response({
                         'error': {
                             'code': 'IMAGE_UPLOAD_ERROR',
@@ -2022,7 +2021,7 @@ def update_my_profile(request):
                             save=False
                         )
                 except Exception as e:
-                    logger.error(f"Failed to process NGO logo for user {user.email}: {str(e)}")
+                    #logger.error(f"Failed to process NGO logo for user {user.email}: {str(e)}")
                     return Response({
                         'error': {
                             'code': 'IMAGE_UPLOAD_ERROR',
@@ -2047,7 +2046,7 @@ def update_my_profile(request):
         }, status=status.HTTP_200_OK)
 
     except Exception as e:
-        logger.error(f"Profile update error for user {user.email}: {str(e)}")
+        #logger.error(f"Profile update error for user {user.email}: {str(e)}")
         return Response({
             'error': {
                 'code': 'UPDATE_ERROR',
@@ -2273,7 +2272,7 @@ def get_food_providers(request):
         }, status=status.HTTP_400_BAD_REQUEST)
         
     except Exception as e:
-        logger.error(f"Get food providers error: {str(e)}")
+        #logger.error(f"Get food providers error: {str(e)}")
         return Response({
             'error': {
                 'code': 'PROVIDERS_FETCH_ERROR',
@@ -2426,7 +2425,7 @@ def get_food_provider_by_id(request, provider_id):
         }, status=status.HTTP_404_NOT_FOUND)
         
     except Exception as e:
-        logger.error(f"Get food provider by ID error: {str(e)}")
+        #logger.error(f"Get food provider by ID error: {str(e)}")
         return Response({
             'error': {
                 'code': 'PROVIDER_FETCH_ERROR',
@@ -2468,7 +2467,7 @@ def update_business_profile(request):
             updated_profile = serializer.save()
             
             # Log the update for audit purposes
-            logger.info(f"Business profile updated for {updated_profile.business_name} (User: {request.user.email})")
+            #logger.info(f"Business profile updated for {updated_profile.business_name} (User: {request.user.email})")
             
             # Return updated profile data
             response_serializer = BusinessPublicProfileSerializer(updated_profile)
@@ -2479,7 +2478,7 @@ def update_business_profile(request):
             }, status=status.HTTP_200_OK)
             
         except Exception as e:
-            logger.error(f"Profile update error for user {request.user.email}: {str(e)}")
+            #logger.error(f"Profile update error for user {request.user.email}: {str(e)}")
             return Response({
                 'error': {
                     'code': 'UPDATE_ERROR',
@@ -2556,7 +2555,7 @@ def manage_business_tags(request):
             }, status=status.HTTP_200_OK)
             
         except Exception as e:
-            logger.error(f"Tag management error for user {request.user.email}: {str(e)}")
+            #logger.error(f"Tag management error for user {request.user.email}: {str(e)}")
             return Response({
                 'error': {
                     'code': 'TAG_UPDATE_ERROR',
@@ -2604,7 +2603,7 @@ def get_popular_business_tags(request):
         }, status=status.HTTP_200_OK)
         
     except Exception as e:
-        logger.error(f"Get popular tags error: {str(e)}")
+        #logger.error(f"Get popular tags error: {str(e)}")
         return Response({
             'error': {
                 'code': 'TAGS_FETCH_ERROR',
@@ -2692,7 +2691,7 @@ def search_providers_by_tags(request):
         }, status=status.HTTP_200_OK)
         
     except Exception as e:
-        logger.error(f"Search providers by tags error: {str(e)}")
+        #logger.error(f"Search providers by tags error: {str(e)}")
         return Response({
             'error': {
                 'code': 'TAG_SEARCH_ERROR',
@@ -2722,7 +2721,7 @@ def delete_account(request):
             status=status.HTTP_200_OK
         )
     except Exception as e:
-        logger.error(f"Failed to delete account {email}: {str(e)}")
+        #logger.error(f"Failed to delete account {email}: {str(e)}")
         return Response(
             {"error": {"code": "DELETE_ERROR", "message": "Account deletion failed."}},
             status=status.HTTP_500_INTERNAL_SERVER_ERROR
@@ -2885,7 +2884,7 @@ def get_provider_settings(request):
         }
         return Response({'settings': settings_data}, status=status.HTTP_200_OK)
     except Exception as e:
-        logger.error(f"Error fetching provider settings for {request.user.email}: {str(e)}")
+        #logger.error(f"Error fetching provider settings for {request.user.email}: {str(e)}")
         return Response({'error': 'Failed to fetch settings'}, status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -2928,5 +2927,5 @@ def update_provider_settings(request):
             return Response({'message': 'Settings updated successfully', 'settings': updated}, status=status.HTTP_200_OK)
         return Response({'error': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
     except Exception as e:
-        logger.error(f"Error updating provider settings for {request.user.email}: {str(e)}")
+        #logger.error(f"Error updating provider settings for {request.user.email}: {str(e)}")
         return Response({'error': 'Failed to update settings'}, status=status.HTTP_400_BAD_REQUEST)
