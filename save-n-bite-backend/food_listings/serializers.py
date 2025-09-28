@@ -15,10 +15,12 @@ class ProviderInfoSerializer(serializers.ModelSerializer):
     business_name = serializers.CharField(source='provider_profile.business_name', read_only=True)
     business_address = serializers.CharField(source='provider_profile.business_address', read_only=True)
     logo = serializers.SerializerMethodField()
+    user_id = serializers.CharField(source='UserID', read_only=True)  # The User's UUID
+    provider_id = serializers.IntegerField(source='provider_profile.id', read_only=True)  # The FoodProviderProfile ID
     
     class Meta:
         model = User
-        fields = ['id', 'business_name', 'business_address', 'logo']
+        fields = ['id', 'user_id', 'provider_id', 'business_name', 'business_address', 'logo']  # Add the new fields here
     
     def get_logo(self, obj):
         try:
