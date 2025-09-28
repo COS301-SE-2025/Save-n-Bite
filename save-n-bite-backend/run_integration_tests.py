@@ -29,8 +29,8 @@ from datetime import datetime
 # Add the project directory to Python path
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
-# Setup Django with regular settings (not test settings to avoid SQLite issues)
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'backend.settings')
+# Setup Django with test-specific settings for integration tests
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'backend.test_settings')
 django.setup()
 
 from django.test.utils import get_runner
@@ -62,11 +62,25 @@ class IntegrationTestRunner:
         import sys
         
         try:
-            # Force Django to recreate the test database by using --debug-mode
-            # This will ensure a clean slate for each test run
             if self.verbose:
                 print("Cleaning up test database...")
-        except Exception:
+            
+            # Drop the integration test database if it exists
+            cmd = [
+                sys.executable, 'manage.py', 'flush', 
+                '--noinput', '--verbosity=0'
+            ]
+            
+            subprocess.run(
+                cmd, 
+                cwd=os.path.dirname(os.path.abspath(__file__)),
+                capture_output=True,
+                timeout=30
+            )
+            
+        except Exception as e:
+            if self.verbose:
+                print(f"Database cleanup warning: {e}")
             # If cleanup fails, that's okay - the test will handle it
             pass
         
@@ -89,16 +103,19 @@ class IntegrationTestRunner:
         
         cmd = [
             sys.executable, 'manage.py', 'test', test_module,
-            '--verbosity', '2' if self.verbose else '1'
+            '--verbosity', '2' if self.verbose else '1',
+            '--settings=backend.test_settings',  # Use test settings
+            '--parallel', '1',  # Single process to avoid conflicts
+            '--debug-mode'  # Better error reporting
         ]
         
         try:
             result = subprocess.run(
                 cmd, 
                 cwd=os.path.dirname(os.path.abspath(__file__)),
-                capture_output=True,
+                capture_output=not self.verbose,  # Show real-time output if verbose
                 text=True,
-                timeout=300  # 5 minute timeout
+                timeout=600  # 10 minute timeout for integration tests
             )
             success = result.returncode == 0
             failures = 0 if success else 1
@@ -148,8 +165,7 @@ class IntegrationTestRunner:
     
     def run_e2e_tests(self):
         """Run end-to-end tests"""
-        # For now, use the working integration tests as E2E tests
-        return self.run_test_suite('tests.test_integration_simple', 'End-to-End')
+        return self.run_test_suite('tests.test_end_to_end', 'End-to-End')
     
     def run_nfr_tests(self):
         """Run non-functional requirements tests"""
