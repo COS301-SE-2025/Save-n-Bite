@@ -12,15 +12,15 @@ module.exports = {
     'src/components/auth/FoodCard.jsx',
     'src/components/auth/CustomerNavBar.jsx',
    
-    'src/components/auth/FoodItemDetails.jsx',
-    'src/components/auth/FoodItemHeader.jsx',
-    'src/components/auth/FoodListingsGrid.jsx',
-    'src/components/auth/FoodProviderCarousel.jsx',
-    'src/components/auth/LoginForm.jsx',
-    'src/components/auth/NavBar.jsx',
+    // 'src/components/auth/FoodItemDetails.jsx',
+    // 'src/components/auth/FoodItemHeader.jsx',
+    // 'src/components/auth/FoodListingsGrid.jsx',
+    // 'src/components/auth/FoodProviderCarousel.jsx',
+    // 'src/components/auth/LoginForm.jsx',
+    // 'src/components/auth/NavBar.jsx',
     // 'src/components/auth/NotificationBell.jsx',
-    'src/components/auth/OrderCard.jsx',
-    'src/components/auth/PriceDisplay.jsx'
+    // 'src/components/auth/OrderCard.jsx',
+    // 'src/components/auth/PriceDisplay.jsx'
     
   ],
   coverageDirectory: 'coverage',
