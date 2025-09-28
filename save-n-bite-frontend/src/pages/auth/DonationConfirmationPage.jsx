@@ -34,7 +34,7 @@ const DonationConfirmationPage = () => {
 
             <div>
             <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-center">
-  <span className="bg-gradient-to-r from-emerald-600 to-blue-600 bg-clip-text text-transparent">Donation Request Submitted</span>
+  <span className="text-2xl font-bold text-emerald-600 dark:text-emerald-500">Donation Request Submitted</span>
 </h1>
 <p className="text-gray-600 dark:text-gray-300">
   Your donation request has been sent to {listing.provider?.business_name || 'the provider'}

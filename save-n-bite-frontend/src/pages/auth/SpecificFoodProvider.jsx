@@ -524,7 +524,7 @@ const getDirectionsUrl = () => {
       <CustomerNavBar />
       <br></br>
       <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-center">
-  <span className="bg-gradient-to-r from-emerald-600 to-blue-600 bg-clip-text text-transparent">Food Provider Details</span>
+  <span className="text-2xl font-bold text-emerald-600 dark:text-emerald-500">Food Provider Details</span>
 </h1>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">

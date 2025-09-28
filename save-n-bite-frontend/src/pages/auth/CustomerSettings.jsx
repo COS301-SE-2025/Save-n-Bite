@@ -170,7 +170,7 @@ const SettingsPage = () => {
   <div className="max-w-4xl mx-auto px-4">
       <br></br>
       <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-center">
-  <span className="bg-gradient-to-r from-emerald-600 to-blue-600 bg-clip-text text-transparent">Settings</span>
+  <span className="text-2xl font-bold text-emerald-600 dark:text-emerald-500">Settings</span>
 </h1>
 <br></br>
 

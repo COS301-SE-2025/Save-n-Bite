@@ -91,7 +91,7 @@ const ReviewPage = () => {
       <CustomerNavBar />
    
       <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-center">
-  <span className="bg-gradient-to-r from-emerald-600 to-blue-600 bg-clip-text text-transparent">Reviews</span>
+  <span className="text-2xl font-bold text-emerald-600 dark:text-emerald-500">Reviews</span>
 </h1>
       
       <div className="max-w-md mx-auto px-4 py-4">

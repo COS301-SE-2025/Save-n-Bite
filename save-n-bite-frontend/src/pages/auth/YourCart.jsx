@@ -972,7 +972,7 @@ const YourCart = () => {
         <CustomerNavBar />
         <div className="max-w-4xl mx-auto px-4 pt-16 sm:pt-20">
       <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-center sm:text-left">
-        <span className="bg-gradient-to-r from-emerald-600 to-blue-600 bg-clip-text text-transparent">Your Cart</span>
+        <span className="text-2xl font-bold text-emerald-600 dark:text-emerald-500">Your Cart</span>
       </h1>
     </div>
         <div className="max-w-4xl mx-auto px-4 py-8">
@@ -1021,7 +1021,7 @@ const YourCart = () => {
         <CustomerNavBar />
         <div className="max-w-4xl mx-auto px-4 pt-16 sm:pt-20">
     <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-center">
-      <span className="bg-gradient-to-r from-emerald-600 to-blue-600 bg-clip-text text-transparent">Your Cart</span>
+      <span className="text-2xl font-bold text-emerald-600 dark:text-emerald-500">Your Cart</span>
     </h1>
   </div>
         <div className="max-w-4xl mx-auto px-4 py-8 text-center">
@@ -1053,7 +1053,7 @@ const YourCart = () => {
                   
                 
     <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-center sm:text-left">
-      <span className="bg-gradient-to-r from-emerald-600 to-blue-600 bg-clip-text text-transparent">Your Cart</span>
+      <span className="text-2xl font-bold text-emerald-600 dark:text-emerald-500">Your Cart</span>
       
     </h1>
     <Link

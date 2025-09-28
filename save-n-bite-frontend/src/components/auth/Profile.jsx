@@ -128,7 +128,7 @@ const ProfilePage = () => {
       <CustomerNavBar />
       <div className="max-w-4xl mx-auto px-4 py-8">
   <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-center sm:text-left">
-    <span className="bg-gradient-to-r from-emerald-600 to-blue-600 bg-clip-text text-transparent">My Profile</span>
+    <span className="text-2xl font-bold text-emerald-600 dark:text-emerald-500">My Profile</span>
   </h1>
   
 
