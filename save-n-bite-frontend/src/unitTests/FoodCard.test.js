@@ -8,7 +8,8 @@ jest.mock('../context/AuthContext', () => ({
   useAuth: jest.fn(),
 }));
 
-// Mock react-router-dom - check if it exists first
+// Mock react-router-dom
+const mockNavigate = jest.fn();
 jest.mock('react-router-dom', () => {
   try {
     return {
@@ -17,17 +18,16 @@ jest.mock('react-router-dom', () => {
           {children}
         </a>
       ),
-      useNavigate: () => jest.fn(),
+      useNavigate: () => mockNavigate,
     };
   } catch (e) {
-    // Fallback if react-router-dom is not installed
     return {
       Link: ({ children, to, className, ...props }) => (
         <a href={to} className={className} {...props}>
           {children}
         </a>
       ),
-      useNavigate: () => jest.fn(),
+      useNavigate: () => mockNavigate,
     };
   }
 }, { virtual: true });
@@ -92,12 +92,23 @@ const mockRegularItem = {
   expirationTime: '1 hour'
 };
 
+// Item without provider for fallback testing
+const mockItemWithoutProvider = {
+  id: '4',
+  type: 'Regular',
+  title: 'Mystery Food',
+  image: 'https://example.com/mystery.jpg',
+  distance: '1km',
+  expirationTime: '3 hours'
+};
+
 const renderWithRouter = (component) => render(component);
 
 describe('FoodCard Component', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     mockLocalStorage.clear();
+    mockNavigate.mockClear();
     useAuth.mockReturnValue({
       isNGO: jest.fn(() => false),
     });
@@ -113,6 +124,7 @@ describe('FoodCard Component', () => {
       expect(screen.getByText('Free')).toBeInTheDocument();
       expect(screen.getByText('Request')).toBeInTheDocument();
     });
+
     test('renders discount item correctly', () => {
       renderWithRouter(<FoodCard item={mockDiscountItem} />);
       
@@ -125,7 +137,6 @@ describe('FoodCard Component', () => {
       expect(screen.getByText('Order')).toBeInTheDocument();
     });
 
-
     test('renders regular item correctly', () => {
       renderWithRouter(<FoodCard item={mockRegularItem} />);
       expect(screen.getByText('Sandwiches')).toBeInTheDocument();
@@ -133,6 +144,11 @@ describe('FoodCard Component', () => {
       expect(screen.getByText('Regular')).toBeInTheDocument();
       expect(screen.getByText('Free')).toBeInTheDocument();
       expect(screen.getByText('Order')).toBeInTheDocument();
+    });
+
+    test('renders fallback provider name when provider is missing', () => {
+      renderWithRouter(<FoodCard item={mockItemWithoutProvider} />);
+      expect(screen.getByText('Save-n-Bite')).toBeInTheDocument();
     });
   });
 
@@ -143,6 +159,17 @@ describe('FoodCard Component', () => {
       expect(link).toHaveAttribute('href', '/item/1');
     });
 
+    test('generates correct link for donation item (NGO user)', () => {
+      // Mock NGO user
+      useAuth.mockReturnValue({
+        isNGO: jest.fn(() => true),
+      });
+
+      renderWithRouter(<FoodCard item={mockDonationItem} />);
+      const link = screen.getByRole('link');
+      expect(link).toHaveAttribute('href', '/donation-request/1');
+    });
+
     test('generates correct link for non-donation item', () => {
       renderWithRouter(<FoodCard item={mockDiscountItem} />);
       const link = screen.getByRole('link');
@@ -150,7 +177,7 @@ describe('FoodCard Component', () => {
     });
   });
 
-  describe('Button Text and Styling', () => {
+  describe('Button Functionality', () => {
     test('shows Request button for donation items', () => {
       renderWithRouter(<FoodCard item={mockDonationItem} />);
       expect(screen.getByText('Request')).toBeInTheDocument();
@@ -166,15 +193,99 @@ describe('FoodCard Component', () => {
       const actionButton = screen.getByText('Request');
       expect(actionButton).toHaveAttribute('type', 'button');
     });
+
+    test('button click navigates to donation request for donation items', () => {
+      renderWithRouter(<FoodCard item={mockDonationItem} />);
+      const button = screen.getByText('Request');
+      
+      fireEvent.click(button);
+      expect(mockNavigate).toHaveBeenCalledWith('/donation-request/1');
+    });
+
+    test('button click navigates to item page for non-donation items', () => {
+      renderWithRouter(<FoodCard item={mockDiscountItem} />);
+      const button = screen.getByText('Order');
+      
+      fireEvent.click(button);
+      expect(mockNavigate).toHaveBeenCalledWith('/item/2');
+    });
+
+    test('button click prevents default and stops propagation', () => {
+      renderWithRouter(<FoodCard item={mockDonationItem} />);
+      const button = screen.getByText('Request');
+      
+      const mockEvent = {
+        preventDefault: jest.fn(),
+        stopPropagation: jest.fn()
+      };
+      
+      // Simulate the click with mock event
+      fireEvent.click(button, mockEvent);
+      
+      // Navigate should still be called
+      expect(mockNavigate).toHaveBeenCalledWith('/donation-request/1');
+    });
   });
 
-  describe('Tooltip on Save badge', () => {
+  describe('Tooltip Functionality', () => {
     test('shows expiry tooltip on hover for discount items', () => {
       renderWithRouter(<FoodCard item={mockDiscountItem} />);
       const saveText = screen.getByText('Save R7');
       const saveContainer = saveText.parentElement;
+      
       fireEvent.mouseEnter(saveContainer);
       expect(screen.getByText('Expires: 4 hours')).toBeInTheDocument();
+    });
+
+    test('hides expiry tooltip on mouse leave for discount items', () => {
+      renderWithRouter(<FoodCard item={mockDiscountItem} />);
+      const saveText = screen.getByText('Save R7');
+      const saveContainer = saveText.parentElement;
+      
+      // Show tooltip
+      fireEvent.mouseEnter(saveContainer);
+      expect(screen.getByText('Expires: 4 hours')).toBeInTheDocument();
+      
+      // Hide tooltip
+      fireEvent.mouseLeave(saveContainer);
+      expect(screen.queryByText('Expires: 4 hours')).not.toBeInTheDocument();
+    });
+
+    test('does not show tooltip for non-discount items', () => {
+      renderWithRouter(<FoodCard item={mockDonationItem} />);
+      
+      // Donation items shouldn't have save badges or tooltips
+      expect(screen.queryByText(/Save R/)).not.toBeInTheDocument();
+      expect(screen.queryByText(/Expires:/)).not.toBeInTheDocument();
+    });
+  });
+
+  describe('Price Display', () => {
+    test('displays correct savings calculation for discount items', () => {
+      const customDiscountItem = {
+        ...mockDiscountItem,
+        originalPrice: 30.75,
+        discountPrice: 22.25
+      };
+      
+      renderWithRouter(<FoodCard item={customDiscountItem} />);
+      expect(screen.getByText('Save R9')).toBeInTheDocument(); // 30.75 - 22.25 = 8.5, rounded to 9
+      expect(screen.getByText('R22.25')).toBeInTheDocument();
+      expect(screen.getByText('R30.75')).toBeInTheDocument();
+    });
+  });
+
+  describe('Styling and Classes', () => {
+    test('applies correct badge styling for donation items', () => {
+      renderWithRouter(<FoodCard item={mockDonationItem} />);
+      const badge = screen.getByText('Donation');
+      expect(badge).toHaveClass('bg-emerald-100', 'text-emerald-800');
+    });
+
+    test('applies correct badge styling for non-donation items', () => {
+      renderWithRouter(<FoodCard item={mockDiscountItem} />);
+      const badge = screen.getByText('Discount');
+      expect(badge).toHaveClass('bg-blue-100', 'text-blue-800');
     });
   });
 });

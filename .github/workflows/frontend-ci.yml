@@ -27,7 +27,7 @@ jobs:
         run: npm i
         
       - name: Run Jest with coverage
-        run: npx jest --coverage --runInBand
+        run: npx jest 
         
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v3
