@@ -442,10 +442,10 @@ const FoodItem = () => {
     e.preventDefault();
     e.stopPropagation();
 
-    if (buttonStatus === "added") {
-      navigate('/cart');
-      return;
-    }
+    // if (buttonStatus === "added") {
+    //   navigate('/cart');
+    //   return;
+    // }
 
     setButtonStatus("loading");
 
@@ -453,9 +453,9 @@ const FoodItem = () => {
       const response = await foodAPI.addToCart(id, quantity);
       if (response.success) {
         setButtonStatus("added");
-        setTimeout(() => {
-          navigate('/cart');
-        }, 1500);
+        // setTimeout(() => {
+        //   navigate('/cart');
+        // }, 1500);
       } else {
         setError(response.error);
         setButtonStatus("idle");
@@ -525,6 +525,13 @@ const FoodItem = () => {
     return (
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
         <CustomerNavBar />
+
+        <div className="max-w-4xl mx-auto px-4 pt-16 sm:pt-20">
+    <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-center sm:text-left">
+      <span className="bg-gradient-to-r from-emerald-600 to-blue-600 bg-clip-text text-transparent">Your Cart</span>
+    </h1>
+  </div>
+
         <div className="max-w-5xl mx-auto px-4 py-4 sm:px-6 lg:px-8">
           <div className="animate-pulse space-y-6">
             <div className="h-6 w-1/3 bg-gray-200 dark:bg-gray-700 rounded"></div>
@@ -546,6 +553,8 @@ const FoodItem = () => {
     return (
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex flex-col">
         <CustomerNavBar />
+
+        
         <div className="flex-1 flex items-center justify-center p-4">
           <div className="text-center max-w-md">
             <div className="text-4xl mb-3">😕</div>
@@ -699,7 +708,16 @@ const FoodItem = () => {
                       {buttonStatus === "loading" && "Adding..."}
                       {buttonStatus === "added" && "View Cart"}
                     </button>
+
+                    
+
                   )}
+                  <button
+      onClick={() => navigate('/food-listing')}
+      className="w-full sm:w-auto flex-1 inline-flex items-center justify-center px-4 py-2.5 rounded-lg text-sm font-medium border border-gray-200 dark:border-gray-600 text-gray-800 dark:text-gray-200 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 transition-colors"
+    >
+      Continue Browsing
+    </button>
                 </div>
               </div>
             </div>

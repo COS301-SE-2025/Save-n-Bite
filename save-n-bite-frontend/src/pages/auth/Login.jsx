@@ -266,6 +266,13 @@ const Login = () => {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2, duration: 0.5 }}
             >
+            <Link
+               to="/"
+        className="inline-flex items-center text-sm text-emerald-600 hover:text-emerald-500 dark:text-emerald-400 dark:hover:text-emerald-300 mb-4"
+            >
+              <span aria-hidden="true" className="mr-1">←</span>
+                Back to home
+              </Link>
               <h2 className="text-2xl md:text-3xl font-bold text-gray-800 dark:text-white mb-2">
                 Sign In
               </h2>
@@ -295,7 +302,7 @@ const Login = () => {
                 />
 
                 <div className="flex items-center justify-between">
-                  <div className="flex items-center">
+                  {/* <div className="flex items-center">
                     <input
                       id="remember-me"
                       name="remember-me"
@@ -308,7 +315,7 @@ const Login = () => {
                     >
                       Remember me
                     </label>
-                  </div>
+                  </div> */}
 
                   <div className="text-sm">
                     <button

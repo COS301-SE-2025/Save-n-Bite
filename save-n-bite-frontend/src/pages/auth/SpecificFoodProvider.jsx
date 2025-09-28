@@ -489,7 +489,11 @@ const SpecificFoodProvider = () => {
   return (
     <div className="bg-gradient-to-b from-gray-50 to-white dark:from-gray-900 dark:to-gray-800 min-h-screen w-full transition-colors duration-300">
       <CustomerNavBar />
-      
+      <br></br>
+      <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-center">
+  <span className="bg-gradient-to-r from-emerald-600 to-blue-600 bg-clip-text text-transparent">Food Provider Details</span>
+</h1>
+
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         {/* Back Button */}
         <Link

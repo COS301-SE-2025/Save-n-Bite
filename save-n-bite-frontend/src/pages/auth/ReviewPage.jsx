@@ -89,6 +89,10 @@ const ReviewPage = () => {
   return (
     <div className="bg-gray-50 dark:bg-gray-900 min-h-screen w-full transition-colors duration-300">
       <CustomerNavBar />
+   
+      <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-center">
+  <span className="bg-gradient-to-r from-emerald-600 to-blue-600 bg-clip-text text-transparent">Reviews</span>
+</h1>
       
       <div className="max-w-md mx-auto px-4 py-4">
         {/* Header */}

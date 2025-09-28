@@ -86,7 +86,7 @@ const InfoTooltip = ({ content }) => {
 }
 const SettingsPage = () => {
   const { theme, toggleTheme } = useTheme()
-  const [activeSection, setActiveSection] = useState('general')
+  const [activeSection, setActiveSection] = useState('notifications')
   const navigate = useNavigate()
   // Form states
   const [currentPassword, setCurrentPassword] = useState('')
@@ -163,13 +163,18 @@ const SettingsPage = () => {
     }, 3000)
   }
   return (
-<div className="min-h-screen bg-gray-50 dark:bg-gray-900 w-full pt-0 pb-8 transition-colors duration-200">
-  <div className="fixed top-0 left-0 w-full z-50">
-        <CustomerNavBar />
-      <div className="max-w-4xl mx-auto px-4">
-        <h1 className="text-2xl font-bold text-gray-800 dark:text-white mb-6">
-          Settings
-        </h1>
+<div className="min-h-screen bg-gray-50 dark:bg-gray-900 w-full pt-20 pb-8 transition-colors duration-200">
+  <div className="fixed top-0 left-0 right-0 z-40">
+    <CustomerNavBar />
+  </div>
+  <div className="max-w-4xl mx-auto px-4">
+      <br></br>
+      <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-center">
+  <span className="bg-gradient-to-r from-emerald-600 to-blue-600 bg-clip-text text-transparent">Settings</span>
+</h1>
+<br></br>
+
+  
         {/* Success message toast */}
         {actionSuccess && (
           <div className="fixed top-20 right-4 z-50 bg-emerald-100 dark:bg-emerald-900 border border-emerald-200 dark:border-emerald-700 text-emerald-800 dark:text-emerald-200 px-4 py-3 rounded-md shadow-md flex items-center">
@@ -182,13 +187,7 @@ const SettingsPage = () => {
           <div className="w-full md:w-1/3">
             <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-4">
               <nav className="space-y-1">
-                <button
-                  onClick={() => setActiveSection('general')}
-                  className={`w-full flex items-center px-4 py-3 rounded-md transition-colors ${activeSection === 'general' ? 'bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-300' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'}`}
-                >
-                  <KeyIcon className="h-5 w-5 mr-3" />
-                  <span>General</span>
-                </button>
+                
                 <button
                   onClick={() => setActiveSection('notifications')}
                   className={`w-full flex items-center px-4 py-3 rounded-md transition-colors ${activeSection === 'notifications' ? 'bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-300' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'}`}
@@ -227,119 +226,8 @@ const SettingsPage = () => {
           {/* Settings Content */}
           <div className="w-full md:w-2/3">
             <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6">
-              {/* General Settings */}
-              {activeSection === 'general' && (
-                <div>
-                  <h2 className="text-xl font-semibold text-gray-800 dark:text-white mb-6">
-                    General Settings
-                  </h2>
-                  <div className="space-y-6">
-                    <div>
-                      <h3 className="text-lg font-medium text-gray-700 dark:text-gray-300 mb-4">
-                        Change Password
-                      </h3>
-                      <form
-                        onSubmit={handlePasswordChange}
-                        className="space-y-4"
-                      >
-                        <div>
-                          <label
-                            htmlFor="current-password"
-                            className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
-                          >
-                            Current Password
-                          </label>
-                          <input
-                            id="current-password"
-                            type="password"
-                            value={currentPassword}
-                            onChange={(e) => setCurrentPassword(e.target.value)}
-                            className="w-full px-4 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white rounded-md focus:ring-emerald-500 dark:focus:ring-emerald-400 focus:border-emerald-500 dark:focus:border-emerald-400"
-                            required
-                          />
-                        </div>
-                        <div>
-                          <label
-                            htmlFor="new-password"
-                            className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
-                          >
-                            New Password
-                          </label>
-                          <input
-                            id="new-password"
-                            type="password"
-                            value={newPassword}
-                            onChange={(e) => setNewPassword(e.target.value)}
-                            className="w-full px-4 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white rounded-md focus:ring-emerald-500 dark:focus:ring-emerald-400 focus:border-emerald-500 dark:focus:border-emerald-400"
-                            required
-                          />
-                        </div>
-                        <div>
-                          <label
-                            htmlFor="confirm-password"
-                            className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
-                          >
-                            Confirm New Password
-                          </label>
-                          <input
-                            id="confirm-password"
-                            type="password"
-                            value={confirmPassword}
-                            onChange={(e) => setConfirmPassword(e.target.value)}
-                            className="w-full px-4 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white rounded-md focus:ring-emerald-500 dark:focus:ring-emerald-400 focus:border-emerald-500 dark:focus:border-emerald-400"
-                            required
-                          />
-                        </div>
-                        <button
-                          type="submit"
-                          className="px-4 py-2 bg-emerald-600 dark:bg-emerald-500 text-white rounded-md hover:bg-emerald-700 dark:hover:bg-emerald-600 transition-colors"
-                        >
-                          Update Password
-                        </button>
-                      </form>
-                    </div>
-                    {/* <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
-                      <h3 className="text-lg font-medium text-gray-700 dark:text-gray-300 mb-4">
-                        Manage Linked Devices
-                      </h3>
-                      <div className="space-y-3">
-                        <div className="flex justify-between items-center p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
-                          <div className="flex items-center">
-                            <SmartphoneIcon className="h-5 w-5 text-gray-500 dark:text-gray-400 mr-3" />
-                            <div>
-                              <p className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                                iPhone 13
-                              </p>
-                              <p className="text-xs text-gray-500 dark:text-gray-400">
-                                Last active: Today
-                              </p>
-                            </div>
-                          </div>
-                          <span className="px-2 py-1 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-800 dark:text-emerald-300 text-xs font-medium rounded-full">
-                            Current Device
-                          </span>
-                        </div>
-                        <div className="flex justify-between items-center p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
-                          <div className="flex items-center">
-                            <SmartphoneIcon className="h-5 w-5 text-gray-500 dark:text-gray-400 mr-3" />
-                            <div>
-                              <p className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                                MacBook Pro
-                              </p>
-                              <p className="text-xs text-gray-500 dark:text-gray-400">
-                                Last active: Yesterday
-                              </p>
-                            </div>
-                          </div>
-                          <button className="text-xs text-red-600 dark:text-red-400 hover:underline">
-                            Sign Out
-                          </button>
-                        </div>
-                      </div>
-                    </div> */}
-                  </div>
-                </div>
-              )}
+
+            
               {/* Notification Settings */}
               {activeSection === 'notifications' && (
                 <div>
@@ -729,7 +617,7 @@ const SettingsPage = () => {
         </div>
       </Modal>
     </div>
-    </div>
+   
   )
 }
 export default SettingsPage

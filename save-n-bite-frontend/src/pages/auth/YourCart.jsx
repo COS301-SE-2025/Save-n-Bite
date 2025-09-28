@@ -49,6 +49,10 @@ const DetailedBasket = ({
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       <CustomerNavBar />
+      <br></br>
+     
+  
+
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
           {/* Header with back button and title */}
@@ -966,6 +970,11 @@ const YourCart = () => {
     return (
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
         <CustomerNavBar />
+        <div className="max-w-4xl mx-auto px-4 pt-16 sm:pt-20">
+      <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-center sm:text-left">
+        <span className="bg-gradient-to-r from-emerald-600 to-blue-600 bg-clip-text text-transparent">Your Cart</span>
+      </h1>
+    </div>
         <div className="max-w-4xl mx-auto px-4 py-8">
           <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-200 px-4 py-3 rounded-lg">
             <h3 className="font-medium">Error loading cart</h3>
@@ -1010,6 +1019,11 @@ const YourCart = () => {
     return (
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
         <CustomerNavBar />
+        <div className="max-w-4xl mx-auto px-4 pt-16 sm:pt-20">
+    <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-center">
+      <span className="bg-gradient-to-r from-emerald-600 to-blue-600 bg-clip-text text-transparent">Your Cart</span>
+    </h1>
+  </div>
         <div className="max-w-4xl mx-auto px-4 py-8 text-center">
           <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm p-8 max-w-md mx-auto">
             <div className="w-24 h-24 bg-emerald-100 dark:bg-emerald-900/30 rounded-full flex items-center justify-center mx-auto mb-6">
@@ -1034,9 +1048,15 @@ const YourCart = () => {
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       <CustomerNavBar />
 
+      <div className="max-w-4xl mx-auto px-4 pt-16 sm:pt-20">
+    <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-center sm:text-left">
+      <span className="bg-gradient-to-r from-emerald-600 to-blue-600 bg-clip-text text-transparent">Your Cart</span>
+    </h1>
+  </div>
+
       <div className="max-w-4xl mx-auto px-4 py-4 pb-32">
         <div className="flex items-center justify-between mb-6">
-          <h1 className="text-2xl font-bold text-gray-800 dark:text-white">Your Baskets</h1>
+    
           <div className="flex items-center">
             <span className="bg-emerald-100 dark:bg-emerald-900/30 text-emerald-800 dark:text-emerald-200 text-sm font-medium px-3 py-1 rounded-full">
               {providers.length} {providers.length === 1 ? 'basket' : 'baskets'}
