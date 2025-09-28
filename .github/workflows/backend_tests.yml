@@ -3,9 +3,9 @@ name: Backend
 on:
   push:
 
-    branches: [ hotfix/ListingCreation ]
+    branches: [ frontend ]
   pull_request:
-    branches: [  hotfix/ListingCreation ]
+    branches: [  frontend ]
 
   workflow_dispatch:
     inputs:
