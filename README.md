@@ -164,7 +164,7 @@ save-n-bite/
 <summary><strong>✅ Demo 4 Deliverables (30 September 2025)</strong></summary>
 
 1. **SRS Document**:  
-   - **📄 [Software Requirements Specification (SRS)](documentation/SRS-V3.pdf)**  
+   - **📄 [Software Requirements Specification (SRS)](documentation/Demo_4/SRS-V4.pdf)**  
    - Introduction  
    - User stories  
    - Use Case Diagrams  
@@ -172,18 +172,19 @@ save-n-bite/
    - Service Contracts  
    - Domain Model  
    - Architectural Requirements  
-   - Technology Requirements  
+   - Technology Requirements
+   - Deployement Model   
 
 2. **User Manual**:  
-   - **[User Manual](documentation/User_Manual.pdf)**  
+   - **[User Manual](documentation/Demo_4/User_Manual_v4.pdf)**  
 
 3. **Technical Installation Manual**:  
-   - **[Technical Installation Manual](documentation/Technical_Installation_Manual.pdf)**  
+   - **[Technical Installation Manual](documentation/Demo_4/Technical_Installation_Manual_v2.pdf)**  
 
 4. **Coding Standards Document**:  
-   - **[Coding Standards Document](documentation/Coding_Standards_Document.pdf)**  
+   - **[Coding Standards Document](documentation/Demo_4/Coding_Standards_Document-v4.pdf)**  
 
-5. **Demo 3 Video**  
+5. **Demo 4 Video**  
    [Click here!](https://www.canva.com/design/DAGowUskyDY/E8nYEYzEWrMe1D13DkMVFw/watch?utm_content=DAGowUskyDY&utm_campaign=designshare&utm_medium=link2&utm_source=uniquelinks&utlId=h3390ca1771)
 
 </details>
@@ -312,6 +313,7 @@ save-n-bite/
 
 ## 📫 Contact Us
  [![Email](https://img.shields.io/badge/Email-swmguild@gmail.com-D14836?logo=gmail)](mailto:swmguild@gmail.com)
+
 
 
 
