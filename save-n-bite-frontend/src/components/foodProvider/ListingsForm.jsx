@@ -726,6 +726,7 @@ export function ListingForm({
             </div>
           </div>
 
+
           {/* Pickup Location Section (hidden in edit mode) */}
           {!editMode && (
             <div className="border-t pt-6">
@@ -848,6 +849,7 @@ export function ListingForm({
             </div>
           )}
 
+
           {/* Scheduling Section (hidden while timeslots are mocked) */}
           {SHOW_SCHEDULING_UI && (
             <div className="border-t pt-6">
@@ -930,6 +932,7 @@ export function ListingForm({
             </div>
           )}
 
+
           {/* Image Upload (hidden in edit mode) */}
           {!editMode && (
             <div>
@@ -992,6 +995,7 @@ export function ListingForm({
               </div>
             </div>
           )}
+
 
           {/* Action Buttons */}
           <div className="flex justify-end space-x-4 pt-4 border-t border-gray-200 dark:border-gray-700">
