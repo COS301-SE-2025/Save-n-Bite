@@ -1,4 +1,4 @@
-/* Updated PlantInventory.css - Emerald theme with drag and drop and bordered heading */
+/* Updated PlantInventory.css - Mobile-friendly with touch support */
 
 .plant-inventory h3 {
   margin: 0 0 20px 0;
@@ -8,7 +8,6 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  /* Add white background and border to match other sections */
   background: white;
   padding: 12px 15px;
   border-radius: 8px;
@@ -48,7 +47,7 @@
 
 .inventory-instruction {
   margin-bottom: 15px;
-  padding: 10px;
+  padding: 12px;
   background: #d1fae5;
   border-radius: 8px;
   border-left: 4px solid #10b981;
@@ -59,6 +58,7 @@
   font-size: 14px;
   color: #065f46;
   font-weight: 500;
+  text-align: center;
 }
 
 .inventory-grid {
@@ -68,28 +68,56 @@
   margin-bottom: 20px;
 }
 
-/* Drag and drop styling */
+/* Enhanced drag and drop styling with mobile support */
 .inventory-item {
   transition: all 0.3s ease;
+  position: relative;
+  touch-action: manipulation; /* Better touch handling */
 }
 
 .inventory-item.draggable {
   cursor: grab;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
 }
 
 .inventory-item.draggable:active {
   cursor: grabbing;
 }
 
-.inventory-item.draggable:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2);
+/* Mobile-specific touch feedback */
+@media (hover: none) and (pointer: coarse) {
+  .inventory-item.draggable {
+    cursor: default;
+  }
+  
+  .inventory-item.draggable:active {
+    transform: scale(0.95);
+    transition: transform 0.1s ease;
+  }
+}
+
+/* Desktop hover effects */
+@media (hover: hover) and (pointer: fine) {
+  .inventory-item.draggable:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2);
+  }
+}
+
+/* Current dragging state */
+.inventory-item.currently-dragging {
+  opacity: 0.5;
+  transform: scale(0.95);
 }
 
 .draggable-card {
   position: relative;
 }
 
+/* Enhanced drag indicators */
 .draggable-card::before {
   content: '⋮⋮';
   position: absolute;
@@ -100,10 +128,25 @@
   opacity: 0;
   transition: opacity 0.3s ease;
   z-index: 2;
+  font-size: 14px;
 }
 
-.inventory-item.draggable:hover .draggable-card::before {
-  opacity: 0.7;
+/* Show drag indicator on hover (desktop) or always on mobile */
+@media (hover: hover) and (pointer: fine) {
+  .inventory-item.draggable:hover .draggable-card::before {
+    opacity: 0.7;
+  }
+}
+
+@media (hover: none) and (pointer: coarse) {
+  .inventory-item.draggable .draggable-card::before {
+    opacity: 0.5;
+  }
+}
+
+/* Mobile drag feedback */
+.inventory-item.draggable:active .draggable-card::before {
+  opacity: 1;
 }
 
 .inventory-summary {
@@ -166,25 +209,68 @@
   text-align: center;
 }
 
-/* Responsive design */
+/* Dragging ghost styles (created dynamically) */
+.dragging-ghost {
+  pointer-events: none;
+  z-index: 9999;
+  opacity: 0.8;
+  transform: scale(0.9) rotate(2deg);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+  border-radius: 12px;
+}
+
+/* Mobile responsiveness improvements */
 @media (max-width: 968px) {
   .inventory-grid {
     grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 10px;
+  }
+  
+  .inventory-instruction p {
+    font-size: 13px;
   }
 }
 
-@media (max-width: 480px) {
+@media (max-width: 768px) {
   .plant-inventory h3 {
-    padding: 10px 12px;
     font-size: 16px;
+    padding: 10px 12px;
   }
   
   .inventory-grid {
     grid-template-columns: 1fr;
+    gap: 8px;
   }
   
+  .inventory-instruction {
+    padding: 10px;
+    margin-bottom: 12px;
+  }
+  
+  .inventory-instruction p {
+    font-size: 12px;
+  }
+  
+  .inventory-summary {
+    padding: 12px;
+  }
+}
+
+@media (max-width: 480px) {
   .rarity-counts {
-    grid-template-columns: repeat(2, 1fr);
     display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 6px;
+  }
+  
+  .rarity-count {
+    padding: 4px 8px;
+    font-size: 11px;
+  }
+  
+  .draggable-card::before {
+    top: 6px;
+    right: 6px;
+    font-size: 12px;
   }
 }

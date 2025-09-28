@@ -42,7 +42,7 @@ def run_tests(test_type='all', verbose=False):
         cmd.extend(['tests.test_integration_simple', 'tests.test_end_to_end', 'tests.test_non_functional'])
     
     # Add additional test options
-    cmd.extend(['--keepdb', '--parallel', '1', '--debug-mode'])
+    cmd.extend(['--noinput', '--parallel=1', '--debug-mode'])  # Removed --keepdb to ensure clean database
     
     print(f"Running {test_type} tests...")
     print(f"Command: {' '.join(cmd)}")

@@ -1,5 +1,5 @@
 // components/garden/GardenTile.jsx
-// Fixed to properly size the PlantSVG component
+// Updated with mobile touch support
 
 import React from 'react';
 import PlantSvg from './PlantSVG'; 
@@ -63,6 +63,14 @@ const GardenTile = ({
       onDrop={handleDrop}
       data-row={row}
       data-col={col}
+      // NEW: Add mobile drop target attributes
+      data-drop-target={!plant_details ? "true" : "false"}
+      data-tile-data={JSON.stringify({ 
+        row, 
+        col, 
+        id: tile.id,
+        isEmpty: !plant_details 
+      })}
     >
       {/* Earth texture background for empty tiles */}
       {!plant_details && (
@@ -82,7 +90,7 @@ const GardenTile = ({
         </div>
       )}
 
-      {/* Plant SVG - FIXED: Added size prop and proper styling */}
+      {/* Plant SVG */}
       {plant_details && (
         <div className="tile-plant">
           <PlantSvg
@@ -91,7 +99,7 @@ const GardenTile = ({
             onClick={handlePlantClick}
             customState={custom_data}
             className="plant-in-tile"
-            size={80} // Explicit size for garden tiles
+            size={80}
           />
         </div>
       )}
