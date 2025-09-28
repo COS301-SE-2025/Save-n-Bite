@@ -225,3 +225,33 @@ class CancelDonationSerializer(serializers.Serializer):
         allow_blank=True,
         help_text="Optional reason for cancelling the donation request."
     )
+
+class PrepareDonationSerializer(serializers.Serializer):
+    """Serializer for preparing donation for pickup"""
+    preparation_notes = serializers.CharField(
+        required=False, 
+        allow_blank=True,
+        help_text="Optional notes about the donation preparation"
+    )
+
+class CompleteDonationSerializer(serializers.Serializer):
+    """Serializer for completing donation pickup"""
+    pickup_verification = serializers.JSONField(
+        required=False,
+        default=dict,
+        help_text="Verification details for pickup completion"
+    )
+    completion_notes = serializers.CharField(
+        required=False,
+        allow_blank=True,
+        help_text="Optional notes about the pickup completion"
+    )
+
+class DonationStatusSerializer(serializers.Serializer):
+    """Serializer for donation status responses"""
+    message = serializers.CharField()
+    interaction_id = serializers.UUIDField()
+    status = serializers.CharField()
+    pickup_code = serializers.CharField(required=False, allow_null=True)
+    completed_at = serializers.DateTimeField(required=False, allow_null=True)
+    notifications = serializers.JSONField(required=False)

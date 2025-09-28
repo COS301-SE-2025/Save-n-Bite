@@ -168,8 +168,23 @@ class ListingModerationActionSerializer(serializers.Serializer):
     reason = serializers.CharField(max_length=500)
     moderation_notes = serializers.CharField(max_length=1000, required=False, allow_blank=True)
 
+class MonthlyDataSerializer(serializers.Serializer):
+    """Serializer for monthly growth data"""
+    name = serializers.CharField()  # e.g., "Jul 2024"
+    month = serializers.CharField()  # e.g., "2024-07"
+    new_users = serializers.IntegerField()
+    total_users = serializers.IntegerField()
+    timestamp = serializers.CharField()
+
+class MonthlyActivitySerializer(serializers.Serializer):
+    """Serializer for monthly activity data"""
+    name = serializers.CharField()  
+    listings = serializers.IntegerField()
+    transactions = serializers.IntegerField()
+
 class SimpleAnalyticsSerializer(serializers.Serializer):
-    """Serializer for simple analytics data"""
+    """FIXED serializer for analytics data with monthly growth"""
+    # Basic metrics
     total_users = serializers.IntegerField()
     new_users_week = serializers.IntegerField()
     new_users_month = serializers.IntegerField()
@@ -184,8 +199,12 @@ class SimpleAnalyticsSerializer(serializers.Serializer):
     completed_transactions = serializers.IntegerField()
     transaction_success_rate = serializers.FloatField()
     
-    user_distribution = serializers.DictField()  # {customer: 60%, provider: 30%, ngo: 10%}
+    user_distribution = serializers.DictField()
     top_providers = serializers.ListField()
+    
+    # Monthly time-series data for charts
+    monthly_user_growth = MonthlyDataSerializer(many=True)
+    monthly_activity_growth = MonthlyActivitySerializer(many=True)
 
 class DataExportSerializer(serializers.Serializer):
     """Serializer for data export requests"""

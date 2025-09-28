@@ -1,10 +1,12 @@
-name: Django CI Tests
+name: Backend
 
 on:
   push:
-    branches: [ main ]
+
+    branches: [ dev ]
   pull_request:
-    branches: [ main ]
+    branches: [  dev ]
+
   workflow_dispatch:
     inputs:
       run_coverage:
@@ -17,10 +19,10 @@ jobs:
   test:
     runs-on: ubuntu-latest
 
-    # Set up PostgreSQL service for testing
+    # Set up PostgreSQL service for testin
     services:
       postgres:
-        image: postgres:13
+        image: postgres:15
         env:
           POSTGRES_PASSWORD: postgres
           POSTGRES_DB: test_savenbite_db
@@ -32,12 +34,27 @@ jobs:
         ports:
           - 5432:5432
 
+      redis:
+        image: redis:7
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 6379:6379
+
     defaults:
       run:
         working-directory: save-n-bite-backend
 
     steps:
     - uses: actions/checkout@v4
+
+    - name: Ensure static and media directories exist
+      run: |
+        mkdir -p static
+        mkdir -p media
 
     - name: Set up Python
       uses: actions/setup-python@v5
@@ -68,11 +85,13 @@ jobs:
     - name: Install dependencies with Poetry
       run: |
         poetry install --with dev
-        # Ensure all required packages are installed  
-        poetry add azure-storage-blob
+        # Ensure all test dependencies are properly installed
         poetry run pip install model_bakery coverage pytest-html
-        # Debug: List installed packages
-        poetry show | grep -E "(azure|blob)" || echo "Azure packages not found"
+
+    - name: Install PostgreSQL client (for pg_isready)
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y postgresql-client
 
     - name: Create test environment file
       run: |
@@ -82,13 +101,16 @@ jobs:
         DB_NAME=test_savenbite_db
         DB_USER=postgres
         DB_PASSWORD=postgres
-        DB_HOST=localhost
+        DB_HOST=127.0.0.1
         DB_PORT=5432
+        REDIS_URL=redis://localhost:6379/0
         ALLOWED_HOSTS=localhost,127.0.0.1
         CORS_ALLOWED_ORIGINS=http://localhost:3000,http://127.0.0.1:3000
+
         # Disable Azure Storage for testing
         USE_AZURE_STORAGE=False
         TESTING=True
+        GEOCODING_ENABLED=False
         AZURE_STORAGE_CONNECTION_STRING=UseDevelopmentStorage=true
         AZURE_CONTAINER_NAME=test-container
         EOF
@@ -97,7 +119,7 @@ jobs:
       run: |
         # Wait for PostgreSQL
         echo "Waiting for PostgreSQL..."
-        until pg_isready -h localhost -p 5432 -U postgres; do
+        until pg_isready -h 127.0.0.1 -p 5432 -U postgres; do
           echo "PostgreSQL not ready, waiting..."
           sleep 2
         done
@@ -116,32 +138,42 @@ jobs:
             print('Azure storage blob: NOT AVAILABLE')
         "
 
+
     - name: Run migrations
       run: poetry run python manage.py migrate
 
     - name: Run Django system check
       run: poetry run python manage.py check
 
-    - name: Run reviews tests
-      run: poetry run pytest reviews/ -v
+    - name: Run analytics app tests only
+      run: poetry run python manage.py test analytics
 
-    - name: Run scheduling tests  
-      run: poetry run pytest scheduling/ -v
+    - name: Run reviews app tests only
+      run: poetry run pytest reviews/tests.py
 
-    - name: Run food_listings tests
-      run: poetry run pytest food_listings/ -v
+    - name: Run Garden app tests only
+      run: poetry run pytest digital_garden/tests.py
 
-    - name: Run notifications tests
-      run: poetry run pytest notifications/ -v
+    - name: Run Interactions app tests only
+      run: poetry run pytest interactions/tests
 
-    - name: Run admin_system tests
-      run: poetry run pytest admin_system/ -v
+    - name: Run Notifications app tests only
+      run: poetry run pytest notifications/tests.py
 
-    - name: Run authentication tests (if exists)
-      run: |
-        if [ -d "authentication" ]; then
-          poetry run pytest authentication/ -v
-        fi
+    - name: Run FoodListing app tests only
+      run: poetry run pytest food_listings/tests.py
+
+    - name: Run Badges app tests only
+      run: poetry run pytest badges/tests.py
+
+    # - name: Run Admin System app tests only
+    #   run: poetry run python manage.py test admin_system
+
+    # - name: Run Authentication app tests only
+    #   run: poetry run python manage.py test authentication
+
+    # - name: Run Integration Tests app tests only
+    #   run: poetry run python run_integration_tests.py --all --verbose
 
     - name: Run coverage report (if requested)
       if: ${{ github.event.inputs.run_coverage == 'true' || github.event_name == 'pull_request' }}

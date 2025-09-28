@@ -30,6 +30,8 @@ import {
 import { Button } from '../../components/foodProvider/Button'
 import { analyticsAPI, transformAnalyticsData, getAISuggestion } from '../../services/analyticsAPI'
 import SideBar from '../../components/foodProvider/SideBar'
+import BadgeProgressDashboard from '../../components/foodProvider/BadgeProgressDashboard'
+
 
 function Dashboard() {
   const [analyticsData, setAnalyticsData] = useState(null)
@@ -39,6 +41,27 @@ function Dashboard() {
 
   const COLORS = ['#2563eb', '#60a5fa']
 
+  useEffect(() => {
+    const onVisible = () => {
+      if (document.visibilityState === 'visible') {
+        loadOrdersData();
+        loadReviewsData();
+      }
+    };
+    const onFocus = () => {
+      loadOrdersData();
+      loadReviewsData();
+    };
+  
+    document.addEventListener('visibilitychange', onVisible);
+    window.addEventListener('focus', onFocus);
+  
+    return () => {
+      document.removeEventListener('visibilitychange', onVisible);
+      window.removeEventListener('focus', onFocus);
+    };
+  }, []);
+  
   useEffect(() => {
     fetchAnalyticsData()
   }, [])
@@ -138,6 +161,8 @@ function Dashboard() {
 
   const aiSuggestion = getAISuggestion(analyticsData)
 
+const co2SavedTons = ((analyticsData?.total_orders_fulfilled || 0) * 0.01).toFixed(1)
+
   return (
     <div className="flex h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
       {/* Desktop Sidebar - Hidden on mobile */}
@@ -186,13 +211,13 @@ function Dashboard() {
               <p className="text-sm sm:text-base text-gray-600 dark:text-gray-300 mt-1">
                 Track your performance and impact
               </p>
-              {analyticsData?.total_orders_fulfilled > 0 && (
+              {/* {analyticsData?.total_orders_fulfilled > 0 && (
                 <div className="mt-2 p-2 sm:p-3 bg-blue-50 dark:bg-blue-900 border border-blue-200 dark:border-blue-800 rounded-lg">
                   <p className="text-xs sm:text-sm text-blue-800 dark:text-blue-200">
                     <strong>Your Analytics:</strong> {(analyticsData.total_orders_fulfilled || 0)} orders fulfilled with {analyticsData.sustainability_impact?.meals_saved || 0} meals saved
                   </p>
                 </div>
-              )}
+              )} */}
             </div>
             {/* <Button variant="secondary" icon={<DownloadIcon className="h-4 w-4" />}>
               <span className="hidden sm:inline">Export Data</span>
@@ -206,7 +231,7 @@ function Dashboard() {
             <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-4 sm:p-5 card-responsive transition-colors duration-300">
               <div className="flex justify-between items-start">
                 <div>
-                  <p className="text-gray-500 dark:text-gray-400 text-xs sm:text-sm">Total Orders Fulfilled</p>
+                  <p className="text-gray-500 dark:text-gray-400 text-xs sm:text-sm">Orders from last month</p>
                   <h3 className="text-xl sm:text-2xl font-bold mt-1 text-gray-900 dark:text-gray-100">
                     {(analyticsData.total_orders_fulfilled || 0)}
                   </h3>
@@ -254,7 +279,7 @@ function Dashboard() {
             <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-4 sm:p-5 transition-colors duration-300">
               <div className="flex justify-between items-start">
                 <div>
-                  <p className="text-gray-500 dark:text-gray-400 text-xs sm:text-sm">Meals Saved</p>
+                  <p className="text-gray-500 dark:text-gray-400 text-xs sm:text-sm">Total Meals Saved</p>
                   <h3 className="text-xl sm:text-2xl font-bold mt-1 text-gray-900 dark:text-gray-100">
                     {sustainabilityData.mealsSaved}
                   </h3>
@@ -264,11 +289,8 @@ function Dashboard() {
                 </div>
               </div>
               <div className="mt-3 text-xs sm:text-sm text-gray-500 dark:text-gray-400">
-                {sustainabilityData.waterSavedLitres ? 
-                  `${sustainabilityData.waterSavedLitres}L water saved` : 
-                  'Environmental impact'
-                }
-              </div>
+  {Number(co2SavedTons) > 0 ? `${co2SavedTons} tons CO₂ saved` : 'Environmental impact'}
+</div>
             </div>
           </div>
 
@@ -448,38 +470,19 @@ function Dashboard() {
                     <LeafIcon className="h-5 w-5 sm:h-6 sm:w-6 text-blue-600 dark:text-blue-400" />
                   </div>
                   <h4 className="text-2xl sm:text-3xl font-bold text-blue-600 dark:text-blue-400">
-                    {sustainabilityData.waterSavedLitres}L
-                  </h4>
-                  <p className="text-blue-700 dark:text-blue-300 mt-1 text-sm sm:text-base">Water Saved</p>
+  {co2SavedTons} tons
+</h4>
+<p className="text-blue-700 dark:text-blue-300 mt-1 text-sm sm:text-base">CO₂ Saved</p>
                 </div>
               </div>
-              {sustainabilityData.mealsSaved > 0 && (
-                <div className="mt-4 text-center">
-                  <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">
-                    Equivalent to preventing {Math.round(sustainabilityData.mealsSaved * 2.5)}kg of CO₂ emissions
-                  </p>
-                </div>
-              )}
+             
             </div>
           </div>
 
-          {/* Benchmark & AI Suggestion Cards */}
-          <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-            <div className="bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg shadow-md p-4 sm:p-5 text-white">
-              <h3 className="text-base sm:text-lg font-medium mb-2">Your Impact Ranking</h3>
-              <p className="text-lg sm:text-xl font-bold mb-3">{topSaverMessage}</p>
-              <p className="text-sm sm:text-base">
-                Your commitment to reducing food waste is making a real difference
-                in our community.
-              </p>
-            </div>
-            <div className="bg-gradient-to-r from-purple-500 to-purple-600 rounded-lg shadow-md p-4 sm:p-5 text-white">
-              <h3 className="text-base sm:text-lg font-medium mb-2">Suggestion</h3>
-              <p className="text-lg sm:text-xl font-bold mb-3">{aiSuggestion}</p>
-              <p className="text-purple-100 text-xs sm:text-sm">
-                Based on your current performance and platform trends
-              </p>
-            </div>
+          {/* Badge Progress Cards */}
+          <div className="grid grid-cols-1 gap-6">
+            {/* Make this card span full width */}
+            <BadgeProgressDashboard />
           </div>
         </div>
       </div>

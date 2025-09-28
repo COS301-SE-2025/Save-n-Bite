@@ -5,6 +5,8 @@ import { sustainabilityData } from '../../utils/MockData'
 import SideBar from '../../components/foodProvider/SideBar';
 import ProfileAPI from '../../services/ProfileAPI';
 import { showToast, Toast } from '../../components/ui/Toast';
+import ProviderBadgesManagement from '../../components/foodProvider/ProviderBadgesManagement'
+
 
 function ProfilePage() {
   const [isEditing, setIsEditing] = useState(false)
@@ -141,6 +143,27 @@ function ProfilePage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
+  useEffect(() => {
+    const onVisible = () => {
+      if (document.visibilityState === 'visible') {
+        loadOrdersData();
+        loadReviewsData();
+      }
+    };
+    const onFocus = () => {
+      loadOrdersData();
+      loadReviewsData();
+    };
+  
+    document.addEventListener('visibilitychange', onVisible);
+    window.addEventListener('focus', onFocus);
+  
+    return () => {
+      document.removeEventListener('visibilitychange', onVisible);
+      window.removeEventListener('focus', onFocus);
+    };
+  }, []);
+
   return (
     <div className="flex h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
       {toast && (
@@ -201,12 +224,12 @@ function ProfilePage() {
                 <h2 className="text-xl sm:text-3xl font-bold">{formData.businessName}</h2>
               </div>
             </div>
-            <button
+            {/* <button
               onClick={() => bannerInputRef.current.click()}
               className="absolute top-2 right-2 sm:top-4 sm:right-4 bg-white/80 hover:bg-white p-2 rounded-full shadow-md transition-colors"
             >
               <Edit2Icon className="h-4 w-4 sm:h-5 sm:w-5 text-blue-900" />
-            </button>
+            </button> */}
             <input
               type="file"
               accept="image/*"
@@ -262,12 +285,12 @@ function ProfilePage() {
                     className="h-full w-full object-cover"
                   />
                 </div>
-                <button
+                {/* <button
                   onClick={() => logoInputRef.current.click()}
                   className="absolute left-1/2 transform -translate-x-1/2 top-14 sm:left-16 sm:top-16 sm:transform-none bg-white/80 hover:bg-white p-2 rounded-full shadow-md transition-colors"
                 >
                   <Edit2Icon className="h-3 w-3 sm:h-4 sm:w-4 text-blue-900" />
-                </button>
+                </button> */}
                 <input
                   type="file"
                   accept="image/*"
@@ -447,45 +470,17 @@ function ProfilePage() {
             </div>
           </div>
 
-          {/* Impact Snapshot Section */}
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden mb-6 sm:mb-8 transition-colors duration-300">
-            <div className="p-4 sm:p-6">
-              <h3 className="text-lg sm:text-xl font-semibold mb-4 text-gray-900 dark:text-gray-100">Your Impact</h3>
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <div className="bg-green-50 dark:bg-green-900 p-3 sm:p-4 rounded-lg transition-colors duration-300">
-                  <h4 className="text-xs sm:text-sm font-medium text-gray-500 dark:text-gray-300">
-                    Meals Donated
-                  </h4>
-                  <p className="text-2xl sm:text-3xl font-bold text-green-600 dark:text-green-400">
-                    {sustainabilityData.mealsSaved}
-                  </p>
-                </div>
-                <div className="bg-blue-50 dark:bg-blue-900 p-3 sm:p-4 rounded-lg transition-colors duration-300">
-                  <h4 className="text-xs sm:text-sm font-medium text-gray-500 dark:text-gray-300">
-                    Food Weight Saved (kg)
-                  </h4>
-                  <p className="text-2xl sm:text-3xl font-bold text-blue-600 dark:text-blue-400">
-                    {sustainabilityData.mealsSaved * 0.5}
-                  </p>
-                </div>
-                <div className="bg-yellow-50 dark:bg-yellow-900 p-3 sm:p-4 rounded-lg transition-colors duration-300">
-                  <h4 className="text-xs sm:text-sm font-medium text-gray-500 dark:text-gray-300">
-                    CO₂ Reduced (kg)
-                  </h4>
-                  <p className="text-2xl sm:text-3xl font-bold text-yellow-600 dark:text-yellow-400">
-                    {sustainabilityData.co2Reduced}
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
+{/* Provider Badges Management Section */}
+<ProviderBadgesManagement onToast={(message, type) => {
+  if (type === 'success') {
+    showToast(setToast, message, 'success')
+  } else {
+    showToast(setToast, message, 'error')
+  }
+}} />
 
-          {/* Quick Access Buttons */}
-          <div className="flex flex-col sm:flex-row gap-4 mb-6 sm:mb-8">
-            <button className="w-full sm:w-auto px-4 sm:px-6 py-3 bg-white dark:bg-gray-800 border border-blue-600 dark:border-blue-500 text-blue-600 dark:text-blue-400 rounded-md hover:bg-blue-50 dark:hover:bg-blue-900 transition-colors duration-300 text-sm sm:text-base">
-              Download Impact Report
-            </button>
-          </div>
+      
+          
         </div>
       </div>
     </div>

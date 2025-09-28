@@ -11,6 +11,10 @@ import {
 import logo from '../../assets/images/SnB_leaf_icon.png';
 import NotificationBell from './NotificationBell';
 import HelpMenu from '../../components/auth/Help/HelpMenu';
+import { useAuth } from '../../context/AuthContext';
+import { USER_TYPES } from '../../utils/constants';
+
+
 
 const CustomerNavBar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -23,7 +27,9 @@ const CustomerNavBar = () => {
 
   const navigate = useNavigate();
   const location = useLocation();
-
+  const userData = JSON.parse(localStorage.getItem('userData'));
+  const user = userData?.user_type;
+  console.log('CustomerNavBar Debug - userType from localStorage:', user);
   // Auto-hide navbar functionality (refined to avoid glitches)
   useEffect(() => {
     const onScroll = () => {
@@ -143,19 +149,8 @@ const CustomerNavBar = () => {
             >
               Browse Food Providers
             </Link>
-            
-            {/* NEW: Digital Garden Link */}
-            <Link
-              to="/garden"
-              className={`nav-link text-sm lg:text-base transition-colors duration-200 flex items-center gap-1 ${isActive('/garden')
-                  ? 'text-emerald-600 dark:text-emerald-500 font-medium'
-                  : 'text-gray-600 dark:text-gray-300 hover:text-emerald-600 dark:hover:text-emerald-500'
-                }`}
-            >
-              <TreePineIcon size={16} className="inline" />
-              <span className="hidden lg:inline">My Garden</span>
-              <span className="lg:hidden">Garden</span>
-            </Link>
+        
+          
             
             <Link
               to="/cart"
@@ -175,6 +170,20 @@ const CustomerNavBar = () => {
             >
               Order History
             </Link>
+            {user === USER_TYPES.CUSTOMER && (
+            <Link
+              to="/garden"
+              className={`nav-link text-sm lg:text-base transition-colors duration-200 flex items-center gap-1 ${isActive('/garden')
+                  ? 'text-emerald-600 dark:text-emerald-500 font-medium'
+                  : 'text-gray-600 dark:text-gray-300 hover:text-emerald-600 dark:hover:text-emerald-500'
+                }`}
+            >
+              {/* <TreePineIcon size={16} className="inline" /> */}
+              <span className="hidden lg:inline">My Garden</span>
+              <span className="lg:hidden">Garden</span>
+            </Link>
+)}
+
             <Link
               to="/profile"
               className={`nav-link text-sm lg:text-base transition-colors duration-200 ${isActive('/profile')
@@ -218,7 +227,7 @@ const CustomerNavBar = () => {
             <NotificationBell />
             
             {/* NEW: Mobile Garden Quick Access */}
-            <Link
+            {/* <Link
               to="/garden"
               className={`touch-target transition-colors duration-200 ${isActive('/garden')
                   ? 'text-emerald-600'
@@ -227,15 +236,15 @@ const CustomerNavBar = () => {
               aria-label="My Garden"
             >
               <TreePineIcon size={20} />
-            </Link>
+            </Link> */}
             
-            <button
+            {/* <button
               onClick={() => setIsHelpOpen(true)}
               className="text-gray-500 hover:text-emerald-600 focus:outline-none touch-target transition-colors duration-200"
               aria-label="Help"
             >
               <HelpCircleIcon size={20} />
-            </button>
+            </button> */}
             <button
               onClick={() => setIsMenuOpen(!isMenuOpen)}
               className="text-gray-500 hover:text-emerald-600 focus:outline-none touch-target transition-colors duration-200"
@@ -293,17 +302,20 @@ const CustomerNavBar = () => {
               </Link>
 
                 {/* NEW: Mobile Garden Link */}
-              <Link
-                to="/garden"
-                className={`mobile-nav-link flex items-center transition-colors duration-200 ${isActive('/garden')
-                    ? 'text-emerald-600 dark:text-emerald-500 font-medium'
-                    : 'dark:text-gray-300 dark:hover:text-emerald-500'
-                  }`}
-                onClick={() => setIsMenuOpen(false)}
-              >
-              My Digital Garden
-              </Link>
-              
+                {user === USER_TYPES.CUSTOMER && (
+  <Link
+    to="/garden"
+    className={`mobile-nav-link flex items-center transition-colors duration-200 ${
+      isActive('/garden')
+        ? 'text-emerald-600 dark:text-emerald-500 font-medium'
+        : 'dark:text-gray-300 dark:hover:text-emerald-500'
+    }`}
+    onClick={() => setIsMenuOpen(false)}
+  >
+    My Digital Garden
+  </Link>
+)}
+
               <Link
                 to="/profile"
                 className={`mobile-nav-link transition-colors duration-200 ${isActive('/profile')
@@ -325,14 +337,7 @@ const CustomerNavBar = () => {
                 Settings
               </Link>
 
-              <div className="pt-2 border-t border-gray-200 dark:border-gray-700">
-                <button
-                  onClick={handleLogout}
-                  className="w-full text-center py-3 bg-red-600 text-white rounded-md hover:bg-red-700 font-medium touch-target dark:hover:bg-red-800 transition-colors duration-200"
-                >
-                  Logout
-                </button>
-              </div>
+          
 
               <button
                 onClick={() => {
@@ -344,6 +349,17 @@ const CustomerNavBar = () => {
                 <HelpCircleIcon size={18} className="mr-3" />
                 Help
               </button>
+
+              <div className="pt-2 border-t border-gray-200 dark:border-gray-700">
+                <button
+                  onClick={handleLogout}
+                  className="w-full text-center py-3 bg-red-600 text-white rounded-md hover:bg-red-700 font-medium touch-target dark:hover:bg-red-800 transition-colors duration-200"
+                >
+                  Logout
+                </button>
+              </div>
+
+              
             </div>
           </div>
         )}

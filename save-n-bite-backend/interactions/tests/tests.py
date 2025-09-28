@@ -51,14 +51,16 @@ def provider_user(db):
         user_type='provider'
     )
     
-    FoodProviderProfile.objects.create(
+    FoodProviderProfile.objects.get_or_create(
         user=user,
-        business_name='Test Restaurant',
-        business_address='123 Test St, Test City',
-        business_contact='+1234567890',
-        business_email='business@test.com',
-        cipc_document='test_doc.pdf',
-        status='verified'
+        defaults={
+            'business_name': 'Test Restaurant',
+            'business_address': '123 Test St, Test City',
+            'business_contact': '+1234567890',
+            'business_email': 'business@test.com',
+            'cipc_document': 'test_doc.pdf',
+            'status': 'verified'
+        }
     )
     
     return user
@@ -73,9 +75,11 @@ def customer_user(db):
         user_type='customer'
     )
     
-    CustomerProfile.objects.create(
+    CustomerProfile.objects.get_or_create(
         user=user,
-        full_name='Test Customer'
+        defaults={
+            'full_name': 'Test Customer'
+        }
     )
     
     return user
@@ -148,7 +152,7 @@ def interaction(customer_user, provider_user):
     """Create a sample interaction"""
     return Interaction.objects.create(
         user=customer_user,
-        business=provider_user.provider_profile,
+        business=self.food_provider[0],
         interaction_type='Purchase',
         quantity=2,
         total_amount=30.00,
@@ -160,7 +164,7 @@ def completed_interaction(customer_user, provider_user):
     """Create a completed interaction"""
     return Interaction.objects.create(
         user=customer_user,
-        business=provider_user.provider_profile,
+        business=self.food_provider[0],
         interaction_type='Purchase',
         quantity=1,
         total_amount=15.00,
@@ -208,14 +212,14 @@ class TestInteractionModel:
         """Test creating a basic interaction"""
         interaction = Interaction.objects.create(
             user=customer_user,
-            business=provider_user.provider_profile,
+            business=self.food_provider[0],
             interaction_type='Purchase',
             quantity=1,
             total_amount=15.00
         )
         
         assert interaction.user == customer_user
-        assert interaction.business == provider_user.provider_profile
+        assert interaction.business == provider_user.foodproviderprofile
         assert interaction.interaction_type == 'Purchase'
         assert interaction.status == 'pending'  # Default status
         assert interaction.total_amount == Decimal('15.00')

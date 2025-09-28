@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react'
+import React, { useState, useRef, useEffect } from 'react';
 import {
   SearchIcon,
   FilterIcon,
@@ -11,54 +11,54 @@ import {
   UserPlusIcon,
   UserXIcon,
   MailIcon,
-  ShieldIcon
-} from 'lucide-react'
-import InfoTooltip from '../UI/InfoTooltip'
-import { useOnClickOutside } from '../../../hooks/useOnClickOutside'
+  ShieldIcon,
+} from 'lucide-react';
+import InfoTooltip from '../UI/InfoTooltip';
+import { useOnClickOutside } from '../../../hooks/useOnClickOutside';
 
-const ActionMenu = ({ user, onActionClick, onClose }) => {
-  const menuRef = useRef()
+const ActionMenu = ({ user, onActionClick, onViewUser, onClose }) => {
+  const menuRef = useRef();
+
+
+// const ActionMenu = ({ user, onActionClick, onClose }) => {
+//   const menuRef = useRef()
   
-  // Close menu when clicking outside
+  // Close menu when clicking outside 
   useOnClickOutside(menuRef, onClose)
+
 
   const actions = [
     {
       id: 'view',
       label: 'View Details',
       icon: <EyeIcon size={16} className="mr-2" />,
-      onClick: () => onActionClick('view', user.id)
+      onClick: () => onViewUser(user),
     },
     {
       id: user.status === 'Active' ? 'deactivate' : 'activate',
       label: user.status === 'Active' ? 'Deactivate User' : 'Activate User',
-      icon: user.status === 'Active' ? 
-        <XCircleIcon size={16} className="mr-2" /> : 
-        <CheckIcon size={16} className="mr-2" />,
-      onClick: () => onActionClick(user.status === 'Active' ? 'deactivate' : 'activate', user.id)
+      icon:
+        user.status === 'Active' ? (
+          <XCircleIcon size={16} className="mr-2" />
+        ) : (
+          <CheckIcon size={16} className="mr-2" />
+        ),
+      onClick: () =>
+        onActionClick(
+          user.status === 'Active' ? 'deactivate' : 'activate',
+          user.id,
+        ),
     },
     {
       id: 'resetPassword',
       label: 'Reset Password',
       icon: <KeyIcon size={16} className="mr-2" />,
-      onClick: () => onActionClick('resetPassword', user.id)
+      onClick: () => onActionClick('resetPassword', user.id),
     },
-    {
-      id: 'sendEmail',
-      label: 'Send Message',
-      icon: <MailIcon size={16} className="mr-2" />,
-      onClick: () => onActionClick('sendEmail', user.id)
-    },
-    {
-      id: 'permissions',
-      label: 'Manage Permissions',
-      icon: <ShieldIcon size={16} className="mr-2" />,
-      onClick: () => onActionClick('permissions', user.id)
-    }
-  ]
+  ];
 
   return (
-    <div 
+    <div
       ref={menuRef}
       className="absolute right-0 z-10 mt-2 w-56 origin-top-right rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none"
       role="menu"
@@ -70,9 +70,9 @@ const ActionMenu = ({ user, onActionClick, onClose }) => {
           <button
             key={action.id}
             onClick={(e) => {
-              e.preventDefault()
-              action.onClick()
-              onClose()
+              e.preventDefault();
+              action.onClick();
+              onClose();
             }}
             className="text-gray-700 group flex items-center px-4 py-2 text-sm w-full text-left hover:bg-gray-100 hover:text-gray-900"
             role="menuitem"
@@ -84,8 +84,8 @@ const ActionMenu = ({ user, onActionClick, onClose }) => {
         ))}
       </div>
     </div>
-  )
-}
+  );
+};
 
 const UserTable = ({
   users,
@@ -97,32 +97,36 @@ const UserTable = ({
   onViewUser,
   onActionClick,
 }) => {
-  const [openMenuId, setOpenMenuId] = useState(null)
-  const menuRefs = useRef({})
+  const [openMenuId, setOpenMenuId] = useState(null);
+  const menuRefs = useRef({});
 
   // Close menu when clicking outside
   useEffect(() => {
     function handleClickOutside(event) {
-      if (openMenuId && menuRefs.current[openMenuId] && !menuRefs.current[openMenuId].contains(event.target)) {
-        setOpenMenuId(null)
+      if (
+        openMenuId &&
+        menuRefs.current[openMenuId] &&
+        !menuRefs.current[openMenuId].contains(event.target)
+      ) {
+        setOpenMenuId(null);
       }
     }
 
-    document.addEventListener('mousedown', handleClickOutside)
+    document.addEventListener('mousedown', handleClickOutside);
     return () => {
-      document.removeEventListener('mousedown', handleClickOutside)
-    }
-  }, [openMenuId])
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [openMenuId]);
 
   const toggleMenu = (userId, event) => {
-    event.stopPropagation()
-    setOpenMenuId(openMenuId === userId ? null : userId)
-  }
+    event.stopPropagation();
+    setOpenMenuId(openMenuId === userId ? null : userId);
+  };
 
   const handleAction = (action, userId) => {
-    setOpenMenuId(null)
-    onActionClick(action, userId)
-  }
+    setOpenMenuId(null);
+    onActionClick(action, userId);
+  };
 
   return (
     <>
@@ -225,7 +229,9 @@ const UserTable = ({
                               </span>
                             )}
                           </div>
-                          <div className="text-sm text-gray-500">{user.email}</div>
+                          <div className="text-sm text-gray-500">
+                            {user.email}
+                          </div>
                         </div>
                       </div>
                     </td>
@@ -255,7 +261,10 @@ const UserTable = ({
                         </button>
 
                         {/* Show action menu for 3+ actions */}
-                        <div className="relative inline-block text-left" ref={el => menuRefs.current[user.id] = el}>
+                        <div
+                          className="relative inline-block text-left"
+                          ref={(el) => (menuRefs.current[user.id] = el)}
+                        >
                           <button
                             type="button"
                             onClick={(e) => toggleMenu(user.id, e)}
@@ -268,9 +277,10 @@ const UserTable = ({
                           </button>
 
                           {openMenuId === user.id && (
-                            <ActionMenu 
-                              user={user} 
+                            <ActionMenu
+                              user={user}
                               onActionClick={handleAction}
+                              onViewUser={onViewUser}
                               onClose={() => setOpenMenuId(null)}
                             />
                           )}
@@ -281,8 +291,17 @@ const UserTable = ({
                 ))
               ) : (
                 <tr>
-                  <td colSpan="5" className="px-6 py-4 text-center text-sm text-gray-500">
-                    No {activeTab === 'Consumer' ? 'consumers' : activeTab === 'Provider' ? 'providers' : 'NGOs'} found matching your filters.
+                  <td
+                    colSpan="5"
+                    className="px-6 py-4 text-center text-sm text-gray-500"
+                  >
+                    No{' '}
+                    {activeTab === 'Consumer'
+                      ? 'consumers'
+                      : activeTab === 'Provider'
+                      ? 'providers'
+                      : 'NGOs'}{' '}
+                    found matching your filters.
                   </td>
                 </tr>
               )}
@@ -291,7 +310,8 @@ const UserTable = ({
         </div>
       </div>
     </>
-  )
+  );
 }
 
-export default UserTable
+
+export default UserTable;

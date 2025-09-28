@@ -63,14 +63,14 @@ export function HelpMenu({ onClose }) {
               questions and learn how to make the most of our platform.
             </p>
 
-            <div className="mb-6">
+            {/* <div className="mb-6">
               <button
                 onClick={handleStartWalkthrough}
                 className="w-full py-3 bg-blue-600 dark:bg-blue-700 hover:bg-blue-700 dark:hover:bg-blue-800 text-white rounded-md font-medium transition-colors"
               >
                 Start Platform Walkthrough
               </button>
-            </div>
+            </div> */}
 
             <div className="mb-4 bg-gray-50 dark:bg-gray-800 rounded-lg dark:text-white">
               <AccordionItem
