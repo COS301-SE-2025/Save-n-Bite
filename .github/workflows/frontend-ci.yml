@@ -26,8 +26,8 @@ jobs:
       - name: Install dependencies
         run: npm i
         
-      - name: Run Vitest
-        run: npm test
+      - name: Run Jest with coverage
+        run: npx jest 
         
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v3

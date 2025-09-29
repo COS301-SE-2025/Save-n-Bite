@@ -281,6 +281,11 @@ const FoodListings = () => {
   return (
     <div className="bg-gradient-to-b from-gray-50 to-white dark:from-gray-900 dark:to-gray-800 min-h-screen w-full transition-colors duration-300">
       <CustomerNavBar />
+      <br></br>
+      <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-center">
+  <span className="text-2xl font-bold text-emerald-600 dark:text-emerald-500">Browse Available Food</span>
+</h1>
+  
       
       {/* Search and Filter */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 pb-4">

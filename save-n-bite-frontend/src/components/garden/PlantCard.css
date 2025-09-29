@@ -1,3 +1,5 @@
+/* Mobile-Responsive PlantCard.css */
+
 .plant-card {
   position: relative;
   background: white;
@@ -25,8 +27,24 @@
   border-color: #62BD38;
 }
 
+/* Mobile-specific plant card styling */
+.mobile-plant-card {
+  border-radius: 8px;
+  box-shadow: 0 1px 6px rgba(0, 0, 0, 0.1);
+}
+
+.mobile-plant-card:hover {
+  transform: none; /* Remove hover transform on mobile */
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.mobile-plant-card:active {
+  transform: scale(0.98);
+  transition: transform 0.1s ease;
+}
+
 .plant-image {
-  height: 80px;
+  height: 60px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -34,36 +52,59 @@
   position: relative;
 }
 
+.mobile-plant-image {
+  height: 40px;
+}
+
 .plant-emoji {
-  font-size: 32px;
+  font-size: 24px;
   filter: drop-shadow(2px 2px 4px rgba(0, 0, 0, 0.1));
 }
 
+.mobile-plant-emoji {
+  font-size: 18px;
+}
+
 .plant-info {
-  padding: 12px;
+  padding: 10px;
   position: relative;
 }
 
+.mobile-plant-info {
+  padding: 6px;
+}
+
 .plant-name {
-  margin: 0 0 8px 0;
-  font-size: 14px;
+  margin: 0 0 6px 0;
+  font-size: 13px;
   font-weight: 600;
   color: #333;
   line-height: 1.2;
 }
 
+.mobile-plant-name {
+  font-size: 11px;
+  margin: 0 0 4px 0;
+}
+
 .plant-rarity {
-  margin-bottom: 5px;
+  margin-bottom: 4px;
 }
 
 .rarity-badge {
   display: inline-block;
-  padding: 3px 8px;
-  border-radius: 12px;
-  font-size: 10px;
+  padding: 2px 6px;
+  border-radius: 10px;
+  font-size: 9px;
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.3px;
+}
+
+.mobile-rarity-badge {
+  padding: 1px 4px;
+  font-size: 8px;
+  border-radius: 8px;
 }
 
 .rarity-badge.common {
@@ -93,38 +134,46 @@
 
 .quantity-badge {
   position: absolute;
-  top: -8px;
-  right: -8px;
+  top: -6px;
+  right: -6px;
   background: #ff4444;
   color: white;
   border-radius: 50%;
-  width: 24px;
-  height: 24px;
+  width: 20px;
+  height: 20px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 11px;
+  font-size: 10px;
   font-weight: bold;
   box-shadow: 0 2px 8px rgba(255, 68, 68, 0.3);
 }
 
+.mobile-quantity-badge {
+  width: 16px;
+  height: 16px;
+  font-size: 8px;
+  top: -4px;
+  right: -4px;
+}
+
 .earned-info {
-  padding: 8px 12px;
+  padding: 6px 10px;
   background: #f8f9fa;
   border-top: 1px solid #eee;
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 1px;
 }
 
 .earned-reason {
-  font-size: 11px;
+  font-size: 10px;
   color: #666;
   font-weight: 500;
 }
 
 .earned-date {
-  font-size: 10px;
+  font-size: 9px;
   color: #999;
 }
 
@@ -136,7 +185,7 @@
   bottom: 0;
   background: rgba(0, 0, 0, 0.9);
   color: white;
-  padding: 15px;
+  padding: 12px;
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -154,8 +203,8 @@
 }
 
 .plant-category {
-  margin: 0 0 8px 0;
-  font-size: 12px;
+  margin: 0 0 6px 0;
+  font-size: 11px;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 1px;
@@ -164,30 +213,78 @@
 
 .plant-description {
   margin: 0;
-  font-size: 11px;
+  font-size: 10px;
   line-height: 1.4;
   color: #ccc;
 }
 
-/* Responsive design */
-@media (max-width: 480px) {
+/* Mobile responsiveness */
+@media (max-width: 768px) {
+  .plant-card {
+    border-radius: 8px;
+  }
+  
   .plant-image {
-    height: 60px;
+    height: 45px;
   }
   
   .plant-emoji {
-    font-size: 24px;
+    font-size: 20px;
   }
   
   .plant-info {
-    padding: 10px;
+    padding: 8px;
   }
   
   .plant-name {
-    font-size: 13px;
+    font-size: 12px;
   }
   
-  .earned-info {
-    padding: 6px 10px;
+  .rarity-badge {
+    font-size: 8px;
+    padding: 1px 5px;
+  }
+  
+  .quantity-badge {
+    width: 18px;
+    height: 18px;
+    font-size: 9px;
+  }
+  
+  /* Disable hover overlay on mobile */
+  .card-overlay {
+    display: none;
+  }
+}
+
+@media (max-width: 480px) {
+  .plant-image {
+    height: 35px;
+  }
+  
+  .plant-emoji {
+    font-size: 16px;
+  }
+  
+  .plant-info {
+    padding: 6px;
+  }
+  
+  .plant-name {
+    font-size: 10px;
+    margin-bottom: 3px;
+  }
+  
+  .rarity-badge {
+    font-size: 7px;
+    padding: 1px 3px;
+  }
+  
+  .quantity-badge {
+    width: 14px;
+    height: 14px;
+    font-size: 8px;
+    top: -3px;
+    right: -3px;
   }
 }

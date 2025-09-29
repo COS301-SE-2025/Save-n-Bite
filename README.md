@@ -27,12 +27,10 @@
 **Save n Bite** is a digital platform connecting commercial food providers with individuals and organizations in need with the goal of combating food waste and hunger in South Africa using technology-driven solutions and community collaboration.✊
 
 Key features:  
-- **AI-driven surplus prediction** for optimal food redistribution.  
+- **Multi-User System** - Supports customers, food providers, NGOs, and system admins. 
 - **Real-time inventory** and **secure verification** for users/businesses.  
-- **Gamification** through rewards for donors and a digital garden for users.  
+- **Gamification** through badges for Food Providers and a digital garden for Customers.  
 - **Impact dashboard** tracking meals saved and CO₂ reduction.  
-
-**Pilot Phase:** Launching at the University of Pretoria.  
 
 ---
 
@@ -163,6 +161,45 @@ save-n-bite/
 ---
 
 <details open>
+<summary><strong>✅ Demo 4 Deliverables (30 September 2025)</strong></summary>  
+
+**[Save n Bite Link](https://savenbiteportal-f5ggcpczf5f2f8b4.southafricanorth-01.azurewebsites.net/)**  
+
+1. **SRS Document**:  
+   - **📄 [Software Requirements Specification (SRS)](documentation/Demo_4/SRS-V4.pdf)**  
+   - Introduction  
+   - User stories  
+   - Use Case Diagrams  
+   - Functional Requirements  
+   - Service Contracts  
+   - Domain Model  
+   - Architectural Requirements  
+   - Technology Requirements
+   - Deployement Model   
+
+2. **User Manual**:  
+   - **[User Manual](documentation/Demo_4/User_Manual_v4.pdf)**  
+
+3. **Technical Installation Manual**:  
+   - **[Technical Installation Manual](documentation/Demo_4/Technical_Installation_Manual_v2.pdf)**  
+
+4. **Coding Standards Document**:  
+   - **[Coding Standards Document](documentation/Demo_4/Coding_Standards_Document-v4.pdf)**
+  
+5. **Testing Policy Document**:  
+   - **[Coding Standards Document](documentation/Demo_4/Testing_Policy.pdf)**
+  
+6. **GitHub Project Board**:  
+   - **📊 [GitHub Project Board](https://github.com/orgs/COS301-SE-2025/projects/177/views/2)** 
+
+7. **Demo 4 Video**  
+   [Click here!](https://www.canva.com/design/DAGowUskyDY/E8nYEYzEWrMe1D13DkMVFw/watch?utm_content=DAGowUskyDY&utm_campaign=designshare&utm_medium=link2&utm_source=uniquelinks&utlId=h3390ca1771)
+
+</details>
+
+---
+
+<details>
 <summary><strong>✅ Demo 3 Deliverables (20 August 2025)</strong></summary>
 
 1. **SRS Document**:  
@@ -196,7 +233,6 @@ save-n-bite/
 <summary><strong>✅ Demo 2 Deliverables (27 June 2025)</strong></summary>
 
 1. **Implemented Use Cases:**  
-=======
 ## ✅ Demo 2 Deliverables (27 June 2025)
 1. **Coding Standards Document**:  
    - **[Click Here](documentation/coding_standards_doc.md)**
@@ -205,7 +241,6 @@ save-n-bite/
    - **[Click Here](documentation/save_n_bite_user_manuals.md)**
      
 3. **Implemented Use Cases:**   
->>>>>>> fd1dff37d6cc7d11151ccfbb0e1b5e59d4eb19ed
    - User registration/login (JWT/OAuth2).✅    
    - User themes and profile preferences (React + PostgreSQL).✅  
    - Validation of user input (React + Django validators).✅  
@@ -214,17 +249,14 @@ save-n-bite/
    - Purchase/Request food (React + Django REST, PostgreSQL).✅  
    - Notifications system (Django + WebSocket, Redis for real-time pub/sub).✅  
    - Scheduling and Pickup system (React + Django REST, PostgreSQL + Redis caching).✅  
-<<<<<<< HEAD
    - Feedback and Reviews system (React + Django REST, PostgreSQL + moderation).✅  
    - Business Analytics system (Django + Pandas, Scikit-learn for ML predictions, PostgreSQL + Redis).✅  
 
 2. **SRS Document**:  
-=======
    - Feedback and Revies system (React + Django REST, PostgreSQL + moderation).✅  
    - Business Analytics system (Django).✅  
 
 4. **SRS Document**:  
->>>>>>> fd1dff37d6cc7d11151ccfbb0e1b5e59d4eb19ed
    - **📄 [Software Requirements Specification (SRS)](documentation/SRS-V2.md)**  
    - Introduction  
    - User stories  
@@ -241,13 +273,11 @@ save-n-bite/
 4. **GitHub Project Board**:  
    - **📊 [GitHub Project Board](https://github.com/orgs/COS301-SE-2025/projects/177/views/2)**  
 
-<<<<<<< HEAD
 5. **Demo 2 Video**  
    [Click here!](https://www.canva.com/design/DAGowUskyDY/E8nYEYzEWrMe1D13DkMVFw/watch?utm_content=DAGowUskyDY&utm_campaign=designshare&utm_medium=link2&utm_source=uniquelinks&utlId=h3390ca1771)
 =======
 6. **Demo 2 Video**
    [Click here!](https://www.canva.com/design/DAGriFQ7F2g/6gApEr2CMYT49InocxWEUQ/watch?utm_content=DAGriFQ7F2g&utm_campaign=designshare&utm_medium=link2&utm_source=uniquelinks&utlId=hc89293d863)
->>>>>>> fd1dff37d6cc7d11151ccfbb0e1b5e59d4eb19ed
 
 </details>
 
@@ -291,6 +321,13 @@ save-n-bite/
 
 ## 📫 Contact Us
  [![Email](https://img.shields.io/badge/Email-swmguild@gmail.com-D14836?logo=gmail)](mailto:swmguild@gmail.com)
+
+
+
+
+
+
+
 
 
 

@@ -6,7 +6,8 @@ const PlantCard = ({
   isSelected = false, 
   onClick, 
   showQuantity = false,
-  className = ""
+  className = "",
+  isMobile = false
 }) => {
   const { plant_details, quantity, earned_reason, earned_at } = inventoryItem;
 
@@ -39,53 +40,57 @@ const PlantCard = ({
 
   return (
     <div 
-      className={`plant-card ${className} ${isSelected ? 'selected' : ''}`}
+      className={`plant-card ${className} ${isSelected ? 'selected' : ''} ${isMobile ? 'mobile-plant-card' : ''}`}
       onClick={handleClick}
       style={{ '--rarity-color': getRarityColor(plant_details.rarity) }}
     >
       {/* Plant image/icon placeholder */}
       <div 
-        className="plant-image"
+        className={`plant-image ${isMobile ? 'mobile-plant-image' : ''}`}
         style={{ backgroundColor: plant_details.icon_color }}
       >
-        <span className="plant-emoji">🌱</span>
+        <span className={`plant-emoji ${isMobile ? 'mobile-plant-emoji' : ''}`}>🌱</span>
       </div>
 
       {/* Plant info */}
-      <div className="plant-info">
-        <h4 className="plant-name">{plant_details.name}</h4>
+      <div className={`plant-info ${isMobile ? 'mobile-plant-info' : ''}`}>
+        <h4 className={`plant-name ${isMobile ? 'mobile-plant-name' : ''}`}>{plant_details.name}</h4>
         <div className="plant-rarity">
-          <span className={`rarity-badge ${plant_details.rarity}`}>
+          <span className={`rarity-badge ${plant_details.rarity} ${isMobile ? 'mobile-rarity-badge' : ''}`}>
             {plant_details.rarity}
           </span>
         </div>
         
         {showQuantity && quantity > 1 && (
-          <div className="quantity-badge">
+          <div className={`quantity-badge ${isMobile ? 'mobile-quantity-badge' : ''}`}>
             ×{quantity}
           </div>
         )}
       </div>
 
-      {/* Earned info */}
-      <div className="earned-info">
-        <small className="earned-reason">
-          {getEarnedReasonText(earned_reason)}
-        </small>
-        <small className="earned-date">
-          {new Date(earned_at).toLocaleDateString()}
-        </small>
-      </div>
-
-      {/* Hover overlay */}
-      <div className="card-overlay">
-        <div className="overlay-content">
-          <p className="plant-category">{plant_details.category}</p>
-          <p className="plant-description">
-            {plant_details.description.substring(0, 100)}...
-          </p>
+      {/* Earned info - hide on very small mobile screens */}
+      {!isMobile && (
+        <div className="earned-info">
+          <small className="earned-reason">
+            {getEarnedReasonText(earned_reason)}
+          </small>
+          <small className="earned-date">
+            {new Date(earned_at).toLocaleDateString()}
+          </small>
         </div>
-      </div>
+      )}
+
+      {/* Hover overlay - desktop only */}
+      {!isMobile && (
+        <div className="card-overlay">
+          <div className="overlay-content">
+            <p className="plant-category">{plant_details.category}</p>
+            <p className="plant-description">
+              {plant_details.description.substring(0, 100)}...
+            </p>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

@@ -1629,27 +1629,6 @@ const OrderHistory = () => {
     }
   }, []);
 
-  useEffect(() => {
-    const onVisible = () => {
-      if (document.visibilityState === 'visible') {
-        loadOrdersData();
-        loadReviewsData();
-      }
-    };
-    const onFocus = () => {
-      loadOrdersData();
-      loadReviewsData();
-    };
-  
-    document.addEventListener('visibilitychange', onVisible);
-    window.addEventListener('focus', onFocus);
-  
-    return () => {
-      document.removeEventListener('visibilitychange', onVisible);
-      window.removeEventListener('focus', onFocus);
-    };
-  }, []);
-
   const loadOrders = async () => {
     setLoading(true);
     setError(null);
@@ -1876,6 +1855,11 @@ const OrderHistory = () => {
   return (
     <div className="bg-gray-50 dark:bg-gray-900 min-h-screen w-full transition-colors duration-300">
       <CustomerNavBar />
+      <br></br>
+      <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-center">
+  <span className="text-2xl font-bold text-emerald-600 dark:text-emerald-500">Order History</span>
+</h1>
+  
 
       <div className="max-w-7xl mx-auto px-4 py-8">
         {/* Page Header */}

@@ -135,6 +135,8 @@ const FoodProvidersPage = () => {
     return (
       <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white dark:from-gray-900 dark:to-gray-800 transition-colors duration-300">
         <CustomerNavBar />
+  
+
         <div className="flex items-center justify-center min-h-[60vh]">
           <div className="text-center">
             <div className="animate-spin rounded-full h-12 w-12 border-4 border-emerald-500 border-t-transparent mx-auto mb-4"></div>
@@ -179,7 +181,13 @@ const FoodProvidersPage = () => {
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white dark:from-gray-900 dark:to-gray-800 transition-colors duration-300">
       <CustomerNavBar />
-      
+      <br></br>
+      <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-center">
+  <span className="text-2xl font-bold text-emerald-600 dark:text-emerald-500">Browse Food Providers</span>
+</h1>
+
+
+
       {/* Search and Filter */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 pb-4">
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-4 mb-6 border border-gray-100 dark:border-gray-700">
