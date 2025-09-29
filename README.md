@@ -7,17 +7,17 @@
 
 <div align="center">
 
-### 🛠️ Development
+###  Development
 [![Build](https://img.shields.io/badge/Build-Passing-brightgreen?style=for-the-badge&logo=github-actions)](https://github.com/COS301-SE-2025/Save-n-Bite/actions)
 [![Coverage](https://img.shields.io/codecov/c/github/COS301-SE-2025/Save-n-Bite?style=for-the-badge&color=9cf&label=Coverage)](https://codecov.io/gh/COS301-SE-2025/Save-n-Bite)
 [![Last Commit](https://img.shields.io/github/last-commit/COS301-SE-2025/Save-n-Bite?style=for-the-badge&color=blue&label=Last%20Commit)](https://github.com/COS301-SE-2025/Save-n-Bite/commits/main)
 
-### 📈 Repository Activity
+###  Repository Activity
 [![Issues](https://img.shields.io/github/issues/COS301-SE-2025/Save-n-Bite?style=for-the-badge&color=red&label=Issues)](https://github.com/COS301-SE-2025/Save-n-Bite/issues)
 [![Pull Requests](https://img.shields.io/github/issues-pr/COS301-SE-2025/Save-n-Bite?style=for-the-badge&color=yellow&label=Pull%20Requests)](https://github.com/COS301-SE-2025/Save-n-Bite/pulls)
 [![Repo Size](https://img.shields.io/github/repo-size/COS301-SE-2025/Save-n-Bite?style=for-the-badge&color=lightgrey&label=Repo%20Size)](https://github.com/COS301-SE-2025/Save-n-Bite)
 
-### 💻 Code & Contributors
+###  Code & Contributors
 [![Languages](https://img.shields.io/github/languages/count/COS301-SE-2025/Save-n-Bite?style=for-the-badge&color=orange&label=Languages)](https://github.com/COS301-SE-2025/Save-n-Bite)
 [![Top Language](https://img.shields.io/github/languages/top/COS301-SE-2025/Save-n-Bite?style=for-the-badge&logo=react&label=React&color=61DAFB)](https://github.com/COS301-SE-2025/Save-n-Bite)
 [![Contributors](https://img.shields.io/github/contributors/COS301-SE-2025/Save-n-Bite?style=for-the-badge&color=success&label=Contributors)](https://github.com/COS301-SE-2025/Save-n-Bite/graphs/contributors)
@@ -25,7 +25,7 @@
 
 </div>
 
-## 📌 Project Description
+##  Project Description
 **Save n Bite** is a digital platform connecting commercial food providers with individuals and organizations in need with the goal of combating food waste and hunger in South Africa using technology-driven solutions and community collaboration.✊
 
 Key features:  
@@ -36,7 +36,7 @@ Key features:
 
 ---
 
-## 🛠️ Tech Stack
+## Tech Stack
 <div align="center">
 
 <table>
@@ -98,7 +98,7 @@ Key features:
 ---
 
 <details>
-<summary><strong>📂 Repository Structure</strong></summary>
+<summary><strong> Repository Structure</strong></summary>
 
 ```text
 save-n-bite/
@@ -151,7 +151,7 @@ save-n-bite/
 
 ---
 
-## 👥 Team Members
+##  Team Members
 | Profile               | Name                  | Role                | LinkedIn                                      | GitHub                                   |
 |-----------------------|-----------------------|---------------------|-----------------------------------------------|------------------------------------------|
 | <img src="assets/Saber.jpg" width="130" /> | Sabrina-Gabriel Freeman | Project Manager, System Architect, Data Engineer | [![LinkedIn](https://img.shields.io/badge/LinkedIn-0077B5?style=flat&logo=linkedin)](https://www.linkedin.com/in/sabrina-gabriel-freeman-a57281346) | [![GitHub](https://img.shields.io/badge/GitHub-181717?style=flat&logo=github)](https://github.com/SaberF24) |
@@ -168,7 +168,7 @@ save-n-bite/
 **[Save n Bite Link](https://savenbiteportal-f5ggcpczf5f2f8b4.southafricanorth-01.azurewebsites.net/)**  
 
 1. **SRS Document**:  
-   - **📄 [Software Requirements Specification (SRS)](documentation/Demo_4/SRS-V4.pdf)**  
+   - ** [Software Requirements Specification (SRS)](documentation/Demo_4/SRS-V4.pdf)**  
    - Introduction  
    - User stories  
    - Use Case Diagrams  
@@ -192,7 +192,7 @@ save-n-bite/
    - **[Coding Standards Document](documentation/Demo_4/Testing_Policy.pdf)**
   
 6. **GitHub Project Board**:  
-   - **📊 [GitHub Project Board](https://github.com/orgs/COS301-SE-2025/projects/177/views/2)** 
+   - ** [GitHub Project Board](https://github.com/orgs/COS301-SE-2025/projects/177/views/2)** 
 
 7. **Demo 4 Video**  
    [Click here!](https://www.canva.com/design/DAG0T0L-dyE/aV_Bg8m31ZaNEuSMWWvYCg/watch?utm_content=DAG0T0L-dyE&utm_campaign=designshare&utm_medium=link2&utm_source=uniquelinks&utlId=hebc5875548)
@@ -323,6 +323,7 @@ save-n-bite/
 
 ## 📫 Contact Us
  [![Email](https://img.shields.io/badge/Email-swmguild@gmail.com-D14836?logo=gmail)](mailto:swmguild@gmail.com)
+
 
 
 
