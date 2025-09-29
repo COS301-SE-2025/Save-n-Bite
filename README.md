@@ -7,20 +7,21 @@
 
 <div align="center">
 
+### 🛠️ Development
 [![Build Status](https://img.shields.io/github/actions/workflow/status/COS301-SE-2025/Save-n-Bite/ci.yml?style=for-the-badge&color=green&label=Build)](https://github.com/COS301-SE-2025/Save-n-Bite/actions)
-[![Coverage](https://img.shields.io/codecov/c/github/COS301-SE-2025/Save-n-Bite?style=for-the-badge&color=9cf)](https://codecov.io/gh/COS301-SE-2025/Save-n-Bite)
-[![Issues](https://img.shields.io/github/issues/COS301-SE-2025/Save-n-Bite?style=for-the-badge&color=red)](https://github.com/COS301-SE-2025/Save-n-Bite/issues)
-[![Last Commit](https://img.shields.io/github/last-commit/COS301-SE-2025/Save-n-Bite?style=for-the-badge&color=blue)](https://github.com/COS301-SE-2025/Save-n-Bite/commits/main)
-[![Repo Size](https://img.shields.io/github/repo-size/COS301-SE-2025/Save-n-Bite?style=for-the-badge&color=lightgrey)](https://github.com/COS301-SE-2025/Save-n-Bite)
-[![Pull Requests](https://img.shields.io/github/issues-pr/COS301-SE-2025/Save-n-Bite?style=for-the-badge&color=yellow)](https://github.com/COS301-SE-2025/Save-n-Bite/pulls)
-[![Repo Size](https://img.shields.io/github/repo-size/COS301-SE-2025/Save-n-Bite?style=for-the-badge&color=blueviolet)](https://github.com/COS301-SE-2025/Save-n-Bite)
-[![PRs](https://img.shields.io/github/issues-pr/COS301-SE-2025/Save-n-Bite?style=for-the-badge&color=ff69b4)](https://github.com/COS301-SE-2025/Save-n-Bite/pulls)
+[![Coverage](https://img.shields.io/codecov/c/github/COS301-SE-2025/Save-n-Bite?style=for-the-badge&color=9cf&label=Coverage)](https://codecov.io/gh/COS301-SE-2025/Save-n-Bite)
+[![Last Commit](https://img.shields.io/github/last-commit/COS301-SE-2025/Save-n-Bite?style=for-the-badge&color=blue&label=Last%20Commit)](https://github.com/COS301-SE-2025/Save-n-Bite/commits/main)
 
-[![Languages](https://img.shields.io/github/languages/count/COS301-SE-2025/Save-n-Bite?style=for-the-badge&color=orange)](https://github.com/COS301-SE-2025/Save-n-Bite)
+### 📈 Repository Activity
+[![Issues](https://img.shields.io/github/issues/COS301-SE-2025/Save-n-Bite?style=for-the-badge&color=red&label=Issues)](https://github.com/COS301-SE-2025/Save-n-Bite/issues)
+[![Pull Requests](https://img.shields.io/github/issues-pr/COS301-SE-2025/Save-n-Bite?style=for-the-badge&color=yellow&label=Pull%20Requests)](https://github.com/COS301-SE-2025/Save-n-Bite/pulls)
+[![Repo Size](https://img.shields.io/github/repo-size/COS301-SE-2025/Save-n-Bite?style=for-the-badge&color=lightgrey&label=Repo%20Size)](https://github.com/COS301-SE-2025/Save-n-Bite)
+
+### 💻 Code & Contributors
+[![Languages](https://img.shields.io/github/languages/count/COS301-SE-2025/Save-n-Bite?style=for-the-badge&color=orange&label=Languages)](https://github.com/COS301-SE-2025/Save-n-Bite)
 [![Top Language](https://img.shields.io/github/languages/top/COS301-SE-2025/Save-n-Bite?style=for-the-badge&logo=react&label=React&color=61DAFB)](https://github.com/COS301-SE-2025/Save-n-Bite)
-[![Contributors](https://img.shields.io/github/contributors/COS301-SE-2025/Save-n-Bite?style=for-the-badge&color=success)](https://github.com/COS301-SE-2025/Save-n-Bite/graphs/contributors)
-
-[![Commit Activity](https://img.shields.io/github/commit-activity/w/COS301-SE-2025/Save-n-Bite?style=for-the-badge&color=yellow)](https://github.com/COS301-SE-2025/Save-n-Bite/commits)
+[![Contributors](https://img.shields.io/github/contributors/COS301-SE-2025/Save-n-Bite?style=for-the-badge&color=success&label=Contributors)](https://github.com/COS301-SE-2025/Save-n-Bite/graphs/contributors)
+[![Commit Activity](https://img.shields.io/github/commit-activity/w/COS301-SE-2025/Save-n-Bite?style=for-the-badge&color=yellow&label=Commit%20Activity)](https://github.com/COS301-SE-2025/Save-n-Bite/commits)
 
 </div>
 
@@ -322,6 +323,7 @@ save-n-bite/
 
 ## 📫 Contact Us
  [![Email](https://img.shields.io/badge/Email-swmguild@gmail.com-D14836?logo=gmail)](mailto:swmguild@gmail.com)
+
 
 
 
