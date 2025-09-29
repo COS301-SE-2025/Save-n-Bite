@@ -8,7 +8,7 @@
 <div align="center">
 
 ### 🛠️ Development
-[![Build Status](https://img.shields.io/github/actions/workflow/status/COS301-SE-2025/Save-n-Bite/ci.yml?style=for-the-badge&color=green&label=Build)](https://github.com/COS301-SE-2025/Save-n-Bite/actions)
+[![Build](https://img.shields.io/badge/Build-Passing-brightgreen?style=for-the-badge&logo=github-actions)](https://github.com/COS301-SE-2025/Save-n-Bite/actions)
 [![Coverage](https://img.shields.io/codecov/c/github/COS301-SE-2025/Save-n-Bite?style=for-the-badge&color=9cf&label=Coverage)](https://codecov.io/gh/COS301-SE-2025/Save-n-Bite)
 [![Last Commit](https://img.shields.io/github/last-commit/COS301-SE-2025/Save-n-Bite?style=for-the-badge&color=blue&label=Last%20Commit)](https://github.com/COS301-SE-2025/Save-n-Bite/commits/main)
 
@@ -195,7 +195,7 @@ save-n-bite/
    - **📊 [GitHub Project Board](https://github.com/orgs/COS301-SE-2025/projects/177/views/2)** 
 
 7. **Demo 4 Video**  
-   [Click here!](https://www.canva.com/design/DAGowUskyDY/E8nYEYzEWrMe1D13DkMVFw/watch?utm_content=DAGowUskyDY&utm_campaign=designshare&utm_medium=link2&utm_source=uniquelinks&utlId=h3390ca1771)
+   [Click here!](https://www.canva.com/design/DAG0T0L-dyE/aV_Bg8m31ZaNEuSMWWvYCg/watch?utm_content=DAG0T0L-dyE&utm_campaign=designshare&utm_medium=link2&utm_source=uniquelinks&utlId=hebc5875548)
 
 </details>
 
@@ -323,6 +323,7 @@ save-n-bite/
 
 ## 📫 Contact Us
  [![Email](https://img.shields.io/badge/Email-swmguild@gmail.com-D14836?logo=gmail)](mailto:swmguild@gmail.com)
+
 
 
 
