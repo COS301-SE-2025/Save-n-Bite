@@ -7,14 +7,12 @@
 
 <div align="center">
 
-[![Build Status](https://img.shields.io/github/actions/workflow/status/COS301-SE-2025/Save-n-Bite/.github/workflows/build.yml?style=for-the-badge&color=green&label=Build)](https://github.com/COS301-SE-2025/Save-n-Bite/actions)
+[![Build Status](https://img.shields.io/github/actions/workflow/status/COS301-SE-2025/Save-n-Bite/ci.yml?style=for-the-badge&color=green&label=Build)](https://github.com/COS301-SE-2025/Save-n-Bite/actions)
 [![Coverage](https://img.shields.io/codecov/c/github/COS301-SE-2025/Save-n-Bite?style=for-the-badge&color=9cf)](https://codecov.io/gh/COS301-SE-2025/Save-n-Bite)
 [![Issues](https://img.shields.io/github/issues/COS301-SE-2025/Save-n-Bite?style=for-the-badge&color=red)](https://github.com/COS301-SE-2025/Save-n-Bite/issues)
 [![Last Commit](https://img.shields.io/github/last-commit/COS301-SE-2025/Save-n-Bite?style=for-the-badge&color=blue)](https://github.com/COS301-SE-2025/Save-n-Bite/commits/main)
 [![Repo Size](https://img.shields.io/github/repo-size/COS301-SE-2025/Save-n-Bite?style=for-the-badge&color=lightgrey)](https://github.com/COS301-SE-2025/Save-n-Bite)
 [![Pull Requests](https://img.shields.io/github/issues-pr/COS301-SE-2025/Save-n-Bite?style=for-the-badge&color=yellow)](https://github.com/COS301-SE-2025/Save-n-Bite/pulls)
-
-[![Last Commit](https://img.shields.io/github/last-commit/COS301-SE-2025/Save-n-Bite?style=for-the-badge&color=blue)](https://github.com/COS301-SE-2025/Save-n-Bite/commits)
 [![Repo Size](https://img.shields.io/github/repo-size/COS301-SE-2025/Save-n-Bite?style=for-the-badge&color=blueviolet)](https://github.com/COS301-SE-2025/Save-n-Bite)
 [![PRs](https://img.shields.io/github/issues-pr/COS301-SE-2025/Save-n-Bite?style=for-the-badge&color=ff69b4)](https://github.com/COS301-SE-2025/Save-n-Bite/pulls)
 
@@ -324,6 +322,7 @@ save-n-bite/
 
 ## 📫 Contact Us
  [![Email](https://img.shields.io/badge/Email-swmguild@gmail.com-D14836?logo=gmail)](mailto:swmguild@gmail.com)
+
 
 
 
