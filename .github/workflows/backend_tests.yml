@@ -3,9 +3,9 @@ name: Backend
 on:
   push:
 
-    branches: [ dev ]
+    branches: [ main ]
   pull_request:
-    branches: [  dev ]
+    branches: [  main ]
 
   workflow_dispatch:
     inputs:
