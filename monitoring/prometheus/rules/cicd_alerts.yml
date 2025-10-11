@@ -1,0 +1,80 @@
+groups:
+  - name: cicd_alerts
+    interval: 30s
+    rules:
+      # Alert when workflow fails
+      - alert: WorkflowFailed
+        expr: github_actions_workflow_status{status="failure"} == 1
+        for: 1m
+        labels:
+          severity: critical
+          component: cicd
+        annotations:
+          summary: "GitHub Actions workflow failed"
+          description: "Workflow {{ $labels.workflow }} failed in repository {{ $labels.repository }}"
+
+      # Alert when test coverage drops below threshold
+      - alert: LowTestCoverage
+        expr: github_actions_test_coverage_percent < 70
+        for: 5m
+        labels:
+          severity: warning
+          component: testing
+        annotations:
+          summary: "Test coverage below 70%"
+          description: "Test coverage for {{ $labels.job }} is {{ $value }}%"
+
+      # Alert when workflow duration is too long
+      - alert: SlowWorkflow
+        expr: github_actions_workflow_duration_seconds > 600
+        for: 1m
+        labels:
+          severity: warning
+          component: cicd
+        annotations:
+          summary: "Workflow taking too long"
+          description: "Workflow {{ $labels.workflow }} took {{ $value }} seconds (>10 minutes)"
+
+      # Alert when build fails
+      - alert: BuildFailed
+        expr: github_actions_build_status{status="failure"} == 1
+        for: 1m
+        labels:
+          severity: critical
+          component: build
+        annotations:
+          summary: "Build failed"
+          description: "Build for {{ $labels.component }} failed in workflow {{ $labels.workflow }}"
+
+      # Alert when deployment fails
+      - alert: DeploymentFailed
+        expr: github_actions_deployment_status{status="failure"} == 1
+        for: 1m
+        labels:
+          severity: critical
+          component: deployment
+        annotations:
+          summary: "Deployment failed"
+          description: "Deployment for {{ $labels.environment }} failed"
+
+      # Alert when test failure rate is high
+      - alert: HighTestFailureRate
+        expr: (github_actions_tests_failed / github_actions_tests_total) > 0.1
+        for: 5m
+        labels:
+          severity: warning
+          component: testing
+        annotations:
+          summary: "High test failure rate detected"
+          description: "Test failure rate is {{ $value | humanizePercentage }} for {{ $labels.job }}"
+
+      # Alert when pushgateway is unreachable
+      - alert: PushgatewayDown
+        expr: up{job="pushgateway"} == 0
+        for: 2m
+        labels:
+          severity: warning
+          component: monitoring
+        annotations:
+          summary: "Pushgateway is down"
+          description: "Cannot scrape metrics from Pushgateway"

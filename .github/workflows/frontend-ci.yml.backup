@@ -1,0 +1,36 @@
+name: frontend
+on:
+  push:
+    branches: [ backend ]
+  pull_request:
+    branches: [  backend ]
+
+env:
+  NODE_VERSION: 20
+jobs:
+  frontend-tests:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./save-n-bite-frontend
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{env.NODE_VERSION}}
+          cache: 'npm'
+          cache-dependency-path: './save-n-bite-frontend/package-lock.json'
+          
+      - name: Install dependencies
+        run: npm i
+        
+      - name: Run Jest with coverage
+        run: npx jest 
+        
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v3
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          lcov-file: ./save-n-bite-frontend/coverage/lcov.info

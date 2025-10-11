@@ -1,0 +1,187 @@
+name: Backend
+
+on:
+  push:
+
+    branches: [ main ]
+  pull_request:
+    branches: [  main ]
+
+  workflow_dispatch:
+    inputs:
+      run_coverage:
+        description: 'Run test coverage report'
+        required: false
+        default: false
+        type: boolean
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    # Set up PostgreSQL service for testin
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: test_savenbite_db
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+      redis:
+        image: redis:7
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 6379:6379
+
+    defaults:
+      run:
+        working-directory: save-n-bite-backend
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Ensure static and media directories exist
+      run: |
+        mkdir -p static
+        mkdir -p media
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+
+    - name: Install Poetry
+      run: |
+        curl -sSL https://install.python-poetry.org | python3 -
+        echo "$HOME/.local/bin" >> $GITHUB_PATH
+
+    - name: Cache Poetry dependencies
+      uses: actions/cache@v4
+      with:
+        path: |
+          ~/.cache/pip
+          ~/.cache/pypoetry
+          save-n-bite-backend/.venv
+        key: ${{ runner.os }}-poetry-${{ hashFiles('save-n-bite-backend/poetry.lock') }}
+        restore-keys: |
+          ${{ runner.os }}-poetry-
+
+    - name: Configure Poetry
+      run: |
+        poetry config virtualenvs.create true
+        poetry config virtualenvs.in-project true
+
+    - name: Install dependencies with Poetry
+      run: |
+        poetry install --with dev
+        # Ensure all test dependencies are properly installed
+        poetry run pip install model_bakery coverage pytest-html
+
+    - name: Install PostgreSQL client (for pg_isready)
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y postgresql-client
+
+    - name: Create test environment file
+      run: |
+        cat > .env << EOF
+        DEBUG=True
+        SECRET_KEY=test-secret-key-for-github-actions-very-long-and-secure
+        DB_NAME=test_savenbite_db
+        DB_USER=postgres
+        DB_PASSWORD=postgres
+        DB_HOST=127.0.0.1
+        DB_PORT=5432
+        REDIS_URL=redis://localhost:6379/0
+        ALLOWED_HOSTS=localhost,127.0.0.1
+        CORS_ALLOWED_ORIGINS=http://localhost:3000,http://127.0.0.1:3000
+
+        # Disable Azure Storage for testing
+        USE_AZURE_STORAGE=False
+        TESTING=True
+        GEOCODING_ENABLED=False
+        AZURE_STORAGE_CONNECTION_STRING=UseDevelopmentStorage=true
+        AZURE_CONTAINER_NAME=test-container
+        EOF
+
+    - name: Wait for services
+      run: |
+        # Wait for PostgreSQL
+        echo "Waiting for PostgreSQL..."
+        until pg_isready -h 127.0.0.1 -p 5432 -U postgres; do
+          echo "PostgreSQL not ready, waiting..."
+          sleep 2
+        done
+        echo "✅ PostgreSQL is ready"
+      
+
+    - name: Verify Django setup
+      run: |
+        poetry run python -c "
+        import django
+        print(f'Django version: {django.get_version()}')
+        try:
+            import azure.storage.blob
+            print('Azure storage blob: Available')
+        except ImportError:
+            print('Azure storage blob: NOT AVAILABLE')
+        "
+
+
+    - name: Run migrations
+      run: poetry run python manage.py migrate
+
+    - name: Run Django system check
+      run: poetry run python manage.py check
+
+    - name: Run analytics app tests only
+      run: poetry run python manage.py test analytics
+
+    - name: Run reviews app tests only
+      run: poetry run pytest reviews/tests.py
+
+    - name: Run Garden app tests only
+      run: poetry run pytest digital_garden/tests.py
+
+    - name: Run Interactions app tests only
+      run: poetry run pytest interactions/tests
+
+    - name: Run Notifications app tests only
+      run: poetry run pytest notifications/tests.py
+
+    - name: Run FoodListing app tests only
+      run: poetry run pytest food_listings/tests.py
+
+    - name: Run Badges app tests only
+      run: poetry run pytest badges/tests.py
+
+    - name: Run Admin System app tests only
+      run: poetry run python manage.py test admin_system
+
+    - name: Run Authentication app tests only
+      run: poetry run python manage.py test authentication
+
+    # - name: Run Integration Tests app tests only
+    #   run: poetry run python run_integration_tests.py --all --verbose
+
+    - name: Run coverage report (if requested)
+      if: ${{ github.event.inputs.run_coverage == 'true' || github.event_name == 'pull_request' }}
+      run: poetry run pytest --cov=. --cov-report=html --cov-report=term-missing
+
+    - name: Upload coverage reports
+      if: ${{ github.event.inputs.run_coverage == 'true' || github.event_name == 'pull_request' }}
+      uses: actions/upload-artifact@v4
+      with:
+        name: coverage-report
+        path: save-n-bite-backend/htmlcov/

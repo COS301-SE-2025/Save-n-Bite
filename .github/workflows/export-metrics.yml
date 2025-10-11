@@ -1,0 +1,89 @@
+name: Export Metrics to Grafana
+
+on:
+  workflow_call:
+    inputs:
+      metric_type:
+        description: 'Type of metric (workflow, build, test, coverage, deployment, docker)'
+        required: true
+        type: string
+      metric_data:
+        description: 'Metric data as JSON string'
+        required: true
+        type: string
+      pushgateway_url:
+        description: 'Pushgateway URL'
+        required: false
+        type: string
+        default: 'http://your-pushgateway-url:9091'
+
+jobs:
+  export-metrics:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout monitoring scripts
+        uses: actions/checkout@v4
+        with:
+          sparse-checkout: |
+            monitoring/scripts
+          sparse-checkout-cone-mode: false
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install requests
+
+      - name: Export metrics
+        env:
+          PUSHGATEWAY_URL: ${{ inputs.pushgateway_url }}
+          METRIC_TYPE: ${{ inputs.metric_type }}
+          METRIC_DATA: ${{ inputs.metric_data }}
+        run: |
+          cd monitoring/scripts
+          
+          # Parse metric data JSON and call appropriate export function
+          echo "Exporting ${METRIC_TYPE} metrics..."
+          
+          case "${METRIC_TYPE}" in
+            workflow)
+              status=$(echo $METRIC_DATA | jq -r '.status')
+              duration=$(echo $METRIC_DATA | jq -r '.duration')
+              python3 export_metrics.py workflow "$status" "$duration"
+              ;;
+            build)
+              component=$(echo $METRIC_DATA | jq -r '.component')
+              status=$(echo $METRIC_DATA | jq -r '.status')
+              duration=$(echo $METRIC_DATA | jq -r '.duration')
+              python3 export_metrics.py build "$component" "$status" "$duration"
+              ;;
+            test)
+              total=$(echo $METRIC_DATA | jq -r '.total')
+              passed=$(echo $METRIC_DATA | jq -r '.passed')
+              failed=$(echo $METRIC_DATA | jq -r '.failed')
+              skipped=$(echo $METRIC_DATA | jq -r '.skipped')
+              duration=$(echo $METRIC_DATA | jq -r '.duration')
+              app=$(echo $METRIC_DATA | jq -r '.app')
+              python3 export_metrics.py test "$total" "$passed" "$failed" "$skipped" "$duration" --app "$app"
+              ;;
+            coverage)
+              percent=$(echo $METRIC_DATA | jq -r '.percent')
+              app=$(echo $METRIC_DATA | jq -r '.app')
+              python3 export_metrics.py coverage "$percent" --app "$app"
+              ;;
+            deployment)
+              environment=$(echo $METRIC_DATA | jq -r '.environment')
+              status=$(echo $METRIC_DATA | jq -r '.status')
+              duration=$(echo $METRIC_DATA | jq -r '.duration')
+              python3 export_metrics.py deployment "$environment" "$status" "$duration"
+              ;;
+            docker)
+              component=$(echo $METRIC_DATA | jq -r '.component')
+              size_mb=$(echo $METRIC_DATA | jq -r '.size_mb')
+              build_time=$(echo $METRIC_DATA | jq -r '.build_time')
+              tag=$(echo $METRIC_DATA | jq -r '.tag')
+              python3 export_metrics.py docker "$component" "$size_mb" "$build_time" --tag "$tag"
+              ;;
+          esac
