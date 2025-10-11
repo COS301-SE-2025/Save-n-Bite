@@ -1,6 +1,3 @@
-# Example: Enhanced deployment.yml with Grafana metrics export
-# Replace your existing deployment.yml with this version to enable metrics
-
 name: Build and Push Images
 
 on:

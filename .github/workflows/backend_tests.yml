@@ -1,13 +1,10 @@
-# Example: Enhanced backend_tests.yml with Grafana metrics export
-# Replace your existing backend_tests.yml with this version to enable metrics
-
 name: Backend
 
 on:
   push:
-    branches: [ main ]
+    branches: [ '**' ]
   pull_request:
-    branches: [ main ]
+    branches: [ '**' ]
   workflow_dispatch:
     inputs:
       run_coverage:

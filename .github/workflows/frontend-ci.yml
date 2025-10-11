@@ -1,13 +1,12 @@
-# Example: Enhanced frontend-ci.yml with Grafana metrics export
-# Replace your existing frontend-ci.yml with this version to enable metrics
+
 
 name: Frontend
 
 on:
   push:
-    branches: [ backend, main ]
+    branches: [ '**' ]
   pull_request:
-    branches: [ backend, main ]
+    branches: [ '**' ]
 
 env:
   NODE_VERSION: 20
