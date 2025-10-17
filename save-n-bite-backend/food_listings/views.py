@@ -418,16 +418,40 @@ def browse_food_listings(request):
     sort_by = request.GET.get('sort', '-created_at')
     queryset = queryset.order_by(sort_by)
     
-    # Pagination
+    # Pagination with configurable limits
     page = int(request.GET.get('page', 1))
+    get_all = request.GET.get('get_all', 'false').lower() == 'true'
     limit = int(request.GET.get('limit', 10))
     
-    paginator = Paginator(queryset, limit)
-    page_obj = paginator.get_page(page)
+    if get_all or limit == 0:
+        # Return all results without pagination
+        page_obj = queryset
+        pagination_data = {
+            'currentPage': 1,
+            'totalPages': 1,
+            'totalItems': queryset.count(),
+            'hasNext': False,
+            'hasPrev': False,
+            'itemsPerPage': queryset.count(),
+            'mode': 'all'
+        }
+    else:
+        # Use pagination
+        paginator = Paginator(queryset, limit)
+        page_obj = paginator.get_page(page)
+        pagination_data = {
+            'currentPage': page,
+            'totalPages': paginator.num_pages,
+            'totalItems': paginator.count,
+            'hasNext': page_obj.has_next(),
+            'hasPrev': page_obj.has_previous(),
+            'itemsPerPage': limit,
+            'mode': 'paginated'
+        }
     
     # Serialize listings with follow status if user is authenticated
     listings_data = []
-    for listing in page_obj.object_list:
+    for listing in page_obj:
         serializer = FoodListingSerializer(listing)
         listing_data = serializer.data
         
@@ -457,13 +481,7 @@ def browse_food_listings(request):
     
     return Response({
         'listings': listings_data,
-        'pagination': {
-            'currentPage': page,
-            'totalPages': paginator.num_pages,
-            'totalItems': paginator.count,
-            'hasNext': page_obj.has_next(),
-            'hasPrev': page_obj.has_previous()
-        },
+        'pagination': pagination_data,
         'filters': {
             'availableTypes': available_types,
             'priceRange': price_range,

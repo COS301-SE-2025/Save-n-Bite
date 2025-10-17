@@ -1,7 +1,7 @@
 import axios from 'axios';
 
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'https://savenbiteservice-hzghg8gcgddtcfg7.southafricanorth-01.azurewebsites.net';
-//const API_BASE_URL = 'http://localhost:8000';
+//const API_BASE_URL = process.env.REACT_APP_API_URL || 'https://savenbiteservice-hzghg8gcgddtcfg7.southafricanorth-01.azurewebsites.net';
+const API_BASE_URL = 'http://localhost:8000';
 
 const apiClient = axios.create({
     baseURL: API_BASE_URL,
@@ -240,7 +240,7 @@ const foodListingsAPI = {
     async getFoodListings(filters = {}, searchQuery = '', sortBy = '') {
         try {
             const queryParams = buildQueryParams(filters, searchQuery, sortBy);
-            const url = `/api/food-listings/${queryParams ? `?${queryParams}` : ''}`;
+            const url = `/api/food-listings/${queryParams ? `?${queryParams}&get_all=true` : '?get_all=true'}`;
 
             console.log('API Request URL:', url); // Debug log
 
