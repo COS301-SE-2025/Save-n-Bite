@@ -1034,10 +1034,11 @@ class CompleteCheckoutView(APIView):
             special_instructions=serializer.validated_data.get('specialInstructions', '')
         )
 
-        # 2. Create Interaction Items (quantity already reserved)
+        # 2. Create Interaction Items and update stock
         for cart_item in cart.items.all():
+            # Create interaction item
             InteractionItem.objects.create(
-                Interaction=interaction,
+                interaction=interaction,
                 food_listing=cart_item.food_listing,
                 name=cart_item.food_listing.name,
                 quantity=cart_item.quantity,
@@ -1046,6 +1047,16 @@ class CompleteCheckoutView(APIView):
                 expiry_date=cart_item.food_listing.expiry_date,
                 image_url=cart_item.food_listing.images[0] if cart_item.food_listing.images else ''
             )
+            
+            # Update the food listing's quantity_available
+            food_listing = cart_item.food_listing
+            food_listing.quantity_available = models.F('quantity_available') - cart_item.quantity
+            food_listing.save(update_fields=['quantity_available'])
+            
+            # If quantity_available reaches zero, mark as sold out
+            if food_listing.quantity_available <= 0:
+                food_listing.status = 'sold_out'
+                food_listing.save(update_fields=['status'])
 
         # 3. Create Payment
         payment = Payment.objects.create(

@@ -171,6 +171,7 @@ export class NotificationUtils {
     if (!notification.scheduledFor) return false
     return new Date(notification.scheduledFor) > new Date()
   }
+}
 
   /**
    * Get notification type icon
