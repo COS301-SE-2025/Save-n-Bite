@@ -240,7 +240,7 @@ const foodListingsAPI = {
     async getFoodListings(filters = {}, searchQuery = '', sortBy = '') {
         try {
             const queryParams = buildQueryParams(filters, searchQuery, sortBy);
-            const url = `/api/food-listings/${queryParams ? `?${queryParams}` : ''}`;
+            const url = `/api/food-listings/${queryParams ? `?${queryParams}&get_all=true` : '?get_all=true'}`;
 
             console.log('API Request URL:', url); // Debug log
 

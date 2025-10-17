@@ -101,7 +101,9 @@ const FoodListings = () => {
       const nextWeek = new Date(today.getTime() + 7 * 24 * 60 * 60 * 1000);
 
       filtered = filtered.filter(item => {
-         if (!item.expiryDate && !item.expiry_date) return true;
+
+        if (!item.expiryDate && !item.expiry_date) return true;
+
 
         const expiryDate = new Date(item.expiryDate);
 
