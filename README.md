@@ -162,9 +162,10 @@ save-n-bite/
 
 <details open>
 <summary><strong>✅ Demo 4 Deliverables (30 September 2025)</strong></summary>  
+	
 ---
 	
-**[Save n Bite Link](https://savenbiteportal-f5ggcpczf5f2f8b4.southafricanorth-01.azurewebsites.net/)**  
+**[Click here to explore Save n Bite!](https://savenbiteportal-f5ggcpczf5f2f8b4.southafricanorth-01.azurewebsites.net/)**  
 
 ---
 	
@@ -324,6 +325,7 @@ save-n-bite/
 
 ## 📫 Contact Us
  [![Email](https://img.shields.io/badge/Email-swmguild@gmail.com-D14836?logo=gmail)](mailto:swmguild@gmail.com)
+
 
 
 
