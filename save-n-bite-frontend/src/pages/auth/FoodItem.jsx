@@ -524,24 +524,12 @@ const FoodItem = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+       <div className="bg-gray-50 dark:bg-gray-900 min-h-screen w-full transition-colors duration-300">
         <CustomerNavBar />
-        <div className="max-w-4xl mx-auto px-4 pt-16 sm:pt-20">
-          <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-center sm:text-left">
-            <span className="bg-gradient-to-r from-emerald-600 to-blue-600 bg-clip-text text-transparent">Loading...</span>
-          </h1>
-        </div>
-        <div className="max-w-5xl mx-auto px-4 py-4 sm:px-6 lg:px-8">
-          <div className="animate-pulse space-y-6">
-            <div className="h-6 w-1/3 bg-gray-200 dark:bg-gray-700 rounded"></div>
-            <div className="grid md:grid-cols-2 gap-6">
-              <div className="aspect-square bg-gray-200 dark:bg-gray-700 rounded-xl"></div>
-              <div className="space-y-4">
-                <div className="h-6 bg-gray-200 dark:bg-gray-700 rounded w-3/4"></div>
-                <div className="h-20 bg-gray-200 dark:bg-gray-700 rounded"></div>
-                <div className="h-10 bg-gray-200 dark:bg-gray-700 rounded w-1/2"></div>
-              </div>
-            </div>
+        <div className="flex items-center justify-center min-h-[60vh]">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-600 mx-auto mb-4"></div>
+            <p className="text-gray-600 dark:text-gray-200">Loading...</p>
           </div>
         </div>
       </div>
