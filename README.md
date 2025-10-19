@@ -170,7 +170,7 @@ save-n-bite/
 ---
 	
 1. **SRS Document**:  
-   - ** [Software Requirements Specification (SRS)](documentation/Demo_4/SRS-V4.pdf)**  
+   - **[Software Requirements Specification (SRS)](documentation/Demo_4/SRS-V4.pdf)**  
    - Introduction  
    - User stories  
    - Use Case Diagrams  
@@ -197,7 +197,7 @@ save-n-bite/
    - **[GitHub Project Board](https://github.com/orgs/COS301-SE-2025/projects/177/views/2)** 
 
 7. **Demo 4 Video**  
-   [Click here!](https://www.canva.com/design/DAG0T0L-dyE/aV_Bg8m31ZaNEuSMWWvYCg/watch?utm_content=DAG0T0L-dyE&utm_campaign=designshare&utm_medium=link2&utm_source=uniquelinks&utlId=hebc5875548)
+   - **[Click here!](https://www.canva.com/design/DAG0T0L-dyE/aV_Bg8m31ZaNEuSMWWvYCg/watch?utm_content=DAG0T0L-dyE&utm_campaign=designshare&utm_medium=link2&utm_source=uniquelinks&utlId=hebc5875548)**
 
 </details>
 
@@ -325,6 +325,7 @@ save-n-bite/
 
 ## 📫 Contact Us
  [![Email](https://img.shields.io/badge/Email-swmguild@gmail.com-D14836?logo=gmail)](mailto:swmguild@gmail.com)
+
 
 
 
