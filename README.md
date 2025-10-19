@@ -149,19 +149,8 @@ save-n-bite/
 
 ---
 
-##  Team Members
-| Profile               | Name                  | Role                | LinkedIn                                      | GitHub                                   |
-|-----------------------|-----------------------|---------------------|-----------------------------------------------|------------------------------------------|
-| <img src="assets/Saber.jpg" width="130" /> | Sabrina-Gabriel Freeman | Project Manager, System Architect, Data Engineer | [![LinkedIn](https://img.shields.io/badge/LinkedIn-0077B5?style=flat&logo=linkedin)](https://www.linkedin.com/in/sabrina-gabriel-freeman-a57281346) | [![GitHub](https://img.shields.io/badge/GitHub-181717?style=flat&logo=github)](https://github.com/SaberF24) |
-| <img src="assets/Marco.jpg" width="130" /> | Marco Geral | Lead Services & Testing Engineer, DevOps | [![LinkedIn](https://img.shields.io/badge/LinkedIn-0077B5?style=flat&logo=linkedin)](https://www.linkedin.com/in/marco-geral-820b7a355/) | [![GitHub](https://img.shields.io/badge/GitHub-181717?style=flat&logo=github)](https://github.com/Marco-Geral) |
-| <img src="assets/Chisom.jpg" width="130" /> | Chisom Emekpo | Integration & Testing Engineer | [![LinkedIn](https://img.shields.io/badge/LinkedIn-0077B5?style=flat&logo=linkedin)](https://www.linkedin.com/in/chisom-emekpo-39b89827l/) | [![GitHub](https://img.shields.io/badge/GitHub-181717?style=flat&logo=github)](https://github.com/somworld6) |
-| <img src="assets/Vane.jpg" width="130" /> | Vané Abrams | Business Analyst, UI Engineer | [![LinkedIn](https://img.shields.io/badge/LinkedIn-0077B5?style=flat&logo=linkedin)](http://www.linkedin.com/in/vane-abrams–40569b305) | [![GitHub](https://img.shields.io/badge/GitHub-181717?style=flat&logo=github)](https://github.com/vdenise20) |
-| <img src="assets/Capleton.jpg" width="130" /> | Capleton Chapfika | Lead Integration Engineer, DevOps | [![LinkedIn](https://img.shields.io/badge/LinkedIn-0077B5?style=flat&logo=linkedin)](https://www.linkedin.com/in/capletonchapfika/) | [![GitHub](https://img.shields.io/badge/GitHub-181717?style=flat&logo=github)](https://github.com/Capleton11) |
-
----
-
 <details open>
-<summary><strong>✅ Demo 4 Deliverables (30 September 2025)</strong></summary>  
+<summary><strong>📚Documentation</strong></summary>  
 	
 ---
 	
@@ -181,20 +170,21 @@ save-n-bite/
    - Technology Requirements
    - Deployement Model   
 
-2. **User Manual**:  
-   - **[User Manual](documentation/Demo_4/User_Manual_v4.pdf)**  
 
-3. **Technical Installation Manual**:  
-   - **[Technical Installation Manual](documentation/Demo_4/Technical_Installation_Manual_v2.pdf)**  
-
-4. **Coding Standards Document**:  
+2. **Coding Standards Document**:  
    - **[Coding Standards Document](documentation/Demo_4/Coding_Standards_Document-v4.pdf)**
-  
-5. **Testing Policy Document**:  
+
+3. **Testing Policy Document**:  
    - **[Coding Standards Document](documentation/Demo_4/Testing_Policy.pdf)**
   
-6. **GitHub Project Board**:  
+4. **GitHub Project Board**:  
    - **[GitHub Project Board](https://github.com/orgs/COS301-SE-2025/projects/177/views/2)** 
+  
+5. **User Manual**:  
+   - **[User Manual](documentation/Demo_4/User_Manual_v4.pdf)**  
+
+6. **Technical Installation Manual**:  
+   - **[Technical Installation Manual](documentation/Demo_4/Technical_Installation_Manual_v2.pdf)**  
 
 7. **Demo 4 Video**  
    - **[Click here!](https://www.canva.com/design/DAG0T0L-dyE/aV_Bg8m31ZaNEuSMWWvYCg/watch?utm_content=DAG0T0L-dyE&utm_campaign=designshare&utm_medium=link2&utm_source=uniquelinks&utlId=hebc5875548)**
@@ -203,128 +193,29 @@ save-n-bite/
 
 ---
 
-<details>
-<summary><strong>✅ Demo 3 Deliverables (20 August 2025)</strong></summary>
-
-1. **SRS Document**:  
-   - **📄 [Software Requirements Specification (SRS)](documentation/SRS-V3.pdf)**  
-   - Introduction  
-   - User stories  
-   - Use Case Diagrams  
-   - Functional Requirements  
-   - Service Contracts  
-   - Domain Model  
-   - Architectural Requirements  
-   - Technology Requirements  
-
-2. **User Manual**:  
-   - **[User Manual](documentation/User_Manual.pdf)**  
-
-3. **Technical Installation Manual**:  
-   - **[Technical Installation Manual](documentation/Technical_Installation_Manual.pdf)**  
-
-4. **Coding Standards Document**:  
-   - **[Coding Standards Document](documentation/Coding_Standards_Document.pdf)**  
-
-5. **Demo 3 Video**  
-   [Click here!](https://www.canva.com/design/DAGowUskyDY/E8nYEYzEWrMe1D13DkMVFw/watch?utm_content=DAGowUskyDY&utm_campaign=designshare&utm_medium=link2&utm_source=uniquelinks&utlId=h3390ca1771)
-
-</details>
+##  Team Members
+| Profile               | Name                  | Role                | LinkedIn                                      | GitHub                                   |
+|-----------------------|-----------------------|---------------------|-----------------------------------------------|------------------------------------------|
+| <img src="assets/Saber.jpg" width="130" /> | Sabrina-Gabriel Freeman | Project Manager, System Architect, Data Engineer | [![LinkedIn](https://img.shields.io/badge/LinkedIn-0077B5?style=flat&logo=linkedin)](https://www.linkedin.com/in/sabrina-gabriel-freeman-a57281346) | [![GitHub](https://img.shields.io/badge/GitHub-181717?style=flat&logo=github)](https://github.com/SaberF24) |
+| <img src="assets/Marco.jpg" width="130" /> | Marco Geral | Lead Services & Testing Engineer, DevOps | [![LinkedIn](https://img.shields.io/badge/LinkedIn-0077B5?style=flat&logo=linkedin)](https://www.linkedin.com/in/marco-geral-820b7a355/) | [![GitHub](https://img.shields.io/badge/GitHub-181717?style=flat&logo=github)](https://github.com/Marco-Geral) |
+| <img src="assets/Chisom.jpg" width="130" /> | Chisom Emekpo | Integration & Testing Engineer | [![LinkedIn](https://img.shields.io/badge/LinkedIn-0077B5?style=flat&logo=linkedin)](https://www.linkedin.com/in/chisom-emekpo-39b89827l/) | [![GitHub](https://img.shields.io/badge/GitHub-181717?style=flat&logo=github)](https://github.com/somworld6) |
+| <img src="assets/Vane.jpg" width="130" /> | Vané Abrams | Business Analyst, UI Engineer | [![LinkedIn](https://img.shields.io/badge/LinkedIn-0077B5?style=flat&logo=linkedin)](http://www.linkedin.com/in/vane-abrams–40569b305) | [![GitHub](https://img.shields.io/badge/GitHub-181717?style=flat&logo=github)](https://github.com/vdenise20) |
+| <img src="assets/Capleton.jpg" width="130" /> | Capleton Chapfika | Lead Integration Engineer, DevOps | [![LinkedIn](https://img.shields.io/badge/LinkedIn-0077B5?style=flat&logo=linkedin)](https://www.linkedin.com/in/capletonchapfika/) | [![GitHub](https://img.shields.io/badge/GitHub-181717?style=flat&logo=github)](https://github.com/Capleton11) |
 
 ---
 
-<details>
-<summary><strong>✅ Demo 2 Deliverables (27 June 2025)</strong></summary>
+# How to Contribute
 
-1. **Implemented Use Cases:**  
-## ✅ Demo 2 Deliverables (27 June 2025)
-1. **Coding Standards Document**:  
-   - **[Click Here](documentation/coding_standards_doc.md)**
-     
-2. **User Manual**:  
-   - **[Click Here](documentation/save_n_bite_user_manuals.md)**
-     
-3. **Implemented Use Cases:**   
-   - User registration/login (JWT/OAuth2).✅    
-   - User themes and profile preferences (React + PostgreSQL).✅  
-   - Validation of user input (React + Django validators).✅  
-   - Food listing by businesses (React, Django + Redis).✅  
-   - Browsing food listings (React + Django API, Redis).✅  
-   - Purchase/Request food (React + Django REST, PostgreSQL).✅  
-   - Notifications system (Django + WebSocket, Redis for real-time pub/sub).✅  
-   - Scheduling and Pickup system (React + Django REST, PostgreSQL + Redis caching).✅  
-   - Feedback and Reviews system (React + Django REST, PostgreSQL + moderation).✅  
-   - Business Analytics system (Django + Pandas, Scikit-learn for ML predictions, PostgreSQL + Redis).✅  
-
-2. **SRS Document**:  
-   - Feedback and Revies system (React + Django REST, PostgreSQL + moderation).✅  
-   - Business Analytics system (Django).✅  
-
-4. **SRS Document**:  
-   - **📄 [Software Requirements Specification (SRS)](documentation/SRS-V2.md)**  
-   - Introduction  
-   - User stories  
-   - Use Case Diagrams  
-   - Functional Requirements  
-   - Service Contracts  
-   - Domain Model  
-   - Architectural Requirements  
-   - Technology Requirements  
-
-3. **GitHub Hygiene**:  
-   We follow a GitFlow-inspired branching strategy to maintain clean and organized version control. The *main* branch holds production-ready code, while all active development takes place in the *dev* branch. From dev, we maintain separate long-lived backend and frontend branches to isolate concerns. Features are developed in *feature/* branches branched off their respective areas, and urgent fixes are handled in *hotfix/* branches. All changes are merged via pull requests with code reviews to ensure stability, consistency, and collaboration across the team.
-
-4. **GitHub Project Board**:  
-   - **📊 [GitHub Project Board](https://github.com/orgs/COS301-SE-2025/projects/177/views/2)**  
-
-5. **Demo 2 Video**  
-   [Click here!](https://www.canva.com/design/DAGowUskyDY/E8nYEYzEWrMe1D13DkMVFw/watch?utm_content=DAGowUskyDY&utm_campaign=designshare&utm_medium=link2&utm_source=uniquelinks&utlId=h3390ca1771)
-=======
-6. **Demo 2 Video**
-   [Click here!](https://www.canva.com/design/DAGriFQ7F2g/6gApEr2CMYT49InocxWEUQ/watch?utm_content=DAGriFQ7F2g&utm_campaign=designshare&utm_medium=link2&utm_source=uniquelinks&utlId=hc89293d863)
-
-</details>
-
----
-
-<details>
-<summary><strong>✅ Demo 1 Deliverables (28 May 2025)</strong></summary>
-
-1. **Implemented Use Cases:**  
-   - User registration/login (JWT/OAuth2).    
-   - User themes and profile preferences (React + PostgreSQL).  
-   - Validation of user input (React + Django validators).  
-   - Food listing by businesses (React, Django + Redis).  
-   - Browsing food listings (React + Django API, Redis).  
-   - Purchase/Request food (React + Django REST, PostgreSQL).  
-
-2. **SRS Document**:  
-   - **📄 [Software Requirements Specification (SRS)](documentation/SRS.md)**  
-   - Introduction  
-   - User stories  
-   - Use Case Diagrams  
-   - Functional Requirements  
-   - Service Contracts  
-   - Domain Model  
-   - Architectural Requirements  
-   - Technology Requirements  
-
-3. **GitHub Hygiene**:  
-   We follow a GitFlow-inspired branching strategy to maintain clean and organized version control. The *main* branch holds production-ready code, while all active development takes place in the *dev* branch. From dev, we maintain separate long-lived backend and frontend branches to isolate concerns. Features are developed in *feature/* branches branched off their respective areas, and urgent fixes are handled in *hotfix/* branches. All changes are merged via pull requests with code reviews to ensure stability, consistency, and collaboration across the team.
-
-4. **GitHub Project Board**:  
-   - **📊 [GitHub Project Board](https://github.com/orgs/COS301-SE-2025/projects/177/views/2)**  
-
-5. **Demo 1 Video**  
-   [Click here!](https://www.canva.com/design/DAGowUskyDY/E8nYEYzEWrMe1D13DkMVFw/watch?utm_content=DAGowUskyDY&utm_campaign=designshare&utm_medium=link2&utm_source=uniquelinks&utlId=h3390ca1771)
-
-</details>
-
+1.  **Fork** the repository.
+2.  **Create a branch** for your change.
+3.  **Commit your changes**.
+4.  **Open a Pull Request** with a description.
 
 ---
 
 ## 📫 Contact Us
  [![Email](https://img.shields.io/badge/Email-swmguild@gmail.com-D14836?logo=gmail)](mailto:swmguild@gmail.com)
+
 
 
 
