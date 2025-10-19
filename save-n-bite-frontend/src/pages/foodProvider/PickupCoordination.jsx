@@ -252,10 +252,10 @@ useEffect(() => {
       const pickupData = response.data.pickup;
       const completeResponse = await schedulingAPI.completePickup(activePickup.id);
 
-      if (!completeResponse.success) {
-        showToast('Failed to complete pickup', 'error');
-        return;
-      }
+      // if (!completeResponse.success) {
+      //   showToast('Failed to complete pickup', 'error');
+      //   return;
+      // }
 
       // Update state and show success message
       setCustomerDetails(prev => ({

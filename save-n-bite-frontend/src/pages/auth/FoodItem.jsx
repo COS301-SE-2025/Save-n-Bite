@@ -1,4 +1,6 @@
 
+
+
 import React, { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { 
@@ -21,8 +23,63 @@ import StoreLocation from '../../components/auth/StoreLocation';
 import CustomerNavBar from '../../components/auth/CustomerNavBar';
 import foodAPI from '../../services/FoodAPI';
 import BusinessAPI from '../../services/BusinessAPI';
-import FoodProvidersAPI from '../../services/FoodProvidersAPI'; // Add this import
+import FoodProvidersAPI from '../../services/FoodProvidersAPI';
 import reviewsAPI from '../../services/reviewsAPI';
+
+// Error Popup Component
+const ErrorPopup = ({ error, onClose }) => {
+  if (!error) return null;
+
+  // Default user-friendly message
+  let userMessage = "Something went wrong. Please try again.";
+
+  // If error is a string
+  if (typeof error === "string") {
+    userMessage = "Sorry, this item cannot be added to your cart.";
+  } 
+  // If AxiosError with response
+  else if (error.response) {
+    const status = error.response.status;
+    const apiMessage = error.response.data?.message;
+
+    // Override for specific backend message
+    if (apiMessage === "Failed to add item to cart") {
+      userMessage = "Sorry, this item cannot be added to your cart.";
+    } else if (status === 400) {
+      userMessage = "Sorry, this item cannot be added to your cart.";
+    } else if (status === 401) {
+      userMessage = "You must be logged in to perform this action.";
+    } else if (status >= 500) {
+      userMessage = "Server is having issues. Please try again later.";
+    } else if (apiMessage) {
+      userMessage = apiMessage;
+    }
+  }
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 w-full max-w-sm text-center">
+        <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">Oops!</h2>
+        <p className="text-gray-600 dark:text-gray-300 mb-4 text-sm">{userMessage}</p>
+        <div className="flex justify-center gap-2">
+          <button
+            onClick={onClose}
+            className="px-4 py-2 bg-emerald-600 text-white rounded-md hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500"
+          >
+            Close
+          </button>
+          {/* <button
+            onClick={() => window.location.reload()}
+            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+          >
+            Try Again
+          </button> */}
+        </div>
+      </div>
+    </div>
+  );
+};
+
 
 const FoodItem = () => {
   const { id } = useParams();
@@ -37,6 +94,7 @@ const FoodItem = () => {
   const [businessProfile, setBusinessProfile] = useState(null);
   const [activeTab, setActiveTab] = useState('details');
   const [expandedSection, setExpandedSection] = useState(null);
+  const [isInCart, setIsInCart] = useState(false);
   
   // Reviews state
   const [reviews, setReviews] = useState([]);
@@ -100,10 +158,10 @@ const FoodItem = () => {
         
         setItem(itemData);
       } else {
-        setError(response.error);
+        setError(response.error || 'Failed to load food item details');
       }
     } catch (err) {
-      setError('Failed to load food item details');
+      setError(err);
     } finally {
       setLoading(false);
     }
@@ -126,9 +184,8 @@ const FoodItem = () => {
     }
   };
 
-  // Transform API review data to match the expected format (same as SpecificFoodProvider)
+  // Transform API review data to match the expected format
   const transformReviewData = (apiReview) => {
-    // Generate a placeholder image based on reviewer name
     const getPlaceholderImage = (name) => {
       const avatarUrls = [
         'https://images.unsplash.com/photo-1494790108377-be9c29b29330?ixlib=rb-4.0.3&auto=format&fit=crop&w=150&q=80',
@@ -137,7 +194,6 @@ const FoodItem = () => {
         'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?ixlib=rb-4.0.3&auto=format&fit=crop&w=150&q=80',
         'https://images.unsplash.com/photo-1614644147798-f8c0fc9da7f6?ixlib=rb-4.0.3&auto=format&fit=crop&w=150&q=80'
       ];
-      // Use the first letter of name to determine which avatar to use
       const index = name ? name.charCodeAt(0) % avatarUrls.length : 0;
       return avatarUrls[index];
     };
@@ -149,39 +205,27 @@ const FoodItem = () => {
       rating: apiReview.general_rating,
       date: apiReview.time_ago,
       comment: apiReview.general_comment || apiReview.food_review || 'No comment provided',
-      helpful: Math.floor(Math.random() * 30), // Random helpful count since API doesn't provide this
-      isHelpful: Math.random() > 0.5, // Random helpful status
-      // Keep original data for detailed display
+      helpful: Math.floor(Math.random() * 30),
+      isHelpful: Math.random() > 0.5,
       original: apiReview
     };
   };
 
-  // Enhanced debugging function to fetch provider reviews
   const fetchProviderReviews = async () => {
     try {
       setReviewsLoading(true);
       setReviewsError(null);
       
-      // Debug: Log all possible provider IDs
       console.log('=== DEBUGGING PROVIDER REVIEWS ===');
       console.log('Full item object:', item);
       console.log('Provider object:', item.provider);
-      console.log('Provider user_id:', item.provider.user_id);
-      console.log('Provider provider_id:', item.provider.provider_id);
-      console.log('Provider id:', item.provider.id);
-      console.log('Provider UserID:', item.provider.UserID);
-      console.log('Provider businessName:', item.provider.businessName);
       
-      // Try multiple possible provider ID fields
       let providerId = item.provider.user_id || item.provider.provider_id || item.provider.id || item.provider.UserID;
       
-      // If no direct ID found, try to get it from the business name
       if (!providerId && item.provider.businessName) {
         console.log('No direct provider ID found, trying to fetch by business name:', item.provider.businessName);
         
-        // This is a workaround - we need the backend to return the proper provider ID
         try {
-          // Try to get provider details using the FoodProvidersAPI
           const providerResult = await FoodProvidersAPI.getProviderByName(item.provider.businessName);
           if (providerResult.success && providerResult.data?.provider?.id) {
             providerId = providerResult.data.provider.id;
@@ -196,13 +240,9 @@ const FoodItem = () => {
       
       if (!providerId) {
         setReviewsError('No valid provider ID found - backend needs to return provider.user_id');
-        console.error('No valid provider ID found. The getFoodListingDetails API needs to return the provider UserID');
-        console.error('Current provider data:', item.provider);
-        console.error('Required: provider should include user_id, provider_id, or UserID field');
+        console.error('No valid provider ID found');
         return;
       }
-      
-      console.log('Making API call to getProviderReviews with ID:', providerId);
       
       const response = await reviewsAPI.getProviderReviews(providerId, {
         page: 1,
@@ -214,25 +254,16 @@ const FoodItem = () => {
       
       if (response.success && response.data?.results) {
         const { results } = response.data;
-        console.log('API results:', results);
         setReviewsData(results);
         
         if (results.reviews && results.reviews.length > 0) {
-          // Transform API reviews to match expected format
           const transformedReviews = results.reviews.map(transformReviewData);
           setReviews(transformedReviews);
           console.log('Successfully loaded and transformed reviews:', transformedReviews.length);
-          console.log('Transformed reviews:', transformedReviews);
         } else {
-          console.log('No reviews found in API response');
-          console.log('Results.reviews:', results.reviews);
           setReviews([]);
         }
       } else {
-        console.log('API call failed or returned no results');
-        console.log('Response success:', response.success);
-        console.log('Response error:', response.error);
-        console.log('Response data:', response.data);
         setReviewsError(response.error || 'Failed to load reviews');
         setReviews([]);
       }
@@ -242,7 +273,6 @@ const FoodItem = () => {
       setReviews([]);
     } finally {
       setReviewsLoading(false);
-      console.log('=== END DEBUGGING ===');
     }
   };
 
@@ -250,27 +280,23 @@ const FoodItem = () => {
     e.preventDefault();
     e.stopPropagation();
 
-
     if (buttonStatus === "View Cart") {
       navigate('/cart');
       return;
     }
-
 
     setButtonStatus("loading");
 
     try {
       const response = await foodAPI.addToCart(id, quantity);
       if (response.success) {
-
         setButtonStatus("View Cart");
-
       } else {
-        setError(response.error);
+        setError(response.error || 'Failed to add item to cart');
         setButtonStatus("idle");
       }
     } catch (err) {
-      setError('Failed to add item to cart');
+      setError(err);
       setButtonStatus("idle");
     }
   };
@@ -313,7 +339,7 @@ const FoodItem = () => {
         console.error('Follow action failed:', response.error);
       }
     } catch (err) {
-      setError('Failed to update follow status');
+      setError(err);
       console.error('Follow toggle error:', err);
     } finally {
       setFollowLoading(false);
@@ -348,7 +374,6 @@ const FoodItem = () => {
   };
 
   const formatReviewerName = (reviewerInfo) => {
-    // Extract initials or return first letter of name for privacy
     if (!reviewerInfo) return 'Anonymous';
     const parts = reviewerInfo.split(' ');
     if (parts.length >= 2) {
@@ -358,13 +383,6 @@ const FoodItem = () => {
   };
 
   const renderReviewsTab = () => {
-    console.log('=== RENDER REVIEWS TAB DEBUG ===');
-    console.log('reviewsLoading:', reviewsLoading);
-    console.log('reviewsError:', reviewsError);
-    console.log('reviews:', reviews);
-    console.log('reviews.length:', reviews?.length);
-    console.log('=== END RENDER REVIEWS TAB DEBUG ===');
-    
     if (reviewsLoading) {
       return (
         <div className="flex items-center justify-center py-8">
@@ -423,7 +441,6 @@ const FoodItem = () => {
           )}
         </div>
 
-        {/* Individual Reviews */}
         <div className="space-y-6">
           {reviews.map((review) => (
             <div key={review.id} className="border-b border-gray-200 dark:border-gray-700 pb-6">
@@ -458,7 +475,6 @@ const FoodItem = () => {
                     )}
                   </div>
                   
-                  {/* Review Comments */}
                   <div className="space-y-2">
                     {review.original?.general_comment && (
                       <p className="text-gray-700 dark:text-gray-300 text-sm">
@@ -478,7 +494,6 @@ const FoodItem = () => {
                         {review.original.business_review}
                       </p>
                     )}
-                    {/* Fallback to transformed comment if no original data */}
                     {!review.original?.general_comment && !review.original?.food_review && !review.original?.business_review && review.comment && (
                       <p className="text-gray-700 dark:text-gray-300 text-sm">
                         {review.comment}
@@ -491,12 +506,10 @@ const FoodItem = () => {
           ))}
         </div>
 
-        {/* Load More Button (if there are more reviews) */}
         {reviewsData?.pagination_info?.total_count > reviews.length && (
           <div className="text-center mt-6">
             <button
               onClick={() => {
-                // Implement pagination if needed
                 console.log('Load more reviews');
               }}
               className="inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500"
@@ -535,29 +548,6 @@ const FoodItem = () => {
     );
   }
 
-  if (error) {
-    return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex flex-col">
-        <CustomerNavBar />
-        <div className="flex-1 flex items-center justify-center p-4">
-          <div className="text-center max-w-md">
-            <div className="text-4xl mb-3">😕</div>
-            <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">Error Loading Item</h2>
-            <p className="text-gray-600 dark:text-gray-300 mb-4 text-sm">
-              {error}
-            </p>
-            <button
-              onClick={() => window.location.reload()}
-              className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-emerald-600 hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500"
-            >
-              Try again
-            </button>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
   if (!item) {
     return (
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex flex-col">
@@ -585,6 +575,9 @@ const FoodItem = () => {
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       <CustomerNavBar />
+      
+      {/* Error Popup */}
+      <ErrorPopup error={error} onClose={() => setError(null)} />
       
       <main className="max-w-5xl mx-auto px-4 py-4 sm:px-6 lg:px-8">
         {/* Back button */}
@@ -681,13 +674,11 @@ const FoodItem = () => {
                   )}
                   
                   <button
-
-      onClick={() => navigate('/food-listing')}
-      className="w-full sm:w-auto flex-1 inline-flex items-center flex-center px-4 py-2.5 rounded-lg text-sm font-medium border border-gray-200 dark:border-gray-600 text-gray-800 dark:text-gray-200 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 transition-colors"
-    >
-      Continue Browsing
-    </button>
-
+                    onClick={() => navigate('/food-listing')}
+                    className="w-full sm:w-auto flex-1 inline-flex items-center flex-center px-4 py-2.5 rounded-lg text-sm font-medium border border-gray-200 dark:border-gray-600 text-gray-800 dark:text-gray-200 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 transition-colors"
+                  >
+                    Continue Browsing
+                  </button>
                 </div>
               </div>
             </div>
