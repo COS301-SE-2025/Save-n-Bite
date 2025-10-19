@@ -423,7 +423,7 @@ const TabNavigation = ({ activeTab, setActiveTab, orderCounts, userType }) => {
     id: 'scheduled', 
     label: 'Scheduled', 
     icon: CalendarIcon, 
-    tooltip: 'Your pickup is scheduled. You can cancel if needed.',
+    tooltip: 'Your pickup is scheduled. Waiting for the provider to mark it ready. You can cancel if needed.',
     color: 'text-purple-600 dark:text-purple-400'
   },
     ...(userType === 'ngo' ? [{ 
