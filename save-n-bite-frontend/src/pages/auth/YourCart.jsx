@@ -509,7 +509,7 @@ const YourCart = () => {
         setError(null);
       } else {
         // Show a more user-friendly error message for stock issues
-        let errorMessage = response.error || 'Failed to update quantity';
+        let errorMessage = 'Failed to update quantity';
 
         // Check if it's a stock-related error and make it more user-friendly
         if (errorMessage.toLowerCase().includes('stock') ||
@@ -965,30 +965,21 @@ const YourCart = () => {
     );
   }
 
-  // Error state (unchanged)
-  if (error) {
+ 
+   if (error) {
+      let userMessage = error;
     return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+        <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
         <CustomerNavBar />
-        <div className="max-w-4xl mx-auto px-4 pt-16 sm:pt-20">
-      <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-center sm:text-left">
-        <span className="text-2xl font-bold text-emerald-600 dark:text-emerald-500">Your Cart</span>
-      </h1>
-    </div>
-        <div className="max-w-4xl mx-auto px-4 py-8">
-          <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-200 px-4 py-3 rounded-lg">
-            <h3 className="font-medium">Error loading cart</h3>
-            <p className="text-sm">{error}</p>
-            <button
-              onClick={fetchCart}
-              className="mt-2 text-sm text-red-700 dark:text-red-300 hover:underline"
-            >
-              Try again
-            </button>
-          </div>
-        </div>
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 w-full max-w-sm text-center">
+        <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">Oops!</h2>
+        <p className="text-gray-600 dark:text-gray-300 mb-4 text-sm">{userMessage}</p>
+       
       </div>
-    );
+    </div>
+       </div>
+  );
   }
 
   // Detailed provider view (unchanged)

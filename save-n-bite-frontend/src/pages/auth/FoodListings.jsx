@@ -396,26 +396,7 @@ const FoodListings = () => {
 
             <FoodListingsGrid listings={filteredListings} />
 
-            {/* Empty state */}
-            {!loading && filteredListings.length === 0 && (
-              <div className="text-center py-12 bg-white rounded-lg shadow-sm">
-                <p className="text-xl text-gray-600 mb-4">No listings found</p>
-                <p className="text-gray-500 mb-4">
-                  {allFoodListings.length === 0
-                    ? 'No food listings available at the moment.'
-                    : 'Try adjusting your search or filters to see more results.'
-                  }
-                </p>
-                {filteredListings.length === 0 && allFoodListings.length > 0 && (
-                  <button
-                    onClick={handleResetFilters}
-                    className="px-4 py-2 bg-emerald-600 text-white rounded-md hover:bg-emerald-700 transition-colors"
-                  >
-                    Clear All Filters
-                  </button>
-                )}
-              </div>
-            )}
+            
           </div>
         </div>
 
