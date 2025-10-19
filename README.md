@@ -149,8 +149,6 @@ save-n-bite/
 
 ---
 
----
-
 ##  Team Members
 | Profile               | Name                  | Role                | LinkedIn                                      | GitHub                                   |
 |-----------------------|-----------------------|---------------------|-----------------------------------------------|------------------------------------------|
@@ -164,9 +162,10 @@ save-n-bite/
 
 <details open>
 <summary><strong>✅ Demo 4 Deliverables (30 September 2025)</strong></summary>  
-
+---
 **[Save n Bite Link](https://savenbiteportal-f5ggcpczf5f2f8b4.southafricanorth-01.azurewebsites.net/)**  
-
+---  
+	
 1. **SRS Document**:  
    - ** [Software Requirements Specification (SRS)](documentation/Demo_4/SRS-V4.pdf)**  
    - Introduction  
@@ -192,7 +191,7 @@ save-n-bite/
    - **[Coding Standards Document](documentation/Demo_4/Testing_Policy.pdf)**
   
 6. **GitHub Project Board**:  
-   - ** [GitHub Project Board](https://github.com/orgs/COS301-SE-2025/projects/177/views/2)** 
+   - **[GitHub Project Board](https://github.com/orgs/COS301-SE-2025/projects/177/views/2)** 
 
 7. **Demo 4 Video**  
    [Click here!](https://www.canva.com/design/DAG0T0L-dyE/aV_Bg8m31ZaNEuSMWWvYCg/watch?utm_content=DAG0T0L-dyE&utm_campaign=designshare&utm_medium=link2&utm_source=uniquelinks&utlId=hebc5875548)
@@ -323,6 +322,7 @@ save-n-bite/
 
 ## 📫 Contact Us
  [![Email](https://img.shields.io/badge/Email-swmguild@gmail.com-D14836?logo=gmail)](mailto:swmguild@gmail.com)
+
 
 
 
