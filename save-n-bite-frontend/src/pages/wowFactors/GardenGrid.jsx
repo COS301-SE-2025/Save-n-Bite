@@ -15,10 +15,10 @@ const GardenGrid = ({
   selectedPlantItem = null,
   isMobile = false
 }) => {
-  console.log('🔍 GARDEN GRID DEBUG - gardenData:', gardenData);
-  console.log('🔍 GARDEN GRID DEBUG - garden_tiles:', gardenData?.garden_tiles);
-  console.log('🔍 GARDEN GRID DEBUG - garden_tiles is array:', Array.isArray(gardenData?.garden_tiles));
-  console.log('🔍 GARDEN GRID DEBUG - garden_tiles length:', gardenData?.garden_tiles?.length);
+  //console.log('🔍 GARDEN GRID DEBUG - gardenData:', gardenData);
+  //console.log('🔍 GARDEN GRID DEBUG - garden_tiles:', gardenData?.garden_tiles);
+  //console.log('🔍 GARDEN GRID DEBUG - garden_tiles is array:', Array.isArray(gardenData?.garden_tiles));
+  //console.log('🔍 GARDEN GRID DEBUG - garden_tiles length:', gardenData?.garden_tiles?.length);
 
   // Check if garden_tiles exists and is an array
   if (!gardenData || !gardenData.garden_tiles || !Array.isArray(gardenData.garden_tiles)) {
@@ -60,8 +60,8 @@ const GardenGrid = ({
   // Debug log real tile structure
   useEffect(() => {
     if (displayTiles?.length > 0) {
-      console.log('🔍 REAL TILE STRUCTURE:', displayTiles[0]);
-      console.log('🔍 Display tiles count:', displayTiles.length);
+      //console.log('🔍 REAL TILE STRUCTURE:', displayTiles[0]);
+      //console.log('🔍 Display tiles count:', displayTiles.length);
     }
   }, [displayTiles]);
 

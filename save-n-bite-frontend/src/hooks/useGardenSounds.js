@@ -27,7 +27,7 @@ export const useGardenSounds = () => {
           return;
       }
 
-      console.log('🔊 Playing sound:', soundType);
+      //console.log('🔊 Playing sound:', soundType);
       
       const audio = new Audio(soundUrl);
       audio.volume = 0.7;
@@ -36,7 +36,7 @@ export const useGardenSounds = () => {
       
       if (playPromise !== undefined) {
         playPromise.catch(error => {
-          console.log('Audio play failed:', error);
+          //console.log('Audio play failed:', error);
           // Create a fallback using the Web Audio API
           try {
             const context = new (window.AudioContext || window.webkitAudioContext)();
@@ -55,7 +55,7 @@ export const useGardenSounds = () => {
             oscillator.start();
             oscillator.stop(context.currentTime + 0.1);
           } catch (fallbackError) {
-            console.log('Fallback audio also failed:', fallbackError);
+            //console.log('Fallback audio also failed:', fallbackError);
           }
         });
       }

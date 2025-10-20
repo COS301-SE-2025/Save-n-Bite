@@ -96,12 +96,12 @@ useEffect(() => {
   const initializeGardenIfNeeded = async () => {
     // Only proceed if we're not loading and don't have garden data
     if (!loading && !garden) {
-      console.log('🔄 Attempting to load garden data...');
+      //console.log('🔄 Attempting to load garden data...');
       try {
         // First, try to refresh existing garden
         await refreshGarden();
       } catch (error) {
-        console.log('🔄 Refresh failed, trying to initialize new garden...');
+        //console.log('🔄 Refresh failed, trying to initialize new garden...');
         try {
           await initializeGarden();
         } catch (initError) {
@@ -133,20 +133,20 @@ const skipTour = useCallback(() => {
   // Garden actions with sounds
   const { actionLoading, placePlant, harvestPlant, movePlant } = useGardenActions(
     useCallback((action, result) => {
-      console.log('🔊 Action completed:', action);
+      //console.log('🔊 Action completed:', action);
       
       let message = `${action.charAt(0).toUpperCase() + action.slice(1)} successful!`;
       
       // Play sounds based on action
       if (action === 'place') {
         playSound('plant');
-        console.log('🔊 Playing plant sound');
+        //console.log('🔊 Playing plant sound');
       } else if (action === 'move') {
         playSound('move');
-        console.log('🔊 Playing move sound');
+        //console.log('🔊 Playing move sound');
       } else if (action === 'harvest') {
         playSound('harvest');
-        console.log('🔊 Playing harvest sound');
+        //console.log('🔊 Playing harvest sound');
       }
 
       // Handle specific message types
