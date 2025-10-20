@@ -8,8 +8,6 @@ const GardenGrid = ({
   selectedPlant = null,
   onTileSelect,
   onPlantInteract,
-  onDrop,
-  draggedPlant,
   mode = 'view', // 'view', 'move', 'harvest'
   selectedTileForMove = null,
   selectedTileForHarvest = null,
@@ -19,7 +17,6 @@ const GardenGrid = ({
 }) => {
   const [selectedTile, setSelectedTile] = useState(null);
   const [hoveredTile, setHoveredTile] = useState(null);
-  const [dragOverTile, setDragOverTile] = useState(null);
 
   // Sync local selectedTile with props from parent
   useEffect(() => {
@@ -40,39 +37,35 @@ const GardenGrid = ({
   }, [mode, isPlantingMode]);
 
   const handleTileClick = useCallback((tile) => {
-    // Handle mobile planting mode
-    if (isMobile && isPlantingMode) {
+    // Handle planting mode for ALL screens
+    if (isPlantingMode) {
       if (onTileSelect) {
         onTileSelect(tile, 'plant');
       }
       return;
     }
 
-    if (mode === 'move' && tile.plant_details) {
-      // Selecting plant to move
-      setSelectedTile(tile);
-      if (onTileSelect) {
-        onTileSelect(tile, 'select');
-      }
-    } else if (mode === 'move' && selectedTile && !tile.plant_details) {
-      // Moving plant to new location
-      if (onTileSelect) {
-        onTileSelect(tile, 'move', selectedTile);
-      }
-      setSelectedTile(null);
-    } else if (mode === 'harvest' && tile.plant_details) {
-      // Selecting plant for harvest
-      setSelectedTile(tile);
-      if (onTileSelect) {
-        onTileSelect(tile, 'select');
-      }
-    } else if (mode === 'view' && tile.plant_details) {
-      // Viewing plant details (only in view mode)
-      if (onPlantInteract) {
-        onPlantInteract(tile.plant_details, tile);
-      }
+ if (mode === 'move' && tile.plant_details) {
+    setSelectedTile(tile);
+    if (onTileSelect) {
+      onTileSelect(tile, 'select');
     }
-  }, [mode, selectedTile, onTileSelect, onPlantInteract, isMobile, isPlantingMode]);
+  } else if (mode === 'move' && selectedTile && !tile.plant_details) {
+    if (onTileSelect) {
+      onTileSelect(tile, 'move', selectedTile);
+    }
+    setSelectedTile(null);
+  } else if (mode === 'harvest' && tile.plant_details) {
+    setSelectedTile(tile);
+    if (onTileSelect) {
+      onTileSelect(tile, 'select');
+    }
+  } else if (mode === 'view' && tile.plant_details) {
+    if (onPlantInteract) {
+      onPlantInteract(tile.plant_details, tile);
+    }
+  }
+}, [mode, selectedTile, onTileSelect, onPlantInteract, isPlantingMode]);
 
   const handlePlantClick = useCallback((plantData, tile) => {
     // Only allow plant details in view mode (not planting mode)
@@ -84,49 +77,16 @@ const GardenGrid = ({
     }
   }, [mode, onPlantInteract, isPlantingMode]);
 
-  // Desktop drag and drop handlers
-  const handleDragOver = useCallback((e, tile) => {
-    if (isMobile) return; // Skip drag events on mobile
-    
-    e.preventDefault();
-    if (!tile.plant_details && (draggedPlant || selectedTile)) {
-      setDragOverTile(tile);
+const getTileClassName = (tile) => {
+  let className = '';
+  
+  // Planting mode states - for ALL screens
+  if (isPlantingMode) {
+    if (selectedPlantItem && !tile.plant_details) {
+      className += ' available-for-planting';
     }
-  }, [draggedPlant, selectedTile, isMobile]);
-
-  const handleDragLeave = useCallback((e, tile) => {
-    if (isMobile) return; // Skip drag events on mobile
-    
-    setDragOverTile(null);
-  }, [isMobile]);
-
-  const handleDrop = useCallback((e, tile) => {
-    if (isMobile) return; // Skip drag events on mobile
-    
-    e.preventDefault();
-    setDragOverTile(null);
-    
-    // Handle inventory plant drop - desktop only
-    if (!tile.plant_details && draggedPlant && onDrop) {
-      onDrop(tile);
-    }
-    // Handle move mode plant drop - desktop only
-    else if (!tile.plant_details && selectedTile && mode === 'move' && onTileSelect) {
-      onTileSelect(tile, 'move', selectedTile);
-      setSelectedTile(null);
-    }
-  }, [draggedPlant, selectedTile, mode, onDrop, onTileSelect, isMobile]);
-
-  const getTileClassName = (tile) => {
-    let className = '';
-    
-    // Mobile planting mode states
-    if (isMobile && isPlantingMode) {
-      if (selectedPlantItem && !tile.plant_details) {
-        className += ' available-for-planting';
-      }
-      return className.trim();
-    }
+    return className.trim();
+  }
     
     // Move mode states
     if (mode === 'move' && selectedTile && selectedTile.id === tile.id) {
@@ -147,15 +107,6 @@ const GardenGrid = ({
     }
     
     // Drag and drop states - desktop only
-    if (!isMobile) {
-      if (dragOverTile && dragOverTile.id === tile.id) {
-        className += ' drag-over';
-      }
-      
-      if (draggedPlant && !tile.plant_details) {
-        className += ' available-for-placement';
-      }
-    }
     
     return className.trim();
   };
@@ -189,9 +140,6 @@ const GardenGrid = ({
             isHighlighted={hoveredTile && hoveredTile.id === tile.id}
             onTileClick={handleTileClick}
             onPlantClick={handlePlantClick}
-            onDragOver={handleDragOver}
-            onDragLeave={handleDragLeave}
-            onDrop={handleDrop}
             className={
               [
                 getTileClassName(tile),

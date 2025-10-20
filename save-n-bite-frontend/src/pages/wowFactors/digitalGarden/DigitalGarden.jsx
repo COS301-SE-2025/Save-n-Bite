@@ -184,15 +184,16 @@ const { actionLoading, placePlant, harvestPlant, movePlant } = useGardenActions(
   }, [inventory, garden]);
 
   // Handle tile selection in garden
-  const handleTileSelect = useCallback(async (tile, actionType, sourceTile = null) => {
-    // Handle mobile planting mode
-    if (isMobile && isPlantingMode) {
-      const success = await handleTilePlacement(tile, placePlant);
-      if (success) {
-        setPlantingPrompt('');
-      }
-      return;
+const handleTileSelect = useCallback(async (tile, actionType, sourceTile = null) => {
+  // Handle planting mode for ALL screens
+  if (isPlantingMode) {
+    const success = await handleTilePlacement(tile, placePlant);
+    if (success) {
+      setPlantingPrompt('');
     }
+    return;
+  }
+
 
     try {
       if (actionType === 'select') {
@@ -236,42 +237,34 @@ const { actionLoading, placePlant, harvestPlant, movePlant } = useGardenActions(
   }, [gardenMode, selectedPlantForHarvest, handleTileSelect, isPlantingMode]);
 
   // Handle plant inventory selection
-  const handlePlantSelect = useCallback((inventoryItem) => {
-    if (isMobile && isPlantingMode) {
-      selectPlantForPlanting(inventoryItem);
-      setPlantingPrompt(`Selected ${inventoryItem.plant_details.name}. Click on an empty garden tile to plant it.`);
-    }
-  }, [isMobile, isPlantingMode, selectPlantForPlanting]);
+const handlePlantSelect = useCallback((inventoryItem) => {
+  // Always use click-based selection, regardless of screen size
+  if (isPlantingMode) {
+    selectPlantForPlanting(inventoryItem);
+    setPlantingPrompt(`Selected ${inventoryItem.plant_details.name}. Click on an empty garden tile to plant it.`);
+  }
+}, [isPlantingMode, selectPlantForPlanting]);
 
-  // Handle desktop drag and drop
-  const handleDragStart = useCallback((inventoryItem) => {
-    if (!isMobile) {
-      setDraggedPlant(inventoryItem);
-    }
-  }, [isMobile]);
 
-  const handleDragEnd = useCallback(() => {
-    if (!isMobile) {
-      setDraggedPlant(null);
-    }
-  }, [isMobile]);
 
-  const handleDrop = useCallback(async (tile) => {
-    if (!isMobile && draggedPlant && !tile.plant_details) {
-      try {
-        const plantId = draggedPlant.plant_details?.id || draggedPlant.plant;
+  // const handleDrop = useCallback(async (tile) => {
+  //   if (!isMobile && draggedPlant && !tile.plant_details) {
+  //     try {
+  //       const plantId = draggedPlant.plant_details?.id || draggedPlant.plant;
         
-        if (!plantId) {
-          console.error('No plant ID found in draggedPlant:', draggedPlant);
-          return;
-        }
+  //       if (!plantId) {
+  //         console.error('No plant ID found in draggedPlant:', draggedPlant);
+  //         return;
+  //       }
         
-        await placePlant(plantId, tile.row, tile.col);
-      } catch (error) {
-        console.error('Plant placement failed:', error);
-      }
-    }
-  }, [isMobile, draggedPlant, placePlant]);
+  //       await placePlant(plantId, tile.row, tile.col);
+  //     } catch (error) {
+  //       console.error('Plant placement failed:', error);
+  //     }
+  //   }
+  // }, [isMobile, draggedPlant, placePlant]);
+
+  
 
   // Handle mode changes
   const handleModeToggle = useCallback(() => {
@@ -325,29 +318,28 @@ const { actionLoading, placePlant, harvestPlant, movePlant } = useGardenActions(
     }
   }, [gardenMode, selectedPlantForHarvest, isPlantingMode, exitPlantingMode]);
 
-  // Handle mobile planting mode toggle
-  const handlePlantingToggle = useCallback(() => {
-    if (isPlantingMode) {
-      exitPlantingMode();
-      setPlantingPrompt('');
-    } else {
-      // Exit other modes first
-      setGardenMode('view');
-      setSelectedPlantForMove(null);
-      setSelectedPlantForHarvest(null);
-      setMovePrompt('');
-      setHarvestPrompt('');
-      
-      startPlantingMode();
-      setPlantingPrompt('Select a plant from your inventory, then click on an empty garden tile to plant it.');
-      
-      setTimeout(() => {
-        if (isPlantingMode && !selectedPlantItem) {
-          setPlantingPrompt('');
-        }
-      }, 5000);
-    }
-  }, [isPlantingMode, exitPlantingMode, startPlantingMode, selectedPlantItem]);
+const handlePlantingToggle = useCallback(() => {
+  if (isPlantingMode) {
+    exitPlantingMode();
+    setPlantingPrompt('');
+  } else {
+    // Exit other modes first
+    setGardenMode('view');
+    setSelectedPlantForMove(null);
+    setSelectedPlantForHarvest(null);
+    setMovePrompt('');
+    setHarvestPrompt('');
+    
+    startPlantingMode();
+    setPlantingPrompt('Select a plant from your inventory, then click on an empty garden tile to plant it.');
+    
+    setTimeout(() => {
+      if (isPlantingMode && !selectedPlantItem) {
+        setPlantingPrompt('');
+      }
+    }, 5000);
+  }
+}, [isPlantingMode, exitPlantingMode, startPlantingMode, selectedPlantItem]);
 
   // Clear notification helper
   const clearNotification = useCallback(() => {
@@ -435,33 +427,31 @@ const { actionLoading, placePlant, harvestPlant, movePlant } = useGardenActions(
           </h1>
         </div>
         <div className="garden-controls flex gap-1 md:gap-2">
-          {/* Mobile: Show Get Planting button instead of drag instructions */}
-          {isMobile && (
-            <button
-              className={`mode-toggle ${isPlantingMode ? 'active' : ''} bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors`}
-              onClick={handlePlantingToggle}
-              disabled={actionLoading}
-            >
-              {isPlantingMode ? 'Exit Plant Mode' : 'Get Planting'}
-            </button>
-          )}
-          
-          <button
-            className={`mode-toggle ${gardenMode === 'move' ? 'active' : ''} bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg transition-colors`}
-            onClick={handleModeToggle}
-            disabled={actionLoading}
-          >
-            {gardenMode === 'view' ? (isMobile ? 'Move' : 'Switch to Move Mode') : (isMobile ? 'View' : 'Switch to View Mode')}
-          </button>
-          
-          <button
-            className={`mode-toggle harvest-toggle ${gardenMode === 'harvest' ? 'active' : ''} bg-amber-500 hover:bg-amber-600 text-white rounded-lg transition-colors`}
-            onClick={handleHarvestToggle}
-            disabled={actionLoading}
-          >
-            {gardenMode === 'harvest' ? (isMobile ? 'Exit Harvest' : 'Exit Harvest Mode') : (isMobile ? 'Harvest' : 'Harvest Plants')}
-          </button>
-        </div>
+  {/* Show Get Planting button for ALL screens */}
+  <button
+    className={`mode-toggle ${isPlantingMode ? 'active' : ''} bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors`}
+    onClick={handlePlantingToggle}
+    disabled={actionLoading}
+  >
+    {isPlantingMode ? 'Exit Plant Mode' : 'Get Planting'}
+  </button>
+  
+  <button
+    className={`mode-toggle ${gardenMode === 'move' ? 'active' : ''} bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg transition-colors`}
+    onClick={handleModeToggle}
+    disabled={actionLoading}
+  >
+    {gardenMode === 'view' ? 'Move Plants' : 'Exit Move Mode'}
+  </button>
+  
+  <button
+    className={`mode-toggle harvest-toggle ${gardenMode === 'harvest' ? 'active' : ''} bg-amber-500 hover:bg-amber-600 text-white rounded-lg transition-colors`}
+    onClick={handleHarvestToggle}
+    disabled={actionLoading}
+  >
+    {gardenMode === 'harvest' ? 'Exit Harvest' : 'Harvest Plants'}
+  </button>
+</div>
       </div>
 
       {/* Notification */}
@@ -538,8 +528,6 @@ const { actionLoading, placePlant, harvestPlant, movePlant } = useGardenActions(
       selectedPlant={draggedPlant}
       onTileSelect={handleTileSelect}
       onPlantInteract={handlePlantInteract}
-      onDrop={handleDrop}
-      draggedPlant={draggedPlant}
       mode={gardenMode}
       selectedTileForMove={selectedPlantForMove}
       selectedTileForHarvest={selectedPlantForHarvest}
@@ -562,11 +550,11 @@ const { actionLoading, placePlant, harvestPlant, movePlant } = useGardenActions(
           >
             <PlantInventory
               inventory={inventory}
-              onDragStart={handleDragStart}
-              onDragEnd={handleDragEnd}
+              onDragStart={null} // Disable drag start
+              onDragEnd={null}   // Disable drag end
               onPlantSelect={handlePlantSelect}
               loading={loading}
-              supportsDragDrop={!isMobile}
+              supportsDragDrop={false} // Force disable drag and drop
               mode={gardenMode}
               isPlantingMode={isPlantingMode}
               selectedPlantItem={selectedPlantItem}
