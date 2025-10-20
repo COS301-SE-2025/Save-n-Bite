@@ -17,8 +17,8 @@ from .views import (
     check_interaction_review_status,
     get_interaction_review,
     BusinessHistoryView, 
-    InitiateCheckoutView,
-    CompleteCheckoutView,
+    #InitiateCheckoutView,
+    #CompleteCheckoutView,
     NGODonationRequestsView,
     CancelDonationView
 )
@@ -40,8 +40,8 @@ urlpatterns = [
     path('donation/<uuid:interaction_id>/reject/', RejectDonationView.as_view(), name='donation-reject'),
     path('business/history/', BusinessHistoryView.as_view(), name='business-history'),
     path('interactions/<uuid:interaction_id>/status/', UpdateInteractionStatusView.as_view(), name='update_interaction_status'), 
-    path('checkout/initiate/', InitiateCheckoutView.as_view(), name='initiate-checkout'),
-    path('checkout/complete/', CompleteCheckoutView.as_view(), name='complete-checkout'),
+    # path('checkout/initiate/', InitiateCheckoutView.as_view(), name='initiate-checkout'),
+    # path('checkout/complete/', CompleteCheckoutView.as_view(), name='complete-checkout'),
     path('donations/<uuid:interaction_id>/cancel/', CancelDonationView.as_view(), name='cancel-donation'),
     path('ngo/history/', NGODonationRequestsView.as_view(), name='ngo-history'),
     path('donation/<uuid:interaction_id>/prepare/', PrepareDonationView.as_view(), name='donation-prepare'),  # New endpoint
