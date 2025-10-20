@@ -65,80 +65,54 @@ const DigitalGarden = () => {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  useEffect(() => {
-  // Only run once when component mounts
-  const tourSeenValue = localStorage.getItem('digitalGardenTourSeen');
-  
-  // If tour was marked as seen but user has no plants placed, they probably haven't actually seen it
-  if (tourSeenValue === 'true' && garden && inventory) {
-    const hasPlacedPlants = garden.garden_tiles && 
-                           garden.garden_tiles.some(tile => tile.plant !== null && tile.plant !== undefined);
-    
-    const hasPlantsInInventory = inventory && inventory.length > 0;
-    
-    // If user has plants but hasn't placed any, they probably haven't seen the tour
-    if (hasPlantsInInventory && !hasPlacedPlants) {
-      console.log('🔄 Resetting tour flag - user has plants but no placements, probably never saw tour');
-      localStorage.removeItem('digitalGardenTourSeen');
-    }
-  }
-}, [garden, inventory]); 
 
-// Tour effect with debugging - UPDATED VERSION
+
 useEffect(() => {
   console.log('🔍 TOUR DEBUG - loading:', loading, 'has garden:', !!garden, 'inventory length:', inventory?.length);
   
-  // Only check for tour after loading is complete and we have data
-  if (loading) {
-    console.log('🔍 Still loading...');
+  if (loading || !garden) {
+    console.log('🔍 Still waiting for data...');
     return;
   }
 
-  if (!garden) {
-    console.log('🔍 Missing garden data - waiting for garden to load');
-    return;
-  }
-
-  // DEBUG: Check what's actually in localStorage
   const tourSeenValue = localStorage.getItem('digitalGardenTourSeen');
-  console.log('🔍 RAW localStorage value for digitalGardenTourSeen:', tourSeenValue);
+  console.log('🔍 RAW localStorage value for digitalGardenTourSeen:', tourSeenValue, 'type:', typeof tourSeenValue);
   
   const hasSeenTour = tourSeenValue === 'true';
-  const hasPlantsInInventory = inventory && inventory.length > 0;
   
-  // Check if any plants are actually placed in the garden
-  const hasPlacedPlants = garden.garden_tiles && 
-                         garden.garden_tiles.some(tile => tile.plant !== null && tile.plant !== undefined);
+  console.log('🔍 Tour conditions - hasSeenTour:', hasSeenTour);
 
-  console.log('🔍 Tour conditions - hasSeenTour:', hasSeenTour, 'hasPlantsInInventory:', hasPlantsInInventory, 'hasPlacedPlants:', hasPlacedPlants);
-  console.log('🔍 Garden tiles:', garden.garden_tiles);
-
-  // Show tour if: user hasn't seen it before AND has plants in inventory AND no plants placed
-  if (!hasSeenTour && hasPlantsInInventory && !hasPlacedPlants) {
-    console.log('🎯 Showing garden tour!');
+  // Show tour on first visit to digital garden, regardless of inventory or plants
+  if (!hasSeenTour) {
+    console.log('🎯 Showing garden tour for first time!');
     setShowTour(true);
     setTourStep(0);
   } else {
-    console.log('🔍 Not showing tour - conditions not met');
+    console.log('🔍 Tour already seen - not showing');
   }
-}, [loading, inventory, garden]);
+}, [loading, garden]);
 
-// Fix garden initialization - only initialize if truly missing
 useEffect(() => {
-  // Only try to initialize if we're done loading and definitely have no garden
-  if (!loading && !garden && error) {
-    console.log('🔄 No garden found and error present, initializing automatically...');
-    initializeGarden().catch(error => {
-      // If it's "already exists" error, that means the garden exists but wasn't loaded properly
-      if (error.message.includes('already exists')) {
-        console.log('🔄 Garden exists but loading failed, refreshing instead...');
-        refreshGarden(); // Try to refresh instead
-      } else {
-        console.error('Failed to auto-initialize garden:', error);
+  const initializeGardenIfNeeded = async () => {
+    // Only proceed if we're not loading and don't have garden data
+    if (!loading && !garden) {
+      console.log('🔄 Attempting to load garden data...');
+      try {
+        // First, try to refresh existing garden
+        await refreshGarden();
+      } catch (error) {
+        console.log('🔄 Refresh failed, trying to initialize new garden...');
+        try {
+          await initializeGarden();
+        } catch (initError) {
+          console.error('❌ Failed to initialize garden:', initError);
+        }
       }
-    });
-  }
-}, [loading, garden, error, initializeGarden, refreshGarden]);
+    }
+  };
+
+  initializeGardenIfNeeded();
+}, [loading, garden, refreshGarden, initializeGarden]);
 
 const nextTourStep = useCallback(() => {
   if (tourStep < 4) {

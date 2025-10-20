@@ -8,25 +8,62 @@ const GardenGrid = ({
   selectedPlant = null,
   onTileSelect,
   onPlantInteract,
-  mode = 'view', // 'view', 'move', 'harvest'
+  mode = 'view',
   selectedTileForMove = null,
   selectedTileForHarvest = null,
   isPlantingMode = false,
   selectedPlantItem = null,
   isMobile = false
 }) => {
+  console.log('🔍 GARDEN GRID DEBUG - gardenData:', gardenData);
+  console.log('🔍 GARDEN GRID DEBUG - garden_tiles:', gardenData?.garden_tiles);
+  console.log('🔍 GARDEN GRID DEBUG - garden_tiles is array:', Array.isArray(gardenData?.garden_tiles));
+  console.log('🔍 GARDEN GRID DEBUG - garden_tiles length:', gardenData?.garden_tiles?.length);
 
-if (!gardenData || !gardenData.garden_tiles) {
-  return (
-    <div className="garden-grid-container">
-      <div className="garden-loading">
-        <p>Loading garden grid...</p>
+  // Check if garden_tiles exists and is an array
+  if (!gardenData || !gardenData.garden_tiles || !Array.isArray(gardenData.garden_tiles)) {
+    return (
+      <div className="garden-grid-container">
+        <div className="garden-loading">
+          <p>Setting up your garden grid...</p>
+          <p className="text-sm">Loading garden tiles from database</p>
+        </div>
       </div>
-    </div>
-  );
-}
+    );
+  }
+
+  // If garden exists but has no tiles, show error
+  if (gardenData.garden_tiles.length === 0) {
+    return (
+      <div className="garden-grid-container">
+        <div className="garden-loading">
+          <p className="text-red-600 dark:text-red-400">⚠️ Garden has no tiles!</p>
+          <p className="text-sm">Your garden exists but has no tiles in the database.</p>
+          <p className="text-sm">Please refresh the page or contact support.</p>
+          <button 
+            onClick={() => window.location.reload()}
+            className="mt-4 px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700"
+          >
+            Refresh Page
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // Use ONLY real tiles from the backend
+  const displayTiles = gardenData.garden_tiles;
+
   const [selectedTile, setSelectedTile] = useState(null);
   const [hoveredTile, setHoveredTile] = useState(null);
+
+  // Debug log real tile structure
+  useEffect(() => {
+    if (displayTiles?.length > 0) {
+      console.log('🔍 REAL TILE STRUCTURE:', displayTiles[0]);
+      console.log('🔍 Display tiles count:', displayTiles.length);
+    }
+  }, [displayTiles]);
 
   // Sync local selectedTile with props from parent
   useEffect(() => {
@@ -54,27 +91,27 @@ if (!gardenData || !gardenData.garden_tiles) {
       return;
     }
 
- if (mode === 'move' && tile.plant_details) {
-    setSelectedTile(tile);
-    if (onTileSelect) {
-      onTileSelect(tile, 'select');
+    if (mode === 'move' && tile.plant_details) {
+      setSelectedTile(tile);
+      if (onTileSelect) {
+        onTileSelect(tile, 'select');
+      }
+    } else if (mode === 'move' && selectedTile && !tile.plant_details) {
+      if (onTileSelect) {
+        onTileSelect(tile, 'move', selectedTile);
+      }
+      setSelectedTile(null);
+    } else if (mode === 'harvest' && tile.plant_details) {
+      setSelectedTile(tile);
+      if (onTileSelect) {
+        onTileSelect(tile, 'select');
+      }
+    } else if (mode === 'view' && tile.plant_details) {
+      if (onPlantInteract) {
+        onPlantInteract(tile.plant_details, tile);
+      }
     }
-  } else if (mode === 'move' && selectedTile && !tile.plant_details) {
-    if (onTileSelect) {
-      onTileSelect(tile, 'move', selectedTile);
-    }
-    setSelectedTile(null);
-  } else if (mode === 'harvest' && tile.plant_details) {
-    setSelectedTile(tile);
-    if (onTileSelect) {
-      onTileSelect(tile, 'select');
-    }
-  } else if (mode === 'view' && tile.plant_details) {
-    if (onPlantInteract) {
-      onPlantInteract(tile.plant_details, tile);
-    }
-  }
-}, [mode, selectedTile, onTileSelect, onPlantInteract, isPlantingMode]);
+  }, [mode, selectedTile, onTileSelect, onPlantInteract, isPlantingMode]);
 
   const handlePlantClick = useCallback((plantData, tile) => {
     // Only allow plant details in view mode (not planting mode)
@@ -86,15 +123,15 @@ if (!gardenData || !gardenData.garden_tiles) {
     }
   }, [mode, onPlantInteract, isPlantingMode]);
 
-const getTileClassName = (tile) => {
-  let className = '';
-  
-  if (isPlantingMode) {
-    if (selectedPlantItem && !tile.plant_details) {
-      className += ' available-for-planting';
+  const getTileClassName = (tile) => {
+    let className = '';
+    
+    if (isPlantingMode) {
+      if (selectedPlantItem && !tile.plant_details) {
+        className += ' available-for-planting';
+      }
+      return className.trim();
     }
-    return className.trim();
-  }
     
     // Move mode states
     if (mode === 'move' && selectedTile && selectedTile.id === tile.id) {
@@ -117,16 +154,6 @@ const getTileClassName = (tile) => {
     return className.trim();
   };
 
-  if (!gardenData || !gardenData.garden_tiles) {
-    return (
-      <div className="garden-container">
-        <div className="garden-info">
-          <h2>Garden Loading...</h2>
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div className="garden-container">
       <div 
@@ -138,7 +165,7 @@ const getTileClassName = (tile) => {
           backgroundRepeat: 'no-repeat'
         }}
       >
-        {gardenData.garden_tiles.map(tile => (
+        {displayTiles.map(tile => (
           <GardenTile
             key={`${tile.row}-${tile.col}`}
             tile={tile}
