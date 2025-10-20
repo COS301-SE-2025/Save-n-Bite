@@ -26,21 +26,21 @@ const DetailedBasket = ({
 
   // Debug function to log interactions
   const handleUpdateQuantity = (itemId, newQuantity) => {
-    console.log('Updating quantity:', { itemId, newQuantity, provider });
+
     if (onUpdateQuantity) {
       onUpdateQuantity(itemId, newQuantity);
     }
   };
 
   const handleRemoveItem = (itemId) => {
-    console.log('Removing item:', { itemId, provider });
+
     if (onRemoveItem) {
       onRemoveItem(itemId);
     }
   };
 
   const handleCheckout = () => {
-    console.log('Checkout clicked:', { provider, subtotal });
+
     if (onCheckout) {
       onCheckout();
     }
@@ -509,7 +509,7 @@ const YourCart = () => {
         setError(null);
       } else {
         // Show a more user-friendly error message for stock issues
-        let errorMessage = response.error || 'Failed to update quantity';
+        let errorMessage = 'Failed to update quantity';
 
         // Check if it's a stock-related error and make it more user-friendly
         if (errorMessage.toLowerCase().includes('stock') ||
@@ -589,14 +589,13 @@ const YourCart = () => {
 
   // Add a console log to see if the function is being called
   const handleProceedToPayment = () => {
-    console.log("Proceed to payment clicked");
+
     // Only check for multiple providers if we're in the main baskets view
     if (currentView === 'baskets' && hasMultipleProviders()) {
       setError('Please order from one food provider at a time. Remove items from other providers to continue.');
       return;
     }
     setShowPayment(true);
-    console.log("Show payment set to true");
   };
 
 
@@ -747,11 +746,11 @@ const YourCart = () => {
       const slotsResponse = await schedulingAPI.getAvailableTimeSlots(listingId, MOCK_TIME_SLOT.date);
 
       if (slotsResponse.success && slotsResponse.data.available_slots && slotsResponse.data.available_slots.length > 0) {
-        console.log(`Found ${slotsResponse.data.available_slots.length} available slots for listing ${listingId}`);
+
         return slotsResponse.data.available_slots[0];
       } else {
         // If no slots available, return a simple mock slot
-        console.log(`No available slots for listing ${listingId}, using fallback mock slot`);
+
         return {
           id: `mock-slot-${listingId}-${Date.now()}`,
           date: MOCK_TIME_SLOT.date,
@@ -779,7 +778,7 @@ const YourCart = () => {
   const handleCheckoutProviderItems = async (paymentDetails) => {
     setIsProcessingCheckout(true);
     try {
-      console.log('Starting checkout for provider items...');
+
 
       // Store current cart items before processing
       const originalCartItems = [...cartItems];
@@ -803,7 +802,7 @@ const YourCart = () => {
         specialInstructions: `Checkout for ${selectedProvider.items.length} items from ${selectedProvider.business_name}`
       };
 
-      console.log('Checkout data for provider items:', JSON.stringify(checkoutData, null, 2));
+   
 
       const checkoutResponse = await schedulingAPI.checkoutCart(checkoutData);
 
@@ -813,7 +812,7 @@ const YourCart = () => {
         return;
       }
 
-      console.log('Checkout successful for provider items:', checkoutResponse.data);
+
 
       const orders = checkoutResponse.data.orders || [];
       if (orders.length === 0) {
@@ -822,7 +821,7 @@ const YourCart = () => {
         return;
       }
 
-      console.log(`Created ${orders.length} orders for ${selectedProvider.items.length} items`);
+
 
       // Schedule pickup for each order individually
       for (let i = 0; i < orders.length; i++) {
@@ -843,7 +842,7 @@ const YourCart = () => {
           continue;
         }
 
-        console.log(`\n--- Scheduling pickup ${i + 1}/${orders.length}: ${cartItem.name} (Order: ${order.id}) ---`);
+     
 
         try {
           // Get listing ID for scheduling
@@ -851,7 +850,7 @@ const YourCart = () => {
 
           // Get time slot for this listing
           const timeSlot = await getMockTimeSlotForListing(listingId);
-          console.log('Time slot for', cartItem.name, ':', JSON.stringify(timeSlot, null, 2));
+
 
           // Schedule pickup with the order ID
           const scheduleData = {
@@ -862,7 +861,7 @@ const YourCart = () => {
             customer_notes: `Individual pickup for ${cartItem.name}`
           };
 
-          console.log('Schedule data for', cartItem.name, ':', JSON.stringify(scheduleData, null, 2));
+
 
           const scheduleResponse = await schedulingAPI.schedulePickup(scheduleData);
 
@@ -874,8 +873,7 @@ const YourCart = () => {
               cartItem: cartItem,
               timeSlot: timeSlot
             });
-            console.log(`✅ Successfully scheduled pickup for ${cartItem.name}`);
-            console.log(`Order ID: ${order.id}, Confirmation: ${scheduleResponse.data.pickup.confirmation_code}`);
+
           } else {
             console.error(`Failed to schedule pickup for ${cartItem.name}:`, scheduleResponse.error);
             failedItems.push({ item: cartItem, error: scheduleResponse.error, stage: 'scheduling' });
@@ -888,19 +886,16 @@ const YourCart = () => {
 
         // Add delay between scheduling items
         if (i < orders.length - 1) {
-          console.log('Waiting 300ms before next scheduling...');
+
           await new Promise(resolve => setTimeout(resolve, 300));
         }
       }
 
-      // Handle results and cleanup
-      console.log(`\n=== PROCESSING COMPLETE ===`);
-      console.log(`Successfully processed: ${scheduledPickups.length} items`);
-      console.log(`Failed items: ${failedItems.length} items`);
+
 
       // Clean up localStorage after processing
       localStorage.removeItem(cartStorageKey);
-      console.log(`Cleaned up localStorage key: ${cartStorageKey}`);
+
 
       if (failedItems.length > 0) {
         console.error('Failed items:', failedItems);
@@ -922,7 +917,6 @@ const YourCart = () => {
         return;
       }
 
-      console.log(`🎉 Successfully scheduled ${scheduledPickups.length} individual pickups`);
 
       // Clear the cart items for this provider
       setCartItems(cartItems.filter(item =>
@@ -965,30 +959,21 @@ const YourCart = () => {
     );
   }
 
-  // Error state (unchanged)
-  if (error) {
+ 
+   if (error) {
+      let userMessage = error;
     return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+        <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
         <CustomerNavBar />
-        <div className="max-w-4xl mx-auto px-4 pt-16 sm:pt-20">
-      <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-center sm:text-left">
-        <span className="text-2xl font-bold text-emerald-600 dark:text-emerald-500">Your Cart</span>
-      </h1>
-    </div>
-        <div className="max-w-4xl mx-auto px-4 py-8">
-          <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-200 px-4 py-3 rounded-lg">
-            <h3 className="font-medium">Error loading cart</h3>
-            <p className="text-sm">{error}</p>
-            <button
-              onClick={fetchCart}
-              className="mt-2 text-sm text-red-700 dark:text-red-300 hover:underline"
-            >
-              Try again
-            </button>
-          </div>
-        </div>
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 w-full max-w-sm text-center">
+        <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">Oops!</h2>
+        <p className="text-gray-600 dark:text-gray-300 mb-4 text-sm">{userMessage}</p>
+       
       </div>
-    );
+    </div>
+       </div>
+  );
   }
 
   // Detailed provider view (unchanged)
