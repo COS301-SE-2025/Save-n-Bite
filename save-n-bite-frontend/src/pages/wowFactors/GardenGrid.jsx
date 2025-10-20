@@ -15,6 +15,16 @@ const GardenGrid = ({
   selectedPlantItem = null,
   isMobile = false
 }) => {
+
+if (!gardenData || !gardenData.garden_tiles) {
+  return (
+    <div className="garden-grid-container">
+      <div className="garden-loading">
+        <p>Loading garden grid...</p>
+      </div>
+    </div>
+  );
+}
   const [selectedTile, setSelectedTile] = useState(null);
   const [hoveredTile, setHoveredTile] = useState(null);
 
@@ -29,7 +39,6 @@ const GardenGrid = ({
     }
   }, [selectedTileForMove, selectedTileForHarvest, mode]);
 
-  // Clear selected tile when switching to view mode
   useEffect(() => {
     if (mode === 'view' && !isPlantingMode) {
       setSelectedTile(null);
@@ -80,7 +89,6 @@ const GardenGrid = ({
 const getTileClassName = (tile) => {
   let className = '';
   
-  // Planting mode states - for ALL screens
   if (isPlantingMode) {
     if (selectedPlantItem && !tile.plant_details) {
       className += ' available-for-planting';
@@ -105,9 +113,7 @@ const getTileClassName = (tile) => {
     if (mode === 'harvest' && tile.plant_details) {
       className += ' harvestable';
     }
-    
-    // Drag and drop states - desktop only
-    
+        
     return className.trim();
   };
 

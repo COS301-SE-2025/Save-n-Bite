@@ -18,6 +18,9 @@
   margin: 0 auto 15px auto; 
   max-width: 1400px; 
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-position: center;
 }
 
 .header-left {
