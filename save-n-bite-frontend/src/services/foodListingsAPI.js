@@ -102,7 +102,7 @@ const transformListingData = (backendListing) => {
         savings: listing.savings || 0,
         discountPercentage: listing.discount_percentage || 0,
         quantity: listing.quantity || 0,
-        quantityAvailable: listing.quantity_available || listing.quantity || 0,
+        quantityAvailable: listing.quantity_available || 0,
         expiryDate: listing.expiry_date,
         expirationTime: formatExpirationTime(listing.expiry_date),
         pickupWindow: listing.pickup_window,
