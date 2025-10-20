@@ -197,7 +197,7 @@ export default function ListingsOverview() {
                             {listing.originalPrice === 0 ? 'Free' : `R${listing.discountedPrice}`}
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            {listing.quantity}
+                            {listing.quantity_available}
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                             {listing.expiryDate}
