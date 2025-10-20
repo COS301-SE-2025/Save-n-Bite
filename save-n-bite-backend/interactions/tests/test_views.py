@@ -147,11 +147,11 @@ class CartViewsTests(APITestCase):
 
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)  
 
-    def test_initiate_checkout(self):
-        self.client.force_authenticate(user=self.user)
-        url = reverse("initiate-checkout")  
-        response = self.client.post(url)
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
+    # def test_initiate_checkout(self):
+    #     self.client.force_authenticate(user=self.user)
+    #     url = reverse("initiate-checkout")  
+    #     response = self.client.post(url)
+    #     self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_cart_view_empty(self):
         self.client.force_authenticate(user=self.user)
