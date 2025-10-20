@@ -102,7 +102,7 @@ const transformListingData = (backendListing) => {
         savings: listing.savings || 0,
         discountPercentage: listing.discount_percentage || 0,
         quantity: listing.quantity || 0,
-        quantityAvailable: listing.quantity_available || listing.quantity || 0,
+        quantityAvailable: listing.quantity_available || 0,
         expiryDate: listing.expiry_date,
         expirationTime: formatExpirationTime(listing.expiry_date),
         pickupWindow: listing.pickup_window,
@@ -242,14 +242,14 @@ const foodListingsAPI = {
             const queryParams = buildQueryParams(filters, searchQuery, sortBy);
             const url = `/api/food-listings/${queryParams ? `?${queryParams}&get_all=true` : '?get_all=true'}`;
 
-            console.log('API Request URL:', url); // Debug log
+    
 
             const response = await apiClient.get(url);
 
             // Transform the data to match your frontend format
             const transformedListings = response.data.listings?.map(transformListingData) || [];
 
-            console.log('Transformed listings:', transformedListings); // Debug log
+        
 
             return {
                 success: true,
@@ -292,13 +292,13 @@ const foodListingsAPI = {
     async getProviderListings() {
         try {
             const response = await apiClient.get('/api/provider/listings/');
-            console.log('Provider listings response:', response.data); // Debug log
+
 
             // Handle different response structures
             let listings = [];
             if (response.data.listings) {
                 listings = response.data.listings;
-                console.log('Listings from response.data.listings:', listings); // Debug log
+
             } else if (Array.isArray(response.data)) {
                 listings = response.data;
             } else if (response.data.results) {
@@ -330,9 +330,7 @@ const foodListingsAPI = {
 
             const response = await apiClient.post('/api/provider/listings/create/', listingData, config);
 
-            console.log('=== RAW BACKEND RESPONSE ===');
-            console.log('Raw response.data:', response.data);
-            console.log('Raw response.data.listing:', response.data.listing);
+            
 
             // Don't transform the data here - return the raw backend response
             // so we can access response.data.listing.id in the frontend
@@ -493,12 +491,12 @@ const foodListingsAPI = {
     },
     // Get user type with debug logging
     getUserType: () => {
-        console.log("=== getUserType Debug ===");
+    
 
         const userTypeFromStorage = getUserType();
-        console.log("User type from localStorage:", userTypeFromStorage);
 
-        console.log("========================");
+
+
         return userTypeFromStorage;
     }
 };

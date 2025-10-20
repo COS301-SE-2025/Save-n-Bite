@@ -566,53 +566,145 @@ const OrderHistory = () => {
     }
   }, []);
 
-  const loadOrders = async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      const [pickupsResponse, donationsResponse] = await Promise.all([
-        schedulingAPI.getMyPickups(),
-        donationsAPI.getMyDonationRequests()
-      ]);
+  // const loadOrders = async () => {
+  //   setLoading(true);
+  //   setError(null);
+  //   try {
+  //     const [pickupsResponse, donationsResponse] = await Promise.all([
+  //       schedulingAPI.getMyPickups(),
+  //       donationsAPI.getMyDonationRequests()
+  //     ]);
 
-      const allOrders = [];
+  //     const allOrders = [];
 
-      if (pickupsResponse.success) {
-        const pickups = pickupsResponse.data.results?.pickups || pickupsResponse.data.results || [];
-        const normalizedPickups = pickups.map(pickup => ({
-          ...pickup,
-          interaction_type: 'Pickup',
-          order_type: 'pickup'
-        }));
-        allOrders.push(...normalizedPickups);
-      }
+  //     if (pickupsResponse.success) {
+  //       const pickups = pickupsResponse.data.results?.pickups || pickupsResponse.data.results || [];
+  //       const normalizedPickups = pickups.map(pickup => ({
+  //         ...pickup,
+  //         interaction_type: 'Pickup',
+  //         order_type: 'pickup'
+  //       }));
+  //       allOrders.push(...normalizedPickups);
+  //     }
 
-      if (donationsResponse.success) {
-        const donations = donationsResponse.data.results || [];
-        const normalizedDonations = donations.map(donation => ({
-          ...donation,
-          interaction_type: 'Donation',
-          order_type: 'donation'
-        }));
-        allOrders.push(...normalizedDonations);
-      }
+  //     if (donationsResponse.success) {
+  //       const donations = donationsResponse.data.results || [];
+  //       const normalizedDonations = donations.map(donation => ({
+  //         ...donation,
+  //         interaction_type: 'Donation',
+  //         order_type: 'donation'
+  //       }));
+  //       allOrders.push(...normalizedDonations);
+  //     }
 
-      allOrders.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
-      await syncCompletedInteractions(allOrders);
+  //     allOrders.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+  //     await syncCompletedInteractions(allOrders);
 
-      setOrders(allOrders);
+  //     setOrders(allOrders);
 
-      if (!pickupsResponse.success && !donationsResponse.success) {
-        setError('Failed to load order history');
-      }
-    } catch (error) {
-      console.error('Error loading orders:', error);
-      setError('Failed to load orders');
-      setOrders([]);
-    } finally {
-      setLoading(false);
+  //     if (!pickupsResponse.success && !donationsResponse.success) {
+  //       setError('Failed to load order history');
+  //     }
+  //   } catch (error) {
+  //     console.error('Error loading orders:', error);
+  //     setError('Failed to load orders');
+  //     setOrders([]);
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
+
+const loadOrders = async () => {
+  setLoading(true);
+  setError(null);
+  try {
+    const [pickupsResponse, donationsResponse] = await Promise.all([
+      schedulingAPI.getMyPickups(),
+      donationsAPI.getMyDonationRequests()
+    ]);
+
+
+    const allOrders = [];
+
+    // Process pickups from the pickups API
+    if (pickupsResponse.success) {
+      const pickups = pickupsResponse.data.results?.pickups || pickupsResponse.data.results || [];
+  
+      
+      const normalizedPickups = pickups.map(pickup => ({
+        ...pickup,
+        interaction_type: 'Purchase',
+        order_type: 'pickup',
+        status: normalizeStatus(pickup.status)
+      }));
+      allOrders.push(...normalizedPickups);
     }
+
+    // Process donations from the donations API - FILTER to only get actual donations
+    if (donationsResponse.success) {
+      const allItems = donationsResponse.data.results || [];
+
+      
+      // Filter to only get actual donations (not purchases)
+      const actualDonations = allItems.filter(item => 
+        item.interaction_type === 'Donation' || 
+        // If interaction_type is not set, check other donation indicators
+        (!item.interaction_type && item.order_type === 'donation')
+      );
+
+      
+      const normalizedDonations = actualDonations.map(donation => ({
+        ...donation,
+        interaction_type: 'Donation',
+        order_type: 'donation',
+        status: normalizeStatus(donation.status)
+      }));
+      allOrders.push(...normalizedDonations);
+    }
+
+    // Remove any potential duplicates by order ID
+    const uniqueOrders = [];
+    const orderIds = new Set();
+    
+    allOrders.forEach(order => {
+      if (!orderIds.has(order.id)) {
+        orderIds.add(order.id);
+        uniqueOrders.push(order);
+      } else {
+        console.warn('⚠️ Duplicate order found and removed:', order.id);
+      }
+    });
+
+ 
+
+    uniqueOrders.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+    await syncCompletedInteractions(uniqueOrders);
+
+    setOrders(uniqueOrders);
+
+  } catch (error) {
+    console.error('Error loading orders:', error);
+    setError('Failed to load orders');
+    setOrders([]);
+  } finally {
+    setLoading(false);
+  }
+};
+
+// Add status normalization function
+const normalizeStatus = (status) => {
+  const statusMap = {
+    'ready': 'confirmed',
+    'confirmed': 'confirmed',
+    'scheduled': 'scheduled', 
+    'pending': 'pending',
+    'completed': 'completed',
+    'cancelled': 'cancelled',
+    'rejected': 'rejected',
+    'missed': 'missed'
   };
+  return statusMap[status] || status;
+};
 
   // Sync interaction status for completed orders (keeping original logic)
   const syncCompletedInteractions = async (allOrders) => {
@@ -700,12 +792,30 @@ const OrderHistory = () => {
   };
 
   // Group orders by status for tabs
+  // const groupedOrders = {
+  //   confirmed: orders.filter(order => order.status === 'ready' || order.status === 'confirmed'),
+  //   scheduled: orders.filter(order => order.status === 'scheduled'),
+  //   pending: orders.filter(order => order.status === 'pending'),
+  //   completed: orders.filter(order => order.status === 'completed')
+  // };
+
+
   const groupedOrders = {
-    confirmed: orders.filter(order => order.status === 'ready' || order.status === 'confirmed'),
-    scheduled: orders.filter(order => order.status === 'scheduled'),
-    pending: orders.filter(order => order.status === 'pending'),
-    completed: orders.filter(order => order.status === 'completed')
-  };
+  confirmed: orders.filter(order => 
+    (order.status === 'confirmed' || order.status === 'ready') 
+  ),
+  scheduled: orders.filter(order => 
+    order.status === 'scheduled'
+  ),
+  pending: orders.filter(order => 
+    order.status === 'pending' && order.interaction_type === 'Donation'
+  ),
+  completed: orders.filter(order => 
+    order.status === 'completed'
+  )
+};
+
+
 
   // Calculate order counts for tabs
   const orderCounts = {
