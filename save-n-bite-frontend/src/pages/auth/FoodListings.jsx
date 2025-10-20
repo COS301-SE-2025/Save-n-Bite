@@ -204,7 +204,7 @@ const FoodListings = () => {
       const response = await foodListingsAPI.getFoodListings();
 
       if (response.success) {
-        console.log('Raw API data:', response.data);
+
 
         const allListings = response.data.listings || [];
         setAllFoodListings(allListings);
