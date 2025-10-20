@@ -623,13 +623,13 @@ const loadOrders = async () => {
       donationsAPI.getMyDonationRequests()
     ]);
 
-    console.log('🔍 DEBUG: Loading orders...');
+
     const allOrders = [];
 
     // Process pickups from the pickups API
     if (pickupsResponse.success) {
       const pickups = pickupsResponse.data.results?.pickups || pickupsResponse.data.results || [];
-      console.log('🛒 Purchases from Pickups API:', pickups);
+  
       
       const normalizedPickups = pickups.map(pickup => ({
         ...pickup,
@@ -643,7 +643,7 @@ const loadOrders = async () => {
     // Process donations from the donations API - FILTER to only get actual donations
     if (donationsResponse.success) {
       const allItems = donationsResponse.data.results || [];
-      console.log('📦 All items from Donations API:', allItems);
+
       
       // Filter to only get actual donations (not purchases)
       const actualDonations = allItems.filter(item => 
@@ -651,8 +651,7 @@ const loadOrders = async () => {
         // If interaction_type is not set, check other donation indicators
         (!item.interaction_type && item.order_type === 'donation')
       );
-      
-      console.log('💝 Actual donations after filtering:', actualDonations);
+
       
       const normalizedDonations = actualDonations.map(donation => ({
         ...donation,
@@ -676,7 +675,7 @@ const loadOrders = async () => {
       }
     });
 
-    console.log('🎯 Final unique orders:', uniqueOrders);
+ 
 
     uniqueOrders.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
     await syncCompletedInteractions(uniqueOrders);

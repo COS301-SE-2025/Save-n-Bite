@@ -47,13 +47,12 @@ const DonationRequestPage = () => {
 
       try {
         const response = await foodListingsAPI.getFoodListingDetails(id);
-        console.log("Full API Response:", response);
-        console.log("Response Data:", response.data);
+ 
         
         if (response.success && response.data && response.data.listing) {
           // Use the listing data directly from the response
           const listingData = response.data.listing;
-          console.log("Direct listing data:", listingData);
+
           
           setListing(listingData);
         } else {
@@ -88,7 +87,6 @@ const DonationRequestPage = () => {
         // verificationDocuments: [] // Add if needed
       };
 
-      console.log('Submitting donation request:', donationRequest);
       const response = await donationsAPI.requestDonation(donationRequest);
       
       if (response.success) {

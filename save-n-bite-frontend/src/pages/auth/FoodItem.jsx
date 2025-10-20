@@ -107,22 +107,13 @@ const FoodItem = () => {
   }, [id]);
 
   useEffect(() => {
-    console.log('=== USEEFFECT DEBUG ===');
-    console.log('item:', item);
-    console.log('item?.provider (full object):', JSON.stringify(item?.provider, null, 2));
-    console.log('item?.provider?.id:', item?.provider?.id);
-    console.log('item?.provider?.user_id:', item?.provider?.user_id);
-    console.log('item?.provider?.provider_id:', item?.provider?.provider_id);
-    console.log('item?.provider?.businessName:', item?.provider?.businessName);
+
     
     if (item?.provider) {
-      console.log('Provider exists, calling fetchBusinessProfile and fetchProviderReviews');
+
       fetchBusinessProfile();
       fetchProviderReviews();
-    } else {
-      console.log('NOT calling review functions - provider missing');
-    }
-    console.log('=== END USEEFFECT DEBUG ===');
+    } 
   }, [item]);
 
   const fetchItemDetails = async () => {
@@ -133,7 +124,7 @@ const FoodItem = () => {
         
         // TEMPORARY FIX: If provider doesn't have user_id, try to fetch it
         if (itemData.provider && !itemData.provider.user_id && !itemData.provider.provider_id) {
-          console.log('Provider missing IDs, attempting to fetch from provider API');
+
           
           // Try to get the provider details using business name
           try {
@@ -144,11 +135,11 @@ const FoodItem = () => {
               );
               
               if (matchingProvider) {
-                console.log('Found matching provider:', matchingProvider);
+
                 // Add the missing IDs to the provider object
                 itemData.provider.user_id = matchingProvider.user_id || matchingProvider.id;
                 itemData.provider.provider_id = matchingProvider.id;
-                console.log('Updated provider with IDs:', itemData.provider);
+
               }
             }
           } catch (err) {
@@ -170,7 +161,7 @@ const FoodItem = () => {
   const fetchBusinessProfile = async () => {
     try {
       const providerId = item.provider.user_id || item.provider.provider_id || item.provider.id;
-      console.log('Fetching business profile for ID:', providerId);
+
       
       const response = await BusinessAPI.getBusinessProfile(providerId);
       if (response.success) {
@@ -216,27 +207,24 @@ const FoodItem = () => {
       setReviewsLoading(true);
       setReviewsError(null);
       
-      console.log('=== DEBUGGING PROVIDER REVIEWS ===');
-      console.log('Full item object:', item);
-      console.log('Provider object:', item.provider);
-      
+   
       let providerId = item.provider.user_id || item.provider.provider_id || item.provider.id || item.provider.UserID;
       
       if (!providerId && item.provider.businessName) {
-        console.log('No direct provider ID found, trying to fetch by business name:', item.provider.businessName);
+       
         
         try {
           const providerResult = await FoodProvidersAPI.getProviderByName(item.provider.businessName);
           if (providerResult.success && providerResult.data?.provider?.id) {
             providerId = providerResult.data.provider.id;
-            console.log('Found provider ID via business name lookup:', providerId);
+           
           }
         } catch (err) {
-          console.log('Failed to lookup provider by name:', err);
+         
         }
       }
       
-      console.log('Final provider ID to use:', providerId);
+   
       
       if (!providerId) {
         setReviewsError('No valid provider ID found - backend needs to return provider.user_id');
@@ -250,8 +238,7 @@ const FoodItem = () => {
         sort: 'newest'
       });
       
-      console.log('API response:', response);
-      
+    
       if (response.success && response.data?.results) {
         const { results } = response.data;
         setReviewsData(results);
@@ -259,7 +246,7 @@ const FoodItem = () => {
         if (results.reviews && results.reviews.length > 0) {
           const transformedReviews = results.reviews.map(transformReviewData);
           setReviews(transformedReviews);
-          console.log('Successfully loaded and transformed reviews:', transformedReviews.length);
+
         } else {
           setReviews([]);
         }
@@ -306,7 +293,7 @@ const FoodItem = () => {
     e.stopPropagation();
 
     const providerId = item.provider.user_id || item.provider.provider_id || item.provider.id;
-    console.log('Following/unfollowing business ID:', providerId);
+
     
     if (!providerId) {
       setError('Business information not available');
@@ -333,7 +320,7 @@ const FoodItem = () => {
               : prev.follower_count + 1
           }));
         }
-        console.log('Follow action successful:', response.message);
+
       } else {
         setError(response.error || 'Failed to update follow status');
         console.error('Follow action failed:', response.error);
@@ -510,7 +497,7 @@ const FoodItem = () => {
           <div className="text-center mt-6">
             <button
               onClick={() => {
-                console.log('Load more reviews');
+
               }}
               className="inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500"
             >
@@ -679,7 +666,7 @@ const FoodItem = () => {
                 <button
                   key={tab}
                   onClick={() => {
-                    console.log('Tab clicked:', tab.toLowerCase().replace(' ', ''));
+
                     setActiveTab(tab.toLowerCase().replace(' ', ''));
                   }}
                   className={`py-3 px-5 text-center border-b-2 font-medium text-sm ${
