@@ -493,56 +493,60 @@ const { actionLoading, placePlant, harvestPlant, movePlant } = useGardenActions(
 
       {/* Main content */}
       <div className={`garden-main ${isMobile ? 'flex flex-col gap-4 px-2 py-4' : 'flex flex-col md:flex-row gap-6 max-w-7xl mx-auto px-4 py-8'}`}>
-        {/* Center - Garden Grid */}
-        <main className="garden-content flex-1">
-          <GardenGrid
-            gardenData={garden}
-            selectedPlant={draggedPlant}
-            onTileSelect={handleTileSelect}
-            onPlantInteract={handlePlantInteract}
-            onDrop={handleDrop}
-            draggedPlant={draggedPlant}
-            mode={gardenMode}
-            selectedTileForMove={selectedPlantForMove}
-            selectedTileForHarvest={selectedPlantForHarvest}
-            isPlantingMode={isPlantingMode}
-            selectedPlantItem={selectedPlantItem}
-            isMobile={isMobile}
-          />
+  {/* Center - Garden Overview & Grid */}
+  <main className="garden-content flex-1">
+    {/* Garden Overview - */}
+    {garden && (
+       <div className="garden-overview-grid">
+  <div className={`garden-intro-section ${isMobile ? 'mb-3 p-3' : 'mb-6 p-4'} bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-xl shadow`}>
+    <h3 className={`${isMobile ? 'text-sm' : 'text-base'} font-semibold text-gray-900 dark:text-white mb-2`}>Garden Progress</h3>
+    <div className={`overview-stats ${isMobile ? 'grid grid-cols-2 gap-2 text-xs' : 'grid grid-cols-3 gap-3'} mb-3`}>
+      <div className="stat-item text-center p-2 bg-emerald-50 dark:bg-emerald-900/20 rounded-md">
+        <span className="stat-label text-gray-600 dark:text-gray-300 text-xs">Unique Plants</span>
+        <div className="stat-value text-emerald-600 dark:text-emerald-400 font-bold text-base">{uniquePlantsEarned}</div>
+      </div>
+      <div className="stat-item text-center p-2 bg-blue-50 dark:bg-blue-900/20 rounded-md">
+        <span className="stat-label text-gray-600 dark:text-gray-300 text-xs">Plants Placed</span>
+        <div className="stat-value text-blue-600 dark:text-blue-400 font-bold text-base">{garden.total_plants_placed || 0}/64</div>
+      </div>
+      <div className="stat-item text-center p-2 bg-purple-50 dark:bg-purple-900/20 rounded-md">
+        <span className="stat-label text-gray-600 dark:text-gray-300 text-xs">Completion</span>
+        <div className="stat-value text-purple-600 dark:text-purple-400 font-bold text-base">
+          {Math.round(((garden.total_plants_placed || 0) / 64) * 100)}%
+        </div>
+      </div>     
+    </div>
+    
+    {/* Rarity Progress */}
+    <div className="rarity-progress">
+      <h4 className={`${isMobile ? 'text-xs' : 'text-sm'} font-semibold text-gray-900 dark:text-white mb-1`}>Collection by Rarity</h4>
+      <div className={`rarity-breakdown ${isMobile ? 'grid grid-cols-3 gap-1 text-xs' : 'flex justify-between gap-1'}`}>
+        {Object.entries(rarityTallies).map(([rarity, count]) => (
+          <div key={rarity} className={`rarity-stat ${rarity} ${isMobile ? 'p-1' : 'flex-1 text-center p-2'} rounded-md`}>
+            <span className="rarity-label block text-xs font-semibold">{rarity.charAt(0).toUpperCase() + rarity.slice(1)}</span>
+            <span className="rarity-count font-bold text-xs">{count}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  </div>
+</div>
+    )}
 
-          {/* Garden Overview */}
-          {garden && (
-            <div className={`garden-overview ${isMobile ? 'mt-4 p-4' : 'mt-8 p-6'} bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-xl shadow`}>
-              <h3 className={`${isMobile ? 'text-base' : 'text-lg'} font-semibold text-gray-900 dark:text-white mb-3`}>Garden Overview</h3>
-              <div className={`overview-stats ${isMobile ? 'grid grid-cols-2 gap-3 text-sm' : 'flex flex-wrap gap-6'} mb-4`}>
-                <div className="stat-item">
-                  <span className="stat-label text-gray-600 dark:text-gray-300">Unique Plants:</span>
-                  <span className="stat-value text-gray-900 dark:text-gray-100 font-semibold ml-2">{uniquePlantsEarned}</span>
-                </div>
-                <div className="stat-item">
-                  <span className="stat-label text-gray-600 dark:text-gray-300">Plants Placed:</span>
-                  <span className="stat-value text-gray-900 dark:text-gray-100 font-semibold ml-2">{garden.total_plants_placed || 0}/64</span>
-                </div>
-                <div className="stat-item">
-                  <span className="stat-label text-gray-600 dark:text-gray-300">Completion:</span>
-                  <span className="stat-value text-gray-900 dark:text-gray-100 font-semibold ml-2">
-                    {Math.round(((garden.total_plants_placed || 0) / 64) * 100)}%
-                  </span>
-                </div>
-              </div>
-              <div className="rarity-tallies">
-                <h4 className={`${isMobile ? 'text-sm' : 'text-md'} font-semibold text-gray-900 dark:text-white mb-2`}>Plants by Rarity</h4>
-                <div className={`rarity-breakdown ${isMobile ? 'grid grid-cols-3 gap-2 text-xs' : 'flex flex-wrap gap-4'}`}>
-                  {Object.entries(rarityTallies).map(([rarity, count]) => (
-                  <div key={rarity} className={`rarity-stat ${rarity} ${isMobile ? 'p-2' : 'flex items-center gap-2'}`}>
-                    <span className="rarity-label">{rarity.charAt(0).toUpperCase() + rarity.slice(1)}:</span>
-                    <span className="rarity-count font-semibold">{count}</span>
-                  </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-          )}
+    <GardenGrid
+      gardenData={garden}
+      selectedPlant={draggedPlant}
+      onTileSelect={handleTileSelect}
+      onPlantInteract={handlePlantInteract}
+      onDrop={handleDrop}
+      draggedPlant={draggedPlant}
+      mode={gardenMode}
+      selectedTileForMove={selectedPlantForMove}
+      selectedTileForHarvest={selectedPlantForHarvest}
+      isPlantingMode={isPlantingMode}
+      selectedPlantItem={selectedPlantItem}
+      isMobile={isMobile}
+    />
         </main>
 
         {/* Right Sidebar */}
