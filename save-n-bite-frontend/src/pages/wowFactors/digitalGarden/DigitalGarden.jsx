@@ -65,88 +65,55 @@ const DigitalGarden = () => {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-
-
-useEffect(() => {
-  console.log('🔍 TOUR DEBUG - loading:', loading, 'has garden:', !!garden, 'inventory length:', inventory?.length);
-  
-  if (loading || !garden) {
-    console.log('🔍 Still waiting for data...');
-    return;
-  }
-
-  const tourSeenValue = localStorage.getItem('digitalGardenTourSeen');
-  console.log('🔍 RAW localStorage value for digitalGardenTourSeen:', tourSeenValue, 'type:', typeof tourSeenValue);
-  
-  const hasSeenTour = tourSeenValue === 'true';
-  
-  console.log('🔍 Tour conditions - hasSeenTour:', hasSeenTour);
-
-  // Show tour on first visit to digital garden, regardless of inventory or plants
-  if (!hasSeenTour) {
-    console.log('🎯 Showing garden tour for first time!');
-    setShowTour(true);
-    setTourStep(0);
-  } else {
-    console.log('🔍 Tour already seen - not showing');
-  }
-}, [loading, garden]);
-
-useEffect(() => {
-  const initializeGardenIfNeeded = async () => {
-    // Only proceed if we're not loading and don't have garden data
-    if (!loading && !garden) {
-      //console.log('🔄 Attempting to load garden data...');
-      try {
-        // First, try to refresh existing garden
-        await refreshGarden();
-      } catch (error) {
-        //console.log('🔄 Refresh failed, trying to initialize new garden...');
+  useEffect(() => {
+    const initializeGardenIfNeeded = async () => {
+      // Only proceed if we're not loading and don't have garden data
+      if (!loading && !garden) {
         try {
-          await initializeGarden();
-        } catch (initError) {
-          console.error('❌ Failed to initialize garden:', initError);
+          // First, try to refresh existing garden
+          await refreshGarden();
+        } catch (error) {
+          try {
+            await initializeGarden();
+          } catch (initError) {
+            console.error('Failed to initialize garden:', initError);
+          }
         }
       }
+    };
+
+    initializeGardenIfNeeded();
+  }, [loading, garden, refreshGarden, initializeGarden]);
+
+  const startTour = useCallback(() => {
+    setShowTour(true);
+    setTourStep(0);
+  }, []);
+
+  const nextTourStep = useCallback(() => {
+    if (tourStep < 4) {
+      setTourStep(tourStep + 1);
+    } else {
+      setShowTour(false);
     }
-  };
+  }, [tourStep]);
 
-  initializeGardenIfNeeded();
-}, [loading, garden, refreshGarden, initializeGarden]);
-
-const nextTourStep = useCallback(() => {
-  if (tourStep < 4) {
-    setTourStep(tourStep + 1);
-  } else {
+  const skipTour = useCallback(() => {
     setShowTour(false);
-    localStorage.setItem('digitalGardenTourSeen', 'true'); // Only set when completed
-    console.log('🎯 Tour completed');
-  }
-}, [tourStep]);
-
-const skipTour = useCallback(() => {
-  setShowTour(false);
-  localStorage.setItem('digitalGardenTourSeen', 'true'); // Only set when skipped
-  console.log('🎯 Tour skipped');
-}, []);
+  }, []);
 
   // Garden actions with sounds
   const { actionLoading, placePlant, harvestPlant, movePlant } = useGardenActions(
     useCallback((action, result) => {
-      //console.log('🔊 Action completed:', action);
-      
       let message = `${action.charAt(0).toUpperCase() + action.slice(1)} successful!`;
       
       // Play sounds based on action
       if (action === 'place') {
         playSound('plant');
-        //console.log('🔊 Playing plant sound');
       } else if (action === 'move') {
         playSound('move');
-        //console.log('🔊 Playing move sound');
       } else if (action === 'harvest') {
         playSound('harvest');
-        //console.log('🔊 Playing harvest sound');
       }
 
       // Handle specific message types
@@ -363,34 +330,34 @@ const skipTour = useCallback(() => {
     setNotification(null);
   }, []);
 
-const handleInitializeGarden = useCallback(async () => {
-  try {
-    await initializeGarden();
-    setNotification({
-      type: 'success',
-      message: 'Garden created successfully!'
-    });
-    // Force refresh to ensure we have the latest data
-    setTimeout(() => {
-      refreshGarden();
-      refreshInventory();
-    }, 500);
-  } catch (error) {
-    if (error.message.includes('already exists')) {
-      // Garden exists but maybe wasn't loaded properly
+  const handleInitializeGarden = useCallback(async () => {
+    try {
+      await initializeGarden();
       setNotification({
-        type: 'info',
-        message: 'Garden already exists, refreshing...'
+        type: 'success',
+        message: 'Garden created successfully!'
       });
-      refreshGarden();
-    } else {
-      setNotification({
-        type: 'error',
-        message: 'Failed to create garden: ' + error.message
-      });
+      // Force refresh to ensure we have the latest data
+      setTimeout(() => {
+        refreshGarden();
+        refreshInventory();
+      }, 500);
+    } catch (error) {
+      if (error.message.includes('already exists')) {
+        // Garden exists but maybe wasn't loaded properly
+        setNotification({
+          type: 'info',
+          message: 'Garden already exists, refreshing...'
+        });
+        refreshGarden();
+      } else {
+        setNotification({
+          type: 'error',
+          message: 'Failed to create garden: ' + error.message
+        });
+      }
     }
-  }
-}, [initializeGarden, refreshGarden, refreshInventory]);
+  }, [initializeGarden, refreshGarden, refreshInventory]);
 
   // Loading and error states
   if (loading) {
@@ -470,6 +437,15 @@ const handleInitializeGarden = useCallback(async () => {
           >
             {gardenMode === 'harvest' ? 'Exit Harvest' : 'Harvest Plants'}
           </button>
+          {/* Tip Button */}
+          <button
+            className="tip-button bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-colors flex items-center gap-1 px-3"
+            onClick={startTour}
+            disabled={actionLoading}
+          >
+            <span className="text-sm">💡</span>
+            <span className="hidden md:inline">Tips</span>
+          </button>
         </div>
       </div>
 
@@ -504,184 +480,174 @@ const handleInitializeGarden = useCallback(async () => {
         </div>
       )}
 
-      {/* Tour - KEEP YOUR EXISTING TOUR JSX HERE - it's correct */}
+      {/* Tour */}
       {showTour && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
           <div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl max-w-md w-full mx-auto">
-            {/* Your existing tour steps here - they are correct */}
-          </div>
-        </div>
-      )}
+            {tourStep === 0 && (
+              <div className="p-6">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center">
+                    <span className="text-white font-bold text-sm">1</span>
+                  </div>
+                  <h3 className="text-lg font-bold text-gray-900 dark:text-white">Your Plant Collection</h3>
+                </div>
+                <p className="text-gray-600 dark:text-gray-300 mb-4">
+                  These are the plants you've earned by completing orders and reaching milestones! 
+                  Each plant has a rarity level that makes your garden unique.
+                </p>
+                <div className="flex justify-between">
+                  <button 
+                    onClick={skipTour}
+                    className="px-4 py-2 text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200"
+                  >
+                    Skip Tour
+                  </button>
+                  <button 
+                    onClick={nextTourStep}
+                    className="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors"
+                  >
+                    Next
+                  </button>
+                </div>
+              </div>
+            )}
 
-      {showTour && (
-  <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-    <div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl max-w-md w-full mx-auto">
-      {/* Tour Content */}
-      {tourStep === 0 && (
-        <div className="p-6">
-          <div className="flex items-center gap-3 mb-4">
-            <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center">
-              <span className="text-white font-bold text-sm">1</span>
-            </div>
-            <h3 className="text-lg font-bold text-gray-900 dark:text-white">Your Plant Collection</h3>
-          </div>
-          <p className="text-gray-600 dark:text-gray-300 mb-4">
-            These are the plants you've earned by completing orders and reaching milestones! 
-            Each plant has a rarity level that makes your garden unique.
-          </p>
-          <div className="flex justify-between">
-            <button 
-              onClick={skipTour}
-              className="px-4 py-2 text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200"
-            >
-              Skip Tour
-            </button>
-            <button 
-              onClick={nextTourStep}
-              className="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors"
-            >
-              Next
-            </button>
-          </div>
-        </div>
-      )}
+            {tourStep === 1 && (
+              <div className="p-6">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center">
+                    <span className="text-white font-bold text-sm">2</span>
+                  </div>
+                  <h3 className="text-lg font-bold text-gray-900 dark:text-white">Garden Tools</h3>
+                </div>
+                <p className="text-gray-600 dark:text-gray-300 mb-4">
+                  Use these buttons to manage your garden:
+                </p>
+                <ul className="text-sm text-gray-600 dark:text-gray-300 mb-4 space-y-2">
+                  <li>• <strong>Get Planting</strong>: Select plants and place them in your garden</li>
+                  <li>• <strong>Move Plants</strong>: Rearrange plants in your garden</li>
+                  <li>• <strong>Harvest Plants</strong>: Return plants to inventory to replant elsewhere</li>
+                </ul>
+                <div className="flex justify-between">
+                  <button 
+                    onClick={() => setTourStep(0)}
+                    className="px-4 py-2 text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200"
+                  >
+                    Back
+                  </button>
+                  <button 
+                    onClick={nextTourStep}
+                    className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
+                  >
+                    Next
+                  </button>
+                </div>
+              </div>
+            )}
 
-      {tourStep === 1 && (
-        <div className="p-6">
-          <div className="flex items-center gap-3 mb-4">
-            <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center">
-              <span className="text-white font-bold text-sm">2</span>
-            </div>
-            <h3 className="text-lg font-bold text-gray-900 dark:text-white">Garden Tools</h3>
-          </div>
-          <p className="text-gray-600 dark:text-gray-300 mb-4">
-            Use these buttons to manage your garden:
-          </p>
-          <ul className="text-sm text-gray-600 dark:text-gray-300 mb-4 space-y-2">
-            <li>• <strong>Get Planting</strong>: Select plants and place them in your garden</li>
-            <li>• <strong>Move Plants</strong>: Rearrange plants in your garden</li>
-            <li>• <strong>Harvest Plants</strong>: Return plants to inventory to replant elsewhere</li>
-          </ul>
-          <div className="flex justify-between">
-            <button 
-              onClick={() => setTourStep(0)}
-              className="px-4 py-2 text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200"
-            >
-              Back
-            </button>
-            <button 
-              onClick={nextTourStep}
-              className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
-            >
-              Next
-            </button>
-          </div>
-        </div>
-      )}
+            {tourStep === 2 && (
+              <div className="p-6">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="w-8 h-8 bg-purple-500 rounded-full flex items-center justify-center">
+                    <span className="text-white font-bold text-sm">3</span>
+                  </div>
+                  <h3 className="text-lg font-bold text-gray-900 dark:text-white">Garden Progress</h3>
+                </div>
+                <p className="text-gray-600 dark:text-gray-300 mb-4">
+                  Track your gardening achievements here! Plants are sorted by rarity, and your progress shows how close you are to filling your 8×8 garden.
+                </p>
+                <p className="text-sm text-gray-600 dark:text-gray-300 mb-4">
+                  Rarer plants are harder to get but make your garden more valuable and unique!
+                </p>
+                <div className="flex justify-between">
+                  <button 
+                    onClick={() => setTourStep(1)}
+                    className="px-4 py-2 text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200"
+                  >
+                    Back
+                  </button>
+                  <button 
+                    onClick={nextTourStep}
+                    className="px-4 py-2 bg-purple-500 text-white rounded-lg hover:bg-purple-600 transition-colors"
+                  >
+                    Next
+                  </button>
+                </div>
+              </div>
+            )}
 
-      {tourStep === 2 && (
-        <div className="p-6">
-          <div className="flex items-center gap-3 mb-4">
-            <div className="w-8 h-8 bg-purple-500 rounded-full flex items-center justify-center">
-              <span className="text-white font-bold text-sm">3</span>
-            </div>
-            <h3 className="text-lg font-bold text-gray-900 dark:text-white">Garden Progress</h3>
-          </div>
-          <p className="text-gray-600 dark:text-gray-300 mb-4">
-            Track your gardening achievements here! Plants are sorted by rarity, and your progress shows how close you are to filling your 8×8 garden.
-          </p>
-          <p className="text-sm text-gray-600 dark:text-gray-300 mb-4">
-            Rarer plants are harder to get but make your garden more valuable and unique!
-          </p>
-          <div className="flex justify-between">
-            <button 
-              onClick={() => setTourStep(1)}
-              className="px-4 py-2 text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200"
-            >
-              Back
-            </button>
-            <button 
-              onClick={nextTourStep}
-              className="px-4 py-2 bg-purple-500 text-white rounded-lg hover:bg-purple-600 transition-colors"
-            >
-              Next
-            </button>
-          </div>
-        </div>
-      )}
+            {tourStep === 3 && (
+              <div className="p-6">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="w-8 h-8 bg-indigo-500 rounded-full flex items-center justify-center">
+                    <span className="text-white font-bold text-sm">4</span>
+                  </div>
+                  <h3 className="text-lg font-bold text-gray-900 dark:text-white">Plant Details</h3>
+                </div>
+                <p className="text-gray-600 dark:text-gray-300 mb-4">
+                  Click on any plant in your garden to see its details! The Plant Card shows you:
+                </p>
+                <ul className="text-sm text-gray-600 dark:text-gray-300 mb-4 space-y-2">
+                  <li>• <strong>Plant Name & Rarity</strong>: Learn about your plant's uniqueness</li>
+                  <li>• <strong>Description</strong>: Discover interesting facts about your plant</li>
+                  <li>• <strong>Growth Details</strong>: See when and how you earned this plant</li>
+                  <li>• <strong>Special Traits</strong>: Find out what makes each plant special</li>
+                </ul>
+                <p className="text-sm text-gray-600 dark:text-gray-300 mb-4">
+                  Explore your plants to learn more about your growing collection!
+                </p>
+                <div className="flex justify-between">
+                  <button 
+                    onClick={() => setTourStep(2)}
+                    className="px-4 py-2 text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200"
+                  >
+                    Back
+                  </button>
+                  <button 
+                    onClick={nextTourStep}
+                    className="px-4 py-2 bg-indigo-500 text-white rounded-lg hover:bg-indigo-600 transition-colors"
+                  >
+                    Next
+                  </button>
+                </div>
+              </div>
+            )}
 
-      {/* NEW STEP - Plant Details */}
-      {tourStep === 3 && (
-        <div className="p-6">
-          <div className="flex items-center gap-3 mb-4">
-            <div className="w-8 h-8 bg-indigo-500 rounded-full flex items-center justify-center">
-              <span className="text-white font-bold text-sm">4</span>
-            </div>
-            <h3 className="text-lg font-bold text-gray-900 dark:text-white">Plant Details</h3>
-          </div>
-          <p className="text-gray-600 dark:text-gray-300 mb-4">
-            Click on any plant in your garden to see its details! The Plant Card shows you:
-          </p>
-          <ul className="text-sm text-gray-600 dark:text-gray-300 mb-4 space-y-2">
-            <li>• <strong>Plant Name & Rarity</strong>: Learn about your plant's uniqueness</li>
-            <li>• <strong>Description</strong>: Discover interesting facts about your plant</li>
-            <li>• <strong>Growth Details</strong>: See when and how you earned this plant</li>
-            <li>• <strong>Special Traits</strong>: Find out what makes each plant special</li>
-          </ul>
-          <p className="text-sm text-gray-600 dark:text-gray-300 mb-4">
-            Explore your plants to learn more about your growing collection!
-          </p>
-          <div className="flex justify-between">
-            <button 
-              onClick={() => setTourStep(2)}
-              className="px-4 py-2 text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200"
-            >
-              Back
-            </button>
-            <button 
-              onClick={nextTourStep}
-              className="px-4 py-2 bg-indigo-500 text-white rounded-lg hover:bg-indigo-600 transition-colors"
-            >
-              Next
-            </button>
+            {tourStep === 4 && (
+              <div className="p-6">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="w-8 h-8 bg-amber-500 rounded-full flex items-center justify-center">
+                    <span className="text-white font-bold text-sm">5</span>
+                  </div>
+                  <h3 className="text-lg font-bold text-gray-900 dark:text-white">Your Progress & Milestones</h3>
+                </div>
+                <p className="text-gray-600 dark:text-gray-300 mb-4">
+                  Your garden statistics show your overall progress! Complete orders, try different restaurants, 
+                  and reach spending milestones to earn more plants.
+                </p>
+                <p className="text-sm text-gray-600 dark:text-gray-300 mb-4">
+                  The more you use the app, the more diverse and beautiful your garden becomes!
+                </p>
+                <div className="flex justify-between">
+                  <button 
+                    onClick={() => setTourStep(3)}
+                    className="px-4 py-2 text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200"
+                  >
+                    Back
+                  </button>
+                  <button 
+                    onClick={nextTourStep}
+                    className="px-4 py-2 bg-amber-500 text-white rounded-lg hover:bg-amber-600 transition-colors"
+                  >
+                    Start Gardening!
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       )}
-
-      {tourStep === 4 && (
-        <div className="p-6">
-          <div className="flex items-center gap-3 mb-4">
-            <div className="w-8 h-8 bg-amber-500 rounded-full flex items-center justify-center">
-              <span className="text-white font-bold text-sm">5</span>
-            </div>
-            <h3 className="text-lg font-bold text-gray-900 dark:text-white">Your Progress & Milestones</h3>
-          </div>
-          <p className="text-gray-600 dark:text-gray-300 mb-4">
-            Your garden statistics show your overall progress! Complete orders, try different restaurants, 
-            and reach spending milestones to earn more plants.
-          </p>
-          <p className="text-sm text-gray-600 dark:text-gray-300 mb-4">
-            The more you use the app, the more diverse and beautiful your garden becomes!
-          </p>
-          <div className="flex justify-between">
-            <button 
-              onClick={() => setTourStep(3)}
-              className="px-4 py-2 text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200"
-            >
-              Back
-            </button>
-            <button 
-              onClick={nextTourStep}
-              className="px-4 py-2 bg-amber-500 text-white rounded-lg hover:bg-amber-600 transition-colors"
-            >
-              Start Gardening!
-            </button>
-          </div>
-        </div>
-      )}
-    </div>
-  </div>
-)}
 
       {/* Main content */}
       <div className={`garden-main ${isMobile ? 'flex flex-col gap-4 px-2 py-4' : 'flex flex-col md:flex-row gap-6 max-w-7xl mx-auto px-4 py-8'}`}>
