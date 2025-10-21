@@ -24,36 +24,55 @@ class DigitalGardenService:
         self.logger = logger
     
     def initialize_customer_garden(self, customer: User) -> CustomerGarden:
-        """Initialize a new customer's garden with empty 8x8 grid"""
-        if customer.user_type != 'customer':
-            raise ValueError("Only customers can have gardens")
-        
-        with transaction.atomic():
-            # Create garden
-            garden, created = CustomerGarden.objects.get_or_create(
-                customer=customer,
-                defaults={'name': 'My Garden'}
-            )
+            """Initialize a new customer's garden with empty 8x8 grid"""
+            if customer.user_type != 'customer':
+                raise ValueError("Only customers can have gardens")
             
-            if created:
-                # Create all 64 empty tiles
-                tiles = []
-                for row in range(8):
-                    for col in range(8):
-                        tiles.append(GardenTile(
-                            garden=garden,
-                            row=row,
-                            col=col
-                        ))
+            with transaction.atomic():
+                # Create garden
+                garden, created = CustomerGarden.objects.get_or_create(
+                    customer=customer,
+                    defaults={'name': 'My Garden'}
+                )
                 
-                GardenTile.objects.bulk_create(tiles)
+                # CRITICAL: Always ensure tiles exist, even for existing gardens
+                existing_tile_count = garden.garden_tiles.count()
+                
+                if existing_tile_count < 64:
+                    self.logger.warning(
+                        f"Garden {garden.id} for {customer.username} has only {existing_tile_count}/64 tiles. "
+                        f"Creating missing tiles..."
+                    )
+                    
+                    # Get existing positions to avoid duplicates
+                    existing_positions = set(
+                        garden.garden_tiles.values_list('row', 'col')
+                    )
+                    
+                    # Create missing tiles
+                    tiles_to_create = []
+                    for row in range(8):
+                        for col in range(8):
+                            if (row, col) not in existing_positions:
+                                tiles_to_create.append(GardenTile(
+                                    garden=garden,
+                                    row=row,
+                                    col=col
+                                ))
+                    
+                    if tiles_to_create:
+                        GardenTile.objects.bulk_create(tiles_to_create)
+                        self.logger.info(
+                            f"Created {len(tiles_to_create)} missing tiles for garden {garden.id}"
+                        )
                 
                 # Initialize stats
                 CustomerStats.objects.get_or_create(customer=customer)
                 
-                self.logger.info(f"Initialized garden for customer {customer.username}")
-            
-            return garden
+                if created:
+                    self.logger.info(f"Initialized new garden for customer {customer.username}")
+                
+                return garden
     
     def process_order_completion(self, order: Order) -> Dict:
         """Process plant rewards when an order is completed"""

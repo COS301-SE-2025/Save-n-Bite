@@ -102,26 +102,6 @@
   100% { transform: rotate(360deg); }
 }
 
-/* Drag and drop states */
-.garden-tile.available-for-placement {
-  position: relative;
-}
-
-.garden-tile.available-for-placement::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  border: 2px dashed #10b981;
-  border-radius: 8px;
-  background: rgba(16, 185, 129, 0.1);
-  animation: placementPulse 1.5s ease-in-out infinite;
-}
-
-.garden-tile.drag-over::after {
-  background: rgba(16, 185, 129, 0.3);
-  border-color: #059669;
-  animation: none;
-}
 
 @keyframes placementPulse {
   0%, 100% {
@@ -198,5 +178,40 @@
   .garden-stats {
     flex-direction: column;
     gap: 8px;
+  }
+}
+
+/* Add to GardenGrid.css */
+
+/* Planting mode visual feedback for ALL screens */
+.garden-tile.available-for-planting {
+  position: relative;
+  cursor: pointer;
+}
+
+.garden-tile.available-for-planting::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border: 2px dashed #10b981;
+  border-radius: 8px;
+  background: rgba(16, 185, 129, 0.1);
+  animation: plantingPulse 2s ease-in-out infinite;
+}
+
+.garden-tile.available-for-planting:hover::after {
+  background: rgba(16, 185, 129, 0.2);
+  border-color: #059669;
+  animation: plantingPulse 1s ease-in-out infinite;
+}
+
+@keyframes plantingPulse {
+  0%, 100% {
+    opacity: 0.6;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.02);
   }
 }

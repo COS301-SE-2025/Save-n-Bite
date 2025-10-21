@@ -6,8 +6,6 @@ const PlantInventory = ({
   inventory, 
   selectedPlant, 
   onPlantSelect, 
-  onDragStart,
-  onDragEnd,
   supportsDragDrop = false,
   mode,
   isPlantingMode = false,
@@ -27,19 +25,6 @@ const PlantInventory = ({
     );
   }
 
-  const handleDragStart = (e, item) => {
-    if (supportsDragDrop && onDragStart && !isMobile) {
-      onDragStart(item);
-      e.dataTransfer.effectAllowed = 'move';
-      e.dataTransfer.setData('text/plain', item.id);
-    }
-  };
-
-  const handleDragEnd = (e) => {
-    if (supportsDragDrop && onDragEnd && !isMobile) {
-      onDragEnd();
-    }
-  };
 
   const handlePlantClick = (item) => {
     if (onPlantSelect) {
@@ -47,14 +32,12 @@ const PlantInventory = ({
     }
   };
 
-  const getInstructionText = () => {
-    if (isMobile && isPlantingMode) {
-      return "Click on a plant to select it, then click on an empty garden tile to plant it";
-    } else if (!isMobile && supportsDragDrop) {
-      return "Drag plants to place them in your garden";
-    }
-    return null;
-  };
+const getInstructionText = () => {
+  if (isPlantingMode) {
+    return "Click on a plant to select it, then click on an empty garden tile to plant it";
+  }
+  return null;
+};
 
   const instructionText = getInstructionText();
 
@@ -76,26 +59,17 @@ const PlantInventory = ({
         {inventory.map((item) => (
           <div
             key={item.id}
-            draggable={supportsDragDrop && !isMobile}
-            onDragStart={(e) => handleDragStart(e, item)}
-            onDragEnd={handleDragEnd}
             onClick={() => handlePlantClick(item)}
             className={`inventory-item ${
-              supportsDragDrop && !isMobile ? 'draggable' : ''
-            } ${
               selectedPlantItem?.id === item.id ? 'selected-for-planting' : ''
-            } ${
-              isMobile ? 'mobile-inventory-item' : ''
-            }`}
+            } ${isMobile ? 'mobile-inventory-item' : 'desktop-inventory-item'}`}
           >
             <PlantCard
               inventoryItem={item}
               isSelected={selectedPlant && selectedPlant.id === item.id}
               showQuantity={true}
-              showDragIndicator={supportsDragDrop && !isMobile}
-              className={`${supportsDragDrop && !isMobile ? 'draggable-card' : ''} ${
-                isMobile ? 'mobile-plant-card' : ''
-              }`}
+              showDragIndicator={false} // Always false now
+              className={isMobile ? 'mobile-plant-card' : 'desktop-plant-card'}
               isMobile={isMobile}
             />
           </div>
