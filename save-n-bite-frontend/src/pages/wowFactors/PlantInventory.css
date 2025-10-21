@@ -275,3 +275,29 @@
     padding: 1px 2px;
   }
 }
+
+/* Add to PlantInventory.css */
+
+/* Desktop inventory item styling for click-based planting */
+.desktop-inventory-item {
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border-radius: 8px;
+}
+
+.desktop-inventory-item:hover {
+  background: rgba(16, 185, 129, 0.05);
+  transform: translateY(-1px);
+}
+
+.desktop-inventory-item.selected-for-planting {
+  background: rgba(16, 185, 129, 0.15);
+  border: 2px solid #10b981;
+  transform: scale(1.02);
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+}
+
+/* Hide drag indicators when in planting mode */
+.inventory-item.selected-for-planting .draggable-card::before {
+  opacity: 0 !important;
+}
