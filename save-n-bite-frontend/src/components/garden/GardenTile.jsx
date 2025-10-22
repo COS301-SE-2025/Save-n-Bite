@@ -11,9 +11,6 @@ const GardenTile = ({
   isHighlighted = false,
   onTileClick,
   onPlantClick,
-  onDragOver,
-  onDragLeave,
-  onDrop,
   showCoordinates = false, 
   className = ""
 }) => {
@@ -32,24 +29,6 @@ const GardenTile = ({
     }
   };
 
-  const handleDragOver = (e) => {
-    if (onDragOver) {
-      onDragOver(e, tile);
-    }
-  };
-
-  const handleDragLeave = (e) => {
-    if (onDragLeave) {
-      onDragLeave(e, tile);
-    }
-  };
-
-  const handleDrop = (e) => {
-    if (onDrop) {
-      onDrop(e, tile);
-    }
-  };
-
   return (
     <div
       className={`garden-tile ${className} ${isSelected ? 'selected' : ''} ${isHighlighted ? 'highlighted' : ''} ${!plant_details ? 'empty' : 'planted'}`}
@@ -58,9 +37,6 @@ const GardenTile = ({
         gridColumn: col + 1,
       }}
       onClick={handleTileClick}
-      onDragOver={handleDragOver}
-      onDragLeave={handleDragLeave}
-      onDrop={handleDrop}
       data-row={row}
       data-col={col}
       // NEW: Add mobile drop target attributes
